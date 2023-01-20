@@ -1,0 +1,18 @@
+* Density dep. Interaction:    ------------
+eval_density_dependent (1,0)= 1
+eval_rearrangement (1,0)    = 1
+eval_explicit_fieldsDD (1,0)= 0
+t3_DD_CONST [real  MeV]     = 1.390600d+03    !1.000000d+03    !
+x0_DD_FACTOR                = 1.000000d+00
+alpha_DD                    = 0.333333d+00    !1.000000d+00    !
+* Integration parameters:      ------------
+*  0 trapezoidal, 1 Gauss-Legendre, 2 Gauss-Laguerre(r)/Legendre, 3 Laguerre-Lebedev
+integration_method (0,1,2,3)= 3
+export_density (1, 0)       = 0
+r_dim                       = 12
+Omega_Order                 = 14
+THE_grid                    = 10
+PHI_grid                    = 10
+R_MAX                       = 08.500000d+00
+eval full Val.Space (0,1)   = 1
+* Integration parameters:      ------------
