@@ -96,11 +96,6 @@ complex(r64), dimension(:,:,:,:), allocatable, save :: BulkHF ! (tt,msms',r,ang)
 complex(r64), dimension(:,:,:,:), allocatable, save :: BulkP1 ! (tt,msms',r,ang) DEF:Sum AngFunctDUAL_P1(msms') - AngFunctDUAL_P1(ms'ms) * kappaLR
 complex(r64), dimension(:,:,:,:), allocatable, save :: BulkP2 ! (tt,msms',r,ang) DEF:Sum AngFunctDUAL_P2 * kappaRL
 
-!complex(r64), dimension(:,:,:), allocatable, save :: BulkHF_pn,BulkHF_np, BulkHF_pp,BulkHF_nn  ! (msms',r,ang) DEF:Sum AngFunctDUAL_HF * rho   (++,+-,-+,--)
-!complex(r64), dimension(:,:,:), allocatable, save :: BulkP1_pn,BulkP1_np, BulkP1_pp,BulkP1_nn  ! (msms',r,ang) DEF:Sum AngFunctDUAL_P1(msms') * kappaLR
-!complex(r64), dimension(:,:,:), allocatable, save :: BulkP2_pn,BulkP2_np, BulkP2_pp,BulkP2_nn  ! (msms',r,ang) DEF:Sum AngFunctDUAL_P2(msms') * kappaRL*
-
-
 complex(r64), dimension(:, :), allocatable    :: rearrangement_me  !(isp1, isp2)
 complex(r64), dimension(:, :), allocatable    :: rearrang_field    !(isp1, isp2)
 complex(r64), dimension(:, :, :, :), allocatable :: rea_common_RadAng !(isp1,isp2, ir,iang)
@@ -432,7 +427,7 @@ subroutine set_allocate_density_arrays
   allocate(rearrangement_me(HOsp_dim, HOsp_dim))
   !allocate(rearrangement_me(HOsp_dim/2, HOsp_dim/2))
   allocate(rearrang_field(HOsp_dim, HOsp_dim))
-  allocate(rea_common_RadAng(HOsp_dim, HOsp_dim, r_dim, angular_dim))
+  allocate(rea_common_RadAng(HOsp_dim /2, HOsp_dim /2, r_dim, angular_dim))
   allocate(REACommonFields(r_dim, angular_dim))
 
 end subroutine set_allocate_density_arrays
@@ -678,19 +673,13 @@ Kdim = angular_momentum_index(j_max, j_max, .FALSE.)
 allocate(dens_Y_KM_me(Jdim, Jdim, Kdim))
 
 Kdim = angular_momentum_index(HO_lmax, HO_lmax, .FALSE.)
-allocate(AngFunctDUAL_HF(4, HOsp_dim, HOsp_dim, angular_dim))
-allocate(AngFunctDUAL_P1(4, HOsp_dim, HOsp_dim, angular_dim))
-allocate(AngFunctDUAL_P2(4, HOsp_dim, HOsp_dim, angular_dim))
+allocate(AngFunctDUAL_HF(4, HOsp_dim/2, HOsp_dim/2, angular_dim))
+allocate(AngFunctDUAL_P1(4, HOsp_dim/2, HOsp_dim/2, angular_dim))
+allocate(AngFunctDUAL_P2(4, HOsp_dim/2, HOsp_dim/2, angular_dim))
 
 allocate(BulkHF(5,4, r_dim, angular_dim))
-!allocate(BulkHF_pp(4, r_dim, angular_dim),  BulkHF_nn(4, r_dim, angular_dim))
-!allocate(BulkHF_pn(4, r_dim, angular_dim),  BulkHF_np(4, r_dim, angular_dim))
-allocate(BulkP1(5,4, r_dim,angular_dim))
-!allocate(BulkP1_pp(4, r_dim, angular_dim), BulkP1_nn(4, r_dim, angular_dim))
-!allocate(BulkP1_pn(4, r_dim, angular_dim), BulkP1_np(4, r_dim, angular_dim))
-allocate(BulkP2(5,4, r_dim,angular_dim))
-!allocate(BulkP2_pp(4, r_dim, angular_dim), BulkP2_nn(4, r_dim, angular_dim))
-!allocate(BulkP2_pn(4, r_dim, angular_dim), BulkP2_np(4, r_dim, angular_dim))
+allocate(BulkP1(5,4, r_dim, angular_dim))
+allocate(BulkP2(5,4, r_dim, angular_dim))
 
 AngFunctDUAL_HF = zzero
 AngFunctDUAL_P1 = zzero
@@ -752,22 +741,23 @@ do i = 1, spO2
     ! Sect. define uncoupled angular coefficients to precalculate fields. ==
     call set_sphhDual_precalcFields(i, ja, la, ma,  j, jb, lb, mb)
 
-    ! == ( also fill the space for nn, pn, np space) ==
-    do i_an = 1, angular_dim
-      do ms = 1, 4
-        AngFunctDUAL_HF(ms,i+spO2,j     ,i_an) = AngFunctDUAL_HF(ms,i,j,i_an)
-        AngFunctDUAL_HF(ms,i     ,j+spO2,i_an) = AngFunctDUAL_HF(ms,i,j,i_an)
-        AngFunctDUAL_HF(ms,i+spO2,j+spO2,i_an) = AngFunctDUAL_HF(ms,i,j,i_an)
-
-        AngFunctDUAL_P1(ms,i+spO2,j     ,i_an) = AngFunctDUAL_P1(ms,i,j,i_an)
-        AngFunctDUAL_P1(ms,i     ,j+spO2,i_an) = AngFunctDUAL_P1(ms,i,j,i_an)
-        AngFunctDUAL_P1(ms,i+spO2,j+spO2,i_an) = AngFunctDUAL_P1(ms,i,j,i_an)
-
-        AngFunctDUAL_P2(ms,i+spO2,j     ,i_an) = AngFunctDUAL_P2(ms,i,j,i_an)
-        AngFunctDUAL_P2(ms,i     ,j+spO2,i_an) = AngFunctDUAL_P2(ms,i,j,i_an)
-        AngFunctDUAL_P2(ms,i+spO2,j+spO2,i_an) = AngFunctDUAL_P2(ms,i,j,i_an)
-      enddo
-    enddo
+!!!  (OLD treatment that complete the Ang. func to directly use the full space !
+!    ! == ( also fill the space for nn, pn, np space) ==
+!    do i_an = 1, angular_dim
+!      do ms = 1, 4
+!        AngFunctDUAL_HF(ms,i+spO2,j     ,i_an) = AngFunctDUAL_HF(ms,i,j,i_an)
+!        AngFunctDUAL_HF(ms,i     ,j+spO2,i_an) = AngFunctDUAL_HF(ms,i,j,i_an)
+!        AngFunctDUAL_HF(ms,i+spO2,j+spO2,i_an) = AngFunctDUAL_HF(ms,i,j,i_an)
+!
+!        AngFunctDUAL_P1(ms,i+spO2,j     ,i_an) = AngFunctDUAL_P1(ms,i,j,i_an)
+!        AngFunctDUAL_P1(ms,i     ,j+spO2,i_an) = AngFunctDUAL_P1(ms,i,j,i_an)
+!        AngFunctDUAL_P1(ms,i+spO2,j+spO2,i_an) = AngFunctDUAL_P1(ms,i,j,i_an)
+!
+!        AngFunctDUAL_P2(ms,i+spO2,j     ,i_an) = AngFunctDUAL_P2(ms,i,j,i_an)
+!        AngFunctDUAL_P2(ms,i     ,j+spO2,i_an) = AngFunctDUAL_P2(ms,i,j,i_an)
+!        AngFunctDUAL_P2(ms,i+spO2,j+spO2,i_an) = AngFunctDUAL_P2(ms,i,j,i_an)
+!      enddo
+!    enddo !! ---------------------------------------------------------------- !
 
   enddo
 enddo
@@ -843,6 +833,10 @@ complex(r64) :: YaYb, YCaYb, YCaYCb
 integer :: ms, i, j
 
 !!! ASSERT ! a , b must be in the pp quadrant, the rest'll be copied afterwards
+if ((a > HOsp_dim/2).OR.(b > HOsp_dim/2)) then
+   print *, " [ASS. ERROR] compute_bulkDens4Fields a,b (sp) in neutron space"
+   STOP
+endif
 
 call ClebschGordan(2*la, 1, ja, (ma - 1),  1, ma, cgc_a_msp1)
 call ClebschGordan(2*lb, 1, jb, (mb - 1),  1, mb, cgc_b_msp1)
@@ -962,7 +956,7 @@ complex(r64) :: roP, roN, rPN, rNP, kaP, kaN, kaCcP, kaCcN, kPN, kNP, &
 real(r64)    :: radial_ab
 spO2 = HOsp_dim / 2
 
-! assertion, a, b only from pp space:
+!!!  ASSERTION  !!! , a, b only from pp space:
 if ((a > spO2).OR.(b > spO2)) then
    print *, " [ASS. ERROR] compute_bulkDens4Fields a,b (sp) in neutron space"
    STOP
@@ -1193,21 +1187,8 @@ integer ms
 
 if (reset_) then
   BulkHF    = zzero
-!  BulkHF_pp = zzero
-!  BulkHF_nn = zzero
-!  BulkHF_pn = zzero
-!  BulkHF_np = zzero
-
   BulkP1    = zzero
-!  BulkP1_pp = zzero
-!  BulkP1_nn = zzero
-!  BulkP1_pn = zzero
-!  BulkP1_np = zzero
   BulkP2    = zzero
-!  BulkP2_pp = zzero
-!  BulkP2_nn = zzero
-!  BulkP2_pn = zzero
-!  BulkP2_np = zzero
 else
   do ms = 1, 4
     ! BulkHF(ms,i_r,i_ang) = BulkHF_pp(ms,i_r,i_ang) + BulkHF_nn(ms,i_r,i_ang)
@@ -1230,7 +1211,7 @@ end subroutine resetOrSumTotalBulkDens4Fields
 subroutine set_rearrangement_RadAng_fucntions
 
 integer :: a,b,aN,bN, l1,l2,j1,j2, mj1,mj2, ind_jm_1,ind_jm_2, K, M
-integer :: i_r, i_ang, ind_km
+integer :: i_r, i_ang, ind_km, spO2
 real(r64)    :: radial
 complex(r64) :: ang_rea
 
@@ -1238,19 +1219,20 @@ if (.NOT.eval_rearrangement) then
   return
 endif
 rea_common_RadAng = zero
+spO2 = HOsp_dim / 2
 
-do a = 1, HOsp_dim/2 ! avoid pn states
+do a = 1, spO2 ! avoid pn states
   l1 = HOsp_l   (a)
   j1 = HOsp_2j  (a)
   mj1 = HOsp_2mj(a)
   ind_jm_1 = angular_momentum_index(j1, mj1, .TRUE.)
-  aN = a + HOsp_dim/2
-  do b = a, HOsp_dim/2
+  aN = a + spO2
+  do b = a, spO2
     l2 = HOsp_l  (b)
     j2 = HOsp_2j (b)
     mj2 = HOsp_2mj(b)
     ind_jm_2 = angular_momentum_index(j2, mj2, .TRUE.)
-    bN = b + HOsp_dim/2
+    bN = b + spO2
 
     do i_r = 1, r_dim
       if (integration_method < 2) then
@@ -1260,23 +1242,25 @@ do a = 1, HOsp_dim/2 ! avoid pn states
       end if
 
       do i_ang = 1, angular_dim
-        ang_rea = zzero
-        do K = abs(j1 - j2) / 2, (j1 + j2) / 2
-          M = (mj2 - mj1)/2
-          if ((MOD(K + l1 + l2, 2) == 1).OR.(abs(M) > K)) cycle
-
-          ind_km   = angular_momentum_index(K,  M,  .FALSE.)
-
-          ang_rea = ang_rea + (dens_Y_KM_me(ind_jm_1, ind_jm_2, ind_km) * &
-                               sph_harmonics_memo(ind_km, i_ang))
-        enddo
-        !ang_rea = AngFunctDUAL_HF(1,a,b,i_ang) + AngFunctDUAL_HF(4,a,b,i_ang)
+!        !! --  Process with spatial 2- body harmonics  -----------------------!
+!        ang_rea = zzero
+!        do K = abs(j1 - j2) / 2, (j1 + j2) / 2
+!          M = (mj2 - mj1)/2
+!          if ((MOD(K + l1 + l2, 2) == 1).OR.(abs(M) > K)) cycle
+!
+!          ind_km   = angular_momentum_index(K,  M,  .FALSE.)
+!
+!          ang_rea = ang_rea + (dens_Y_KM_me(ind_jm_1, ind_jm_2, ind_km) * &
+!                               sph_harmonics_memo(ind_km, i_ang))
+!        enddo
+!        !! ------------------------------------------------------------------ !
+        ang_rea = AngFunctDUAL_HF(1,a,b,i_ang) + AngFunctDUAL_HF(4,a,b,i_ang)
 
         rea_common_RadAng( a, b, i_r,i_ang) = radial * ang_rea
-        rea_common_RadAng(aN,bN, i_r,i_ang) = radial * ang_rea
+!        rea_common_RadAng(aN,bN, i_r,i_ang) = radial * ang_rea
         if (a == b) cycle
         rea_common_RadAng( b, a, i_r,i_ang) = radial * conjg(ang_rea)
-        rea_common_RadAng(bN,aN, i_r,i_ang) = radial * conjg(ang_rea)
+!        rea_common_RadAng(bN,aN, i_r,i_ang) = radial * conjg(ang_rea)
 
       enddo ! end ang
     enddo ! end radial
