@@ -656,7 +656,7 @@ factor1 = dsqrt( (2*l+1) / (4*pi) )
 factor2 = dsqrt( one * factorial(l-m) )
 factor3 = dsqrt( one * factorial(l+m) )
 
-factor = (factor1 * factor2 / factor3) * dexp(zimag * m * phi)
+factor = (factor1 * factor2 / factor3) * exp(zimag * m * phi)
 
 Ylm = factor * assolegendre(l,m, dcos(theta))
 
