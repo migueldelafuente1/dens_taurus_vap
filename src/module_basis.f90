@@ -652,13 +652,13 @@ if ( (l < 0) .or. (abs(m) > l) ) then
 endif
 
 !!! Computes the value of the spherical harmonic
-factor1 = sqrt( (2*l+1) / (4*pi) )
-factor2 = sqrt( one * factorial(l-m) )
-factor3 = sqrt( one * factorial(l+m) )
+factor1 = dsqrt( (2*l+1) / (4*pi) )
+factor2 = dsqrt( one * factorial(l-m) )
+factor3 = dsqrt( one * factorial(l+m) )
 
-factor = (factor1 * factor2 / factor3) * exp(zimag * m * phi)
+factor = (factor1 * factor2 / factor3) * dexp(zimag * m * phi)
 
-Ylm = factor * assolegendre(l,m, cos(theta))
+Ylm = factor * assolegendre(l,m, dcos(theta))
 
 end function spherharmonic
 

@@ -1349,7 +1349,7 @@ do i_r = 1, r_dim
                                      weight_LEB(i_an) * rad4Integr)
 
     !!! calculate the density powered to alpha_DD for the matrix elements
-    if (dabs(imag(density(i_r, i_an))) > 1.0e-8) then
+    if (dabs(imag(density(i_r, i_an))) > 1.0e-10) then
       !! This part must not be executed for Mean Field D1S (projections yield
       !! larger values for the imaginary part), put the limit in 1E-13 precision
       !!  to prompt an abnormal numerical error (r64 must have 13 decimals)
