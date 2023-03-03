@@ -15,14 +15,14 @@
 ! - function assolegendre                                                      !
 ! - function lapack_sel                                                        !
 !==============================================================================!
-MODULE MathMethods 
+MODULE MathMethods
 
 use Constants
 
 implicit none
 public
 
-CONTAINS 
+CONTAINS
 
 !------------------------------------------------------------------------------!
 ! function factorial                                                           !
@@ -32,10 +32,10 @@ CONTAINS
 recursive function factorial(n) result(facto)
 
 integer, intent(in) :: n
-real(r64) :: facto 
+real(r64) :: facto
 
-if ( n <= 0 ) then 
-  facto = one  
+if ( n <= 0 ) then
+  facto = one
 else
   facto = n * factorial(n-1)
 endif
@@ -50,10 +50,10 @@ end function
 recursive function dfactorial(n) result(facto)
 
 integer, intent(in) :: n
-real(r64) :: facto 
+real(r64) :: facto
 
-if ( n <= 0 ) then 
-  facto = one  
+if ( n <= 0 ) then
+  facto = one
 else
   facto = n * dfactorial(n-2)
 endif
@@ -71,10 +71,10 @@ function kdelta(i,j) result(delta)
 integer, intent(in) :: i, j
 integer :: delta
 
-if ( i == j ) then 
-  delta = 1    
+if ( i == j ) then
+  delta = 1
 else
-  delta = 0    
+  delta = 0
 endif
 
 end function kdelta
@@ -91,12 +91,12 @@ function genlaguerre(a,n,x) result(l1)
 integer, intent(in) :: n
 real(r64), intent(in) :: x, a
 integer :: i
-real(r64) :: l1, l2, l3 
+real(r64) :: l1, l2, l3
 
 l1 = 1.d0
 l2 = 0.d0
 
-do i = 1, n  
+do i = 1, n
   l3 = l2
   l2 = l1
   l1 = ( (2*i-1+a-x)*l2 - (i-1+a)*l3 ) / i
@@ -126,43 +126,43 @@ integer :: ll, m
 real(r64) :: leg, phase, pll, pmm, pmmp1, somx2
 
 !!! Checks the validity of the arguments
-if ( (l < 0) .or. (abs(m) > l) .or. (abs(x) > 1) ) then 
+if ( (l < 0) .or. (abs(m) > l) .or. (abs(x) > 1) ) then
   print "(a)", "Wrong argument(s) in function assolegendre"
 endif
 
 !!! Transforms m in -m when m is negative
-m = n 
+m = n
 phase = one
 
-if ( m < 0 ) then 
+if ( m < 0 ) then
   m = abs(n)
   phase = (-1)**m * (one*factorial(l-m)) / (one*factorial(l+m))
-endif 
+endif
 
 !!! Compute P^m_m
 pmm = one
 
-if ( m > 0 ) then 
+if ( m > 0 ) then
   somx2 = sqrt( (one-x) * (one+x) )
   pmm = dfactorial(2*m-1) * somx2**m
   if ( mod(m,2) == 1 ) pmm = -pmm
 endif
 
-if ( l == m ) then 
+if ( l == m ) then
   leg = pmm
 else
   pmmp1 = x * (2*m +1) * pmm
 
   !!! Compute P^m_m+1
-  if ( l == m+1 ) then 
+  if ( l == m+1 ) then
     leg = pmmp1
   !!! Compute P^m_l for l > m+1
   else
     do ll = m+2, l
       pll = (x*(2*ll-1)*pmmp1 - (ll+m-1)*pmm) / (ll-m)
       pmm = pmmp1
-      pmmp1 = pll 
-    enddo 
+      pmmp1 = pll
+    enddo
     leg = pll
   endif
 endif
@@ -210,7 +210,7 @@ do i = 1, n
     pp = (n*p1 - (n+alf)*p2) / z
     z1 = z
     z = z1 - p1/pp
-    if ( abs(z - z1) <= eps) exit  
+    if ( abs(z - z1) <= eps) exit
   enddo
 
   x(i) = z
@@ -242,8 +242,8 @@ xl = 0.5d0 * (x2 - x1)
 
 do i = 1, m
   z = cos( pi * (i-0.25d0) / (n+0.5d0) )
-  do while ( abs(z-z1) .gt. eps ) 
-    p1 = one 
+  do while ( abs(z-z1) .gt. eps )
+    p1 = one
     p2 = zero
     do j = 1, n
       p3 = p2
@@ -258,7 +258,7 @@ do i = 1, m
   x(n+1-i) = xm + xl*z
   w(i) = 2.d0 * xl / ( (1.d0-z*z)*pp*pp )
   w(n+1-i) = w(i)
-enddo 
+enddo
 
 end subroutine GaussLegendre
 
@@ -289,7 +289,7 @@ end subroutine GaussLegendre
 subroutine ClebschGordan (j1,j2,j3,m1,m2,m3,cg)
 
 integer, intent(in) :: j1, j2, j3, m1, m2, m3
-real(r64), intent(out) :: cg 
+real(r64), intent(out) :: cg
 integer :: n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, k1, k2, k3, k4, k5, k6, &
            l, l1, l2
 real(r64) :: p, q, h, hl, hlm1
@@ -325,7 +325,7 @@ k5 = n5 - n2
 l1 = max(0,k4,k5)
 l2 = min(k1,k2,k3)
 
-h  = one 
+h  = one
 hl = one
 
 do l = l1+1, l2
@@ -337,15 +337,15 @@ enddo
 k1 = k1 - l1
 k2 = k2 - l1
 k3 = k3 - l1
-k4 = l1 + 1 - k4 
-k5 = l1 + 1 - k5 
-k6 = l1 + 1 
+k4 = l1 + 1 - k4
+k5 = l1 + 1 - k5
+k6 = l1 + 1
 
 q =  log_gamma(k1+zero) + log_gamma(k2+zero) + log_gamma(k3+zero) &
    + log_gamma(k4+zero) + log_gamma(k5+zero) + log_gamma(k6+zero)
 
 !!! Computes the final value combining the two parts.
-cg = sqrt(j3 + one) * (-1)**l1 * exp(0.5d0*p - q) * h
+cg = dsqrt(j3 + one) * (-1)**l1 * dexp(0.5d0*p - q) * h
 
 end subroutine ClebschGordan
 
@@ -359,17 +359,17 @@ function lapack_sel(wr,wi) result(selec)
 
 logical :: selec
 real(r64), intent(in) :: wr, wi
-real(r64) :: dummy  
+real(r64) :: dummy
 
 !!! Just to remove the "unused-dummy-argument" during compilation
-dummy = wr + wi 
+dummy = wr + wi
 
 !!! Set to false because the function is only used as dummy argument
 selec=.false.
 
 end function lapack_sel
 
-END MODULE MathMethods 
+END MODULE MathMethods
 !==============================================================================!
 ! End of file                                                                  !
 !==============================================================================!
