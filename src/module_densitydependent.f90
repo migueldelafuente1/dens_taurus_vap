@@ -117,6 +117,7 @@ logical   :: evalFullSPSpace= .TRUE.   ! compute the full a,b, c,d space for exp
 integer   :: NHO_vs, NHO_co !! Major Shell number of the Valence. Sp to be exported
 logical   :: NOT_DEL_FILE
 logical   :: PRINT_GUTS = .FALSE.
+logical   :: DOING_PROJECTION = .FALSE.
 
 !! [END] DENSITY DEPENDENT MODIFICATIONS =====================================
 
@@ -369,17 +370,24 @@ end subroutine set_integration_grid
 !                                                                             !
 ! Implement the density dependent variables, the grid of integration, the     !
 ! radial and angular coefficients. Allocate the density dimens after the grid.!
+!                                                                             !
+!  Input:                                                                     !
+!        seedtype = seed type with its interactions (1 cannot extract symm)   !
+!        itermax  = maximum number of iterations                              !
+!        Mphip = number of angles for the discretization of proton   PNR      !
+!        Mphin =   "    "    "     "   "        "        "  neutrons  "       !
 !-----------------------------------------------------------------------------!
-subroutine set_densty_dependent(seedtype, itermax)
-  integer, intent(in) :: seedtype, itermax
+subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
+  integer, intent(in) :: seedtype, itermax, proj_Mphip, proj_Mphin
 
   print *, "Setting up DD module [   ]"
   seed_type_sym = seedtype
   global_iter_max = itermax
+  DOING_PROJECTION = (proj_Mphip > 1).OR.(proj_Mphin > 1)
 
   call import_DD_parameters
   if (.NOT.eval_density_dependent) then
-    print *, "DD module is turned off, skip DD array setting [OK]"
+    print "(A)", "  DD module is turned off, skip DD array setting [OK]"
     return
   endif
 
@@ -392,7 +400,8 @@ subroutine set_densty_dependent(seedtype, itermax)
   call set_Y_KM_matrixElements
   call set_rearrangement_RadAng_fucntions
 
-  print *, "Setting up DD module [DONE]"
+  print "(A)", "  Setting up DD module [DONE]"
+  print "(A,L4)", "  DOING_PROJECTION = ", DOING_PROJECTION
   !call test_print_basis_quantum_numbers
 
   !!! Tests over the implemented functions
@@ -404,7 +413,7 @@ subroutine set_densty_dependent(seedtype, itermax)
   !call test_sphericalHarmonics_SumRule
   !call test_angular_function_recoupling
 !  call test_dualAngularFunctionProperties
-  print *, "Test DD module [DONE]"
+  print "(A)", "  Test DD module [DONE]"
 
 end subroutine set_densty_dependent
 
@@ -1353,7 +1362,9 @@ do i_r = 1, r_dim
       !! This part must not be executed for Mean Field D1S (projections yield
       !! larger values for the imaginary part), put the limit in 1E-13 precision
       !!  to prompt an abnormal numerical error (r64 must have 13 decimals)
-      print *, " !!! [WARNING] density is imaginary=",imag(density(i_r,i_an))
+      if (.NOT.DOING_PROJECTION) then
+        print *, " !!! [WARNING] density is imaginary=",imag(density(i_r,i_an))
+      endif
       ! Fold the density to the 1st quadrant.
       dens_R = dreal(density(i_r,i_an))**2 + dimag((density(i_r,i_an)))**2
       dens_A = alpha_DD * dacos(dreal(density(i_r, i_an)) / dens_R)
@@ -2678,7 +2689,7 @@ do a = 1, spO2
     call complete_DD_fields(int_hf, int_pa, int_rea, gammaLR, deltaLR,deltaRL,&
                             hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, &
                             a, c, spO2, ndim)
-
+    if (.not.DOING_PROJECTION) then
     if ((dabs(imag(int_hf(1)))> 1.0d-9).OR.(dabs(imag(int_hf(2)))> 1.0d-9).OR.&
         (dabs(imag(int_hf(3)))> 1.0d-9).OR.(dabs(imag(int_hf(4)))> 1.0d-9))then
         print "(A,2I4,A,4F18.12)", "[WARNING] Imaginary part at Gamma DD (", &
@@ -2694,6 +2705,7 @@ do a = 1, spO2
     if ((dabs(imag(int_rea))> 1.0d-9)) then
         print "(A,2I4,A,F18.12)", "[WARNING] Imaginary part Rearrang.F DD (", &
             a,c, ") = ", imag(int_rea)
+    endif
     endif
 
   enddo

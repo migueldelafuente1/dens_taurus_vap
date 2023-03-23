@@ -72,7 +72,7 @@ if ( (iter_max > 0) .or. (seed_type /= 1) ) then
 endif
 
 !! DENSITY DEP. MODULE
-call set_densty_dependent(seed_type, iter_max)
+call set_densty_dependent(seed_type, iter_max, proj_Mphip, proj_Mphin)
 
 !!!
 !!! MINIMIZATION
