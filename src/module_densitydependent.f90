@@ -116,7 +116,7 @@ logical   :: evalFullSPSpace= .TRUE.   ! compute the full a,b, c,d space for exp
 
 integer   :: NHO_vs, NHO_co !! Major Shell number of the Valence. Sp to be exported
 logical   :: NOT_DEL_FILE
-logical   :: PRINT_GUTS = .FALSE.
+logical   :: PRINT_GUTS = .TRUE.
 logical   :: DOING_PROJECTION = .FALSE.
 
 !! [END] DENSITY DEPENDENT MODIFICATIONS =====================================
@@ -401,7 +401,7 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   call set_rearrangement_RadAng_fucntions
 
   print "(A)", "  Setting up DD module [DONE]"
-  print "(A,L4)", "  DOING_PROJECTION = ", DOING_PROJECTION
+  print "(A,L1)", "  DOING_PROJECTION = ", DOING_PROJECTION
   !call test_print_basis_quantum_numbers
 
   !!! Tests over the implemented functions
