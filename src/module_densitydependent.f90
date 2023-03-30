@@ -495,7 +495,7 @@ do a_sh = 1, HOsh_dim
 
         endif
         if (PRINT_GUTS) then
-          write(629,fmt='(3D20.16)',advance='no') r(i_r), radial, weight_R(i_r)
+          write(629,fmt='(3D20.13)',advance='no') r(i_r), radial, weight_R(i_r)
         endif
         radial_2b_sho_noexp_memo(a_sh, b_sh, i_r) = radial
         radial_2b_sho_noexp_memo(b_sh, a_sh, i_r) = radial
