@@ -483,8 +483,8 @@ do a_sh = 1, HOsh_dim
 
         ! Radial grid for
         !r _lag = b *(x_R / 2+alpha)**0.5
-!        radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .TRUE.)
-        radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.)
+        radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .TRUE.)
+!        radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.)
 
         !! assert test R_ab = R_ba
         if (dabs(two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.) - &
@@ -1358,7 +1358,7 @@ do i_r = 1, r_dim
 !    integral_dens = integral_dens + (dreal(density(i_r, i_an)) * &
 !                                     weight_LEB(i_an) * rad4Integr)
     integral_dens = integral_dens + (dreal(density(i_r, i_an) * &
-!                                           exp( (r(i_r)/HO_b)**2)  * &
+                                           exp( (r(i_r)/HO_b)**2)  * &
                                      weight_LEB(i_an) * rad4Integr))
 
     !!! calculate the density powered to alpha_DD for the matrix elements
@@ -2659,13 +2659,13 @@ do a = 1, spO2
         !! EXCHANGE Sum terms and add to the global (r,ang) value to integrate
         do Tac =  1, 4
           aux_hf(Tac)   = weight_LEB(i_ang) * rad_ac * dens_alpha(i_r,i_ang)
-          aux_hf(Tac)   = (auxHfD(Tac) - auxHfE(Tac))*aux_hf(Tac)
-!          aux_hf(Tac)   =  aux_hf(Tac) * exp( (r(i_r)/HO_b)**2)
+          aux_hf(Tac)   = (auxHfD(Tac) - auxHfE(Tac)) * aux_hf(Tac)
+          aux_hf(Tac)   =  aux_hf(Tac) * exp( (r(i_r)/HO_b)**2)
           int_hf(Tac)   = int_hf(Tac) + aux_hf(Tac)
 
           aux_pair(Tac) = weight_LEB(i_ang) * rad_ac * dens_alpha(i_r,i_ang)
           aux_pair(Tac) = aux_PE(Tac) * aux_pair(Tac)
-!          aux_pair(Tac) = aux_pair(Tac) * exp( (r(i_r)/HO_b)**2)
+          aux_pair(Tac) = aux_pair(Tac) * exp( (r(i_r)/HO_b)**2)
           int_pa(Tac)   = int_pa(Tac) + aux_pair(Tac)
         enddo
 
@@ -2673,7 +2673,7 @@ do a = 1, spO2
         if (eval_rearrangement) then
           auxRea  = REACommonFields(i_r,i_ang) * dens_alpm1(i_r,i_ang)
           auxRea  = auxRea * rea_common_RadAng(a,c, i_r, i_ang)
-!          auxRea  = auxRea * exp( (r(i_r)/HO_b)**2)
+          auxRea  = auxRea * exp( (r(i_r)/HO_b)**2)
           int_rea = int_rea + (auxRea * weight_R(i_r) * weight_LEB(i_ang))
         endif
         ! rearrange for pn and np are the same (pn/np are Zero)
