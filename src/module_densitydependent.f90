@@ -1358,8 +1358,8 @@ do i_r = 1, r_dim
 !    integral_dens = integral_dens + (dreal(density(i_r, i_an)) * &
 !                                     weight_LEB(i_an) * rad4Integr)
     integral_dens = integral_dens + (dreal(density(i_r, i_an) * &
-!                                           exp( (r(i_r)/HO_b)**2) ) * &
-                                     weight_LEB(i_an) * rad4Integr)
+!                                           exp( (r(i_r)/HO_b)**2)  * &
+                                     weight_LEB(i_an) * rad4Integr))
 
     !!! calculate the density powered to alpha_DD for the matrix elements
     if (dabs(imag(density(i_r, i_an))) > 1.0e-10) then
