@@ -2674,7 +2674,7 @@ do a = 1, spO2
         if (eval_rearrangement) then
           auxRea  = REACommonFields(i_r,i_ang) * dens_alpm1(i_r,i_ang)
           auxRea  = auxRea * rea_common_RadAng(a,c, i_r, i_ang)
-!          auxRea  = auxRea * exp( (r(i_r)/HO_b)**2)
+          auxRea  = auxRea * exp( (r(i_r)/HO_b)**2)
           int_rea = int_rea + (auxRea * weight_R(i_r) * weight_LEB(i_ang))
         endif
         ! rearrange for pn and np are the same (pn/np are Zero)
