@@ -461,7 +461,7 @@ allocate(radial_2b_sho_memo(HOsh_dim,HOsh_dim,r_dim))
 allocate(radial_2b_sho_noexp_memo(HOsh_dim,HOsh_dim,r_dim))
 
 if (export_density) then
-    allocate(radial_2b_sho_export_memo(HOsh_dim,HOsh_dim,r_dim))
+  allocate(radial_2b_sho_export_memo(HOsh_dim,HOsh_dim,r_dim))
 end if
 
 if (PRINT_GUTS) open(629, file='R_radial2B_wf.gut')
@@ -489,7 +489,7 @@ do a_sh = 1, HOsh_dim
         !! assert test R_ab = R_ba
         if (dabs(two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.) - &
           two_sho_radial_functions(b_sh, a_sh, r(i_r), .FALSE.)) > 1.d-12) then
-          print "(A,3I4,A,2D20.15)","[ASSERT ERROR] R(ab)/=R(ba) for a,b,i_r=",&
+          print "(A,3I4,A,2D20.13)","[ASSERT ERROR] R(ab)/=R(ba) for a,b,i_r=",&
              a_sh,b_sh,i_r," Rab/Rba=", &
              two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.),&
              two_sho_radial_functions(b_sh, a_sh, r(i_r), .FALSE.)
@@ -2600,6 +2600,7 @@ do a = 1, spO2
 
     do i_r = 1, r_dim
       rad_ac = weight_R(i_r) * radial_2b_sho_noexp_memo(a_sh, c_sh, i_r)
+      rad_ac = rad_ac * exp( (r(i_r)/HO_b)**2)
       do i_ang = 1, angular_dim
         auxHfD = zzero
         !! DIRECT terms for the HF field
@@ -2660,12 +2661,12 @@ do a = 1, spO2
         do Tac =  1, 4
           aux_hf(Tac)   = weight_LEB(i_ang) * rad_ac * dens_alpha(i_r,i_ang)
           aux_hf(Tac)   = (auxHfD(Tac) - auxHfE(Tac)) * aux_hf(Tac)
-          aux_hf(Tac)   =  aux_hf(Tac) * exp( (r(i_r)/HO_b)**2)
+!          aux_hf(Tac)   =  aux_hf(Tac) * exp( (r(i_r)/HO_b)**2)
           int_hf(Tac)   = int_hf(Tac) + aux_hf(Tac)
 
           aux_pair(Tac) = weight_LEB(i_ang) * rad_ac * dens_alpha(i_r,i_ang)
           aux_pair(Tac) = aux_PE(Tac) * aux_pair(Tac)
-          aux_pair(Tac) = aux_pair(Tac) * exp( (r(i_r)/HO_b)**2)
+!          aux_pair(Tac) = aux_pair(Tac) * exp( (r(i_r)/HO_b)**2)
           int_pa(Tac)   = int_pa(Tac) + aux_pair(Tac)
         enddo
 
@@ -2673,7 +2674,7 @@ do a = 1, spO2
         if (eval_rearrangement) then
           auxRea  = REACommonFields(i_r,i_ang) * dens_alpm1(i_r,i_ang)
           auxRea  = auxRea * rea_common_RadAng(a,c, i_r, i_ang)
-          auxRea  = auxRea * exp( (r(i_r)/HO_b)**2)
+!          auxRea  = auxRea * exp( (r(i_r)/HO_b)**2)
           int_rea = int_rea + (auxRea * weight_R(i_r) * weight_LEB(i_ang))
         endif
         ! rearrange for pn and np are the same (pn/np are Zero)
