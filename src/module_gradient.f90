@@ -13,7 +13,7 @@
 ! MODIFICATIONS delafuen in .print_line and .calculate_grad to print eta-mu for!
 ! gradient type = 1, 2                                                         !
 !==============================================================================!
-MODULE Gradient   
+MODULE Gradient
 
 use Fields
 use Constraints
@@ -25,20 +25,20 @@ public
 !!! Parameters controlling the gradient descent
 integer :: gradient_type     ! type of gradient descent
 real(r64) :: gradient_eta, & ! step parameter for gradient descent
-             gradient_mu,  & ! weight of the momentum 
+             gradient_mu,  & ! weight of the momentum
              gradient_eps    ! tolerance for gradient convergence
 
-real(r64) :: curr_eta, curr_mu							  
+real(r64) :: curr_eta, curr_mu
 !!! Value of the gradient
 real(r64):: gradient_norm ! frobenius norm of the gradient
 real(r64), dimension(:), allocatable :: gradient_Zi, &  ! gradient iter.  i
-                                        gradient_Zim1   !    "      "     i-1  
+                                        gradient_Zim1   !    "      "     i-1
 
 !!! Others
 integer, private :: info_H11, & ! check if problem during diag(field_H11)
                     info_hsp    !   "   "     "      "    diag(field_hspRR)
-real(r64), dimension(:), allocatable, private :: eigen_hsp, & ! sp energies 
-                                                 eigen_H11    ! qp    "      
+real(r64), dimension(:), allocatable, private :: eigen_hsp, & ! sp energies
+                                                 eigen_H11    ! qp    "
 integer, dimension(:), private :: control_NZ(5)=0
 
 CONTAINS
@@ -48,14 +48,14 @@ CONTAINS
 !                                                                              !
 ! Initializes the arrays related to the gradient                               !
 !------------------------------------------------------------------------------!
-subroutine set_gradient     
+subroutine set_gradient
 
 integer :: ialloc=0
 
-allocate( gradient_Zi(HOsp_dim*HOsp_dim), gradient_Zim1(HOsp_dim*HOsp_dim), & 
+allocate( gradient_Zi(HOsp_dim*HOsp_dim), gradient_Zim1(HOsp_dim*HOsp_dim), &
           eigen_hsp(HOsp_dim), eigen_H11(HOsp_dim), stat=ialloc )
 if ( ialloc /= 0 ) stop 'Error during allocation of gradient'
-   
+
 gradient_Zi = zero
 gradient_Zim1 = zero
 gradient_norm = zero
@@ -85,40 +85,40 @@ subroutine calculate_gradient(ndim)
 
 integer, intent(in) :: ndim
 integer :: i, j, k, opt_grad
-real(r64) :: sum_grad, cond_numb, eigen_max, eigen_min, eta, mu 
+real(r64) :: sum_grad, cond_numb, eigen_max, eigen_min, eta, mu
 real(r64), dimension(ndim,ndim) :: Zi2
 
 opt_grad = gradient_type
 
 !!! If something wrong happened during the diagonalization of H11 or hsp, the
-!!! code uses eta and mu read from the input parameters                                 
+!!! code uses eta and mu read from the input parameters
 if ( (info_H11 /= 0) .and. (gradient_type == 1) ) opt_grad = 0
 if ( (info_hsp /= 0) .and. (gradient_type == 2) ) opt_grad = 0
 
 !!! Computes the parameters for the evolution at this iteration
 select case (opt_grad)
 
-  !!! Parameters read from input file 
+  !!! Parameters read from input file
   case (0)
     eta = gradient_eta
     mu = gradient_mu
 
   !!! Heavy Ball with approximate optimal parameters + approximating the Hessian
-  !!! à la Robledo                                                              
+  !!! à la Robledo
   case (1)
-    eigen_max = 4.0d0 * maxval(abs(eigen_H11))   
+    eigen_max = 4.0d0 * maxval(abs(eigen_H11))
     eigen_min = 2.0d0 * minval(abs(eigen_H11))
-    cond_numb = eigen_max / eigen_min 
+    cond_numb = eigen_max / eigen_min
     eta = ( 2.0d0 / (sqrt(eigen_max) + sqrt(eigen_min)) )**2
     mu = ( (sqrt(cond_numb)-1) / (sqrt(cond_numb)+1) )**2
 
   !!! Heavy Ball with approximate optimal parameters + approximating the Hessian
-  !!! eigenvalues by twice the single-particles energies (seems to work better                              
-  !!! for odd-mass nuclei)                                                                              
+  !!! eigenvalues by twice the single-particles energies (seems to work better
+  !!! for odd-mass nuclei)
   case (2)
     eigen_max = 2.0d0 * maxval(abs(eigen_hsp))
     eigen_min = 2.0d0 * minval(abs(eigen_hsp))
-    cond_numb = eigen_max / eigen_min 
+    cond_numb = eigen_max / eigen_min
     eta = ( 2.0d0 / (sqrt(eigen_max) + sqrt(eigen_min)) )**2
     mu = ( (sqrt(cond_numb)-1) / (sqrt(cond_numb)+1) )**2
 
@@ -130,7 +130,7 @@ curr_mu  = mu
 
 !!! Computes the new gradient matrix Z
 do i = 1, ndim**2
-  sum_grad = zero 
+  sum_grad = zero
   do j = 1, constraint_dim
     k = (j-1) * (ndim**2)
     sum_grad = sum_grad + lagrange_lambda1(j) * constraint_20(k+i)
@@ -192,7 +192,7 @@ character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)", &
                                format3 = "(1a89,/,92('-'))"
 
 !!! Computes the fields
-if ( (opt == 0) .and. (max(proj_Mphip,proj_Mphip) == 1) ) then 
+if ( (opt == 0) .and. (max(proj_Mphip,proj_Mphip) == 1) ) then
    field_hspRR = real(field_hspLR)
    field_deltaRR = real(field_deltaRL)
 else
@@ -207,12 +207,12 @@ endif
 call calculate_H11_real(ndim)
 
 !!! Takes into account the constraints
-if ( opt == 0 ) then 
+if ( opt == 0 ) then
   do m = 1, constraint_dim-constraint_pair
   k = (m-1)*(ndim**2) + 1
   if ( m <= constraint_dim-constraint_pair ) then
     call set_operator_qpbasis('f11',bogo_U0,bogo_V0,constraint_HO(k), &
-                              constraint_11(k),ndim) 
+                              constraint_11(k),ndim)
   else
     call set_operator_qpbasis('g11',bogo_U0,bogo_V0,constraint_HO(k), &
                               constraint_11(k),ndim)
@@ -222,9 +222,9 @@ if ( opt == 0 ) then
   l = 0
   do j = 1, ndim
    do i = 1, ndim
-      l = l + 1 
+      l = l + 1
       q11_aux = zero
-      q00_aux = zero 
+      q00_aux = zero
       do m = 1, constraint_dim
         k = (m-1)*(ndim**2)
         q11_aux = q11_aux + lagrange_lambda1(m) * constraint_11(k+l)
@@ -232,8 +232,8 @@ if ( opt == 0 ) then
       enddo
       field_H11(i,j) = field_H11(i,j) - q11_aux
       field_hspRR(i,j) = field_hspRR (i,j) - q00_aux
-   enddo 
-  enddo 
+   enddo
+  enddo
 endif
 
 !!! hsp in canonical basis
@@ -314,7 +314,7 @@ if ( opt == 1 ) then
 endif
 
 !!! Diagonalizes hsp
-field_hspRR_save = field_hspRR                           
+field_hspRR_save = field_hspRR
 call dsyev('v','u',ndim,field_hspRR,ndim,eigen_hsp,work,3*ndim-1,info_hsp)
 
 
@@ -341,34 +341,34 @@ end do
 eigen_hsp_diff = j
 
 !!! Writes the properties of the single-particle states in a file
-if ( opt == 1 ) then                                                             
+if ( opt == 1 ) then
 
   fermi_p = 0.d0
   fermi_n = 0.d0
- 
-  if ( constraint_switch(1) == 1 ) then 
+
+  if ( constraint_switch(1) == 1 ) then
     fermi_p = lagrange_lambda1(1)
   endif
-  if ( constraint_switch(2) == 1 ) then 
+  if ( constraint_switch(2) == 1 ) then
     fermi_n = lagrange_lambda1(1 + constraint_switch(1))
   endif
 
   !!! Basis that diagonalizes h
-  open(ute, file='eigenbasis_h.dat', status='replace', action='write', &       
-           form='formatted')                                                     
+  open(ute, file='eigenbasis_h.dat', status='replace', action='write', &
+           form='formatted')
   write(ute,"(1a,1f12.6)")   "Proton  fermi energy = ",fermi_p
   write(ute,"(1a,1f12.6,/)") "Neutron fermi energy = ",fermi_n
   write(ute,format2) "   #      Z        N        n        l        p &
-                     &       j       jz         h  " 
-  
+                     &       j       jz         h  "
+
 !!! Jz in the basis that diagonalizes h
   call dgemm('t','n',ndim,ndim,ndim,one,field_hspRR,ndim,angumome_Jz(1) &
              ,ndim,zero,A1,ndim)
   call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,field_hspRR,ndim &
              ,zero,xjz_mat,ndim)
-  
+
   xjz_mat_aux = 0.d0
-  
+
 !!! Diagonalization of Jz in the basis that diagonalizes h in blocks
   i_block = 0
   do j = 1, eigen_hsp_diff
@@ -378,8 +378,8 @@ if ( opt == 1 ) then
     do l = 1, ndim_aux
       xjz_block_aux(i,l) = xjz_mat(i_block+i,i_block+l)
     end do
-   end do                        
-   allocate(work_block(3*ndim_aux-1))      
+   end do
+   allocate(work_block(3*ndim_aux-1))
    call dsyev('v','u',ndim_aux,xjz_block_aux,ndim_aux,&
               eigen_jz,work_block,3*ndim_aux-1,info_hsp)
    deallocate(work_block)
@@ -394,15 +394,15 @@ if ( opt == 1 ) then
   !!! Matrix that diagonalizes simultaneously h and jz
   call dgemm('n','n',ndim,ndim,ndim,one,field_hspRR,ndim,xjz_mat_aux &
              ,ndim,zero,STmat,ndim)
-  
+
   !!! Matrices of the s.p. operators
-  xprot_mat = 0.d0 
+  xprot_mat = 0.d0
   xneut_mat = 0.d0
   xpar_mat  = 0.d0
   xn_mat    = 0.d0
   xl2_mat   = 0.d0
   xj2_mat   = 0.d0
-  
+
   do j = 1, ndim
    xprot_mat(j,j) = (-HOsp_2mt(j) + 1)/2.0d0
    xneut_mat(j,j) = ( HOsp_2mt(j) + 1)/2.0d0
@@ -452,31 +452,31 @@ if ( opt == 1 ) then
              ,ndim,zero,A1,ndim)
   call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,STmat,ndim &
              ,zero,xj2_can,ndim)
-  do i = 1, ndim                                                                 
-    xneut = zero                                                                 
-    xprot = zero                                                                 
-    xpar  = zero                                                                 
-    xjz   = zero                                                                 
-    xj2   = zero                                                                 
-    xn    = zero                                                                 
-    xl2   = zero                                                                 
-    do j = 1, ndim                                                               
-      xprot = xprot + field_hspRR(j,i)**2 * (-HOsp_2mt(j) + 1)/2.0d0                
-      xneut = xneut + field_hspRR(j,i)**2 * ( HOsp_2mt(j) + 1)/2.0d0                
-      xpar  = xpar  + field_hspRR(j,i)**2 * (-1.d0)**HOsp_l(j)                     
-      xn    = xn    + field_hspRR(j,i)**2 * HOsp_n(j)                              
-      xjz   = xjz   + field_hspRR(j,i)**2 * HOsp_2mj(j)/2.0d0                       
-      xj2   = xj2   + field_hspRR(j,i)**2 * (HOsp_2j(j)*(HOsp_2j(j)+2))/4.0d0       
-      xl2   = xl2   + field_hspRR(j,i)**2 * (HOsp_l(j)*(HOsp_l(j)+1))             
-    enddo                                                                        
-    xj = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xj2)))                                       
-    xl = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xl2)))                                       
-    write(ute,format1) i, xprot, xneut, xn, xl, xpar, xj, xjz, eigen_hsp(i)           
+  do i = 1, ndim
+    xneut = zero
+    xprot = zero
+    xpar  = zero
+    xjz   = zero
+    xj2   = zero
+    xn    = zero
+    xl2   = zero
+    do j = 1, ndim
+      xprot = xprot + field_hspRR(j,i)**2 * (-HOsp_2mt(j) + 1)/2.0d0
+      xneut = xneut + field_hspRR(j,i)**2 * ( HOsp_2mt(j) + 1)/2.0d0
+      xpar  = xpar  + field_hspRR(j,i)**2 * (-1.d0)**HOsp_l(j)
+      xn    = xn    + field_hspRR(j,i)**2 * HOsp_n(j)
+      xjz   = xjz   + field_hspRR(j,i)**2 * HOsp_2mj(j)/2.0d0
+      xj2   = xj2   + field_hspRR(j,i)**2 * (HOsp_2j(j)*(HOsp_2j(j)+2))/4.0d0
+      xl2   = xl2   + field_hspRR(j,i)**2 * (HOsp_l(j)*(HOsp_l(j)+1))
+    enddo
+    xj = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xj2)))
+    xl = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xl2)))
+    write(ute,format1) i, xprot, xneut, xn, xl, xpar, xj, xjz, eigen_hsp(i)
   enddo
-  
+
   write(ute,format2) "   #      Z        N        n        l        p &
                      &       j       jz         h  "
-  
+
   do i = 1, ndim
    xprot = xprot_can(i,i)
    xneut = xneut_can(i,i)
@@ -495,79 +495,79 @@ if ( opt == 1 ) then
 !                                xjz_mat2(i,j),field_hspRR_savecan(i,j)
 !     end if
 !   end do
-  end do                                                                          
-  close(ute, status='keep')                                                       
+  end do
+  close(ute, status='keep')
   !!! Canonical basis
-  open(ute, file='canonicalbasis.dat', status='replace', action='write', &       
-           form='formatted')                                                     
+  open(ute, file='canonicalbasis.dat', status='replace', action='write', &
+           form='formatted')
   write(ute,"(1a,1f12.6)")   "Proton  fermi energy = ",fermi_p
   write(ute,"(1a,1f12.6,/)") "Neutron fermi energy = ",fermi_n
   write(ute,format3) "   #      Z        N        n        l        p &
-                     &       j       jz         v2           h " 
-  do i = 1, ndim                                                                 
-    xneut = zero                                                                 
-    xprot = zero                                                                 
-    xpar  = zero                                                                 
-    xjz   = zero                                                                 
-    xj2   = zero                                                                 
-    xn    = zero                                                                 
-    xl2   = zero                                                                 
+                     &       j       jz         v2           h "
+  do i = 1, ndim
+    xneut = zero
+    xprot = zero
+    xpar  = zero
+    xjz   = zero
+    xj2   = zero
+    xn    = zero
+    xl2   = zero
     k = eigenh_order(i)
-    do j = 1, ndim                                                               
-      xprot = xprot + D0(j,k)**2 * (-HOsp_2mt(j) + 1)/2.0d0                
-      xneut = xneut + D0(j,k)**2 * ( HOsp_2mt(j) + 1)/2.0d0                
-      xpar  = xpar  + D0(j,k)**2 * (-1.d0)**HOsp_l(j)                     
-      xn    = xn    + D0(j,k)**2 * HOsp_n(j)                              
-      xjz   = xjz   + D0(j,k)**2 * HOsp_2mj(j)/2.0d0                       
-      xj2   = xj2   + D0(j,k)**2 * (HOsp_2j(j)*(HOsp_2j(j)+2))/4.0d0       
-      xl2   = xl2   + D0(j,k)**2 * (HOsp_l(j)*(HOsp_l(j)+1))             
-    enddo                                                                        
-    xj = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xj2)))                                       
-    xl = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xl2)))                                       
-    write(ute,format1) i, xprot, xneut, xn, xl, xpar, xj, xjz, rhoc(k,k), & 
+    do j = 1, ndim
+      xprot = xprot + D0(j,k)**2 * (-HOsp_2mt(j) + 1)/2.0d0
+      xneut = xneut + D0(j,k)**2 * ( HOsp_2mt(j) + 1)/2.0d0
+      xpar  = xpar  + D0(j,k)**2 * (-1.d0)**HOsp_l(j)
+      xn    = xn    + D0(j,k)**2 * HOsp_n(j)
+      xjz   = xjz   + D0(j,k)**2 * HOsp_2mj(j)/2.0d0
+      xj2   = xj2   + D0(j,k)**2 * (HOsp_2j(j)*(HOsp_2j(j)+2))/4.0d0
+      xl2   = xl2   + D0(j,k)**2 * (HOsp_l(j)*(HOsp_l(j)+1))
+    enddo
+    xj = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xj2)))
+    xl = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xl2)))
+    write(ute,format1) i, xprot, xneut, xn, xl, xpar, xj, xjz, rhoc(k,k), &
                        hspc(k,k)
-  enddo                                                                          
-  close(ute, status='keep')                                                       
-endif                      
+  enddo
+  close(ute, status='keep')
+endif
 
 !!! Diaonalizes H11
 call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
 
-!!! Writes the properties of the quasi-particle states in a file                                        
-if ( opt == 1 ) then                                                             
-  open(ute, file='eigenbasis_H11.dat', status='replace', action='write', &       
-           form='formatted')                                                     
-  write(ute,format2) "   #      Z        N        n        l        p & 
-                     &       j       jz         H11"                                              
-  do i = 1, ndim                                                                 
-    xneut = zero                                                                 
-    xprot = zero                                                                 
-    xpar  = zero                                                                 
-    xjz   = zero                                                                 
-    xj2   = zero                                                                 
-    xn    = zero                                                                 
-    xl2   = zero                                                                 
-    do j = 1, ndim                                                               
-      xprot = xprot + field_H11(j,i)**2 * (-HOsp_2mt(j) + 1)/2.0d0                
-      xneut = xneut + field_H11(j,i)**2 * ( HOsp_2mt(j) + 1)/2.0d0                
-      xpar  = xpar  + field_H11(j,i)**2 * (-1.d0)**HOsp_l(j)                     
-      xn    = xn    + field_H11(j,i)**2 * HOsp_n(j)                              
-      xjz   = xjz   + field_H11(j,i)**2 * HOsp_2mj(j)/2.0d0                       
-      xj2   = xj2   + field_H11(j,i)**2 * (HOsp_2j(j)*(HOsp_2j(j)+2))/4.0d0       
-      xl2   = xl2   + field_H11(j,i)**2 * (HOsp_l(j)*(HOsp_l(j)+1))             
-    enddo                                                                        
-    xj = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xj2)))                                       
-    xl = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xl2)))                                       
-    write(ute,format1) i, xprot, xneut, xn, xl, xpar, xj, xjz, eigen_H11(i)           
-  enddo                                                                          
-  close(ute, status='keep')                                                       
-endif                      
+!!! Writes the properties of the quasi-particle states in a file
+if ( opt == 1 ) then
+  open(ute, file='eigenbasis_H11.dat', status='replace', action='write', &
+           form='formatted')
+  write(ute,format2) "   #      Z        N        n        l        p &
+                     &       j       jz         H11"
+  do i = 1, ndim
+    xneut = zero
+    xprot = zero
+    xpar  = zero
+    xjz   = zero
+    xj2   = zero
+    xn    = zero
+    xl2   = zero
+    do j = 1, ndim
+      xprot = xprot + field_H11(j,i)**2 * (-HOsp_2mt(j) + 1)/2.0d0
+      xneut = xneut + field_H11(j,i)**2 * ( HOsp_2mt(j) + 1)/2.0d0
+      xpar  = xpar  + field_H11(j,i)**2 * (-1.d0)**HOsp_l(j)
+      xn    = xn    + field_H11(j,i)**2 * HOsp_n(j)
+      xjz   = xjz   + field_H11(j,i)**2 * HOsp_2mj(j)/2.0d0
+      xj2   = xj2   + field_H11(j,i)**2 * (HOsp_2j(j)*(HOsp_2j(j)+2))/4.0d0
+      xl2   = xl2   + field_H11(j,i)**2 * (HOsp_l(j)*(HOsp_l(j)+1))
+    enddo
+    xj = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xj2)))
+    xl = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xl2)))
+    write(ute,format1) i, xprot, xneut, xn, xl, xpar, xj, xjz, eigen_H11(i)
+  enddo
+  close(ute, status='keep')
+endif
 
 if ( (info_hsp+info_H11 /= 0) .and. (opt == 0) ) then
  print*,'Error in diagonalize_hsp_and_H11', info_hsp, info_H11
  !stop
-endif 
- 
+endif
+
 end subroutine diagonalize_hsp_and_H11
 
 !------------------------------------------------------------------------------!
@@ -581,16 +581,16 @@ end subroutine diagonalize_hsp_and_H11
 subroutine print_iteration(iter_print,iter)
 
 use Projection, only : pnp_over, pnp_ener, pnp_pari, pnp_prot, pnp_neut, &
-                       pnp_prot2, pnp_neut2 
+                       pnp_prot2, pnp_neut2
 
 integer, intent(in) :: iter_print, iter
 integer :: i
 real(r64) :: ener, pari, prot, neut, prot2, neut2, beta, gamm, &
              q20_p, q20_n, q20_a, q22_p, q22_n, q22_a
 character(len=*), parameter :: format1 = "(1i6,5x,1es12.5,2x,5f12.6)", &
-                               format2 = "(1i6,5x,1es12.5,2x,5f12.6,1f11.6, &  
-                                         & 1f8.3,1f8.2)"
-                     format3 = "(1i6,5x,1es12.5,2x,5f12.6,3x,1es8.2,1x,1es8.2)"																				
+                               format2 = "(1i6,5x,1es12.5,2x,5f12.6,1f11.6, &
+                                         & 1f8.3,1f8.2)" &
+                     format3 = "(1i6,5x,1es12.5,2x,5f12.6,3x,1es8.2,1x,1es8.2)"
 
 !!! Prints the "caption"
 if ( iter == 1 ) then
@@ -639,7 +639,7 @@ if ( iter_print == 1 ) then
   if ( (q20_a < 0.d0) .and. (q22_a >= 0.d0) )  gamm = pi - gamm
   if ( (q20_a < 0.d0) .and. (q22_a <  0.d0) )  gamm = pi + gamm
   gamm = gamm * 180.0/pi
-endif 
+endif
 
 !!! Printing
 if ( iter_print == 0 ) then
@@ -654,7 +654,7 @@ else
         beta, gamm
 endif
 
-!!! Test on the average number of particles. Can stop the run. 
+!!! Test on the average number of particles. Can stop the run.
 do i = 4, 1, -1
   control_NZ(i+1) = control_NZ(i)
 enddo
@@ -671,11 +671,11 @@ if ( sum(control_NZ) >= 3 ) then
   print '("Critical error: the numbers of particles were wrong three times in &
          &in the last five iterations. The code will stop.")'
  stop
-endif  
+endif
 
 end subroutine print_iteration
 
-END MODULE Gradient    
+END MODULE Gradient
 !==============================================================================!
 ! End of file                                                                  !
 !==============================================================================!
