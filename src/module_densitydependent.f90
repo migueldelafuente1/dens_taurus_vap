@@ -2600,7 +2600,7 @@ do a = 1, spO2
 
     do i_r = 1, r_dim
       rad_ac = weight_R(i_r) * radial_2b_sho_noexp_memo(a_sh, c_sh, i_r)
-      rad_ac = rad_ac * exp( (r(i_r)/HO_b)**2)
+!      rad_ac = rad_ac * exp( (r(i_r)/HO_b)**2)
       do i_ang = 1, angular_dim
         auxHfD = zzero
         !! DIRECT terms for the HF field
@@ -2674,7 +2674,7 @@ do a = 1, spO2
         if (eval_rearrangement) then
           auxRea  = REACommonFields(i_r,i_ang) * dens_alpm1(i_r,i_ang)
           auxRea  = auxRea * rea_common_RadAng(a,c, i_r, i_ang)
-          auxRea  = auxRea * exp( (r(i_r)/HO_b)**2)
+!          auxRea  = auxRea * exp( (r(i_r)/HO_b)**2)
           int_rea = int_rea + (auxRea * weight_R(i_r) * weight_LEB(i_ang))
         endif
         ! rearrange for pn and np are the same (pn/np are Zero)
