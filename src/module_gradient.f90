@@ -28,7 +28,7 @@ real(r64) :: gradient_eta, & ! step parameter for gradient descent
              gradient_mu,  & ! weight of the momentum 
              gradient_eps    ! tolerance for gradient convergence
 
-real(r64) :: curr_eta, curr_mu
+real(r64) :: curr_eta, curr_mu							  
 !!! Value of the gradient
 real(r64):: gradient_norm ! frobenius norm of the gradient
 real(r64), dimension(:), allocatable :: gradient_Zi, &  ! gradient iter.  i
@@ -87,10 +87,6 @@ integer, intent(in) :: ndim
 integer :: i, j, k, opt_grad
 real(r64) :: sum_grad, cond_numb, eigen_max, eigen_min, eta, mu 
 real(r64), dimension(ndim,ndim) :: Zi2
-!! TEST GRADIENT
-!real(r64) :: d_ener
-!integer   :: L
-
 
 opt_grad = gradient_type
 
@@ -128,9 +124,6 @@ select case (opt_grad)
 
 end select
 
-!!! TEST GRADIENT a small step (mu=0) must fulfill Delta_E = -eta Tr(Grad*,Grad)
-!d_ener = 0.0d+00
-!L = 1
 !!! TEST TO SEE the adjustment of ETA and MU
 curr_eta = eta
 curr_mu  = mu
@@ -143,23 +136,11 @@ do i = 1, ndim**2
     sum_grad = sum_grad + lagrange_lambda1(j) * constraint_20(k+i)
   enddo
   gradient_Zi(i) = -eta * (field_H20v(i) - sum_grad) + mu * gradient_Zim1(i)
-
-  !! TEST GRADIENT
-!  if (i == ((L-1)*ndim + L)) then
-!!    print '(A,2I5,A,2F15.5)', " * sum (i, L)=(",i, L,")",field_H20v(i),sum_grad
-!    L = L + 1
-!    d_ener = d_ener + ((field_H20v(i)-sum_grad) * (field_H20v(i)-sum_grad))
-!  endif
 enddo
 
 !!! Computes the Frobenius norm of Z to evaluate if the state is converged
 call dgemm('t','n',ndim,ndim,ndim,one,gradient_Zi,ndim,gradient_Zi,ndim,zero, &
            Zi2,ndim)
-
-!!! TEST GRADIENT
-!d_ener = - d_ener * eta
-!print '(A,F23.20)', "GRADIENT TEST: delta_E00 =", d_ener
-
 
 sum_grad = zero
 do i = 1, ndim
@@ -609,13 +590,19 @@ real(r64) :: ener, pari, prot, neut, prot2, neut2, beta, gamm, &
 character(len=*), parameter :: format1 = "(1i6,5x,1es12.5,2x,5f12.6)", &
                                format2 = "(1i6,5x,1es12.5,2x,5f12.6,1f11.6, &  
                                          & 1f8.3,1f8.2)"
+                     format3 = "(1i6,5x,1es12.5,2x,5f12.6,3x,1es8.2,1x,1es8.2)"																				
 
 !!! Prints the "caption"
 if ( iter == 1 ) then
   if ( iter_print == 0 ) then
     print '(" ")'
-    print '("Iteration",5x,"Gradient",7x,"Energy",6x,"Protons",4x,"Var(Prot)", &
-          & 4x,"Neutrons",3x,"Var(Neut)",/,85("-"))'
+    if (gradient_type == 0) then
+      print'("Iteration",5x,"Gradient",7x,"Energy",6x,"Protons",4x,"Var(Prot)",&
+           & 4x,"Neutrons",3x,"Var(Neut)",/,85("-"))'
+    else
+      print'("Iteration",5x,"Gradient",7x,"Energy",6x,"Protons",4x,"Var(Prot)",&
+           & 4x,"Neutrons",3x,"Var(Neut)",5x,"eta      mu",/,105("-"))'
+    endif
   elseif ( iter_print == 1 ) then
     print '(99x,"(unprojected)")'
     print '("Iteration",5x,"Gradient",7x,"Energy",6x,"Protons",4x,"Var(Prot)", &
@@ -656,7 +643,12 @@ endif
 
 !!! Printing
 if ( iter_print == 0 ) then
-  print format1, iter, gradient_norm, ener, prot, prot2, neut, neut2
+  if (gradient_type == 0) then
+    print format1, iter, gradient_norm, ener, prot, prot2, neut, neut2
+  else !CASE TEST: see the gradient ETA and MU adjusting
+    print format3, iter, gradient_norm, ener, prot, prot2, neut, neut2, &
+      curr_eta, curr_mu
+  endif
 else
   print format2, iter, gradient_norm, ener, prot, prot2, neut, neut2, pari, &
         beta, gamm
