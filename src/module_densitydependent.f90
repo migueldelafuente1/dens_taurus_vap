@@ -483,8 +483,8 @@ do a_sh = 1, HOsh_dim
 
         ! Radial grid for
         !r _lag = b *(x_R / 2+alpha)**0.5
-        radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .TRUE.)
-!        radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.)
+!        radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .TRUE.)
+        radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.)
 
         !! assert test R_ab = R_ba
         if (dabs(two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.) - &
@@ -1358,7 +1358,7 @@ do i_r = 1, r_dim
 !    integral_dens = integral_dens + (dreal(density(i_r, i_an)) * &
 !                                     weight_LEB(i_an) * rad4Integr)
     integral_dens = integral_dens + (dreal(density(i_r, i_an) * &
-                                           exp( (r(i_r)/HO_b)**2)  * &
+!                                           exp( (r(i_r)/HO_b)**2)  * &
                                      weight_LEB(i_an) * rad4Integr))
 
     !!! calculate the density powered to alpha_DD for the matrix elements
