@@ -2600,7 +2600,7 @@ do a = 1, spO2
 
     do i_r = 1, r_dim
       rad_ac = weight_R(i_r) * radial_2b_sho_noexp_memo(a_sh, c_sh, i_r)
-      rad_ac = rad_ac * exp( (r(i_r)/HO_b)**2)
+      rad_ac = rad_ac * exp((2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
       do i_ang = 1, angular_dim
         auxHfD = zzero
         !! DIRECT terms for the HF field
@@ -2661,12 +2661,10 @@ do a = 1, spO2
         do Tac =  1, 4
           aux_hf(Tac)   = weight_LEB(i_ang) * rad_ac * dens_alpha(i_r,i_ang)
           aux_hf(Tac)   = (auxHfD(Tac) - auxHfE(Tac)) * aux_hf(Tac)
-!          aux_hf(Tac)   =  aux_hf(Tac) * exp( (r(i_r)/HO_b)**2)
           int_hf(Tac)   = int_hf(Tac) + aux_hf(Tac)
 
           aux_pair(Tac) = weight_LEB(i_ang) * rad_ac * dens_alpha(i_r,i_ang)
           aux_pair(Tac) = aux_PE(Tac) * aux_pair(Tac)
-!          aux_pair(Tac) = aux_pair(Tac) * exp( (r(i_r)/HO_b)**2)
           int_pa(Tac)   = int_pa(Tac) + aux_pair(Tac)
         enddo
 
