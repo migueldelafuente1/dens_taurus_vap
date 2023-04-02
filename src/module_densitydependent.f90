@@ -483,8 +483,8 @@ do a_sh = 1, HOsh_dim
 
         ! Radial grid for
         !r _lag = b *(x_R / 2+alpha)**0.5
-!        radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .TRUE.)
-        radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.)
+        radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .TRUE.)
+!        radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.)
 
         !! assert test R_ab = R_ba
         if (dabs(two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.) - &
@@ -1358,7 +1358,7 @@ do i_r = 1, r_dim
 !    integral_dens = integral_dens + (dreal(density(i_r, i_an)) * &
 !                                     weight_LEB(i_an) * rad4Integr)
     integral_dens = integral_dens + (dreal(density(i_r, i_an) * &
-!                                           exp( (r(i_r)/HO_b)**2)  * &
+                                           exp( (r(i_r)/HO_b)**2)  * &
                                      weight_LEB(i_an) * rad4Integr))
 
     !!! calculate the density powered to alpha_DD for the matrix elements
@@ -2600,7 +2600,7 @@ do a = 1, spO2
 
     do i_r = 1, r_dim
       rad_ac = weight_R(i_r) * radial_2b_sho_noexp_memo(a_sh, c_sh, i_r)
-!      rad_ac = rad_ac * exp( (r(i_r)/HO_b)**2)
+      rad_ac = rad_ac * exp( (r(i_r)/HO_b)**2)
       do i_ang = 1, angular_dim
         auxHfD = zzero
         !! DIRECT terms for the HF field
@@ -2674,7 +2674,7 @@ do a = 1, spO2
         if (eval_rearrangement) then
           auxRea  = REACommonFields(i_r,i_ang) * dens_alpm1(i_r,i_ang)
           auxRea  = auxRea * rea_common_RadAng(a,c, i_r, i_ang)
-!          auxRea  = auxRea * exp( (r(i_r)/HO_b)**2)
+          auxRea  = auxRea * exp( (r(i_r)/HO_b)**2)
           int_rea = int_rea + (auxRea * weight_R(i_r) * weight_LEB(i_ang))
         endif
         ! rearrange for pn and np are the same (pn/np are Zero)
