@@ -379,6 +379,8 @@ end subroutine set_integration_grid
 !-----------------------------------------------------------------------------!
 subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   integer, intent(in) :: seedtype, itermax, proj_Mphip, proj_Mphin
+  complex(r64) :: x,y,z
+  real(r64)    :: x1, x2, y1, y2, z1, z2
 
   print *, "Setting up DD module [   ]"
   seed_type_sym = seedtype
@@ -402,6 +404,27 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
 
   print "(A)", "  Setting up DD module [DONE]"
   print "(A,L1)", "  DOING_PROJECTION = ", DOING_PROJECTION
+
+  !!
+  print "(A)", " Test Computation of Complex numbers with fortran------------"
+  x1 = 1.0
+  x2 = 1.0
+  y1 = 2.0
+  y2 = -1.0
+  x = cmplx(x1, x2)
+  y = cmplx(y1, y2)
+
+  z = x / y
+  z1 = (x1*y1 + x2*y2) / ((y1**2) + (y2**2))
+  z2 = (x2*y1 - x1*y2) / ((y1**2) + (y2**2))
+  print "2(A,2F15.6)", ">> Test:", dreal(z),dimag(z), "  Bench:", z1,z2
+
+  z = x * y
+  z1 = (x1*y1 - x2*y2)
+  z2 = (x2*y1 + x1*y2)
+  print "2(A,2F15.6)", ">> Test:", dreal(z),dimag(z), "  Bench:", z1,z2
+  print "(A)", " --End Test -------------------------------------------------"
+
   !call test_print_basis_quantum_numbers
 
   !!! Tests over the implemented functions
@@ -484,7 +507,7 @@ do a_sh = 1, HOsh_dim
         ! Radial grid for
         !r _lag = b *(x_R / 2+alpha)**0.5
         radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .TRUE.)
-!        radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.)
+        !! Note:: For using only the polynomials of the rad wf set to .FALSE.
 
         !! assert test R_ab = R_ba
         if (dabs(two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.) - &
@@ -2422,7 +2445,7 @@ do i_r = 1, r_dim
       print '(A,2I4,5F20.15)',"Error!! Rearr. funct. is imaginary: ",i_r,i_a,&
         dimag(aux1), dimag(aux_d), dimag(aux_e), dimag(aux_p), dimag(aux_pnp)
     end if
-    REACommonFields(i_r, i_a) = dreal(aux1)
+    REACommonFields(i_r, i_a) = aux1   !! dreal(aux1)
 
     ! export Rea Fields by parts
     if (PRINT_GUTS) then
