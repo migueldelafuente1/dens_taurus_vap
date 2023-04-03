@@ -417,12 +417,17 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   z = x / y
   z1 = (x1*y1 + x2*y2) / ((y1**2) + (y2**2))
   z2 = (x2*y1 - x1*y2) / ((y1**2) + (y2**2))
-  print "(2(A,2F15.6))", ">> Test:", dreal(z),dimag(z), "  Bench:", z1,z2
+  print "(2(A,2F15.6))", ">> x/y Test:", dreal(z),dimag(z), "  Bench:", z1,z2
 
   z = x * y
   z1 = (x1*y1 - x2*y2)
   z2 = (x2*y1 + x1*y2)
-  print "(2(A,2F15.6))", ">> Test:", dreal(z),dimag(z), "  Bench:", z1,z2
+  print "(2(A,2F15.6))", ">> x*y Test:", dreal(z),dimag(z), "  Bench:", z1,z2
+
+  z = x**2
+  z1 = (x1*x1 - x2*x2)
+  z2 = (x2*x1 + x1*x2)
+  print "(2(A,2F15.6))", ">> x**2 Test:", dreal(z),dimag(z), "  Bench:", z1,z2
   print "(A)", " --End Test -------------------------------------------------"
 
   !call test_print_basis_quantum_numbers
@@ -519,7 +524,7 @@ do a_sh = 1, HOsh_dim
 
         endif
         if (PRINT_GUTS) then
-          write(629,fmt='(3D20.13)',advance='no') r(i_r), radial, weight_R(i_r)
+          write(629,fmt='(3D22.13)',advance='no') r(i_r), radial, weight_R(i_r)
         endif
         radial_2b_sho_noexp_memo(a_sh, b_sh, i_r) = radial
         radial_2b_sho_noexp_memo(b_sh, a_sh, i_r) = radial
@@ -2754,7 +2759,11 @@ if (doTraceTest_) then
 
   if (PRNT_) then
     open (620, file='fields_matrix.gut')
+    open (621, file='fields_matrix_imag.gut')
     write(620,fmt='(A,A,A)') "  i   j        gammaLR       gammaLR_DD    ",&
+      "    DeltaLR        DeltaLR_DD       DeltaRL        DeltaRL_DD     ",&
+      "ReaField_DD         hspLR       hspLR_dd     hspLR_rea"
+    write(621,fmt='(A,A,A)') "  i   j        gammaLR       gammaLR_DD    ",&
       "    DeltaLR        DeltaLR_DD       DeltaRL        DeltaRL_DD     ",&
       "ReaField_DD         hspLR       hspLR_dd     hspLR_rea"
   endif
@@ -2766,6 +2775,10 @@ if (doTraceTest_) then
           dreal(gammaLR_DD(i,j)), dreal(dltLR1(i,j)), dreal(deltaLR_DD(i,j)),&
           dreal(dltRL1(i,j)),dreal(deltaRL_DD(i,j)),dreal(rearrang_field(i,j)),&
           dreal(hsp1(i,j)), dreal(hsp1(i,j)+gammaLR_DD(i,j)), dreal(hspLR(i,j))
+        write(621, fmt='(2I4,8F16.9,2F13.6)') i, j, dimag(gam1(i,j)),&
+          dimag(gammaLR_DD(i,j)), dimag(dltLR1(i,j)), dimag(deltaLR_DD(i,j)),&
+          dimag(dltRL1(i,j)),dimag(deltaRL_DD(i,j)),dimag(rearrang_field(i,j)),&
+          dimag(hsp1(i,j)), dimag(hsp1(i,j)+gammaLR_DD(i,j)), dimag(hspLR(i,j))
       endif
       !! TEST: Tr(dens * Gamma) = Tr(dens * Rearrange) * alpha
       !if ((i > spO2).AND.(j > spO2)) cycle
@@ -2784,6 +2797,7 @@ if (doTraceTest_) then
   endif !!! *********************************************************** DELETE
 
   if (PRNT_) close(620)
+  if (PRNT_) close(621)
 endif
 
 
