@@ -417,12 +417,12 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   z = x / y
   z1 = (x1*y1 + x2*y2) / ((y1**2) + (y2**2))
   z2 = (x2*y1 - x1*y2) / ((y1**2) + (y2**2))
-  print "2(A,2F15.6)", ">> Test:", dreal(z),dimag(z), "  Bench:", z1,z2
+  print "(2(A,2F15.6))", ">> Test:", dreal(z),dimag(z), "  Bench:", z1,z2
 
   z = x * y
   z1 = (x1*y1 - x2*y2)
   z2 = (x2*y1 + x1*y2)
-  print "2(A,2F15.6)", ">> Test:", dreal(z),dimag(z), "  Bench:", z1,z2
+  print "(2(A,2F15.6))", ">> Test:", dreal(z),dimag(z), "  Bench:", z1,z2
   print "(A)", " --End Test -------------------------------------------------"
 
   !call test_print_basis_quantum_numbers
