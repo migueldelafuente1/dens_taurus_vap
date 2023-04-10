@@ -116,7 +116,7 @@ logical   :: evalFullSPSpace= .TRUE.   ! compute the full a,b, c,d space for exp
 
 integer   :: NHO_vs, NHO_co !! Major Shell number of the Valence. Sp to be exported
 logical   :: NOT_DEL_FILE
-logical   :: PRINT_GUTS = .TRUE.
+logical   :: PRINT_GUTS = .FALSE.
 logical   :: DOING_PROJECTION = .FALSE.
 
 !! [END] DENSITY DEPENDENT MODIFICATIONS =====================================
