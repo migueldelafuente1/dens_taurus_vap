@@ -1383,8 +1383,6 @@ do i_r = 1, r_dim
     call resetOrSumTotalBulkDens4Fields(.FALSE., i_r, i_an)
 
     !! [TEST] For the density to be integrated in the variable for the m.e.
-!    integral_dens = integral_dens + (dreal(density(i_r, i_an)) * &
-!                                     weight_LEB(i_an) * rad4Integr)
     integral_dens = integral_dens + (dreal(density(i_r, i_an) * &
                                            exp( (r(i_r)/HO_b)**2)  * &
                                      weight_LEB(i_an) * rad4Integr))
@@ -4151,9 +4149,9 @@ enddo
 write(626,'(A)') "// DENSITY MATRIX RHO_LR KAPPA_LR KAPPA_RL "
 do i = 1, ndim
     do j = 1, ndim
-    write(626, '(2I4,6F20.15)') i, j, real(rhoLR(i, j)), imag(rhoLR(i, j)), &
-        real(kappaLR(i, j)), imag(kappaLR(i, j)), &
-        real(kappaRL(i, j)), imag(kappaRL(i, j))
+    write(626, '(2I4,6F20.15)') i, j, dreal(rhoLR(i, j)), dimag(rhoLR(i, j)), &
+        dreal(kappaLR(i, j)), dimag(kappaLR(i, j)), &
+        dreal(kappaRL(i, j)), dimag(kappaRL(i, j))
     enddo
 enddo
 close(626)
