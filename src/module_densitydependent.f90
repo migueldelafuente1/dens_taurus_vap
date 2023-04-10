@@ -265,6 +265,11 @@ if (integration_method == 3) then
 
   call LLgrid(x_Leb, weight_LEB, Omega_Order)
   sum_ = zero
+
+  if (PRINT_GUTS) then
+    open(620, file='LebedevPointsWeights.gut')
+    write(620,fmt='(A,I3)') "i, cos(th), phi, weight_LEB. OMEGA =", Omega_Order
+  endif
   do i = 1, Leb_dim
 
     theta(i) = acos(x_Leb(3, i))
@@ -284,9 +289,14 @@ if (integration_method == 3) then
     weight_PHI(i)   = one
     weight_THE(i)   = weight_LEB(i) ! don't do the sqrt, weight_LEB might be < 0
 
+    if (PRINT_GUTS) then
+      write(620,fmt='(I5,3D22.13)') i, cos_th(i), phi(i), weight_LEB(i)
+    endif
+
     sum_ = sum_ + weight_LEB(i)
   enddo
-  !print '(A,F15.8)', " * Test weights (Theta*Phi)  = ", sum_
+
+  if (PRINT_GUTS) close(620)
 
 else ! Non Lebedev Quadratures
   theta_dim = THE_grid
@@ -404,31 +414,6 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
 
   print "(A)", "  Setting up DD module [DONE]"
   print "(A,L1)", "  DOING_PROJECTION = ", DOING_PROJECTION
-
-  !!
-  print "(A)", " Test Computation of Complex numbers with fortran------------"
-  x1 = 1.0
-  x2 = 1.0
-  y1 = 2.0
-  y2 = -1.0
-  x = cmplx(x1, x2)
-  y = cmplx(y1, y2)
-
-  z = x / y
-  z1 = (x1*y1 + x2*y2) / ((y1**2) + (y2**2))
-  z2 = (x2*y1 - x1*y2) / ((y1**2) + (y2**2))
-  print "(2(A,2F15.6))", ">> x/y Test:", dreal(z),dimag(z), "  Bench:", z1,z2
-
-  z = x * y
-  z1 = (x1*y1 - x2*y2)
-  z2 = (x2*y1 + x1*y2)
-  print "(2(A,2F15.6))", ">> x*y Test:", dreal(z),dimag(z), "  Bench:", z1,z2
-
-  z = x**2
-  z1 = (x1*x1 - x2*x2)
-  z2 = (x2*x1 + x1*x2)
-  print "(2(A,2F15.6))", ">> x**2 Test:", dreal(z),dimag(z), "  Bench:", z1,z2
-  print "(A)", " --End Test -------------------------------------------------"
 
   !call test_print_basis_quantum_numbers
 
