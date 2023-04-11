@@ -249,7 +249,7 @@ if (integration_method == 3) then
   theta_dim = Leb_dim
   phi_dim   = Leb_dim
   angular_dim = Leb_dim
-  print '(A,i3,a,i5)','Using Gauss-Laguerre/LEBEDEV Integration method. A_dim',&
+  print '(A,i5,a,i5)','Using Gauss-Laguerre/LEBEDEV Integration method. A_dim',&
     angular_dim, "  xR_dim=", angular_dim*r_dim
   allocate(x_Leb(3, Leb_dim))
   allocate(weight_THE(theta_dim))
