@@ -4300,8 +4300,12 @@ do a = 0, 3
         test = test + c1*(X+1.)
       end do
 
-      if (abs(test-benx).ge.1e-8) print "(A,3I2,2F10.5)", " Fail Closure:", &
-          a,b,c, test, benx
+      if (abs(test-benx).ge.1e-8) then
+        print "(A,3I2,2F10.5)", "  [FAIL] Closure:", a,b,c, test, benx
+        else
+        print "(A,3I2,2F10.5)", "[OK] Closure:", a,b,c, test, benx
+      endif
+
     end do
   end do
 end do
