@@ -4257,7 +4257,7 @@ a = 3
 b = 3
 c = 0
 d = 5
-e = 4
+e = 3
 f = 5
 
 benx = 0
@@ -4275,6 +4275,7 @@ if (abs(test - benx).ge.1e-8) print "(A,2F15.9)", "Fail Sum 1:", test, benx
 print "(A)", "  [DONE 3]"
 
 c = 4
+d = 4
 call Wigner6JCoeff(a,c, e, b, d, f, benx)
 test = zero
 do X = 0, a+b
@@ -4284,6 +4285,27 @@ do X = 0, a+b
   test = test + (((-1)**((e+f+X)/2))*sqrt(X+1.)*c1*c2)
 end do
 if (abs(test - benx).ge.1e-8) print "(A,2F15.9)", "Fail Sum 2:", test, benx
+
+
+print "(A)", "  [DONE 4]"
+
+do a = 0, 3
+  do b = 0, 8, 2
+    do c = b, b+a, 2
+      test = zero
+      benx = (-1)**c
+      if ((abs(a-b)>c).or.(a+b<c).or.(abs(a-c)>b).or.(a+c<b)) benx = zero
+      do X = 0, a+b, 2
+        call Wigner6JCoeff(a, b, X, b, a, c, c1)
+        test = test + c1*(X+1.)
+      end do
+
+      if (abs(test-benx).ge.1e-8) print "(A,3I2,2F10.5)", " Fail Closure:", &
+          a,b,c, test, benx
+    end do
+  end do
+end do
+
 
 print "(A)", "[OK] Test 6j symbols."
 
