@@ -4270,7 +4270,7 @@ if (abs(test - benx).ge.1e-8) print "(A,2F15.9)", "Fail Sum 1:", test, benx
 
 
 c = 2
-benx = sqrt((a + 1)*(b + 1))
+benx = sqrt((a + 1.)*(b + 1.))
 test = zero
 do X = 0, a+b
   if (MOD(X,2).eq.1) continue
