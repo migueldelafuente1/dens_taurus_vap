@@ -4264,20 +4264,20 @@ test = zero
 do X = 0, a+b
   if (MOD(X,2).eq.1) continue
   call Wigner6JCoeff(a,b,X, b,a, c, c1)
-  test = test + (((-1)**((a+b+X)/2))*sqrt(X+1.)*c1)
+  test = test + (((-1)**((a+b+X)/2))*(X+1.)*c1)
 end do
 if (abs(test - benx).ge.1e-8) print "(A,2F15.9)", "Fail Sum 1:", test, benx
 print "(A)", "  [DONE 3]"
 
-c = 2
-benx = sqrt((a + 1.)*(b + 1.))
+call Wigner6JCoeff(a,c, e, b, d, f, benx)
 test = zero
 do X = 0, a+b
   if (MOD(X,2).eq.1) continue
-  call Wigner6JCoeff(a,b,X, b,a, c, c1)
-  test = test + (((-1)**((a+b+X)/2))*sqrt(X+1.)*c1)
+  call Wigner6JCoeff(a,b,X, c,d, f, c1)
+  call Wigner6JCoeff(a,b,X, d,c, q, c2)
+  test = test + (((-1)**((e+f+X)/2))*sqrt(X+1.)*c1*c2)
 end do
-if (abs(test).ge.1e-8) print "(A,2F15.9)", "Fail Sum 2:", test, 0.0
+if (abs(test - benx).ge.1e-8) print "(A,2F15.9)", "Fail Sum 2:", test, benx
 
 print "(A)", "[OK] Test 6j symbols."
 
