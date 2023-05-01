@@ -4227,30 +4227,29 @@ subroutine tests_sixjsymbols
 integer  :: a,b,c,d,e,f, X
 real(r64):: c1, c2, c3, c4, c5, test, benx
 
+print "(A)", "[  ] Test 6j symbols."
 !! TESTS non zero
 call Wigner6JCoeff(1, 1, 2, 1, 1, 2, c1)
-call Wigner6JCoeff(3, 3, 2, 3, 3, 2, c2)
-call Wigner6JCoeff(5, 1, 4, 1, 3, 2, c3)
-call Wigner6JCoeff(5, 5, 6, 5, 3, 4, c4)
-call Wigner6JCoeff(4, 4, 2, 2, 2, 2, c5)
-
 if(abs(c1 - (1/6.)).ge.1e-8)        print "(A,2F15.9)", "E6j 1:", c1, 1.0/ 6
-if(abs(c2 - (11/60.)).ge.1e-8)      print "(A,2F15.9)", "E6j 2:", c2, 11./60
+call Wigner6JCoeff(3, 3, 2, 3, 3, 2, c2)
+if(abs(c2 + (11/60.)).ge.1e-8)      print "(A,2F15.9)", "E6j 2:", c2,-11./60
+call Wigner6JCoeff(5, 1, 4, 1, 3, 2, c3)
 if(abs(c3 + (1/(15.**.5))).ge.1e-8) print "(A,2F15.9)","E6j 3:",c3,-1./(15**.5)
+call Wigner6JCoeff(5, 5, 6, 5, 3, 4, c4)
 if(abs(c4 + ((6.**.5)/70)).ge.1e-8) print "(A,2F15.9)","E6j 4:",c4,-(6.**.5)/70
+call Wigner6JCoeff(4, 4, 2, 2, 2, 2, c5)
 if(abs(c5 + ((5.**.5)/10)).ge.1e-8) print "(A,2F15.9)","E6j 5:",c5,-(5.**.5)/10
 
 !! TESTS Zero
 call Wigner6JCoeff(1, 1, 1, 1, 1, 1, c1)
-call Wigner6JCoeff(3, 3, 2, 1, 2, 0, c2)
-call Wigner6JCoeff(5, 1, 1, 1, 1, 2, c3)
-call Wigner6JCoeff(0, 5, 0, 5, 3, 4, c4)
-call Wigner6JCoeff(9, 1, 2, 2, 0, 1, c5)
-
 if(abs(c1).ge.1e-8) print "(A,F15.9)", "E6j=0 1:", c1
+call Wigner6JCoeff(3, 3, 2, 1, 2, 0, c2)
 if(abs(c2).ge.1e-8) print "(A,F15.9)", "E6j=0 2:", c2
+call Wigner6JCoeff(5, 1, 1, 1, 1, 2, c3)
 if(abs(c3).ge.1e-8) print "(A,F15.9)", "E6j=0 3:", c3
+call Wigner6JCoeff(0, 5, 0, 5, 3, 4, c4)
 if(abs(c4).ge.1e-8) print "(A,F15.9)", "E6j=0 4:", c4
+call Wigner6JCoeff(9, 1, 2, 2, 0, 1, c5)
 if(abs(c5).ge.1e-8) print "(A,F15.9)", "E6j=0 5:", c5
 
 a = 1
