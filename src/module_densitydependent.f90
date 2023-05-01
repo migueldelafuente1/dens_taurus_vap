@@ -4224,7 +4224,8 @@ end subroutine test_antisymmetrization_v_DD
 
 
 subroutine tests_sixjsymbols
-integer  :: a,b,c,d,e,f, X, i
+integer  :: a,b,c,d,e,f, X, i, j1,j1min,j1max, j2,j2min,j2max, j,jmin,jmax
+integer  :: ma,mb,mc,m, m1,m2
 real(r64):: c1, c2, c3, c4, c5, test, benx
 
 print "(A)", "[  ] Test 6j symbols."
@@ -4308,12 +4309,71 @@ do a = 1, 5, 2
       if (abs(test-benx).ge.1e-8) then
         print "(A,3I3,2F10.5)", "  [FAIL] Closure:", a,b,c, test, benx
         else
-        print "(A,3I3,2F10.5)", "[OK] Closure:", a,b,c, test, benx
+          continue
+!        print "(A,3I3,2F10.5)", "[OK] Closure:", a,b,c, test, benx
       endif
 
     end do
   end do
 end do
+
+print "(A)", "  [DONE 5]"  !!!------------------------------------------------
+
+do a = 0, 5
+  do b = a, 5
+    j1min = abs(a - b)
+    j1max = a + b
+    do c = 0, 10
+      j2min = abs(b - c)
+      j2max = b + c
+
+      do j1=j1min,j1max
+      do j2=j2min,j2max
+
+      jmin = max(abs(c - j1), abs(a - j2))
+      jmax = min(c + j1, a + j2)
+      do j = jmin, jmax
+        test = zero
+        if ((abs(a-b)>j1).or.(a+b<j1)) continue
+        if ((abs(j-a)>j2).or.(a+j<j2)) continue
+        if ((abs(j-c)>j1).or.(j+c<j1)) continue
+        if ((abs(c-b)>j2).or.(c+b<j2)) continue
+
+        benx = zero
+        do ma = -a, a, 2
+          do mb = -b, b, 2
+            do m1 = -j1, j1, 2
+              call ClebschGordan(a,b,j1,ma,mb,m1, c2)
+              do mc = -c, c, 2
+                call ClebschGordan(b,c,j2,mb,mc,m2, c4)
+                do m2 = -j2, j2, 2
+                  do m = -j, j, 2
+                    call ClebschGordan(j1,c,j,m1,mc,m, c1)
+                    call ClebschGordan(a,j2,j,ma,m2,m, c3)
+
+                    benx = benx + (c1*c2*c3*c4)
+                  end do
+                end do
+              end do
+            end do
+          end do
+        end do
+
+        call Wigner6JCoeff(a, b, j1, c, j, j2, c1)
+        test = test + (c1*(j1+1.)*(j2+1.)*((-1)**((a+b+c+j)/2)) )
+
+        if (abs(test-benx).ge.1e-8) then
+          print "(A,3I3,2F10.5)", "  [FAIL] 6j-CG:", a,b,c, test, benx
+          else
+          print "(A,3I3,2F10.5)", "[OK] 6j-CG:", a,b,c, test, benx
+        endif
+      enddo
+      enddo
+
+      enddo
+    enddo
+  enddo
+enddo
 
 
 print "(A)", "[OK] Test 6j symbols."
