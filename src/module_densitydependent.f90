@@ -4253,13 +4253,18 @@ call Wigner6JCoeff(9, 1, 2, 2, 0, 1, c5)
 if(abs(c5).ge.1e-8) print "(A,F15.9)", "E6j=0 5:", c5
 print "(A)", "  [DONE 2]"
 
-a = 1
-b = 1
+a = 3
+b = 3
 c = 0
-d = 3
+d = 5
 e = 4
-f = 3
-benx = sqrt((a + 1.)*(b + 1.))
+f = 5
+
+benx = 0
+if (c.eq.0) then
+  benx = sqrt((a + 1.)*(b + 1.))
+endif
+
 test = zero
 do X = 0, a+b
   if (MOD(X,2).eq.1) continue
@@ -4269,6 +4274,7 @@ end do
 if (abs(test - benx).ge.1e-8) print "(A,2F15.9)", "Fail Sum 1:", test, benx
 print "(A)", "  [DONE 3]"
 
+c = 4
 call Wigner6JCoeff(a,c, e, b, d, f, benx)
 test = zero
 do X = 0, a+b
