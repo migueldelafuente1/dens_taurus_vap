@@ -350,93 +350,6 @@ cg = dsqrt(j3 + one) * (-1)**l1 * dexp(0.5d0*p - q) * h
 end subroutine ClebschGordan
 
 !------------------------------------------------------------------------------!
-! subroutine ClebschGordan                                                     !
-!                                                                              !
-! Computes the ClebschGordan for the group SU(2). The algorithm used was taken !
-! from technical notes from NASA written by W. F. Ford and R. C. Bruley.       !
-! Ref: NASA TN D-6173                                                          !
-!                                                                              !
-!------------------------------------------------------------------------------!
-! subroutine ClebschGordan                                                     !
-!                                                                              !
-! Computes the ClebschGordan for the group SU(2). The algorithm used was taken !
-! from technical notes from NASA written by W. F. Ford and R. C. Bruley.       !
-! Ref: NASA TN D-6173                                                          !
-!                                                                              !
-! (j1,m1,j2,m2|j3,m3) = c * g                                                  !
-! with                                                                         !
-! c = D(j1j2j3) * [(j1-m1)!(j2+m2)!(j1+m1)!(j2-m2)!(j3+m3)!(j3-m3)!]**1/2      !
-! g = sqrt(2*j3+1) sum_l (-1)**l [(j1+j2-j3-l)!(j1-m1-l)!(j2+m2-l)!            !
-!                                 (j3-j2+m1+l)!(j3-j1-m1+l)!l!]**-1            !
-! D(j1j2j3) = [(j1+j2-j3)!(j2+j3-j1)!(j3+j1-j2)!]**1/2 / [(j1+j2+j3+1)!]**1/2  !
-!                                                                              !
-! Be aware that all input values of j and m are supposed to be twice their     !
-! values (such that we can treat easily half-integer angular momenta).         !
-!------------------------------------------------------------------------------!
-subroutine ClebschGordan (j1,j2,j3,m1,m2,m3,cg)
-
-integer, intent(in) :: j1, j2, j3, m1, m2, m3
-real(r64), intent(out) :: cg
-integer :: n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, k1, k2, k3, k4, k5, k6, &
-           l, l1, l2
-real(r64) :: p, q, h, hl, hlm1
-
-cg = zero
-
-!!! Computes the ingredients for the factor c
-n1 = 1 + (j1 + j2 - j3)/2
-n2 = 1 + (j2 + j3 - j1)/2
-n3 = 1 + (j3 + j1 - j2)/2
-n4 = 1 + (j1 - m1)/2
-n5 = 1 + (j2 + m2)/2
-n6 = 1 + (j1 + m1)/2
-n7 = 1 + (j2 - m2)/2
-n8 = 1 + (j3 + m3)/2
-n9 = 1 + (j3 - m3)/2
-n10= n1 + n2 + n3 - 1
-
-if ( (min(n1,n2,n3,n4,n5,n6,n7,n8,n9) < 1) .or. (m1+m2 /= m3) ) return
-
-p =  log_gamma(n1+zero) + log_gamma(n2+zero) + log_gamma(n3+zero) &
-   + log_gamma(n4+zero) + log_gamma(n5+zero) + log_gamma(n6+zero) &
-   + log_gamma(n7+zero) + log_gamma(n8+zero) + log_gamma(n9+zero) &
-   - log_gamma(n10+zero)
-
-!!! Computes the ingredients for the factor g
-k1 = n1
-k2 = n4
-k3 = n5
-k4 = n4 - n3
-k5 = n5 - n2
-
-l1 = max(0,k4,k5)
-l2 = min(k1,k2,k3)
-
-h  = one
-hl = one
-
-do l = l1+1, l2
-  hlm1 = hl
-  hl = hlm1 * (l - k1) * (l - k2) * (l - k3) / ((l - k4) * (l - k5) * l)
-  h = h + hl
-enddo
-
-k1 = k1 - l1
-k2 = k2 - l1
-k3 = k3 - l1
-k4 = l1 + 1 - k4
-k5 = l1 + 1 - k5
-k6 = l1 + 1
-
-q =  log_gamma(k1+zero) + log_gamma(k2+zero) + log_gamma(k3+zero) &
-   + log_gamma(k4+zero) + log_gamma(k5+zero) + log_gamma(k6+zero)
-
-!!! Computes the final value combining the two parts.
-cg = dsqrt(j3 + one) * (-1)**l1 * dexp(0.5d0*p - q) * h
-
-end subroutine ClebschGordan
-
-!------------------------------------------------------------------------------!
 ! subroutine Wigner6JCoeff                                                     !
 !                                                                              !
 ! Computes the Wigner6JCoeff from Racah coeffcient. The algorithm used was     !
@@ -459,7 +372,7 @@ end subroutine ClebschGordan
 subroutine Wigner6JCoeff (a, b, c, d, e, f, c6j)
 
 integer, intent(in) :: a, b, c, d, e, f
-real(r64), intent(out) :: c6g
+real(r64), intent(out) :: c6j
 real(r64) :: aux
 
 call RacahCoeff (a,b,e,d, c,f, aux)
