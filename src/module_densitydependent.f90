@@ -4224,8 +4224,8 @@ end subroutine test_antisymmetrization_v_DD
 
 
 subroutine tests_sixjsymbols
-integer :: a,b,c,d,e,f, X
-real    :: c1, c2, c3, c4, c5, test, benx
+integer  :: a,b,c,d,e,f, X
+real(r64):: c1, c2, c3, c4, c5, test, benx
 
 !! TESTS non zero
 call Wigner6JCoeff(1, 1, 2, 1, 1, 2, c1)
