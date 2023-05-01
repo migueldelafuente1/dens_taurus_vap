@@ -396,7 +396,7 @@ subroutine RacahCoeff (a,b,c,d, e,f, c6j)
 integer, intent(in) :: a, b, c, d, e, f
 real(r64), intent(out) :: c6j
 integer :: j1, j2, j3, j4, j5, j6, j7, j8, k1, k2, k3, k4, l1, l2, l3, l4, &
-           m1, m2, m3, m4, l, n1_min, n2_max
+           m1, m2, m3, m4, l, n_min, n_max
 real(r64) :: p, q, h, hl, hlm1
 
 c6j = zero
@@ -439,34 +439,36 @@ j5 = j1 - l2
 j6 = j1 - l3
 j7 = j1 + m4 - 1
 
-n1_min = max( 0,j5,j6)
-n2_max = min(j1,j2,j3,j4)
+n_min = max( 0,j5,j6)
+n_max = min(j1,j2,j3,j4) - 1
 
 h  = one
 hl = one
+if (n_min.ne.n_max) then
+  do l = n_min+1, n_max
+    hlm1 = hl
+    hl = (l - j1) * (l - j2) * (l - j3) * (l - j4)
+    hl = hl / ((l - j5) * (l - j6) * (l - j7) * l)
+    hl = hlm1 * hl
+    h = h + hl
+  enddo
+endif
 
-do l = n1_min+1, n2_max
-  hlm1 = hl
-  hl = (l - j1)*(l - j2)*(l - j3)*(l - j4) / ((l - j5)*(l - j6)*(l - j7)*l)
-  hl = hlm1 * hl
-  h = h + hl
-enddo
-
-j1 = j1 - n1_min
-j2 = j2 - n1_min
-j3 = j3 - n1_min
-j4 = j4 - n1_min
-j5 = n1_min + 1 - j5
-j6 = n1_min + 1 - j6
-j8 = j7 - n1_min
-j7 = n1_min + 1
+j1 = j1 - n_min
+j2 = j2 - n_min
+j3 = j3 - n_min
+j4 = j4 - n_min
+j5 = n_min + 1 - j5
+j6 = n_min + 1 - j6
+j8 = j7 - n_min
+j7 = n_min + 1
 
 q =  log_gamma(j1+zero) + log_gamma(j2+zero) + log_gamma(j3+zero) &
    + log_gamma(j4+zero) + log_gamma(j5+zero) + log_gamma(j6+zero) &
    + log_gamma(j7+zero) - log_gamma(j8+zero)
 
 !!! Computes the final value combining the two parts.
-c6j = ((-1)**n1_min) * dexp((0.5d0*p) - q) * h
+c6j = ((-1)**n_min) * dexp((0.5d0*p) - q) * h
 
 end subroutine RacahCoeff
 
