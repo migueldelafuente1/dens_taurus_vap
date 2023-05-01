@@ -4224,7 +4224,7 @@ end subroutine test_antisymmetrization_v_DD
 
 
 subroutine tests_sixjsymbols
-integer  :: a,b,c,d,e,f, X
+integer  :: a,b,c,d,e,f, X, i
 real(r64):: c1, c2, c3, c4, c5, test, benx
 
 print "(A)", "[  ] Test 6j symbols."
@@ -4298,9 +4298,9 @@ do a = 1, 5, 2
       if ((abs(a-c)>b).or.(a+c<b)) benx = zero
       if ((abs(b-c)>a).or.(b+c<a)) benx = zero
 
-      c5 = 0
-      if (MOD(a+b,2).eq.1) c5 = abs(a-b)
-      do X = c5, a+b, 2
+      i = 0
+      if (MOD(a+b,2).eq.1) i = abs(a-b)
+      do X = i, a+b, 2
         call Wigner6JCoeff(a, b, X, a, b, c, c1)
         test = test + c1*(X+1.)
       end do
