@@ -395,8 +395,8 @@ subroutine RacahCoeff (a,b,c,d, e,f, c6j)
 
 integer, intent(in) :: a, b, c, d, e, f
 real(r64), intent(out) :: c6j
-integer :: j1, j2, j3, j4, j5, j6, j7, k1, k2, k3, k4, l1, l2, l3, l4, &
-           m1, m2, m3, m4, n1_min, n2_max
+integer :: j1, j2, j3, j4, j5, j6, j7, j8, k1, k2, k3, k4, l1, l2, l3, l4, &
+           m1, m2, m3, m4, l, n1_min, n2_max
 real(r64) :: p, q, h, hl, hlm1
 
 c6j = zero
