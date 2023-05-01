@@ -553,7 +553,7 @@ q =  log_gamma(j1+zero) + log_gamma(j2+zero) + log_gamma(j3+zero) &
 !!! Computes the final value combining the two parts.
 c6j = ((-1)**n1_min) * dexp((0.5d0*p) - q) * h
 
-end subroutine Wigner6JCoeff
+end subroutine RacahCoeff
 
 !------------------------------------------------------------------------------!
 ! function lapack_sel                                                          !
