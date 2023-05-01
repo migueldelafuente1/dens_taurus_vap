@@ -4289,21 +4289,26 @@ if (abs(test - benx).ge.1e-8) print "(A,2F15.9)", "Fail Sum 2:", test, benx
 
 print "(A)", "  [DONE 4]"  !!!------------------------------------------------
 
-do a = 0, 3
+do a = 1, 5, 2
   do b = 0, 8, 2
-    do c = b, b+a, 2
+    do c = 0, min(2*a, 2*b), 2
       test = zero
       benx = (-1)**c
-      if ((abs(a-b)>c).or.(a+b<c).or.(abs(a-c)>b).or.(a+c<b)) benx = zero
-      do X = 0, a+b, 2
-        call Wigner6JCoeff(a, b, X, b, a, c, c1)
+      if ((abs(a-b)>c).or.(a+b<c)) benx = zero
+      if ((abs(a-c)>b).or.(a+c<b)) benx = zero
+      if ((abs(b-c)>a).or.(b+c<a)) benx = zero
+
+      c5 = 0
+      if (MOD(a+b,2).eq.1) c5 = abs(a-b)
+      do X = c5, a+b, 2
+        call Wigner6JCoeff(a, b, X, a, b, c, c1)
         test = test + c1*(X+1.)
       end do
 
       if (abs(test-benx).ge.1e-8) then
-        print "(A,3I2,2F10.5)", "  [FAIL] Closure:", a,b,c, test, benx
+        print "(A,3I3,2F10.5)", "  [FAIL] Closure:", a,b,c, test, benx
         else
-        print "(A,3I2,2F10.5)", "[OK] Closure:", a,b,c, test, benx
+        print "(A,3I3,2F10.5)", "[OK] Closure:", a,b,c, test, benx
       endif
 
     end do
