@@ -377,7 +377,7 @@ real(r64) :: aux
 
 call RacahCoeff (a,b,e,d, c,f, aux)
 c6j = aux
-if MOD((a + b + d + e) / 2, 1) then
+if (MOD((a + b + d + e) / 2, 2).eq.1) then
   c6j = - c6j
 endif
 
@@ -400,7 +400,7 @@ integer :: j1, j2, j3, j4, j5, j6, j7, k1, k2, k3, k4, l1, l2, l3, l4, &
 real(r64) :: p, q, h, hl, hlm1
 
 c6j = zero
-if ((a+b+c+d+e+f))
+!if ((a+b+c+d+e+f)) return
 
 !!! Computes the ingredients for the factor c
 j1 = 1 + (a + b - e)/2
