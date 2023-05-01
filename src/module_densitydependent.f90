@@ -4241,9 +4241,9 @@ call Wigner6JCoeff(4, 4, 2, 2, 2, 2, c5)
 if(abs(c5 + ((5.**.5)/10)).ge.1e-8) print "(A,2F15.9)","E6j 5:",c5,-(5.**.5)/10
 print "(A)", "  [DONE 1]"  !!!------------------------------------------------
 !! TESTS Zero
-call Wigner6JCoeff(1, 1, 1, 1, 1, 1, c1)
+call Wigner6JCoeff(-1, 1, -1, 1, -1, 1, c1)
 if(abs(c1).ge.1e-8) print "(A,F15.9)", "E6j=0 1:", c1
-call Wigner6JCoeff(3, 3, 2, 1, 2, 0, c2)
+call Wigner6JCoeff(-3, 3, 2, 1, 2, 0, c2)
 if(abs(c2).ge.1e-8) print "(A,F15.9)", "E6j=0 2:", c2
 call Wigner6JCoeff(5, 1, 1, 1, 1, 2, c3)
 if(abs(c3).ge.1e-8) print "(A,F15.9)", "E6j=0 3:", c3
@@ -4291,7 +4291,7 @@ print "(A)", "  [DONE 4]"  !!!------------------------------------------------
 
 do a = 1, 5, 2
   do b = 0, 8, 2
-    do c = 0, min(2*a, 2*b), 2
+    do c = 1, min(2*a, 2*b), 2
       test = zero
       benx = (-1)**c
       if ((abs(a-b)>c).or.(a+b<c)) benx = zero
