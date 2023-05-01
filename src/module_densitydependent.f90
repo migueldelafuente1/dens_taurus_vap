@@ -4259,12 +4259,12 @@ c = 0
 d = 3
 e = 4
 f = 3
-benx = sqrt((a + 1)*(b + 1))
+benx = sqrt((a + 1.)*(b + 1.))
 test = zero
 do X = 0, a+b
   if (MOD(X,2).eq.1) continue
   call Wigner6JCoeff(a,b,X, b,a, c, c1)
-  test = test + (((-1)**((a+b+X)/2))*sqrt(X+1)*c1)
+  test = test + (((-1)**((a+b+X)/2))*sqrt(X+1.)*c1)
 end do
 if (abs(test - benx).ge.1e-8) print "(A,2F15.9)", "Fail Sum 1:", test, benx
 
@@ -4275,7 +4275,7 @@ test = zero
 do X = 0, a+b
   if (MOD(X,2).eq.1) continue
   call Wigner6JCoeff(a,b,X, b,a, c, c1)
-  test = test + (((-1)**((a+b+X)/2))*sqrt(X+1)*c1)
+  test = test + (((-1)**((a+b+X)/2))*sqrt(X+1.)*c1)
 end do
 if (abs(test - benx).ge.1e-8) print "(A,2F15.9)", "Fail Sum 2:", test, benx
 
