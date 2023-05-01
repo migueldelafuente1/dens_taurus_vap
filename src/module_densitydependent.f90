@@ -4239,7 +4239,7 @@ call Wigner6JCoeff(5, 5, 6, 5, 3, 4, c4)
 if(abs(c4 + ((6.**.5)/70)).ge.1e-8) print "(A,2F15.9)","E6j 4:",c4,-(6.**.5)/70
 call Wigner6JCoeff(4, 4, 2, 2, 2, 2, c5)
 if(abs(c5 + ((5.**.5)/10)).ge.1e-8) print "(A,2F15.9)","E6j 5:",c5,-(5.**.5)/10
-
+print "(A)", "  [DONE 1]"
 !! TESTS Zero
 call Wigner6JCoeff(1, 1, 1, 1, 1, 1, c1)
 if(abs(c1).ge.1e-8) print "(A,F15.9)", "E6j=0 1:", c1
@@ -4251,6 +4251,7 @@ call Wigner6JCoeff(0, 5, 0, 5, 3, 4, c4)
 if(abs(c4).ge.1e-8) print "(A,F15.9)", "E6j=0 4:", c4
 call Wigner6JCoeff(9, 1, 2, 2, 0, 1, c5)
 if(abs(c5).ge.1e-8) print "(A,F15.9)", "E6j=0 5:", c5
+print "(A)", "  [DONE 2]"
 
 a = 1
 b = 1
@@ -4266,7 +4267,7 @@ do X = 0, a+b
   test = test + (((-1)**((a+b+X)/2))*sqrt(X+1.)*c1)
 end do
 if (abs(test - benx).ge.1e-8) print "(A,2F15.9)", "Fail Sum 1:", test, benx
-
+print "(A)", "  [DONE 3]"
 
 c = 2
 benx = sqrt((a + 1.)*(b + 1.))
