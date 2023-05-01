@@ -4274,7 +4274,7 @@ test = zero
 do X = 0, a+b
   if (MOD(X,2).eq.1) continue
   call Wigner6JCoeff(a,b,X, c,d, f, c1)
-  call Wigner6JCoeff(a,b,X, d,c, q, c2)
+  call Wigner6JCoeff(a,b,X, d,c, e, c2)
   test = test + (((-1)**((e+f+X)/2))*sqrt(X+1.)*c1*c2)
 end do
 if (abs(test - benx).ge.1e-8) print "(A,2F15.9)", "Fail Sum 2:", test, benx
