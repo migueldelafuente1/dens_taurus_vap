@@ -4234,7 +4234,7 @@ call Wigner6JCoeff(5, 1, 4, 1, 3, 2, c3)
 call Wigner6JCoeff(5, 5, 6, 5, 3, 4, c4)
 call Wigner6JCoeff(4, 4, 2, 2, 2, 2, c5)
 
-if(abs(c1 - (1/6.)).ge.1e-8)        print "(A,2F15.9)", "E6j 1:", c1, 1.0/6
+if(abs(c1 - (1/6.)).ge.1e-8)        print "(A,2F15.9)", "E6j 1:", c1, 1.0/ 6
 if(abs(c2 - (11/60.)).ge.1e-8)      print "(A,2F15.9)", "E6j 2:", c2, 11./60
 if(abs(c3 + (1/(15.**.5))).ge.1e-8) print "(A,2F15.9)","E6j 3:",c3,-1./(15**.5)
 if(abs(c4 + ((6.**.5)/70)).ge.1e-8) print "(A,2F15.9)","E6j 4:",c4,-(6.**.5)/70

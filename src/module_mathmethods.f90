@@ -407,23 +407,22 @@ j1 = 1 + (a + b - e)/2
 j2 = 1 + (a + c - f)/2
 j3 = 1 + (b + d - f)/2
 j4 = 1 + (c + d - e)/2
-
+if ( (min(j1,j2,j3,j4) < 1) ) return
 k1 = 1 + (b + e - a)/2
 k2 = 1 + (c + f - a)/2
 k3 = 1 + (d + f - b)/2
 k4 = 1 + (d + e - c)/2
-
+if ( (min(k1,k2,k3,k4) < 1) ) return
 l1 = 1 + (e + a - b)/2
 l2 = 1 + (f + a - c)/2
 l3 = 1 + (f + b - d)/2
 l4 = 1 + (e + c - d)/2
+if ( (min(l1,l2,l3,l4) < 1) ) return
 
 m1 = j1 + k1 + l1 - 1
 m2 = j2 + k2 + l2 - 1
 m3 = j3 + k3 + l3 - 1
 m4 = j4 + k4 + l4 - 1
-
-if ( (min(j1,j2,j3,j4,k1,k2,k3,k4,l1,l2,l3,l4) < 1) ) return
 
 p =  log_gamma(j1+zero) + log_gamma(k1+zero) + log_gamma(l1+zero) &
    + log_gamma(j2+zero) + log_gamma(k2+zero) + log_gamma(l2+zero) &
@@ -437,7 +436,7 @@ j5 = j1 - l2
 j6 = j1 - l3
 j7 = j1 + m4 - 1
 
-n1_min = max(0,j5,j6)
+n1_min = max( 0,j5,j6)
 n2_max = min(j1,j2,j3,j4)
 
 h  = one
@@ -456,8 +455,8 @@ j3 = j3 - n1_min
 j4 = j4 - n1_min
 j5 = n1_min + 1 - j5
 j6 = n1_min + 1 - j6
-j7 = n1_min + 1
 j8 = j7 - n1_min
+j7 = n1_min + 1
 
 q =  log_gamma(j1+zero) + log_gamma(j2+zero) + log_gamma(j3+zero) &
    + log_gamma(j4+zero) + log_gamma(j5+zero) + log_gamma(j6+zero) &
