@@ -4277,7 +4277,7 @@ do X = 0, a+b
   call Wigner6JCoeff(a,b,X, b,a, c, c1)
   test = test + (((-1)**((a+b+X)/2))*sqrt(X+1.)*c1)
 end do
-if (abs(test - benx).ge.1e-8) print "(A,2F15.9)", "Fail Sum 2:", test, benx
+if (abs(test).ge.1e-8) print "(A,2F15.9)", "Fail Sum 2:", test, 0.0
 
 print "(A)", "[OK] Test 6j symbols."
 

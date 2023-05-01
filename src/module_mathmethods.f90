@@ -400,7 +400,10 @@ integer :: j1, j2, j3, j4, j5, j6, j7, j8, k1, k2, k3, k4, l1, l2, l3, l4, &
 real(r64) :: p, q, h, hl, hlm1
 
 c6j = zero
-!if ((a+b+c+d+e+f)) return
+if (MOD(a+b+e, 2).neq.0) return
+if (MOD(a+c+f, 2).neq.0) return
+if (MOD(d+b+f, 2).neq.0) return
+if (MOD(d+c+e, 2).neq.0) return
 
 !!! Computes the ingredients for the factor c
 j1 = 1 + (a + b - e)/2
