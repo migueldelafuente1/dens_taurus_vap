@@ -350,6 +350,212 @@ cg = dsqrt(j3 + one) * (-1)**l1 * dexp(0.5d0*p - q) * h
 end subroutine ClebschGordan
 
 !------------------------------------------------------------------------------!
+! subroutine ClebschGordan                                                     !
+!                                                                              !
+! Computes the ClebschGordan for the group SU(2). The algorithm used was taken !
+! from technical notes from NASA written by W. F. Ford and R. C. Bruley.       !
+! Ref: NASA TN D-6173                                                          !
+!                                                                              !
+!------------------------------------------------------------------------------!
+! subroutine ClebschGordan                                                     !
+!                                                                              !
+! Computes the ClebschGordan for the group SU(2). The algorithm used was taken !
+! from technical notes from NASA written by W. F. Ford and R. C. Bruley.       !
+! Ref: NASA TN D-6173                                                          !
+!                                                                              !
+! (j1,m1,j2,m2|j3,m3) = c * g                                                  !
+! with                                                                         !
+! c = D(j1j2j3) * [(j1-m1)!(j2+m2)!(j1+m1)!(j2-m2)!(j3+m3)!(j3-m3)!]**1/2      !
+! g = sqrt(2*j3+1) sum_l (-1)**l [(j1+j2-j3-l)!(j1-m1-l)!(j2+m2-l)!            !
+!                                 (j3-j2+m1+l)!(j3-j1-m1+l)!l!]**-1            !
+! D(j1j2j3) = [(j1+j2-j3)!(j2+j3-j1)!(j3+j1-j2)!]**1/2 / [(j1+j2+j3+1)!]**1/2  !
+!                                                                              !
+! Be aware that all input values of j and m are supposed to be twice their     !
+! values (such that we can treat easily half-integer angular momenta).         !
+!------------------------------------------------------------------------------!
+subroutine ClebschGordan (j1,j2,j3,m1,m2,m3,cg)
+
+integer, intent(in) :: j1, j2, j3, m1, m2, m3
+real(r64), intent(out) :: cg
+integer :: n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, k1, k2, k3, k4, k5, k6, &
+           l, l1, l2
+real(r64) :: p, q, h, hl, hlm1
+
+cg = zero
+
+!!! Computes the ingredients for the factor c
+n1 = 1 + (j1 + j2 - j3)/2
+n2 = 1 + (j2 + j3 - j1)/2
+n3 = 1 + (j3 + j1 - j2)/2
+n4 = 1 + (j1 - m1)/2
+n5 = 1 + (j2 + m2)/2
+n6 = 1 + (j1 + m1)/2
+n7 = 1 + (j2 - m2)/2
+n8 = 1 + (j3 + m3)/2
+n9 = 1 + (j3 - m3)/2
+n10= n1 + n2 + n3 - 1
+
+if ( (min(n1,n2,n3,n4,n5,n6,n7,n8,n9) < 1) .or. (m1+m2 /= m3) ) return
+
+p =  log_gamma(n1+zero) + log_gamma(n2+zero) + log_gamma(n3+zero) &
+   + log_gamma(n4+zero) + log_gamma(n5+zero) + log_gamma(n6+zero) &
+   + log_gamma(n7+zero) + log_gamma(n8+zero) + log_gamma(n9+zero) &
+   - log_gamma(n10+zero)
+
+!!! Computes the ingredients for the factor g
+k1 = n1
+k2 = n4
+k3 = n5
+k4 = n4 - n3
+k5 = n5 - n2
+
+l1 = max(0,k4,k5)
+l2 = min(k1,k2,k3)
+
+h  = one
+hl = one
+
+do l = l1+1, l2
+  hlm1 = hl
+  hl = hlm1 * (l - k1) * (l - k2) * (l - k3) / ((l - k4) * (l - k5) * l)
+  h = h + hl
+enddo
+
+k1 = k1 - l1
+k2 = k2 - l1
+k3 = k3 - l1
+k4 = l1 + 1 - k4
+k5 = l1 + 1 - k5
+k6 = l1 + 1
+
+q =  log_gamma(k1+zero) + log_gamma(k2+zero) + log_gamma(k3+zero) &
+   + log_gamma(k4+zero) + log_gamma(k5+zero) + log_gamma(k6+zero)
+
+!!! Computes the final value combining the two parts.
+cg = dsqrt(j3 + one) * (-1)**l1 * dexp(0.5d0*p - q) * h
+
+end subroutine ClebschGordan
+
+!------------------------------------------------------------------------------!
+! subroutine Wigner6JCoeff                                                     !
+!                                                                              !
+! Computes the Wigner6JCoeff from Racah coeffcient. The algorithm used was     !
+! taken from technical notes from NASA written by W. F. Ford and R. C. Bruley. !
+! Ref: NASA TN D-6173                                                          !
+!                                                                              !
+!------------------------------------------------------------------------------!
+! subroutine Wigner6JCoeff                                                     !
+!                                                                              !
+! Computes the Wigner6JCoeff for the group SU(2). The algorithm used was taken !
+! from technical notes from NASA written by W. F. Ford and R. C. Bruley.       !
+! Ref: NASA TN D-6173                                                          !
+!                                                                              !
+! {  a  b  c  }                                                                !
+! {  d  e  f  } = (-)^[a + b + d + e] W(a,b,e,d  ; c,f)                        !
+!                                                                              !
+! Be aware that all input values of j and m are supposed to be twice their     !
+! values (such that we can treat easily half-integer angular momenta).         !
+!------------------------------------------------------------------------------!
+subroutine Wigner6JCoeff (a, b, c, d, e, f, c6j)
+
+integer, intent(in) :: a, b, c, d, e, f
+real(r64), intent(out) :: c6g
+real(r64) :: aux
+
+call RacahCoeff (a,b,e,d, c,f, aux)
+c6j = aux
+if MOD((a + b + d + e) / 2, 1) then
+  c6j = - c6j
+endif
+
+return
+
+end subroutine Wigner6JCoeff
+
+!------------------------------------------------------------------------------!
+!  subroutine RacahCoeff                                                       !
+!                                                                              !
+!  Racah coefficient, used for the six j coefficient with the same variable    !
+!  naming of the reference.                                                    !
+!------------------------------------------------------------------------------!
+subroutine RacahCoeff (a,b,c,d, e,f, c6j)
+
+integer, intent(in) :: a,b,c,d, e,f,
+real(r64), intent(out) :: c6j
+integer :: j1, j2, j3, j4, j5, j6, j7, k1, k2, k3, k4, l1, l2, l3, l4, &
+           m1, m2, m3, m4, n1_min, n2_max
+real(r64) :: p, q, h, hl, hlm1
+
+c6j = zero
+if ((a+b+c+d+e+f))
+
+!!! Computes the ingredients for the factor c
+j1 = 1 + (a + b - e)/2
+j2 = 1 + (a + c - f)/2
+j3 = 1 + (b + d - f)/2
+j4 = 1 + (c + d - e)/2
+
+k1 = 1 + (b + e - a)/2
+k2 = 1 + (c + f - a)/2
+k3 = 1 + (d + f - b)/2
+k4 = 1 + (d + e - c)/2
+
+l1 = 1 + (e + a - b)/2
+l2 = 1 + (f + a - c)/2
+l3 = 1 + (f + b - d)/2
+l4 = 1 + (e + c - d)/2
+
+m1 = j1 + k1 + l1 - 1
+m2 = j2 + k2 + l2 - 1
+m3 = j3 + k3 + l3 - 1
+m4 = j4 + k4 + l4 - 1
+
+if ( (min(j1,j2,j3,j4,k1,k2,k3,k4,l1,l2,l3,l4) < 1) ) return
+
+p =  log_gamma(j1+zero) + log_gamma(k1+zero) + log_gamma(l1+zero) &
+   + log_gamma(j2+zero) + log_gamma(k2+zero) + log_gamma(l2+zero) &
+   + log_gamma(j3+zero) + log_gamma(k3+zero) + log_gamma(l3+zero) &
+   + log_gamma(j4+zero) + log_gamma(k4+zero) + log_gamma(l4+zero) &
+   - log_gamma(m1+zero) - log_gamma(m2+zero) - log_gamma(m3+zero) &
+   - log_gamma(m4+zero)
+
+!!! Computes the ingredients for the factor g
+j5 = j1 - l2
+j6 = j1 - l3
+j7 = j1 + m4 - 1
+
+n1_min = max(0,j5,j6)
+n2_max = min(j1,j2,j3,j4)
+
+h  = one
+hl = one
+
+do l = n1_min+1, n2_max
+  hlm1 = hl
+  hl = (l - j1)*(l - j2)*(l - j3)*(l - j4) / ((l - j5)*(l - j6)*(l - j7)*l)
+  hl = hlm1 * hl
+  h = h + hl
+enddo
+
+j1 = j1 - n1_min
+j2 = j2 - n1_min
+j3 = j3 - n1_min
+j4 = j4 - n1_min
+j5 = n1_min + 1 - j5
+j6 = n1_min + 1 - j6
+j7 = n1_min + 1
+j8 = j7 - n1_min
+
+q =  log_gamma(j1+zero) + log_gamma(j2+zero) + log_gamma(j3+zero) &
+   + log_gamma(j4+zero) + log_gamma(j5+zero) + log_gamma(j6+zero) &
+   + log_gamma(j7+zero) - log_gamma(j8+zero)
+
+!!! Computes the final value combining the two parts.
+c6j = ((-1)**n1_min) * dexp((0.5d0*p) - q) * h
+
+end subroutine Wigner6JCoeff
+
+!------------------------------------------------------------------------------!
 ! function lapack_sel                                                          !
 !                                                                              !
 ! Dummy logical function "select" for LAPACK (used for Schur decomposition).   !

@@ -109,10 +109,13 @@ integer(i64) :: hamil_DD_H2dim, hamil_DD_H2dim_all        ! number of 2BME store
 integer(i16), dimension(:), allocatable :: hamil_DD_abcd  ! indices of 2BME
 integer(i8), dimension(:), allocatable :: hamil_DD_trperm ! time reversal permut.
 integer   :: iteration = 0, global_iter_max = 0
+integer   :: VSsh_dim = 0,  VSsp_dim = 0, VSsp_dim2 = 0
+integer, dimension(:), allocatable     :: VSsh_list, VStoHOsp_index
 
 integer   :: seed_type_sym  = 0        ! (UNDEFINED)
 logical   :: haveX0M1       = .FALSE.  ! |x0 - 1| > 1E-6
-logical   :: evalFullSPSpace= .TRUE.   ! compute the full a,b, c,d space for explicit DD fields
+logical   :: evalFullSPSpace= .TRUE.   ! compute the full a,b, c,d space for explicit DD fields (cannot be set)
+logical   :: exportVSPSpace = .FALSE.  ! the export of a reduced val.space
 
 integer   :: NHO_vs, NHO_co !! Major Shell number of the Valence. Sp to be exported
 logical   :: NOT_DEL_FILE
@@ -182,7 +185,24 @@ read(runit,formatI3) str_, THE_grid
 read(runit,formatI3) str_, PHI_grid
 read(runit,formatEE) str_, R_MAX
 read(runit,formatI1) str_, aux_int
-evalFullSPSpace = aux_int.EQ.1
+exportVSPSpace = aux_int.GE.1
+VSsh_dim = aux_int
+!if (exportVSPSpace) then
+!  backspace runit
+!  allocate(VSsh_list(VSsh_dim))
+!  read(uth,*) str_, VSsh_dim, (VSsh_list(i),i=1,VSsh_dim)
+!else
+!  VSsh_dim = HOsh_dim
+!  VSsp_dim = HOsp_dim
+!  VSsp_dim2 = HOsp_dim2
+!  allocate(VSsh_list(VSsh_dim))
+!  do i=1, VSsh_dim
+!    VSsh_list(i) = HOsh_na(i)
+!  end do
+!  do i=1, VSsp_dim
+!    VStoHOsp_index(i) = i
+!  end do
+!endif
 
 read(runit,formatST) str_
 rewind(runit)
@@ -215,7 +235,7 @@ print '(A,I10)',   'Omega_Order        =', Omega_Order
 print '(A,I10)',   'THE_grid           =', THE_grid
 print '(A,I10)',   'PHI_grid           =', PHI_grid
 print '(A,F10.6)', 'R_MAX (fm)         =', R_MAX
-print '(A,L10)',   'eval full Val.Spac =', evalFullSPSpace
+print '(A,L10)',   'export_val.sp Hamil=', evalFullSPSpace
 print *, ''
 if (eval_explicit_fieldsDD) then
   print '(A,3L10)', " [Explicit DD Field Eval.] Compute Full Valence Space =",&
@@ -416,7 +436,7 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   print "(A,L1)", "  DOING_PROJECTION = ", DOING_PROJECTION
 
   !call test_print_basis_quantum_numbers
-
+  call tests_sixjsymbols
   !!! Tests over the implemented functions
   !call test_legendrePolynomials
   !call test_sphericalHarmonics_print
@@ -497,6 +517,7 @@ do a_sh = 1, HOsh_dim
         ! Radial grid for
         !r _lag = b *(x_R / 2+alpha)**0.5
         radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .TRUE.)
+
         !! Note:: For using only the polynomials of the rad wf set to .FALSE.
 
         !! assert test R_ab = R_ba
@@ -4200,6 +4221,67 @@ if (pass_as.AND..FALSE.) print *, " VIVA MEJICO"
 
 end subroutine test_antisymmetrization_v_DD
 
+
+
+subroutine tests_sixjsymbols
+integer :: a,b,c,d,e,f, X
+real    :: c1, c2, c3, c4, c5, test, benx
+
+!! TESTS non zero
+call Wigner6JCoeff(1, 1, 2, 1, 1, 2, c1)
+call Wigner6JCoeff(3, 3, 2, 3, 3, 2, c2)
+call Wigner6JCoeff(5, 1, 4, 1, 3, 2, c3)
+call Wigner6JCoeff(5, 5, 6, 5, 3, 4, c4)
+call Wigner6JCoeff(4, 4, 2, 2, 2, 2, c5)
+
+if(abs(c1 - (1/6.)).ge.1e-8)        print "(A,2F15.9)", "E6j 1:", c1, 1.0/6
+if(abs(c2 - (11/60.)).ge.1e-8)      print "(A,2F15.9)", "E6j 2:", c2, 11./60
+if(abs(c3 + (1/(15.**.5))).ge.1e-8) print "(A,2F15.9)","E6j 3:",c3,-1./(15**.5)
+if(abs(c4 + ((6.**.5)/70)).ge.1e-8) print "(A,2F15.9)","E6j 4:",c4,-(6.**.5)/70
+if(abs(c5 + ((5.**.5)/10)).ge.1e-8) print "(A,2F15.9)","E6j 5:",c5,-(5.**.5)/10
+
+!! TESTS Zero
+call Wigner6JCoeff(1, 1, 1, 1, 1, 1, c1)
+call Wigner6JCoeff(3, 3, 2, 1, 2, 0, c2)
+call Wigner6JCoeff(5, 1, 1, 1, 1, 2, c3)
+call Wigner6JCoeff(0, 5, 0, 5, 3, 4, c4)
+call Wigner6JCoeff(9, 1, 2, 2, 0, 1, c5)
+
+if(abs(c1).ge.1e-8) print "(A,F15.9)", "E6j=0 1:", c1
+if(abs(c2).ge.1e-8) print "(A,F15.9)", "E6j=0 2:", c2
+if(abs(c3).ge.1e-8) print "(A,F15.9)", "E6j=0 3:", c3
+if(abs(c4).ge.1e-8) print "(A,F15.9)", "E6j=0 4:", c4
+if(abs(c5).ge.1e-8) print "(A,F15.9)", "E6j=0 5:", c5
+
+a = 1
+b = 1
+c = 0
+d = 3
+e = 4
+f = 3
+benx = sqrt((a + 1)*(b + 1))
+test = zero
+do X = 0, a+b
+  if (MOD(X,2).eq.1) continue
+  call Wigner6JCoeff(a,b,X, b,a, c, c1)
+  test = test + (((-1)**((a+b+X)/2))*sqrt(X+1)*c1)
+end do
+if (abs(test - benx).ge.1e-8) print "(A,2F15.9)", "Fail Sum 1:", test, benx
+
+
+c = 2
+benx = sqrt((a + 1)*(b + 1))
+test = zero
+do X = 0, a+b
+  if (MOD(X,2).eq.1) continue
+  call Wigner6JCoeff(a,b,X, b,a, c, c1)
+  test = test + (((-1)**((a+b+X)/2))*sqrt(X+1)*c1)
+end do
+if (abs(test - benx).ge.1e-8) print "(A,2F15.9)", "Fail Sum 2:", test, benx
+
+print "(A)", "[OK] Test 6j symbols."
+
+end subroutine tests_sixjsymbols
 !------------------------------------------------------------------------------!
 ! Checks explicitly the antisymmetry of the uncoupled matrix element evaluation!
 !------------------------------------------------------------------------------!
