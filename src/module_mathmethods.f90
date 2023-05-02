@@ -446,15 +446,12 @@ h  = one
 hl = one
 
 if (n_min.ne.n_max) then
-  print "(A,2I3)", "  * start sum Nmin,Nmax=", n_min, n_max
-  print "(A,7I4)", "  * js=", j1, j2, j3, j4, j5, j6, j7
   do l = n_min+1, n_max
     hlm1 = hl
     hl = (l - j1) * (l - j2) * (l - j3) * (l - j4)
     hl = hl / ((l - j5) * (l - j6) * (l - j7) * l)
     hl = hlm1 * hl
     h = h + hl
-    print "(A,i3,3F9.6)", "  * * l, hl, hlm1, h=", l, hl, hlm1, h
   enddo
 endif
 
