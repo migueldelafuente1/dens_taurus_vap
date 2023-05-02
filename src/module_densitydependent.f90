@@ -4333,7 +4333,6 @@ do a = 0, 5
       jmin = max(abs(c - j1), abs(a - j2))
       jmax = min(c + j1, a + j2)
       do j = jmin, jmax
-        test = zero
         if ((abs(a-b)>j1).or.(a+b<j1)) continue
         if ((abs(j-a)>j2).or.(a+j<j2)) continue
         if ((abs(j-c)>j1).or.(j+c<j1)) continue
@@ -4344,8 +4343,10 @@ do a = 0, 5
           do mb = -b, b, 2
             do m1 = -j1, j1, 2
               call ClebschGordan(a,b,j1,ma,mb,m1, c2)
+              if (abs(c2).le.1e-8) continue
               do mc = -c, c, 2
                 call ClebschGordan(b,c,j2,mb,mc,m2, c4)
+                if (abs(c2).le.1e-8) continue
                 do m2 = -j2, j2, 2
                   do m = -j, j, 2
                     call ClebschGordan(j1,c,j,m1,mc,m, c1)
@@ -4359,13 +4360,14 @@ do a = 0, 5
           end do
         end do
 
-        call Wigner6JCoeff(a, b, j1, c, j, j2, c1)
-        test = test + (c1*(j1+1.)*(j2+1.)*((-1)**((a+b+c+j)/2)) )
+        call Wigner6JCoeff(a, b, j1, c, j, j2, c5)
+        test = (c5*(j1+1.)*(j2+1.)*((-1)**((a+b+c+j)/2)) )
 
         if (abs(test-benx).ge.1e-8) then
-          print "(A,3I3,2F10.5)", "  [FAIL] 6j-CG:", a,b,c, test, benx
+          print "(A,6I3,2F10.5)", "  [FAIL] 6j-CG:", a,b,j1, c,j,j2, test, benx
           else
-          print "(A,3I3,2F10.5)", "[OK] 6j-CG:", a,b,c, test, benx
+            if (abs(test).le.1e-8) continue
+          print "(A,6I3,2F10.5)", "[OK] 6j-CG:", a,b,j1, c,j,j2, test, benx
         endif
       enddo
       enddo
