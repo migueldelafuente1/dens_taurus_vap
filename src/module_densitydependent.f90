@@ -4394,10 +4394,10 @@ DO i =1,n
   call Wigner6JCoeff(a, b, j1, c, j, j2, test)
   if (abs(test-benx).ge.1e-8) then
     print "(A,6I3,2F10.5)", "  [FAIL] 6j bench:", a,b,j1, c,j,j2, test, benx
-!  else
-!    if (abs(test).ge.1e-8) then
-!      print "(A,6I3,2F10.5)", "[OK] 6j bench:", a,b,j1, c,j,j2, test, benx
-!    endif
+  else
+    if (abs(test).ge.1e-8) then
+      print "(A,6I3,2F10.5)", "[OK] 6j bench:", a,b,j1, c,j,j2, test, benx
+    endif
   endif
 END DO
 
