@@ -4328,16 +4328,16 @@ do a = 0, 3
       j2max = b + c
 
       print "(A,3I3)", " **** block for (a,b,c) ****", a, b, c
-      do j1=j1min,j1max
-      do j2=j2min,j2max
+      do j1=j1min,j1max, 2
+      do j2=j2min,j2max, 2
 
       jmin = max(abs(c - j1), abs(a - j2))
       jmax = min(c + j1, a + j2)
-      do j = jmin, jmax
-        if ((abs(a-b)>j1).or.(a+b<j1)) continue
-        if ((abs(j-a)>j2).or.(a+j<j2)) continue
-        if ((abs(j-c)>j1).or.(j+c<j1)) continue
-        if ((abs(c-b)>j2).or.(c+b<j2)) continue
+      do j = jmin, jmax, 2
+!        if ((abs(a-b)>j1).or.(a+b<j1)) continue
+!        if ((abs(j-a)>j2).or.(a+j<j2)) continue
+!        if ((abs(j-c)>j1).or.(j+c<j1)) continue
+!        if ((abs(c-b)>j2).or.(c+b<j2)) continue
 
         benx = zero
         do ma = -a, a, 2
@@ -4346,9 +4346,9 @@ do a = 0, 3
               call ClebschGordan(a,b,j1,ma,mb,m1, c2)
               if (abs(c2).le.1e-8) continue
               do mc = -c, c, 2
-                call ClebschGordan(b,c,j2,mb,mc,m2, c4)
-                if (abs(c2).le.1e-8) continue
                 do m2 = -j2, j2, 2
+                  call ClebschGordan(b,c,j2,mb,mc,m2, c4)
+                  if (abs(c4).le.1e-8) continue
                   do m = -j, j, 2
                     call ClebschGordan(j1,c,j,m1,mc,m, c1)
                     call ClebschGordan(a,j2,j,ma,m2,m, c3)
@@ -4362,7 +4362,7 @@ do a = 0, 3
         end do
 
         call Wigner6JCoeff(a, b, j1, c, j, j2, c5)
-        test = (c5*(j1+1.)*(j2+1.)*((-1)**((a+b+c+j)/2)) )
+        test = (c5*sqrt((j1+1.)*(j2+1.))*((-1)**((a+b+c+j)/2)) )
 
         if (abs(test-benx).ge.1e-8) then
           print "(A,6I3,2F10.5)", "  [FAIL] 6j-CG:", a,b,j1, c,j,j2, test, benx
