@@ -4228,7 +4228,7 @@ integer  :: a,b,c,d,e,f, X, i, j1,j1min,j1max, j2,j2min,j2max, j,jmin,jmax
 integer  :: ma,mb,mc,m, m1,m2,  n, io
 real(r64):: c1, c2, c3, c4, c5, test, benx
 
-print "(A)", "[  ] Test 6j symbols."
+print "(A)", " *** [  ] Test 6j symbols. (Non null values) ***"
 !! TESTS non zero
 call Wigner6JCoeff(1, 1, 2, 1, 1, 2, c1)
 if(abs(c1 - (1/6.)).ge.1e-8)        print "(A,2F15.9)", "E6j 1:", c1, 1.0/ 6
@@ -4240,7 +4240,7 @@ call Wigner6JCoeff(5, 5, 6, 5, 3, 4, c4)
 if(abs(c4 + ((6.**.5)/70)).ge.1e-8) print "(A,2F15.9)","E6j 4:",c4,-(6.**.5)/70
 call Wigner6JCoeff(4, 4, 2, 2, 2, 2, c5)
 if(abs(c5 + ((5.**.5)/10)).ge.1e-8) print "(A,2F15.9)","E6j 5:",c5,-(5.**.5)/10
-print "(A)", "  [DONE 1]"  !!!------------------------------------------------
+print "(A)", " *** [DONE 1] Now test null values ***"  !!!--------------------------
 !! TESTS Zero
 call Wigner6JCoeff(-1, 1, -1, 1, -1, 1, c1)
 if(abs(c1).ge.1e-8) print "(A,F15.9)", "E6j=0 1:", c1
@@ -4252,7 +4252,8 @@ call Wigner6JCoeff(0, 5, 0, 5, 3, 4, c4)
 if(abs(c4).ge.1e-8) print "(A,F15.9)", "E6j=0 4:", c4
 call Wigner6JCoeff(9, 1, 2, 2, 0, 1, c5)
 if(abs(c5).ge.1e-8) print "(A,F15.9)", "E6j=0 5:", c5
-print "(A)", "  [DONE 2]"  !!!------------------------------------------------
+
+print "(A)", " *** [DONE 2] Now Ortogonality rel. for c=0 non null Varsalovich 9.8.2 ***"
 
 a = 3
 b = 3
@@ -4273,8 +4274,7 @@ do X = 0, a+b
   test = test + (((-1)**((a+b+X)/2))*(X+1.)*c1)
 end do
 if (abs(test - benx).ge.1e-8) print "(A,2F15.9)", "Fail Sum 1:", test, benx
-print "(A)", "  [DONE 3]"  !!!------------------------------------------------
-
+print "(A)", " *** [DONE 3] Now Ortogonality rel. for Varsalovich 9.8.4 ***"
 c = 4
 d = 4
 call Wigner6JCoeff(a,c, e, b, d, f, benx)
@@ -4288,7 +4288,7 @@ end do
 if (abs(test - benx).ge.1e-8) print "(A,2F15.9)", "Fail Sum 2:", test, benx
 
 
-print "(A)", "  [DONE 4]"  !!!------------------------------------------------
+print "(A)", " *** [DONE 4] Now Closure property of the 6j [Varsalov 9.8.1] ***"
 !! Closure property of the 6j
 do a = 1, 5, 2
   do b = 0, 8, 2
@@ -4317,7 +4317,7 @@ do a = 1, 5, 2
   end do
 end do
 
-print "(A)", "  [DONE 5]"  !!!------------------------------------------------
+print "(A)", " *** [DONE 5] Now Def of 6j from CG coeffs [Varsal. 9.1.8] -WHY FAILS? formula does not work. ***"
 !! Recoupling of clebsh gordan to the expression of the 6j
 !! NOTE: (Both sides seems right)
 do a = 0, 3
@@ -4376,7 +4376,7 @@ do a = 0, 3
   enddo
 enddo
 
-print "(A)", "  [DONE 6]"  !!!------------------------------------------------
+print "(A)", " *** [DONE 6] Now direct comparison with Python's library values ***"
 !! Import a list of 6j as bench and compare
 !! format: a:i3 b c d e f value:15.9f (using python library)
 
