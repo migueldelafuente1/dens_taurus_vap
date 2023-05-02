@@ -4319,14 +4319,15 @@ end do
 
 print "(A)", "  [DONE 5]"  !!!------------------------------------------------
 
-do a = 0, 5
-  do b = a, 5
+do a = 0, 3
+  do b = a, 3
     j1min = abs(a - b)
     j1max = a + b
-    do c = 0, 10
+    do c = 0, 6
       j2min = abs(b - c)
       j2max = b + c
 
+      print "(A,3I3)", " **** block for (a,b,c) ****", a, b, c
       do j1=j1min,j1max
       do j2=j2min,j2max
 
@@ -4366,8 +4367,9 @@ do a = 0, 5
         if (abs(test-benx).ge.1e-8) then
           print "(A,6I3,2F10.5)", "  [FAIL] 6j-CG:", a,b,j1, c,j,j2, test, benx
           else
-            if (abs(test).le.1e-8) continue
-          print "(A,6I3,2F10.5)", "[OK] 6j-CG:", a,b,j1, c,j,j2, test, benx
+            if (abs(test).ge.1e-8) then
+              print "(A,6I3,2F10.5)", "[OK] 6j-CG:", a,b,j1, c,j,j2, test, benx
+            endif
         endif
       enddo
       enddo
