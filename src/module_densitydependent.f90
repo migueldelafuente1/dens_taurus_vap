@@ -436,7 +436,7 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   print "(A,L1)", "  DOING_PROJECTION = ", DOING_PROJECTION
 
   !call test_print_basis_quantum_numbers
-  call tests_sixjsymbols
+  !call tests_sixjsymbols
   !!! Tests over the implemented functions
   !call test_legendrePolynomials
   !call test_sphericalHarmonics_print
