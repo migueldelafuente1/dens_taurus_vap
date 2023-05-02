@@ -4351,16 +4351,16 @@ do a = 0, 3
               m  = m1 + mc
               if (ma+m2.ne.m) continue
 !                do m2 = -j2, j2, 2
-                call ClebschGordan(b,c,j2,mb,mc,m2, c4)
-                if (abs(c4).le.1e-8) continue
+              call ClebschGordan(b,c,j2,mb,mc,m2, c4)
+              if (abs(c4).le.1e-8) continue
 !                  do m = -j, j, 2
-                  call ClebschGordan(j1,c,j,m1,mc,m, c1)
-                  call ClebschGordan(a,j2,j,ma,m2,m, c3)
+                call ClebschGordan(j1,c,j,m1,mc,m, c1)
+                call ClebschGordan(a,j2,j,ma,m2,m, c3)
 
-                  benx = benx + (c1*c2*c3*c4)
-                end do
-              end do
-            end do
+                benx = benx + (c1*c2*c3*c4)
+!                end do
+!              end do
+!            end do
             end do
           end do
         end do
