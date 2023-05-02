@@ -4225,7 +4225,7 @@ end subroutine test_antisymmetrization_v_DD
 
 subroutine tests_sixjsymbols
 integer  :: a,b,c,d,e,f, X, i, j1,j1min,j1max, j2,j2min,j2max, j,jmin,jmax
-integer  :: ma,mb,mc,m, m1,m2
+integer  :: ma,mb,mc,m, m1,m2,  n, io
 real(r64):: c1, c2, c3, c4, c5, test, benx
 
 print "(A)", "[  ] Test 6j symbols."
@@ -4289,7 +4289,7 @@ if (abs(test - benx).ge.1e-8) print "(A,2F15.9)", "Fail Sum 2:", test, benx
 
 
 print "(A)", "  [DONE 4]"  !!!------------------------------------------------
-
+!! Closure property of the 6j
 do a = 1, 5, 2
   do b = 0, 8, 2
     do c = 1, min(2*a, 2*b), 2
@@ -4318,7 +4318,8 @@ do a = 1, 5, 2
 end do
 
 print "(A)", "  [DONE 5]"  !!!------------------------------------------------
-
+!! Recoupling of clebsh gordan to the expression of the 6j
+!! NOTE: (Both sides seems right)
 do a = 0, 3
   do b = a, 3
     j1min = abs(a - b)
@@ -4334,33 +4335,25 @@ do a = 0, 3
       jmin = max(abs(c - j1), abs(a - j2))
       jmax = min(c + j1, a + j2)
       do j = jmin, jmax, 2
-!        if ((abs(a-b)>j1).or.(a+b<j1)) continue
-!        if ((abs(j-a)>j2).or.(a+j<j2)) continue
-!        if ((abs(j-c)>j1).or.(j+c<j1)) continue
-!        if ((abs(c-b)>j2).or.(c+b<j2)) continue
-
         benx = zero
         do ma = -a, a, 2
           do mb = -b, b, 2
-!            do m1 = -j1, j1, 2
             m1 = ma + mb
             call ClebschGordan(a,b,j1,ma,mb,m1, c2)
             if (abs(c2).le.1e-8) continue
+
             do mc = -c, c, 2
               m2 = mb + mc
               m  = m1 + mc
               if (ma+m2.ne.m) continue
-!                do m2 = -j2, j2, 2
               call ClebschGordan(b,c,j2,mb,mc,m2, c4)
-              if (abs(c4).le.1e-8) continue
-!                  do m = -j, j, 2
-                call ClebschGordan(j1,c,j,m1,mc,m, c1)
-                call ClebschGordan(a,j2,j,ma,m2,m, c3)
 
-                benx = benx + (c1*c2*c3*c4)
-!                end do
-!              end do
-!            end do
+              if (abs(c4).le.1e-8) continue
+              call ClebschGordan(j1,c,j,m1,mc,m, c1)
+              call ClebschGordan(a,j2,j,ma,m2,m, c3)
+
+              benx = benx + (c1*c2*c3*c4)
+
             end do
           end do
         end do
@@ -4382,6 +4375,31 @@ do a = 0, 3
     enddo
   enddo
 enddo
+
+print "(A)", "  [DONE 6]"  !!!------------------------------------------------
+!! Import a list of 6j as bench and compare
+!! format: a:i3 b c d e f value:15.9f (using python library)
+
+open(2, file = 'benchWigner6j.txt', status = 'old', action = 'read')
+n = 0
+DO
+  READ(2,*,iostat=io)
+  IF (io/=0) EXIT
+  n = n + 1
+END DO
+
+rewind(2)
+DO i =1,n
+  READ(2,"(6i3,1f15.9)") a, b, j1, c, j, j2, benx
+  call Wigner6JCoeff(a, b, j1, c, j, j2, test)
+  if (abs(test-benx).ge.1e-8) then
+    print "(A,6I3,2F10.5)", "  [FAIL] 6j bench:", a,b,j1, c,j,j2, test, benx
+!  else
+!    if (abs(test).ge.1e-8) then
+!      print "(A,6I3,2F10.5)", "[OK] 6j bench:", a,b,j1, c,j,j2, test, benx
+!    endif
+  endif
+END DO
 
 
 print "(A)", "[OK] Test 6j symbols."
