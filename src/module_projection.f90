@@ -315,6 +315,8 @@ do nangle = nangle_min, nangle_max
   !!! Particle number (always computed)
   call calculate_particle_number(0,dens_rhoLR,dens_kappaLR,dens_kappaRL, &
                                  rot_prot,rot_neut,rot_prot2,rot_neut2,ndim)
+  !!! delafuen: TEST PN Variance
+!  call calculate_particle_number_pn(0,dens_rhoLR,dens_kappaLR,dens_kappaRL,ndim)
 
   !!! Computes all other observables
   !!! BB: this should be simplified/compacted at some point
@@ -1254,6 +1256,17 @@ if ( max(Mphip,Mphin) == 1 ) then
   call calculate_expectval_pair(dens_kappaRR,pairs_T1p1_J00,P_T1p1_J00,HOsp_dim)
 
   print '(/,"PAIR COUPLING",/,13("="),//, &
+        & 3x,"MJ or MT =",7x,"-1",10x," 0",10x,"+1",/,49("-"))'
+  write(uto,format10) 'T = 0 ; J = 1', P_T00_J1m1, P_T00_J10, P_T00_J1p1
+  write(uto,format10) 'T = 1 ; J = 0', P_T1m1_J00, P_T10_J00, P_T1p1_J00
+
+  !! delafuen : DENS_DEP NEW 2Body pair coupling operator
+  call calculate_pairCoupl2B_ben(0,dens_rhoRR,dens_kappaRR,dens_kappaRR, &
+                                 P_T00_J1m1, P_T00_J10, P_T00_J1p1, &
+                                 P_T1m1_J10, P_T10_J00, P_T1p1_J00, &
+                                 ndim, pairs_scheme)
+
+  print '(/,"PAIR COUPLING 2-BODY (New)",/,13("="),//, &
         & 3x,"MJ or MT =",7x,"-1",10x," 0",10x,"+1",/,49("-"))'
   write(uto,format10) 'T = 0 ; J = 1', P_T00_J1m1, P_T00_J10, P_T00_J1p1
   write(uto,format10) 'T = 1 ; J = 0', P_T1m1_J00, P_T10_J00, P_T1p1_J00

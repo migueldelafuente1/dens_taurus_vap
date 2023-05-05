@@ -454,7 +454,7 @@ alpha_b = lb + 0.5d0
 rOb = r / HO_b
 wf_prod_on_r = (Anla * Anlb) * (rOb**(la+lb)) &
               * genlaguerre(rOb**2.0, na,alpha_a) &
-              * genlaguerre(rOb**2.0, nb,alpha_b)&
+              * genlaguerre(rOb**2.0, nb,alpha_b) &
               / exp(rOb**2.0d0)
 wf_prod_on_r = wf_prod_on_r / (HO_b**3.0)
 return
