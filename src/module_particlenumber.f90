@@ -292,9 +292,9 @@ subroutine calculate_pairCoupl2B_ben(io,rhoLR,kappaLR,kappaRL, &
                                      ndim, seniorityScheme)
 
 integer, intent(in) :: ndim, io, seniorityScheme
-real(r64), intent(out) :: pair_T00_J1m1,pair_T00_J10,pair_T00_J1p1, &
-                          pair_T1m1_J00,pair_T10_J00,pair_T1p1_J00,
 complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
+real(r64), intent(out) :: pair_T00_J1m1,pair_T00_J10,pair_T00_J1p1, &
+                          pair_T1m1_J00,pair_T10_J00,pair_T1p1_J00
 integer :: hdim, a, b, a2, b2, ta, tb, ja, jb, ma, mb, ma2, mb2, M,&
            ia, ib, a0, b0
 complex(r64) :: p2B_T00_J1p1, p2B_T00_J1m1, p2B_T00_J10, &
@@ -332,12 +332,9 @@ do a = 1, hdim
     if (abs(ma-mb)>2) continue !! M = 0, 1, -1 only
 
     N_ab_J0T1 = 1.0d0
-    if (seniorityScheme.eq.0) then
-      if (HOsp_sh(a)==HOsp_sh(b))
-        N_ab_J0T1 = sqrt(ja + 1) * 0.5d0  ! squared
-      else
-        continue
-      endif
+    if (seniorityScheme.eq.1) then
+      if (HOsp_sh(a).ne.HOsp_sh(b)) continue
+      N_ab_J0T1 = sqrt(ja + 1) * 0.5d0  ! squared
     endif
 
     ! index loop for the density matrices
@@ -424,7 +421,7 @@ do a = 1, hdim
 end do
 
 aux2 = 1.0
-if (seniorityScheme.eq.0) aux2 = 0.7071067811865476
+if (seniorityScheme.eq.1) aux2 = 0.7071067811865476
 
 call ClebschGordan(1,1,0, 1,-1,0, aux)
 p2B_T00_J1p1 = p2B_T00_J1p1 * 0.50d0 * aux2 * (aux)**2.0d0
@@ -445,7 +442,7 @@ pair_T1p1_J00 = real(p2B_T1p1_J00)
 pair_T1m1_J00 = real(p2B_T1m1_J00)
 pair_T10_J00  = real(p2B_T10_J00)
 
-end subroutine calculate_pairCoupl2B_bench
+end subroutine calculate_pairCoupl2B_ben
 
 !!! --------------------------------------------------------------------------
 
