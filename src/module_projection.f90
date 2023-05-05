@@ -1261,7 +1261,7 @@ if ( max(Mphip,Mphin) == 1 ) then
   write(uto,format10) 'T = 1 ; J = 0', P_T1m1_J00, P_T10_J00, P_T1p1_J00
 
   !! delafuen : DENS_DEP NEW 2Body pair coupling operator
-  call calculate_pairCoupl2B_ben(0,dens_rhoRR,dens_kappaRR,dens_kappaRR, &
+  call calculate_pairCoupl2B_ben(0,dens_rhoLR,dens_kappaLR,dens_kappaRL, &
                                  P_T00_J1m1, P_T00_J10, P_T00_J1p1, &
                                  P_T1m1_J00, P_T10_J00, P_T1p1_J00, &
                                  HOsp_dim, pairs_scheme)
