@@ -334,7 +334,7 @@ do a = 1, hdim
     N_ab_J0T1 = 1.0d0
     if (seniorityScheme.eq.1) then
       if (HOsp_sh(a).ne.HOsp_sh(b)) continue
-      N_ab_J0T1 = sqrt(ja + 1) * 0.5d0  ! squared
+      N_ab_J0T1 = sqrt(ja + 1.0d0) * 0.5d0  ! squared
     endif
 
     ! index loop for the density matrices
