@@ -1263,8 +1263,8 @@ if ( max(Mphip,Mphin) == 1 ) then
   !! delafuen : DENS_DEP NEW 2Body pair coupling operator
   call calculate_pairCoupl2B_ben(0,dens_rhoRR,dens_kappaRR,dens_kappaRR, &
                                  P_T00_J1m1, P_T00_J10, P_T00_J1p1, &
-                                 P_T1m1_J10, P_T10_J00, P_T1p1_J00, &
-                                 ndim, pairs_scheme)
+                                 P_T1m1_J00, P_T10_J00, P_T1p1_J00, &
+                                 HOsp_dim, pairs_scheme)
 
   print '(/,"PAIR COUPLING 2-BODY (New)",/,13("="),//, &
         & 3x,"MJ or MT =",7x,"-1",10x," 0",10x,"+1",/,49("-"))'
