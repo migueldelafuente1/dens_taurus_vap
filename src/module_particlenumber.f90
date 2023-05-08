@@ -442,7 +442,7 @@ p2B_T1m1_J00 = p2B_T1m1_J00 * 0.25d0 * aux2 * (aux)**2.0d0
 call ClebschGordan(1,1,2, 1,-1,0, aux)
 p2B_T10_J00  = p2B_T10_J00  * 0.50d0 * aux2 * (aux)**2.0d0
 
-aux1B = zero
+!aux1B = zero
 pair_T00_J1p1 = real(p2B_T00_J1p1)  + aux1B
 pair_T00_J1m1 = real(p2B_T00_J1m1)  + aux1B
 pair_T00_J10  = real(p2B_T00_J10)  + aux1B
