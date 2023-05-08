@@ -289,7 +289,7 @@ end subroutine calculate_particle_number_pn
 
 
 
-
+!! TODO: Must be added the 1body term (equivalent  to N and Z)
 subroutine calculate_pairCoupl2B_ben(io,rhoLR,kappaLR,kappaRL, &
                                      pair_T00_J1m1,pair_T00_J10,pair_T00_J1p1,&
                                      pair_T1m1_J00,pair_T10_J00,pair_T1p1_J00,&
@@ -303,7 +303,7 @@ integer :: hdim, a, b, a2, b2, ta, tb, ja, jb, ma, mb, ma2, mb2, M,&
            ia, ib, a0, b0
 complex(r64) :: p2B_T00_J1p1, p2B_T00_J1m1, p2B_T00_J10, &
                 p2B_T1p1_J00, p2B_T1m1_J00, p2B_T10_J00
-real(r64) :: N_ab_J0T1, cgj1,cgj2,cgt1,cgt2, aux, aux2 ! N_ab_J1T0 == N_ab_J0T1
+real(r64) :: N_ab_J0T1, cgj1,cgj2,cgt1,cgt2, aux, aux2, aux1B ! N_ab_J1T0 == N_ab_J0T1
 
 if ( (io /= 0) .and. (io /= 1) ) then
   print*,'Wrong argument in calculate_pairCoupl2B_bench: io = ', io
@@ -319,6 +319,7 @@ p2B_T00_J10  = zzero
 p2B_T1p1_J00 = zzero
 p2B_T1m1_J00 = zzero
 p2B_T10_J00  = zzero
+aux1B = zero
 
 !! Operator pair2B_T00_J1p1   pair2B_T00_J1m1   pair2B_T00_J10
 do a = 1, hdim
@@ -326,6 +327,8 @@ do a = 1, hdim
   ma = HOsp_2mj(a)
   ia = (ja-ma) / 2 ! index of a in the program order [+ja, +ja-1, ...,  -ja]
   a0 = a - ia      ! limit to read the (ja, alpha')
+
+  aux = aux + 0.25d+0 * real(rhoLR(a,a) + rhoLR(a+hdim,a+hdim))
 
   do b = 1, hdim
     jb = HOsp_2j (b)
@@ -428,16 +431,16 @@ aux2 = 1.0
 if (seniorityScheme.eq.1) aux2 = 0.7071067811865476
 
 call ClebschGordan(1,1,0, 1,-1,0, aux)
-p2B_T00_J1p1 = p2B_T00_J1p1 * 0.50d0 * aux2 * (aux)**2.0d0
-p2B_T00_J1m1 = p2B_T00_J1m1 * 0.50d0 * aux2 * (aux)**2.0d0
-p2B_T00_J10  = p2B_T00_J10  * 0.50d0 * aux2 * (aux)**2.0d0
+p2B_T00_J1p1 = (p2B_T00_J1p1 * 0.50d0 * aux2 * (aux)**2.0d0) + aux1B
+p2B_T00_J1m1 = (p2B_T00_J1m1 * 0.50d0 * aux2 * (aux)**2.0d0) + aux1B
+p2B_T00_J10  = (p2B_T00_J10  * 0.50d0 * aux2 * (aux)**2.0d0) + aux1B
 
 call ClebschGordan(1,1,2, 1,1,2, aux)
-p2B_T1p1_J00 = p2B_T1p1_J00 * 0.25d0 * aux2 * (aux)**2.0d0
-p2B_T1m1_J00 = p2B_T1m1_J00 * 0.25d0 * aux2 * (aux)**2.0d0
+p2B_T1p1_J00 = (p2B_T1p1_J00 * 0.25d0 * aux2 * (aux)**2.0d0) + aux1B
+p2B_T1m1_J00 = (p2B_T1m1_J00 * 0.25d0 * aux2 * (aux)**2.0d0) + aux1B
 
-call ClebschGordan(1,1,1, 1,-1,0, aux)
-p2B_T10_J00  = p2B_T10_J00  * 0.50d0 * aux2 * (aux)**2.0d0
+call ClebschGordan(1,1,2, 1,-1,0, aux)
+p2B_T10_J00  = (p2B_T10_J00  * 0.50d0 * aux2 * (aux)**2.0d0) + aux1B
 
 pair_T00_J1p1 = real(p2B_T00_J1p1)
 pair_T00_J1m1 = real(p2B_T00_J1m1)
