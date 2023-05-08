@@ -328,7 +328,7 @@ do a = 1, hdim
   ia = (ja-ma) / 2 ! index of a in the program order [+ja, +ja-1, ...,  -ja]
   a0 = a - ia      ! limit to read the (ja, alpha')
 
-  aux = aux + 0.25d+0 * real(rhoLR(a,a) + rhoLR(a+hdim,a+hdim))
+  aux1B = aux1B + 0.25d+0 * real(rhoLR(a,a) + rhoLR(a+hdim,a+hdim))
 
   do b = 1, hdim
     jb = HOsp_2j (b)
