@@ -431,23 +431,24 @@ aux2 = 1.0
 if (seniorityScheme.eq.1) aux2 = 0.7071067811865476
 
 call ClebschGordan(1,1,0, 1,-1,0, aux)
-p2B_T00_J1p1 = (p2B_T00_J1p1 * 0.50d0 * aux2 * (aux)**2.0d0) + aux1B
-p2B_T00_J1m1 = (p2B_T00_J1m1 * 0.50d0 * aux2 * (aux)**2.0d0) + aux1B
-p2B_T00_J10  = (p2B_T00_J10  * 0.50d0 * aux2 * (aux)**2.0d0) + aux1B
+p2B_T00_J1p1 = p2B_T00_J1p1 * 0.50d0 * aux2 * (aux)**2.0d0
+p2B_T00_J1m1 = p2B_T00_J1m1 * 0.50d0 * aux2 * (aux)**2.0d0
+p2B_T00_J10  = p2B_T00_J10  * 0.50d0 * aux2 * (aux)**2.0d0
 
 call ClebschGordan(1,1,2, 1,1,2, aux)
-p2B_T1p1_J00 = (p2B_T1p1_J00 * 0.25d0 * aux2 * (aux)**2.0d0) + aux1B
-p2B_T1m1_J00 = (p2B_T1m1_J00 * 0.25d0 * aux2 * (aux)**2.0d0) + aux1B
+p2B_T1p1_J00 = p2B_T1p1_J00 * 0.25d0 * aux2 * (aux)**2.0d0
+p2B_T1m1_J00 = p2B_T1m1_J00 * 0.25d0 * aux2 * (aux)**2.0d0
 
 call ClebschGordan(1,1,2, 1,-1,0, aux)
-p2B_T10_J00  = (p2B_T10_J00  * 0.50d0 * aux2 * (aux)**2.0d0) + aux1B
+p2B_T10_J00  = p2B_T10_J00  * 0.50d0 * aux2 * (aux)**2.0d0
 
-pair_T00_J1p1 = real(p2B_T00_J1p1)
-pair_T00_J1m1 = real(p2B_T00_J1m1)
-pair_T00_J10  = real(p2B_T00_J10)
-pair_T1p1_J00 = real(p2B_T1p1_J00)
-pair_T1m1_J00 = real(p2B_T1m1_J00)
-pair_T10_J00  = real(p2B_T10_J00)
+aux1B = zero
+pair_T00_J1p1 = real(p2B_T00_J1p1)  + aux1B
+pair_T00_J1m1 = real(p2B_T00_J1m1)  + aux1B
+pair_T00_J10  = real(p2B_T00_J10)  + aux1B
+pair_T1p1_J00 = real(p2B_T1p1_J00)  + aux1B
+pair_T1m1_J00 = real(p2B_T1m1_J00)  + aux1B
+pair_T10_J00  = real(p2B_T10_J00)  + aux1B
 
 end subroutine calculate_pairCoupl2B_ben
 
