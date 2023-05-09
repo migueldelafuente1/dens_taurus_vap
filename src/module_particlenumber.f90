@@ -357,13 +357,13 @@ do a = 1, hdim
           cgt1 = 1.0d0
 
           aux = kappaRL(a,b) * kappaLR(a2,b2)
-!          aux = aux + rhoLR(a2,a) * rhoLR(b2,b)
-!          aux = aux - rhoLR(b2,a) * rhoLR(a2,b)
+          aux = aux + rhoLR(a2,a) * rhoLR(b2,b)
+          aux = aux - rhoLR(b2,a) * rhoLR(a2,b)
           p2B_T1m1_J00 = p2B_T1m1_J00 + (aux * N_ab_J0T1 * cgj1 * cgj2 * cgt1)
 
           aux = kappaRL(a+hdim,b+hdim) * kappaLR(a2+hdim,b2+hdim)
-!          aux = aux + rhoLR(a2+hdim,a+hdim) * rhoLR(b2+hdim,b+hdim)
-!          aux = aux - rhoLR(b2+hdim,a+hdim) * rhoLR(a2+hdim,b+hdim)
+          aux = aux + rhoLR(a2+hdim,a+hdim) * rhoLR(b2+hdim,b+hdim)
+          aux = aux - rhoLR(b2+hdim,a+hdim) * rhoLR(a2+hdim,b+hdim)
           p2B_T1p1_J00 = p2B_T1p1_J00 + (aux * N_ab_J0T1 * cgj1 * cgj2 * cgt1)
 
           !! Term pn J=0, T=1, MT= 0 (same clebsh gordan for J) ---------------
@@ -374,15 +374,15 @@ do a = 1, hdim
           aux = aux + kappaRL(a+hdim,b     ) * kappaLR(a2     ,b2+hdim)
           aux = aux + kappaRL(a+hdim,b     ) * kappaLR(a2+hdim,b2     )
 
-!          aux = aux + rhoLR(a2     ,a     ) * rhoLR(b2+hdim,b+hdim)
-!          aux = aux + rhoLR(a2+hdim,a     ) * rhoLR(b2     ,b+hdim)
-!          aux = aux + rhoLR(a2     ,a+hdim) * rhoLR(b2+hdim,b     )
-!          aux = aux + rhoLR(a2+hdim,a+hdim) * rhoLR(b2     ,b     )
-!
-!          aux = aux - rhoLR(b2+hdim,a     ) * rhoLR(a2     ,b+hdim)
-!          aux = aux - rhoLR(b2     ,a     ) * rhoLR(a2+hdim,b+hdim)
-!          aux = aux - rhoLR(b2+hdim,a+hdim) * rhoLR(a2     ,b     )
-!          aux = aux - rhoLR(b2     ,a+hdim) * rhoLR(a2+hdim,b     )
+          aux = aux + rhoLR(a2     ,a     ) * rhoLR(b2+hdim,b+hdim)
+          aux = aux + rhoLR(a2+hdim,a     ) * rhoLR(b2     ,b+hdim)
+          aux = aux + rhoLR(a2     ,a+hdim) * rhoLR(b2+hdim,b     )
+          aux = aux + rhoLR(a2+hdim,a+hdim) * rhoLR(b2     ,b     )
+
+          aux = aux - rhoLR(b2+hdim,a     ) * rhoLR(a2     ,b+hdim)
+          aux = aux - rhoLR(b2     ,a     ) * rhoLR(a2+hdim,b+hdim)
+          aux = aux - rhoLR(b2+hdim,a+hdim) * rhoLR(a2     ,b     )
+          aux = aux - rhoLR(b2     ,a+hdim) * rhoLR(a2+hdim,b     )
 
           p2B_T10_J00 = p2B_T10_J00 + (aux * N_ab_J0T1 * cgj1 * cgj2 * cgt1)
 
@@ -400,15 +400,15 @@ do a = 1, hdim
           aux = aux - kappaRL(a+hdim,b     ) * kappaLR(a2     ,b2+hdim)
           aux = aux + kappaRL(a+hdim,b     ) * kappaLR(a2+hdim,b2     )
 
-!          aux = aux + rhoLR(a2     ,a     ) * rhoLR(b2+hdim,b+hdim)
-!          aux = aux - rhoLR(a2+hdim,a     ) * rhoLR(b2     ,b+hdim)
-!          aux = aux - rhoLR(a2     ,a+hdim) * rhoLR(b2+hdim,b     )
-!          aux = aux + rhoLR(a2+hdim,a+hdim) * rhoLR(b2     ,b     )
-!
-!          aux = aux - rhoLR(b2+hdim,a     ) * rhoLR(a2     ,b+hdim)
-!          aux = aux + rhoLR(b2     ,a     ) * rhoLR(a2+hdim,b+hdim)
-!          aux = aux + rhoLR(b2+hdim,a+hdim) * rhoLR(a2     ,b     )
-!          aux = aux - rhoLR(b2     ,a+hdim) * rhoLR(a2+hdim,b     )
+          aux = aux + rhoLR(a2     ,a     ) * rhoLR(b2+hdim,b+hdim)
+          aux = aux - rhoLR(a2+hdim,a     ) * rhoLR(b2     ,b+hdim)
+          aux = aux - rhoLR(a2     ,a+hdim) * rhoLR(b2+hdim,b     )
+          aux = aux + rhoLR(a2+hdim,a+hdim) * rhoLR(b2     ,b     )
+
+          aux = aux - rhoLR(b2+hdim,a     ) * rhoLR(a2     ,b+hdim)
+          aux = aux + rhoLR(b2     ,a     ) * rhoLR(a2+hdim,b+hdim)
+          aux = aux + rhoLR(b2+hdim,a+hdim) * rhoLR(a2     ,b     )
+          aux = aux - rhoLR(b2     ,a+hdim) * rhoLR(a2+hdim,b     )
 
           if      (M.eq.2) then
             p2B_T00_J1m1 = p2B_T00_J1m1 + (aux * N_ab_J0T1 * cgj1 * cgj2 * cgt1)
@@ -441,7 +441,7 @@ p2B_T1m1_J00 = p2B_T1m1_J00 * 0.25d0 * aux2 * (aux)**2.0d0
 call ClebschGordan(1,1,2, 1,-1,0, aux)
 p2B_T10_J00  = p2B_T10_J00  * 0.50d0 * aux2 * (aux)**2.0d0
 
-aux1B = zero
+!aux1B = zero
 pair_T00_J1p1 = real(p2B_T00_J1p1)  + aux1B
 pair_T00_J1m1 = real(p2B_T00_J1m1)  + aux1B
 pair_T00_J10  = real(p2B_T00_J10)  + aux1B
