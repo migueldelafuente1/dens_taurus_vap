@@ -198,7 +198,7 @@ if (exportVSPSpace) then
     read(uth,*) str_, VSsh_dim, (VSsh_list(i),i=1,VSsh_dim)
     print "(A)", " [input scr] DONE"
   else
-    print "[input scr] Reading for the full valence space"
+    print *,"[input scr] Reading for the full valence space"
     VSsh_dim  = HOsh_dim
     VSsp_dim  = HOsp_dim
     VSsp_dim2 = HOsp_dim2
