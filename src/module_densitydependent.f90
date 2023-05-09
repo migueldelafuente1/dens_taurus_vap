@@ -189,24 +189,27 @@ exportVSPSpace = aux_int.GE.1
 
 VSsh_dim = aux_int
 if (exportVSPSpace) then
-  print "(A,I3)", " [input scr] Reading The VS", VSsh_dim
-  backspace runit
-  print *, "** backspace done"
-  allocate(VSsh_list(VSsh_dim))
-  print *, "** allocate done"
-  read(uth,*) str_, VSsh_dim, (VSsh_list(i),i=1,VSsh_dim)
-  print "(A)", " [input scr] DONE"
-else
-  VSsh_dim  = HOsh_dim
-  VSsp_dim  = HOsp_dim
-  VSsp_dim2 = HOsp_dim2
-  allocate(VSsh_list(VSsh_dim))
-  do i=1, VSsh_dim
-    VSsh_list(i) = HOsh_na(i)
-  end do
-  do i=1, VSsp_dim
-    VStoHOsp_index(i) = i
-  end do
+  if (VSsh_dim.LE.HOsh_dim) then
+    print "(A,I3)", " [input scr] Reading The VS", VSsh_dim
+    backspace runit
+    print *, "** backspace done"
+    allocate(VSsh_list(VSsh_dim))
+    print *, "** allocate done"
+    read(uth,*) str_, VSsh_dim, (VSsh_list(i),i=1,VSsh_dim)
+    print "(A)", " [input scr] DONE"
+  else
+    print "[input scr] Reading for the full valence space"
+    VSsh_dim  = HOsh_dim
+    VSsp_dim  = HOsp_dim
+    VSsp_dim2 = HOsp_dim2
+    allocate(VSsh_list(VSsh_dim))
+    do i=1, VSsh_dim
+      VSsh_list(i) = HOsh_na(i)
+    end do
+    do i=1, VSsp_dim
+      VStoHOsp_index(i) = i
+    end do
+  endif
 endif
 
 read(runit,formatST) str_
