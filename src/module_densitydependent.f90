@@ -189,9 +189,11 @@ exportVSPSpace = aux_int.GE.0
 
 VSsh_dim = aux_int
 if (exportVSPSpace) then
-  print "(A)", " [input scr] Reading The VS"
+  print "(A,I3)", " [input scr] Reading The VS", VSsh_dim
   backspace runit
+  print *, "** backspace done"
   allocate(VSsh_list(VSsh_dim))
+  print *, "** allocate done"
   read(uth,*) str_, VSsh_dim, (VSsh_list(i),i=1,VSsh_dim)
   print "(A)", " [input scr] DONE"
 else
