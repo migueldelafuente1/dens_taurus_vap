@@ -247,7 +247,8 @@ print '(A,F10.6)', 'R_MAX (fm)         =', R_MAX
 print '(A,L10)',   'eval/export Val.Sp =', exportVSPSpace
 if (exportVSPSpace)then
   print '(A,I3)',  '    ... sh states to export:', VSsh_dim
-  print *, VSsh_list
+  do i=1,VSsh_dim
+  print '(A,I3,I7)',  '    i:', i, VSsh_list(i)
 endif
 print *, ''
 if (eval_explicit_fieldsDD) then
