@@ -14,5 +14,5 @@ Omega_Order                 = 14
 THE_grid                    = 10
 PHI_grid                    = 10
 R_MAX                       = 08.500000d+00
-eval full Val.Space (0,1)   = 1
+eval/export Valence.Space   = 1 203 205 10001
 * Integration parameters:      ------------
