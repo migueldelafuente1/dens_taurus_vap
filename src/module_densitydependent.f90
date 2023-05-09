@@ -191,12 +191,11 @@ VSsh_dim = aux_int
 if (exportVSPSpace) then
   if (VSsh_dim.LE.HOsh_dim) then
     print "(A,I3,A)", "   ... Reading VS sh states", VSsh_dim, &
-      "(check out if its the proper sh dimension)"
+      " (error if wrong sh dimension)"
     backspace runit
-    print *, "** backspace done"
     allocate(VSsh_list(VSsh_dim))
-    print *, "** allocate done"
-    read(runit,*) str_, VSsh_dim, (VSsh_list(i),i=1,VSsh_dim)
+    read(runit,formatI1) str_, VSsh_dim
+    read(runit,*) (VSsh_list(i),i=1,VSsh_dim)
     print "(A)", " [input scr] DONE"
   else
     print *,"[input scr] Reading for the full valence space"
