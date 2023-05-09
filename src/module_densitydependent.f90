@@ -185,7 +185,7 @@ read(runit,formatI3) str_, THE_grid
 read(runit,formatI3) str_, PHI_grid
 read(runit,formatEE) str_, R_MAX
 read(runit,formatI1) str_, aux_int
-exportVSPSpace = aux_int.GE.0
+exportVSPSpace = aux_int.GE.1
 
 VSsh_dim = aux_int
 if (exportVSPSpace) then
