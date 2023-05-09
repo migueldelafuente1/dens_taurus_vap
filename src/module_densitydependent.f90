@@ -270,7 +270,7 @@ end subroutine import_DD_parameters
 ! Subroutine to identify the index of the valence space from the basis        !
 !-----------------------------------------------------------------------------!
 subroutine set_valence_space_to_export
-integer :: i, j
+integer :: i, j, i_ant
 integer, dimension(:), allocatable :: temp_list_index
 
 VSsp_dim  = 0
@@ -278,10 +278,11 @@ allocate(temp_list_index(HOsp_dim))
 temp_list_index = 0
 
 do i=1, HOsp_dim
+  i_ant = 10000*HOsp_n(i) + 100*HOsp_l(i) + HOsp_2j(i)
   do j=1, VSsh_dim
     print "(A,4I6,L3)", "  search (i,sh_i, j, sh_j)=", &
-      i, HOsh_ant(i), j, VSsh_list(j), HOsp_sh(i).EQ.VSsh_list(j)
-    if (HOsh_ant(i).EQ.VSsh_list(j)) then
+      i, i_ant, j, VSsh_list(j), HOsp_sh(i).EQ.VSsh_list(j)
+    if (i_ant.EQ.VSsh_list(j)) then
       VSsp_dim = VSsp_dim + 1
       temp_list_index(VSsp_dim) = i
     endif
