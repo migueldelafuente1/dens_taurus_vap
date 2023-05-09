@@ -1266,10 +1266,10 @@ if ( max(Mphip,Mphin) == 1 ) then
                                  P_T1m1_J00, P_T10_J00, P_T1p1_J00, &
                                  HOsp_dim, pairs_scheme)
 
-  print '(/,"PAIR COUPLING 2-BODY (New)",/,13("="),//, &
+  print '(/,"    2-BODY OPERATOR (new)",//, &
         & 3x,"MJ or MT =",7x,"-1",10x," 0",10x,"+1",/,49("-"))'
-  write(uto,format10) 'T = 0 ; J = 1', P_T00_J1m1, P_T00_J10, P_T00_J1p1
-  write(uto,format10) 'T = 1 ; J = 0', P_T1m1_J00, P_T10_J00, P_T1p1_J00
+  write(uto,format10) '2B T= 0; J= 1', P_T00_J1m1, P_T00_J10, P_T00_J1p1
+  write(uto,format10) '2B T= 1; J= 0', P_T1m1_J00, P_T10_J00, P_T1p1_J00
 
 endif
 
