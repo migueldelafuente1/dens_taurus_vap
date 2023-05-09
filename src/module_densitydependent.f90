@@ -279,12 +279,15 @@ temp_list_index = 0
 
 do i=1, HOsp_dim
   do j=1, VSsh_dim
+    print "(A,4I3,L3)", "  search (i,sh_i, j, sh_j)=", &
+      i, HOsp_sh(i), j, VSsh_list(j), HOsp_sh(i).EQ.VSsh_list(j)
     if (HOsp_sh(i).EQ.VSsh_list(j)) then
       VSsp_dim = VSsp_dim + 1
       temp_list_index(VSsp_dim) = i
     endif
   end do
 enddo
+print "(A)", "done loop"
 
 VSsp_dim2 = VSsp_dim ** 2
 
