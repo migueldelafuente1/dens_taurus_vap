@@ -289,7 +289,6 @@ end subroutine calculate_particle_number_pn
 
 
 
-!! TODO: Must be added the 1body term (equivalent  to N and Z)
 subroutine calculate_pairCoupl2B_ben(io,rhoLR,kappaLR,kappaRL, &
                                      pair_T00_J1m1,pair_T00_J10,pair_T00_J1p1,&
                                      pair_T1m1_J00,pair_T10_J00,pair_T1p1_J00,&
@@ -385,7 +384,7 @@ do a = 1, hdim
 !          aux = aux - rhoLR(b2+hdim,a+hdim) * rhoLR(a2     ,b     )
 !          aux = aux - rhoLR(b2     ,a+hdim) * rhoLR(a2+hdim,b     )
 
-          p2B_T10_J00 = p2B_T1p1_J00 + (aux * N_ab_J0T1 * cgj1 * cgj2 * cgt1)
+          p2B_T10_J00 = p2B_T10_J00 + (aux * N_ab_J0T1 * cgj1 * cgj2 * cgt1)
 
           !! Term pn J=1,M   T=0, MT= 0  --------------------------------------
           !! M requires to be::  ma+mb = ma2 + mb2
