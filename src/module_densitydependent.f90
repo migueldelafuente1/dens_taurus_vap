@@ -140,7 +140,7 @@ character(len=*), parameter :: formatST = "(1a)", &
                                formatI3 = "(1a30, 1i3)", &
                                formatF6 = "(1a30, 1f9.6)", &
                                formatEE = "(1a30, 1es12.6)", &
-                               formatSH = "(1a30, )"
+                               formatStrHeader = "(1a30)"
 
 CHARACTER(LEN=20) :: file_input = "input_DD_PARAMS.txt"
 CHARACTER(LEN=30) :: filecontents, str_
@@ -196,7 +196,7 @@ if (exportVSPSpace) then
       " (error if wrong sh dimension)"
     backspace runit
     allocate(VSsh_list(VSsh_dim))
-    read(runit,formatI1) str_
+    read(runit,formatStrHeader) str_
     read(runit,*) VSsh_dim, (VSsh_list(i),i=1,VSsh_dim)
     print "(A)", " [input scr] DONE"
   else
