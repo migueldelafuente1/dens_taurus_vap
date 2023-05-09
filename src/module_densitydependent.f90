@@ -195,18 +195,19 @@ if (exportVSPSpace) then
   if (VSsh_dim.LE.HOsh_dim) then
     print "(A,I3,A)", "   ... Reading VS sh states", VSsh_dim, &
       " (error if wrong sh dimension)"
+    print *, ""
     backspace runit
     allocate(VSsh_list(VSsh_dim))
     read(runit,formatStrHeader, advance='no') str_
     read(runit,*) VSsh_dim, (VSsh_list(i),i=1,VSsh_dim)
-!    read(runit, formatII) str_, VSsh_dim, (VSsh_list(i),i=1,VSsh_dim)
-    print "(A)", " [input scr] DONE"
+    call set_valence_space_to_export
   else
-    print *,"[input scr] Reading for the full valence space"
+    print *,"   ... Reading for FULL valence space"
     VSsh_dim  = HOsh_dim
     VSsp_dim  = HOsp_dim
     VSsp_dim2 = HOsp_dim2
     allocate(VSsh_list(VSsh_dim))
+    allocate(VStoHOsp_index(VSsp_dim))
     do i=1, VSsh_dim
       VSsh_list(i) = HOsh_na(i)
     end do
@@ -251,10 +252,9 @@ print '(A,L10)',   'eval/export Val.Sp =', exportVSPSpace
 if (exportVSPSpace)then
   print '(A,I3)',  '    ... sh states to export:', VSsh_dim
   do i=1,VSsh_dim
-    print '(A,I3,I7)',  '    i:', i, VSsh_list(i)
-    enddo
+    print '(A,I3,I7)',  '    ', i, VSsh_list(i)
+  enddo
 endif
-print *, ''
 if (eval_explicit_fieldsDD) then
   print '(A,3L10)', " [Explicit DD Field Eval.] Compute Full Valence Space =",&
     evalFullSPSpace
@@ -264,6 +264,39 @@ print *, ''
 haveX0M1 = abs(x0_DD_FACTOR - 1.0d+0) > 1.0d-6
 
 end subroutine import_DD_parameters
+
+
+!-----------------------------------------------------------------------------!
+! Subroutine to identify the index of the valence space from the basis        !
+!-----------------------------------------------------------------------------!
+subroutine set_valence_space_to_export
+integer :: i, j
+integer, dimension(:), allocatable :: temp_list_index
+
+VSsp_dim  = 0
+allocate(temp_list_index(HOsp_dim))
+temp_list_index = 0
+
+do i=1, HOsp_dim
+  do j=1, VSsh_dim
+    if (HOsp_sh(i).EQ.VSsh_list(j)) then
+      VSsp_dim = VSsp_dim + 1
+      temp_list_index(VSsp_dim) = i
+    endif
+  end do
+enddo
+
+VSsp_dim2 = VSsp_dim ** 2
+
+allocate(VStoHOsp_index(VSsp_dim))
+do i=1, VSsp_dim
+  VStoHOsp_index(i) = temp_list_index(i)
+  print "(A,2I6)", "VS index in HO basis:", i, VStoHOsp_index(i)
+end do
+deallocate(temp_list_index)
+
+end subroutine set_valence_space_to_export
+
 
 !-----------------------------------------------------------------------------!
 ! subroutine set_density_dependent                                            !
