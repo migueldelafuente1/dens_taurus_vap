@@ -244,11 +244,15 @@ print '(A,I10)',   'THE_grid           =', THE_grid
 print '(A,I10)',   'PHI_grid           =', PHI_grid
 print '(A,F10.6)', 'R_MAX (fm)         =', R_MAX
 print '(A,L10)',   'eval/export Val.Sp =', exportVSPSpace
+if (exportVSPSpace)then
+  print '(A,I3)',  '    ... sh states to export:', VSsh_dim
+  print *, VSsh_list
+endif
 print *, ''
 if (eval_explicit_fieldsDD) then
   print '(A,3L10)', " [Explicit DD Field Eval.] Compute Full Valence Space =",&
     evalFullSPSpace
-end if
+endif
 print *, ''
 
 haveX0M1 = abs(x0_DD_FACTOR - 1.0d+0) > 1.0d-6
