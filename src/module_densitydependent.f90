@@ -185,24 +185,27 @@ read(runit,formatI3) str_, THE_grid
 read(runit,formatI3) str_, PHI_grid
 read(runit,formatEE) str_, R_MAX
 read(runit,formatI1) str_, aux_int
-exportVSPSpace = aux_int.GE.1
+exportVSPSpace = aux_int.GE.0
+
 VSsh_dim = aux_int
-!if (exportVSPSpace) then
-!  backspace runit
-!  allocate(VSsh_list(VSsh_dim))
-!  read(uth,*) str_, VSsh_dim, (VSsh_list(i),i=1,VSsh_dim)
-!else
-!  VSsh_dim = HOsh_dim
-!  VSsp_dim = HOsp_dim
-!  VSsp_dim2 = HOsp_dim2
-!  allocate(VSsh_list(VSsh_dim))
-!  do i=1, VSsh_dim
-!    VSsh_list(i) = HOsh_na(i)
-!  end do
-!  do i=1, VSsp_dim
-!    VStoHOsp_index(i) = i
-!  end do
-!endif
+if (exportVSPSpace) then
+  print "(A)", " [input scr] Reading The VS"
+  backspace runit
+  allocate(VSsh_list(VSsh_dim))
+  read(uth,*) str_, VSsh_dim, (VSsh_list(i),i=1,VSsh_dim)
+  print "(A)", " [input scr] DONE"
+else
+  VSsh_dim  = HOsh_dim
+  VSsp_dim  = HOsp_dim
+  VSsp_dim2 = HOsp_dim2
+  allocate(VSsh_list(VSsh_dim))
+  do i=1, VSsh_dim
+    VSsh_list(i) = HOsh_na(i)
+  end do
+  do i=1, VSsp_dim
+    VStoHOsp_index(i) = i
+  end do
+endif
 
 read(runit,formatST) str_
 rewind(runit)
@@ -235,7 +238,7 @@ print '(A,I10)',   'Omega_Order        =', Omega_Order
 print '(A,I10)',   'THE_grid           =', THE_grid
 print '(A,I10)',   'PHI_grid           =', PHI_grid
 print '(A,F10.6)', 'R_MAX (fm)         =', R_MAX
-print '(A,L10)',   'export_val.sp Hamil=', evalFullSPSpace
+print '(A,L10)',   'eval/export Val.Sp =', exportVSPSpace
 print *, ''
 if (eval_explicit_fieldsDD) then
   print '(A,3L10)', " [Explicit DD Field Eval.] Compute Full Valence Space =",&
