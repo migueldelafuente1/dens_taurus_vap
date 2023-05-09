@@ -141,7 +141,7 @@ character(len=*), parameter :: formatST = "(1a)", &
                                formatF6 = "(1a30, 1f9.6)", &
                                formatEE = "(1a30, 1es12.6)", &
                                formatStrHeader = "(1a30)", &
-                               formatII = "(1a30, 1i1, *)"
+                               formatII = "(1a30, 1i1, 99i)"
 
 CHARACTER(LEN=20) :: file_input = "input_DD_PARAMS.txt"
 CHARACTER(LEN=30) :: filecontents, str_
