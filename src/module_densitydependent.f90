@@ -248,7 +248,8 @@ print '(A,L10)',   'eval/export Val.Sp =', exportVSPSpace
 if (exportVSPSpace)then
   print '(A,I3)',  '    ... sh states to export:', VSsh_dim
   do i=1,VSsh_dim
-  print '(A,I3,I7)',  '    i:', i, VSsh_list(i)
+    print '(A,I3,I7)',  '    i:', i, VSsh_list(i)
+    enddo
 endif
 print *, ''
 if (eval_explicit_fieldsDD) then
