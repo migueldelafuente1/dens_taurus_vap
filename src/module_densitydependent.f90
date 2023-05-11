@@ -1965,14 +1965,11 @@ do aa = 1, VSsp_dim / 2 ! (prev = HOsp_dim)
   enddo  !end loop c
 enddo  !end loop a
 
-print "(A,I5)", "[DONE] kk =", kk
-
 !!! At the first iteration, the values of the hamiltonian are saved via file
 if (ALL_ISOS) then
 
   hamil_DD_H2dim     = kk
   hamil_DD_H2dim_all = kk
-  print "(A,2I5)", "[DONE] 1 kk =", kk, hamil_DD_H2dim
 
   allocate( hamil_DD_H2_byT(4, hamil_DD_H2dim), &
             hamil_DD_abcd(4*hamil_DD_H2dim), hamil_temp(4*hamil_DD_H2dim),&
@@ -1983,16 +1980,18 @@ if (ALL_ISOS) then
 
   read(uth6) (hamil_DD_abcd(kk), kk=1, 4*hamil_DD_H2dim)
   read(uth7) (hamil_temp(kk),    kk=1, 4*hamil_DD_H2dim)
+
+  close(uth6)
+  close(uth7)
+
   do kk = 1, hamil_DD_H2dim
     hamil_DD_H2_byT(1, kk) =  hamil_temp(4*(kk-1) + 1)
     hamil_DD_H2_byT(2, kk) =  hamil_temp(4*(kk-1) + 2)
     hamil_DD_H2_byT(3, kk) =  hamil_temp(4*(kk-1) + 3)
     hamil_DD_H2_byT(4, kk) =  hamil_temp(4*(kk-1) + 4)
   enddo
+  deallocate(hamil_temp)
 
-  print "(A,2I5)", "[DONE] 2 kk =", kk, hamil_DD_H2dim
-  close(uth6)
-  close(uth7)
   call print_uncoupled_hamiltonian_DD(ALL_ISOS)
 
 else if (iteration < CONVERG_ITER) then !!! Normal Gradient DD dep. process ****
@@ -2074,9 +2073,9 @@ if (ALL_ISOS) then
       ',', HOsp_n(i),',', HOsp_l(i),',', HOsp_2j(i),',', HOsp_2mj(i), &
       ',', HOsp_2mt(i),',', HOsp_tr(i)
   enddo
-  write(123, fmt='(3A,2I8)')"//    a    b    c    d           pppp", &
-    "           pnpn           pnnp           nnnn", &
-    "  . DD/noDD DIM=", hamil_DD_H2dim, hamil_H2dim
+  write(123, fmt='(3A,3I12)')"//    a    b    c    d              pppp", &
+    "              pnpn              pnnp              nnnn    ", &
+    "* VS array DD/noDD DIM/ALL=", hamil_DD_H2dim, hamil_H2dim, (VSsh_dim/2)**4
 else
   do i=1, HOsp_dim
     write(123, fmt='(I3,7(A,I4))') i,',', HOsp_sh(i), &
@@ -2094,7 +2093,7 @@ do kk = 1, hamil_DD_H2dim
     c = hamil_DD_abcd(3+4*(kk-1))
     d = hamil_DD_abcd(4+4*(kk-1))
     if (ALL_ISOS) then
-      write(123, fmt='(I7,3I5,4F16.12)')  a, b, c, d, hamil_DD_H2_byT(1,kk), &
+      write(123, fmt='(I7,3I5,4F18.12)')  a, b, c, d, hamil_DD_H2_byT(1,kk), &
         hamil_DD_H2_byT(2,kk), hamil_DD_H2_byT(3,kk), hamil_DD_H2_byT(4,kk)
     else
       Vdec = hamil_DD_H2(kk)
@@ -2102,8 +2101,11 @@ do kk = 1, hamil_DD_H2dim
     endif
 
 enddo
-
 close(123)
+
+print "(3A,3I12)", &
+  "[OK] EXPORT Hamiltonian (uncoupled) for reduced Valence space [", filename,&
+  "] * VS array DD/noDD DIM/ALL=", hamil_DD_H2dim, hamil_H2dim, (VSsh_dim/2)**4
 
 end subroutine print_uncoupled_hamiltonian_DD
 
