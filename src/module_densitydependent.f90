@@ -2032,7 +2032,7 @@ end subroutine calculate_densityDep_hamiltonian
 subroutine print_uncoupled_hamiltonian_DD(ALL_ISOS)
 
 logical, intent(in) :: ALL_ISOS
-real(r64) :: Vred
+real(r64) :: Vdec
 character(len=25) :: filename
 integer :: i, kk, a, b, c, d
 
@@ -4291,7 +4291,7 @@ end subroutine test_printDesityKappaWF
 subroutine test_antisymmetrization_v_DD(a,b, c,d, Vdec)
 real(r64), intent(in) :: Vdec
 integer(i32), intent(in) :: a,b, c, d
-real(r64), dimension(3)  :: V_baT,V_dcT,V_ba_dcT,V_2T,V_2_baT,V_2_dcT,V_2_ba_dcT
+real(r64), dimension(4)  :: V_baT,V_dcT,V_ba_dcT,V_2T,V_2_baT,V_2_dcT,V_2_ba_dcT
 real(r64) :: V_ba,V_dc,V_ba_dc,V_2,V_2_ba,V_2_dc,V_2_ba_dc
 real(r64) :: TOL=1.0d-10
 logical :: pass_as
