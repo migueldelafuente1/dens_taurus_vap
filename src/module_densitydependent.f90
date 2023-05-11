@@ -1903,6 +1903,9 @@ do aa = 1, VSsp_dim / 2 ! (prev = HOsp_dim)
         rearrangement_me = zero
 
         me_Vdec = matrix_element_v_DD(a,b, c,d, ALL_ISOS)
+        print "(4I4,4F10.6,L5)", a,b,c,d,  &
+          me_Vdec(1), me_Vdec(2), me_Vdec(3), me_Vdec(4), &
+          (maxval(me_Vdec).GE.Vcut).OR.(abs(minval(me_Vdec)).GE.Vcut)
 
         !!! Select only matrix elements above a given cutoff to reduce the
         !!! CPU time and storage
