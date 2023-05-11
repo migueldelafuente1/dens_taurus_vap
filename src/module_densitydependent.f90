@@ -104,10 +104,11 @@ complex(r64), dimension(:, :), allocatable    :: REACommonFields   !(ir, iang))
 integer, dimension(:), allocatable :: HOsh_ant, HOsp_ant
 
 !! Related to the hamiltonian and Fields
-real(r64), dimension(:), allocatable :: hamil_DD_H2       ! 2-body part
-integer(i64) :: hamil_DD_H2dim, hamil_DD_H2dim_all        ! number of 2BME stored
-integer(i16), dimension(:), allocatable :: hamil_DD_abcd  ! indices of 2BME
-integer(i8), dimension(:), allocatable :: hamil_DD_trperm ! time reversal permut.
+real(r64), dimension(:), allocatable :: hamil_DD_H2        ! 2-body part
+real(r64), dimension(:,:), allocatable :: hamil_DD_H2_byT  ! 2-body part
+integer(i64) :: hamil_DD_H2dim, hamil_DD_H2dim_all         ! number of 2BME stored
+integer(i16), dimension(:), allocatable :: hamil_DD_abcd   ! indices of 2BME
+integer(i8) , dimension(:), allocatable :: hamil_DD_trperm ! time reversal permut.
 integer   :: iteration = 0, global_iter_max = 0
 integer   :: VSsh_dim = 0,  VSsp_dim = 0, VSsp_dim2 = 0
 integer, dimension(:), allocatable     :: VSsh_list, VStoHOsp_index
@@ -280,22 +281,19 @@ temp_list_index = 0
 do i=1, HOsp_dim
   i_ant = 10000*HOsp_n(i) + 100*HOsp_l(i) + HOsp_2j(i)
   do j=1, VSsh_dim
-    print "(A,4I6,L3)", "  search (i,sh_i, j, sh_j)=", &
-      i, i_ant, j, VSsh_list(j), HOsp_sh(i).EQ.VSsh_list(j)
     if (i_ant.EQ.VSsh_list(j)) then
       VSsp_dim = VSsp_dim + 1
       temp_list_index(VSsp_dim) = i
     endif
   end do
 enddo
-print "(A)", "done loop"
 
 VSsp_dim2 = VSsp_dim ** 2
 
 allocate(VStoHOsp_index(VSsp_dim))
 do i=1, VSsp_dim
   VStoHOsp_index(i) = temp_list_index(i)
-  print "(A,2I6)", "VS index in HO basis:", i, VStoHOsp_index(i)
+  !print "(A,2I6)", "VS index in HO basis:", i, VStoHOsp_index(i)
 end do
 deallocate(temp_list_index)
 
@@ -1610,13 +1608,16 @@ end function step_reconstruct_2body_timerev
 ! function matrix_element_v_DD                                                !
 !                                                                             !
 ! Computes density dependent two body matrix elements over the density average!
+!    all_isos (logical) Compute 3 combinations p/n instead of the current     !
+!                       ta,tb,tc,td of the sp-state.                          !
 !-----------------------------------------------------------------------------!
-function matrix_element_v_DD(a,b, c,d) result (v_dd_val_Real)
+function matrix_element_v_DD(a,b, c,d, ALL_ISOS) result (v_dd_val_Real)
 integer(i32), intent(in) :: a,b,c,d
-!real(r64)    :: v_dd_val_Real
-real(r64), dimension(3) :: v_dd_val_Real
+logical, intent(in) :: ALL_ISOS     !! compute 3 combinations p/n instead of the
+real(r64), dimension(4) :: v_dd_val_Real !! pppp(1), pnpn(2), npnp(3), nnnn(4)
 
-complex(r64) :: v_dd_value, aux, radial, aux_dir, aux_exch, ang_rea, rea,aux_rea
+complex(r64) :: aux, radial, aux_dir, aux_exch, ang_rea, rea,aux_rea
+complex(r64), dimension(4) :: v_dd_value
 real(r64)    :: delta_dir, delta_exch, angular, integral_factor,TOP, LOW
 integer(i32) :: la, ja, ma, a_sh, ta, lb, jb, mb, b_sh, tb, bmax, &
                 lc, jc, mc, c_sh, tc, ld, jd, md, d_sh, td,&
@@ -1625,7 +1626,6 @@ integer(i32) :: la, ja, ma, a_sh, ta, lb, jb, mb, b_sh, tb, bmax, &
                 kk1,kk2, kk1N,kk2N, l1,l2,j1,j2, mj1,mj2, ind_jm_1, ind_jm_2, &
                 ind_jm_a, ind_jm_b, ind_jm_c, ind_jm_d, delta_ac_bd, delta_ad_bc
 integer :: print_element = 0, HOspO2, skpd
-complex(r64) :: aux_1test, aux_2test, v_test_1, v_test_2
 real(r64) :: v_re_1, v_re_2
 
 HOspO2 = HOsp_dim/2
@@ -1633,41 +1633,46 @@ HOspO2 = HOsp_dim/2
 v_dd_value = zzero
 v_test_1   = zzero
 v_test_2   = zzero
-v_dd_val_Real = 0.0d0
+v_dd_val_Real = zero
 
 ja = HOsp_2j(a)
 ma = HOsp_2mj(a)
 la = HOsp_l(a)
-ta = HOsp_2mt(a)
 a_sh = HOsp_sh(a)
 ind_jm_a = angular_momentum_index(ja, ma, .TRUE.)
 jb = HOsp_2j(b)
 mb = HOsp_2mj(b)
 lb = HOsp_l(b)
-tb = HOsp_2mt(b)
 b_sh = HOsp_sh(b)
 ind_jm_b = angular_momentum_index(jb, mb, .TRUE.)
 jc = HOsp_2j(c)
 mc = HOsp_2mj(c)
 lc = HOsp_l(c)
-tc = HOsp_2mt(c)
 c_sh = HOsp_sh(c)
 ind_jm_c = angular_momentum_index(jc, mc, .TRUE.)
 jd = HOsp_2j(d)
 md = HOsp_2mj(d)
 ld = HOsp_l(d)
-td = HOsp_2mt(d)
 d_sh = HOsp_sh(d)
 ind_jm_d = angular_momentum_index(jd, md, .TRUE.)
 
-delta_ac_bd = abs((ta + tc) * (tb + td) / 4)  ! a+c = (2, 0)
-delta_ad_bc = abs((ta + td) * (tb + tc) / 4)
+if (.NOT.ALL_ISOS) then ! compute the
+  !else ! evaluate the element isospin directly
+  ta = HOsp_2mt(a)
+  tb = HOsp_2mt(b)
+  tc = HOsp_2mt(c)
+  td = HOsp_2mt(d)
 
-delta_dir  = delta_ac_bd - (x0_DD_FACTOR * delta_ad_bc)
-delta_exch = delta_ad_bc - (x0_DD_FACTOR * delta_ac_bd)
+  delta_ac_bd = abs((ta + tc) * (tb + td) / 4)  ! a+c = (2, 0)
+  delta_ad_bc = abs((ta + td) * (tb + tc) / 4)
 
-!! Tested (abs(delta_dir)+abs(delta_exch) > 2.0d-8) & pppp/nnnn non Skipped
-if (abs(delta_dir)+abs(delta_exch) < 1.0d-6) return
+  delta_dir  = delta_ac_bd - (x0_DD_FACTOR * delta_ad_bc)
+  delta_exch = delta_ad_bc - (x0_DD_FACTOR * delta_ac_bd)
+
+  !! Tested (abs(delta_dir)+abs(delta_exch) > 2.0d-8) & pppp/nnnn non Skipped
+  if (abs(delta_dir)+abs(delta_exch) < 1.0d-6) return
+endif
+
 
 integral_factor = t3_DD_CONST
 !! Note :: Remember that radial functions already have the factor 1/b**3
@@ -1682,8 +1687,6 @@ elseif (integration_method == 0) then
   STOP
 endif
 
-!! computing of the
-skpd = 0
 do i_r = 1, r_dim
   if (integration_method > 1) then
     radial = weight_R(i_r) * radial_2b_sho_noexp_memo(a_sh, c_sh, i_r) &
@@ -1743,17 +1746,26 @@ do i_r = 1, r_dim
 
       angular    = weight_THE(i_th) * weight_PHI(i_phi)
 
-      aux = radial * angular * ((delta_dir * aux_dir) - (delta_exch * aux_exch))
+      if (ALL_ISOS) then
+        !v_nnnn = v_pppp
+        aux = radial * angular * (1-x0_DD_FACTOR) * ((aux_dir) - (aux_exch))
+        v_dd_value(1) = v_dd_value(1) + (aux * dens_alpha(i_r, i_ang))
+        v_dd_value(4) = v_dd_value(1)
 
-      v_dd_value = v_dd_value + (aux * dens_alpha(i_r, i_ang))
-
-      aux_1test = radial * angular * (delta_dir  * aux_dir)
-      aux_2test = radial * angular * (delta_exch * aux_exch)
-      v_test_1 = v_test_1  + (aux_1test * dens_alpha(i_r, i_ang))
-      v_test_2 = v_test_2  + (aux_2test * dens_alpha(i_r, i_ang))
+        ! pn pn
+        aux = radial * angular * (aux_dir + (x0_DD_FACTOR*aux_exch))
+        v_dd_value(2) = v_dd_value(2) + (aux * dens_alpha(i_r, i_ang))
+        ! pn np
+        aux = radial * angular * ((x0_DD_FACTOR*aux_dir) + aux_exch)
+        v_dd_value(3) = v_dd_value(3) - (aux * dens_alpha(i_r, i_ang))
+      else
+        ! first element is the one calculated (rest remain at zero))
+        aux = radial * angular * ((delta_dir*aux_dir) - (delta_exch*aux_exch))
+        v_dd_value(1) = v_dd_value(1) + (aux * dens_alpha(i_r, i_ang))
+      end if
 
       !! Loop for the Rearrangement term
-      if (eval_rearrangement) then
+      if ((eval_rearrangement).AND.(eval_explicit_fieldsDD)) then
         !!!! if (dreal(aux)**2 + dimag(aux)**2 < 1.0d-15) cycle
         !! NOTE: don't put a skip for the |aux|<1e-15, afect the tolerance of
         !! the sum, it doesn't match exactly with the field calculation.
@@ -1781,24 +1793,18 @@ if (TOP > 1.0D+10) then !((TOP < 1.0D+10).AND.(LOW > 1.E-10)) then
         minval(real(rearrangement_me)), maxval(real(rearrangement_me))
 endif
 
-!print "(A,3F25.15)", "   <m.e.> parts= ", dreal(v_dd_value) , integral_factor, &
-!  dreal(v_dd_value) * integral_factor
+v_dd_val_Real(1) = dreal(v_dd_value(1)) * integral_factor
+v_dd_val_Real(2) = dreal(v_dd_value(2)) * integral_factor
+v_dd_val_Real(3) = dreal(v_dd_value(3)) * integral_factor
+v_dd_val_Real(4) = dreal(v_dd_value(4)) * integral_factor
 
-v_dd_val_Real(1) = dreal(v_dd_value) * integral_factor
-v_dd_val_Real(2) = dreal(v_test_1) * integral_factor
-v_dd_val_Real(3) = dreal(v_test_2) * integral_factor
-
-if (abs(imag(v_dd_value)) > 1.0d-15 ) then
+if (abs(imag(v_dd_value(1))) > 1.0d-15 ) then
     print "(A,F10.8,A,F18.15)", "  [FAIL] v_DD_abcd is not Real =", &
-        real(v_dd_value), " +j ", imag(v_dd_value)
+        real(v_dd_value(1)), " +j ", imag(v_dd_value(1))
 endif
 
-!if (skpd > 1) then
-!    print "(A,4I5,A,2I5,F15.6)", "Skipped abcd=",a,b,c,d, " : S/Tot=", skpd, &
-!        angular_dim * r_dim, 100.0*skpd/(angular_dim*r_dim)
-!end if
-
 return
+
 end function matrix_element_v_DD
 
 
@@ -1814,6 +1820,11 @@ end function matrix_element_v_DD
 ! * ASSERTION is necessary to check if H_abcd(kk) matches with current m.e.   !
 !                                                                             !
 ! * Update Jun 14, fix the order of the abcd loop to the set_hamiltonian_2body!
+!     MAJOR CHANGES ( cannot be used directly )                               !
+! * Update May 10/23, modification of the hamiltonian evaluation for the      !
+! valence space for exporting is used, the rearrangement part will not be     !
+! evaluated if it is not calculated both (eval_explicit_fieldsDD = TRUE) and  !
+! (eval_rearrangement = TRUE)                                                 !
 !-----------------------------------------------------------------------------!
 subroutine calculate_densityDep_hamiltonian(dens_rhoLR, dens_kappaLR, &
                                             dens_kappaRL, ndim)
@@ -1824,59 +1835,69 @@ complex(r64), dimension(ndim,ndim), intent(in) :: dens_kappaLR, dens_kappaRL
 integer(i16) :: ared, bred, cred, dred
 integer(i32) :: ht, j, t, tmax, uth6=uth+8, uth7=uth+9, fac_ht, ialloc=0, &
                 a, ma, la, ta, b, mb, lb, tb, dmax, bmax,  bmin, cmin, dmin,&
-                c, mc, lc, tc, d, md, ld, td
+                c, mc, lc, tc, d, md, ld, td, aa, bb, cc, dd
 integer(i64) :: kk, i, kkk
-integer, parameter :: CONVERG_ITER = 10000
+integer, parameter :: CONVERG_ITER = 10000, hdim
 real(r64) :: xja, xjb, xjc, xjd, xjtot, xttot, phasab, phascd, Vtmp, &
              Vcut, Vdec
 real(r64) :: Vred
-real(r64), dimension(3) :: me_Vdec
+real(r64), dimension(4) :: me_Vdec
 character(len=25) :: filename
+logical   :: ALL_ISOS
+
+ALL_ISOS = (.NOT.eval_explicit_fieldsDD)
+!! NOTE: if not explicit evaluation of fields, the process was called to export v_DD
+!! if ALL_ISOS = .TRUE., this subroutine can only be called once !!
 
 if (iteration < CONVERG_ITER) then
     rewind(uth6)
     rewind(uth7)
     !!! Computes the two-body matrix elements in m-scheme
-    open (uth6, status='scratch', action='readwrite', access='stream', &
-               form='unformatted')
-    open (uth7, status='scratch', action='readwrite', access='stream', &
-               form='unformatted')
+    open  (uth6, status='scratch', action='readwrite', access='stream', &
+                 form='unformatted')
+    open  (uth7, status='scratch', action='readwrite', access='stream', &
+                 form='unformatted')
 endif
 
+hdim = VSsp_dim / 2
 Vcut = 1.0d-15
 kk = 0
 NOT_DEL_FILE = .FALSE.
 
 rearrang_field = zero
 
-do a = 1, HOsp_dim
+do aa = 1, VSsp_dim / 2 ! (prev = HOsp_dim)
+  a  = VStoHOsp_index(aa)
   la = HOsp_l(a)
   ma = HOsp_2mj(a)
   ta = HOsp_2mt(a)
 
-  bmin = a+1
+  bmin = aa+1
   if (evalFullSPSpace) bmin = 1
-  do b = bmin, HOsp_dim
+  do bb = bmin, VSsp_dim / 2 ! (prev = HOsp_dim)
+    b  = VStoHOsp_index(bb)
     lb = HOsp_l(b)
     mb = HOsp_2mj(b)
     tb = HOsp_2mt(b)
 
     if ((.NOT.evalFullSPSpace).AND.( ma + mb < 0 )) cycle
 
-    cmin = a
+    cmin = aa
     if (evalFullSPSpace) cmin = 1
-    do c = cmin, HOsp_dim
+    do cc = cmin, VSsp_dim / 2 ! (prev = HOsp_dim)
+      c  = VStoHOsp_index(cc)
       lc = HOsp_l(c)
       mc = HOsp_2mj(c)
       tc = HOsp_2mt(c)
 
       dmin = 1
-      dmax = HOsp_dim
+      dmax = VSsp_dim / 2 ! (prev = HOsp_dim)
       if (.NOT.evalFullSPSpace) then
-        dmin = c+1
-        if ( c == a ) dmax = b
+        dmin = cc+1
+        if ( cc == aa ) dmax = bb
       endif
-      do d = dmin, dmax
+      do dd = dmin, dmax
+        d  = VStoHOsp_index(dd)
         ld = HOsp_l(d)
         md = HOsp_2mj(d)
         td = HOsp_2mt(d)
@@ -1885,107 +1906,146 @@ do a = 1, HOsp_dim
 
         rearrangement_me = zero
 
-        me_Vdec = matrix_element_v_DD(a,b, c,d)
-        Vdec = me_Vdec(1)
+        me_Vdec = matrix_element_v_DD(a,b, c,d, ALL_ISOS)
 
         !!! Select only matrix elements above a given cutoff to reduce the
         !!! CPU time and storage
-        if ( abs(Vdec) > Vcut ) then
-          kk = kk + 1
+        if (ALL_ISOS) then
+          if ((maxval(me_Vdec).GE.Vcut).OR.(abs(minval(me_Vdec)))) then
+            kk = kk + 4
 
-!          endif
-!          if (ma + mb /= mc + md) then
-!            call test_antisymmetrization_v_DD(a,b, c,d, Vdec)
-!            call test_timerevesalAndsymm_v_DD(a,b, c,d, Vdec)
-!          endif
-
-          if (iteration < CONVERG_ITER) then
             ared = int(a,i16)
             bred = int(b,i16)
             cred = int(c,i16)
             dred = int(d,i16)
             Vred = real(Vdec,r64)  !real(Vdec,r32)
             write(uth6) ared, bred, cred, dred
-            write(uth7) Vred
+            write(uth7) me_Vdec(1), me_Vdec(2), me_Vdec(3), me_Vdec(4)
+          endif
 
-          else
-            !! ASSERT if the abcd match the previous case:
-            if ((a /= hamil_DD_abcd(1+4*(kk-1))).OR. &
-                (b /= hamil_DD_abcd(2+4*(kk-1))).OR. &
-                (c /= hamil_DD_abcd(3+4*(kk-1))).OR. &
-                (d /= hamil_DD_abcd(4+4*(kk-1)))) then
-                print *, "[ASSERTION ERROR]: the final v_abcd indexes change"
-                print '(A,4I4,A,I9,A,I6,A,4I4)', "abcd",a,b,c,d," [kk=", kk,&
-                  "] [iteration=",iteration,"] to",hamil_DD_abcd(1+4*(kk-1)),&
-                  hamil_DD_abcd(2+4*(kk-1)),hamil_DD_abcd(3+4*(kk-1)),&
-                  hamil_DD_abcd(4+4*(kk-1))
+        else !! normal case, the element is the 1st one (isospin_ form abcd)
+          Vdec = me_Vdec(1)
+          if ( abs(Vdec) > Vcut ) then
+            kk = kk + 1
 
+            if (iteration < CONVERG_ITER) then
+              ared = int(a,i16)
+              bred = int(b,i16)
+              cred = int(c,i16)
+              dred = int(d,i16)
+              Vred = real(Vdec,r64)  !real(Vdec,r32)
+              write(uth6) ared, bred, cred, dred
+              write(uth7) Vred
+
+            else
+              !! ASSERT if the abcd match the previous case:
+              if ((a /= hamil_DD_abcd(1+4*(kk-1))).OR. &
+                  (b /= hamil_DD_abcd(2+4*(kk-1))).OR. &
+                  (c /= hamil_DD_abcd(3+4*(kk-1))).OR. &
+                  (d /= hamil_DD_abcd(4+4*(kk-1)))) then
+                  print *, "[ASSERTION ERROR]: the final v_abcd indexes change"
+                  print '(A,4I4,A,I9,A,I6,A,4I4)', "abcd",a,b,c,d," [kk=", kk,&
+                    "] [iteration=",iteration,"] to",&
+                    hamil_DD_abcd(1+4*(kk-1)),hamil_DD_abcd(2+4*(kk-1)),&
+                    hamil_DD_abcd(3+4*(kk-1)),hamil_DD_abcd(4+4*(kk-1))
+
+              endif
+              !! Fix the new matrix element
+              hamil_DD_H2(kk) = Vdec
             endif
-            !! Fix the new matrix element
-            hamil_DD_H2(kk) = Vdec
-          endif
 
-          if (eval_rearrangement) then
-            call calculate_rearrang_field_explicit(a, b, c, d, Vdec,&
-                                                   dens_rhoLR, dens_kappaLR,&
-                                                   dens_kappaRL, ndim)
+            if ((eval_rearrangement).AND.(eval_explicit_fieldsDD)) then
+              call calculate_rearrang_field_explicit(a, b, c, d, Vdec,&
+                                                     dens_rhoLR, dens_kappaLR,&
+                                                     dens_kappaRL, ndim)
+            endif
           endif
-        endif
+        endif ! select the process or to export the matrix elements
 
       enddo  !end loop b
     enddo  !end loop d
   enddo  !end loop c
 enddo  !end loop a
 
-!print "(A)", "--- test matrix elements A=C D>B ------------------------------"
-!print "(A)", " <a, b, c, d> =     v_dd total      <ab|V |cd>         <ab|V |dc>"
-!do b = HOsp_dim / 2 + 1, HOsp_dim
-!  do d = HOsp_dim / 2 + 1, HOsp_dim
-!    me_Vdec = 0.0d+00
-!    me_Vdec = matrix_element_v_DD(1,b, 1,d)
-!    print "(A,I2,A,I2,A,3F19.15)", " <1,",b,", 1,",d,"> = ",me_Vdec(1),&
-!      me_Vdec(2),me_Vdec(3)
-!
-!  enddo
-!  print *
-!enddo
-!print "(A)", "---------------------------------------------------------------"
-
-
 !!! At the first iteration, the values of the hamiltonian are saved via file
-if (iteration < CONVERG_ITER) then
-    if ((iteration > 1).AND.(eval_explicit_fieldsDD)) then
-      deallocate(hamil_DD_H2, hamil_DD_abcd, hamil_DD_trperm)
-    end if
+if (ALL_ISOS) then
 
-    hamil_DD_H2dim = kk ! final value
-    hamil_DD_H2dim_all = kk ! this index is used (only) in print_hamilt and cmpi in read reducced hamiltonian
+  hamil_DD_H2dim     = kk / 4
+  hamil_DD_H2dim_all = kk
 
-    !!! Final allocation and reading of two-body matrix elements
-    allocate ( hamil_DD_H2(hamil_DD_H2dim), hamil_DD_abcd(4*hamil_DD_H2dim), &
+  allocate( hamil_DD_H2_byT(4, hamil_DD_H2dim),
+            hamil_DD_abcd(4*hamil_DD_H2dim), &
             stat=ialloc )
-    if ( ialloc /= 0 ) stop 'Error during allocation of array of indices [DD]'
-    rewind(uth6)
-    rewind(uth7)
+  if ( ialloc /= 0 ) stop 'Error during allocation of array of indices [DD]'
+  rewind(uth6)
+  rewind(uth7)
 
-    read(uth6) (hamil_DD_abcd(kk), kk=1, 4*hamil_DD_H2dim)
-    read(uth7) (hamil_DD_H2(kk), kk=1, hamil_DD_H2dim)
+  read(uth6) (hamil_DD_abcd(kk), kk=1, 4*hamil_DD_H2dim)
+  do kk = 1, hamil_DD_H2dim
+    read(uth7) hamil_DD_H2_byT(1, 4*(kk-1) + 1)
+    read(uth7) hamil_DD_H2_byT(2, 4*(kk-1) + 2)
+    read(uth7) hamil_DD_H2_byT(3, 4*(kk-1) + 3)
+    read(uth7) hamil_DD_H2_byT(4, 4*(kk-1) + 4)
+  enddo
 
-    close(uth6)
-    close(uth7)
-    !!! Determines the permutation needed to obtain the time-reversed two-body
-    !!! matrix elements
+  close(uth6)
+  close(uth7)
 
-    call reconstruct_2body_DD_timerev
-end if
+  call print_uncoupled_hamiltonian_DD(ALL_ISOS)
 
-print '(A,F10.6,A,F10.6)'," *Top H2",MINVAL(hamil_DD_H2),' ',MAXVAL(hamil_DD_H2)
-!print *, "[OK] Calculating DD hamiltonian"
+else if (iteration < CONVERG_ITER) then !!!
 
-!===============================================================================
-! save certain matrix elements
+  if ((iteration > 1).AND.(eval_explicit_fieldsDD)) then
+    deallocate(hamil_DD_H2, hamil_DD_abcd, hamil_DD_trperm)
+  end if
+
+  hamil_DD_H2dim = kk ! final value
+  hamil_DD_H2dim_all = kk ! this index is used (only) in print_hamilt and cmpi in read reducced hamiltonian
+
+  !!! Final allocation and reading of two-body matrix elements
+  allocate ( hamil_DD_H2(hamil_DD_H2dim), hamil_DD_abcd(4*hamil_DD_H2dim), &
+          stat=ialloc )
+  if ( ialloc /= 0 ) stop 'Error during allocation of array of indices [DD]'
+  rewind(uth6)
+  rewind(uth7)
+
+  read(uth6) (hamil_DD_abcd(kk), kk=1, 4*hamil_DD_H2dim)
+  read(uth7) (hamil_DD_H2(kk), kk=1, hamil_DD_H2dim)
+
+  close(uth6)
+  close(uth7)
+  !!! Determines the permutation needed to obtain the time-reversed two-body
+  !!! matrix elements
+
+  call reconstruct_2body_DD_timerev
+
+  call print_uncoupled_hamiltonian_DD(.FALSE.)
+endif
+
+iteration = iteration + 1
+!print *, "[OK] Testing DD hamiltonian"
+
+end subroutine calculate_densityDep_hamiltonian
+
+!------------------------------------------------------------------------------!
+! subroutine print_uncoupled_hamiltonian_DD                                    !
+!                                                                              !
+! Auxiliary method to print an uncoupled list of matrix elements, depending on !
+! the case of explicit internal evaluation as main process or the last export  !
+! of the hamltonian_(ALL_ISOS)                                                 !
+!------------------------------------------------------------------------------!
+subroutine print_uncoupled_hamiltonian_DD(ALL_ISOS)
+
+logical, intent(in) :: ALL_ISOS
+real(r64) :: Vred
+character(len=25) :: filename
+integer :: i, kk, a, b, c, d
+
 filename = 'uncoupled_DD.2b'
-if (iteration < 30) then
+
+if (.NOT.ALL_ISOS) then
+print '(A,F10.6,A,F10.6)'," *Top H2",MINVAL(hamil_DD_H2),' ',MAXVAL(hamil_DD_H2)
+  if (iteration < 30) then
     if (iteration < 6) then ! first iterations have the larger differences
         write(filename, "(A,I0.4,A)") 'uncoupled_DD_', iteration, '.2b'
     else if (mod(iteration, 3).EQ.0) then
@@ -1993,43 +2053,52 @@ if (iteration < 30) then
         !filename = 'uncoupled_DD_'//char(iteration)//'.2b'
         !print *, "printing:", filename, "   iteration:",":", char(iteration)
     endif
-elseif (iteration < 421) then
+  elseif (iteration < 421) then
     if (mod(iteration, 30).EQ.0) then
         write(filename, "(A,I0.4,A)") 'uncoupled_DD_', iteration, '.2b'
         !filename = 'uncoupled_DD_'//char(iteration)//'.2b'
         !print *, "printing:", filename, "   iteration:",":", char(iteration)
     endif
-
+  endif
 endif
 
-open(123, file=filename)
-write(123, fmt='(A)') "// SINGLE PARTICLE INDEX (i_sp, i_sh, n,l,2j,2m, 2mt,tr)"
+open (123, file=filename)
+write(123, fmt='(A)') "//SINGLE PARTICLE INDEX (i_sp, i_sh, n,l,2j,2m, 2mt,tr)"
 do i=1, HOsp_dim
   write(123, fmt='(I3,7(A,I4))') i,',', HOsp_sh(i), &
     ',', HOsp_n(i),',', HOsp_l(i),',', HOsp_2j(i),',', HOsp_2mj(i), &
     ',', HOsp_2mt(i),',', HOsp_tr(i)
 enddo
-write(123, fmt='(2A,2I8)')"//DD ME     a     b     c     d                ", &
+if (ALL_ISOS) then
+  write(123, fmt='(2A,2I8)')"//    a    b    c    d           pppp", &
+    "           pnpn           pnnp           nnnn", &
+    "  . DD/noDD DIM=", hamil_DD_H2dim, hamil_H2dim
+else
+  write(123, fmt='(2A,2I8)')"//DD ME     a     b     c     d                ",&
     "h2bDD    DD/noDD DIM=", hamil_DD_H2dim, hamil_H2dim
+endif
+
 do kk = 1, hamil_DD_H2dim
     a = hamil_DD_abcd(1+4*(kk-1))
     b = hamil_DD_abcd(2+4*(kk-1))
     c = hamil_DD_abcd(3+4*(kk-1))
     d = hamil_DD_abcd(4+4*(kk-1))
-    Vdec = hamil_DD_H2(kk)
-    write(123, fmt='(4I6,F25.18)') a, b, c, d, Vdec
+    if (ALL_ISOS) then
+      write(123, fmt='(1I7,3I5,4F16.12)') a, b, c, d, hamil_DD_H2_byT(1,kk), &
+        hamil_DD_H2_byT(2,kk), hamil_DD_H2_byT(3,kk), hamil_DD_H2_byT(4,kk)
+    else
+      Vdec = hamil_DD_H2(kk)
+      write(123, fmt='(4I6,F25.18)') a, b, c, d, Vdec
+    endif
+
 enddo
+
 close(123)
-!===============================================================================
 
-iteration = iteration + 1
-!print *, "[OK] Testing DD hamiltonian"
-
-end subroutine calculate_densityDep_hamiltonian
-
+end subroutine print_uncoupled_hamiltonian_DD
 
 !------------------------------------------------------------------------------!
-! subroutine calculate_rearrang_field_explicit                                          !
+! subroutine calculate_rearrang_field_explicit                                 !
 !                                                                              !
 ! Evaluate the rearrangement field for non-null DD matrix elements just after  !
 ! these elements are evaluated, completing the Rearrangement Field one element !
@@ -4782,9 +4851,11 @@ test_dens = zzero
 
 if (.NOT.export_density) return
 if (export_matrix_elements) then
-  call test_printDesityKappaWF(dens_rhoLR, dens_kappaLR,dens_kappaRL, ndim)
+
+call test_printDesityKappaWF(dens_rhoLR, dens_kappaLR,dens_kappaRL, ndim)
 call calculate_densityDep_hamiltonian(dens_rhoLR,dens_kappaLR,dens_kappaRL,ndim)
-  call print_DD_matrix_elements
+call print_DD_matrix_elements
+
 endif
 
 density_export    = zzero
