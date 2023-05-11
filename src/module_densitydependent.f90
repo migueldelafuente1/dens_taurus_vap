@@ -1966,7 +1966,7 @@ do aa = 1, VSsp_dim / 2 ! (prev = HOsp_dim)
     enddo  !end loop d
   enddo  !end loop c
 enddo  !end loop a
-print "(A)", "[DONE] Calculating temporal hamiltonian, dim=", kk
+print "(A,I5)", "[DONE] Calculating temporal hamiltonian, dim=", kk
 
 !!! At the first iteration, the values of the hamiltonian are saved via file
 if (ALL_ISOS) then
@@ -1977,12 +1977,15 @@ if (ALL_ISOS) then
   allocate( hamil_DD_H2_byT(4, hamil_DD_H2dim), &
             hamil_DD_abcd(4*hamil_DD_H2dim), &
             stat=ialloc )
+  print "(A)", "here 1"
   if ( ialloc /= 0 ) stop 'Error during allocation of array of indices [DD]'
   rewind(uth6)
   rewind(uth7)
+  print "(A)", "here 2"
 
   read(uth6) (hamil_DD_abcd(kk), kk=1, 4*hamil_DD_H2dim)
-  do kk = 1, 4 * hamil_DD_H2dim
+  print "(A)", "here 3"
+  do kk = 1, hamil_DD_H2dim
     read(uth7) hamil_DD_H2_byT(1, 4*(kk-1) + 1)
     read(uth7) hamil_DD_H2_byT(2, 4*(kk-1) + 2)
     read(uth7) hamil_DD_H2_byT(3, 4*(kk-1) + 3)
@@ -1991,7 +1994,7 @@ if (ALL_ISOS) then
 
   close(uth6)
   close(uth7)
-
+  print "(A)", "here 4"
   call print_uncoupled_hamiltonian_DD(ALL_ISOS)
 
 else if (iteration < CONVERG_ITER) then !!!
