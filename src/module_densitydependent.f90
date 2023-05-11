@@ -1630,8 +1630,6 @@ real(r64) :: v_re_1, v_re_2
 HOspO2 = HOsp_dim/2
 
 v_dd_value = zzero
-v_test_1   = zzero
-v_test_2   = zzero
 v_dd_val_Real = zero
 
 ja = HOsp_2j(a)
@@ -1792,10 +1790,10 @@ if (TOP > 1.0D+10) then !((TOP < 1.0D+10).AND.(LOW > 1.E-10)) then
         minval(real(rearrangement_me)), maxval(real(rearrangement_me))
 endif
 
-v_dd_val_Real(1) = dreal(v_dd_value(1)) * integral_factor
-v_dd_val_Real(2) = dreal(v_dd_value(2)) * integral_factor
-v_dd_val_Real(3) = dreal(v_dd_value(3)) * integral_factor
-v_dd_val_Real(4) = dreal(v_dd_value(4)) * integral_factor
+v_dd_val_Real(1) = real(v_dd_value(1), r64) * integral_factor
+v_dd_val_Real(2) = real(v_dd_value(2), r64) * integral_factor
+v_dd_val_Real(3) = real(v_dd_value(3), r64) * integral_factor
+v_dd_val_Real(4) = real(v_dd_value(4), r64) * integral_factor
 
 if (abs(imag(v_dd_value(1))) > 1.0d-15 ) then
     print "(A,F10.8,A,F18.15)", "  [FAIL] v_DD_abcd is not Real =", &
@@ -1838,8 +1836,7 @@ integer(i32) :: ht, j, t, tmax, uth6=uth+8, uth7=uth+9, fac_ht, ialloc=0, &
 integer(i64) :: kk, i, kkk, hdim
 integer, parameter :: CONVERG_ITER = 10000
 real(r64) :: xja, xjb, xjc, xjd, xjtot, xttot, phasab, phascd, Vtmp, &
-             Vcut, Vdec
-real(r64) :: Vred
+             Vcut, Vdec, Vred
 real(r64), dimension(4) :: me_Vdec
 character(len=25) :: filename
 logical   :: ALL_ISOS
@@ -1910,14 +1907,13 @@ do aa = 1, VSsp_dim / 2 ! (prev = HOsp_dim)
         !!! Select only matrix elements above a given cutoff to reduce the
         !!! CPU time and storage
         if (ALL_ISOS) then
-          if ((maxval(me_Vdec).GE.Vcut).OR.(abs(minval(me_Vdec)))) then
+          if ((maxval(me_Vdec).GE.Vcut).OR.(abs(minval(me_Vdec)).GE.Vcut)) then
             kk = kk + 4
 
             ared = int(a,i16)
             bred = int(b,i16)
             cred = int(c,i16)
             dred = int(d,i16)
-            Vred = real(Vdec,r64)  !real(Vdec,r32)
             write(uth6) ared, bred, cred, dred
             write(uth7) me_Vdec(1), me_Vdec(2), me_Vdec(3), me_Vdec(4)
           endif
@@ -1972,7 +1968,7 @@ if (ALL_ISOS) then
   hamil_DD_H2dim     = kk / 4
   hamil_DD_H2dim_all = kk
 
-  allocate( hamil_DD_H2_byT(4, hamil_DD_H2dim),
+  allocate( hamil_DD_H2_byT(4, hamil_DD_H2dim), &
             hamil_DD_abcd(4*hamil_DD_H2dim), &
             stat=ialloc )
   if ( ialloc /= 0 ) stop 'Error during allocation of array of indices [DD]'
@@ -4535,7 +4531,7 @@ subroutine test_timerevesalAndsymm_v_DD(a,b, c,d, Vdec)
 real(r64), intent(in) :: Vdec
 integer(i32), intent(in) :: a,b, c, d
 integer(i32) :: a_tr,b_tr, c_tr, d_tr
-real(r64), dimension(3)  :: V_baT,V_dcT,V_ba_dcT,V_2T,V_2_baT,V_2_dcT,V_2_ba_dcT
+real(r64), dimension(4) :: V_baT,V_dcT,V_ba_dcT,V_2T,V_2_baT,V_2_dcT,V_2_ba_dcT
 real(r64) :: V_ba,V_dc,V_ba_dc,V_2,V_2_ba,V_2_dc,V_2_ba_dc, phase
 real(r64) :: TOL=1.0d-10
 logical   :: pass_as
