@@ -40,7 +40,6 @@ real(r64) :: alpha_DD     = 0.0!=  0.33333d+00   ! power of the DD term
 ! 0 trapezoidal, 1 Gauss-Legendre, 2 Gauss-Laguerre(r)/Legendre (t,p), 3 Laguerre-Lebedev
 integer   :: integration_method  = 3
 logical   :: export_density      = .FALSE. ! .TRUE. !
-logical   :: export_matrix_elements = .FALSE. ! .TRUE. !
 
 integer   :: r_dim       = 0 != 10  ! dimension of the r array
 integer   :: Omega_Order = 0 != 10 ! 4
@@ -4815,6 +4814,9 @@ write(321, fmt=fmt2) " tt ", sum_B2(1),sum_B2(2),sum_B2(3),sum_B2(4),sum_B2(5)
 close(321) !!! ---------------------------------------------------------------
 
 end subroutine test_integrate_bulk_densities
+
+
+
 !==============================================================================!
 ! Subroutine to export a file for plotting the density in an integrable form.  !
 ! Whether the integral is trapezoidal, Legendre, Legendre-radial Laguerre.     !
@@ -4850,7 +4852,8 @@ test_dens = zzero
 
 
 if (.NOT.export_density) return
-if (export_matrix_elements) then
+
+if (exportVSPSpace) then
 
 call test_printDesityKappaWF(dens_rhoLR, dens_kappaLR,dens_kappaRL, ndim)
 call calculate_densityDep_hamiltonian(dens_rhoLR,dens_kappaLR,dens_kappaRL,ndim)
