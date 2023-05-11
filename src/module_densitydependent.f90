@@ -2065,7 +2065,7 @@ endif
 open (123, file=filename)
 write(123, fmt='(A)') "//SINGLE PARTICLE INDEX (i_sp, i_sh, n,l,2j,2m, 2mt,tr)"
 if (ALL_ISOS) then
-  do i=kk, VSsp_dim
+  do kk=1, VSsp_dim
     i = VStoHOsp_index(kk)
     write(123, fmt='(I3,7(A,I4))') i,',', HOsp_sh(i), &
       ',', HOsp_n(i),',', HOsp_l(i),',', HOsp_2j(i),',', HOsp_2mj(i), &
