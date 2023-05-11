@@ -1840,6 +1840,7 @@ integer, parameter :: CONVERG_ITER = 10000
 real(r64) :: xja, xjb, xjc, xjd, xjtot, xttot, phasab, phascd, Vtmp, &
              Vcut, Vdec, Vred
 real(r64), dimension(4) :: me_Vdec
+real(r64), dimension(:), allocatable :: hamil_temp
 character(len=25) :: filename
 logical   :: ALL_ISOS
 
@@ -1971,23 +1972,25 @@ if (ALL_ISOS) then
 
   hamil_DD_H2dim     = kk
   hamil_DD_H2dim_all = kk
-  print "(A,2I5)", "[DONE] kk =", kk, hamil_DD_H2dim
+  print "(A,2I5)", "[DONE] 1 kk =", kk, hamil_DD_H2dim
 
   allocate( hamil_DD_H2_byT(4, hamil_DD_H2dim), &
-            hamil_DD_abcd(4*hamil_DD_H2dim), &
+            hamil_DD_abcd(4*hamil_DD_H2dim), hamil_temp(4*hamil_DD_H2dim),&
             stat=ialloc )
   if ( ialloc /= 0 ) stop 'Error during allocation of array of indices [DD]'
   rewind(uth6)
   rewind(uth7)
 
   read(uth6) (hamil_DD_abcd(kk), kk=1, 4*hamil_DD_H2dim)
+  read(uth7) (hamil_temp(kk),    kk=1, 4*hamil_DD_H2dim)
   do kk = 1, hamil_DD_H2dim
-    read(uth7) hamil_DD_H2_byT(1, 4*(kk-1) + 1)
-    read(uth7) hamil_DD_H2_byT(2, 4*(kk-1) + 2)
-    read(uth7) hamil_DD_H2_byT(3, 4*(kk-1) + 3)
-    read(uth7) hamil_DD_H2_byT(4, 4*(kk-1) + 4)
+    hamil_DD_H2_byT(1, kk) =  hamil_temp(4*(kk-1) + 1)
+    hamil_DD_H2_byT(2, kk) =  hamil_temp(4*(kk-1) + 2)
+    hamil_DD_H2_byT(3, kk) =  hamil_temp(4*(kk-1) + 3)
+    hamil_DD_H2_byT(4, kk) =  hamil_temp(4*(kk-1) + 4)
   enddo
 
+  print "(A,2I5)", "[DONE] 2 kk =", kk, hamil_DD_H2dim
   close(uth6)
   close(uth7)
   call print_uncoupled_hamiltonian_DD(ALL_ISOS)
@@ -2084,6 +2087,7 @@ else
     "h2bDD    DD/noDD DIM=", hamil_DD_H2dim, hamil_H2dim
 endif
 
+print "(A,I5)", "[DONE] ", hamil_DD_H2dim
 do kk = 1, hamil_DD_H2dim
     a = hamil_DD_abcd(1+4*(kk-1))
     b = hamil_DD_abcd(2+4*(kk-1))
