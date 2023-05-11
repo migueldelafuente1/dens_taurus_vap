@@ -2065,7 +2065,7 @@ do i=1, HOsp_dim
     ',', HOsp_2mt(i),',', HOsp_tr(i)
 enddo
 if (ALL_ISOS) then
-  write(123, fmt='(2A,2I8)')"//    a    b    c    d           pppp", &
+  write(123, fmt='(3A,2I8)')"//    a    b    c    d           pppp", &
     "           pnpn           pnnp           nnnn", &
     "  . DD/noDD DIM=", hamil_DD_H2dim, hamil_H2dim
 else
