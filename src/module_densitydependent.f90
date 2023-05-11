@@ -1859,7 +1859,7 @@ if (iteration < CONVERG_ITER) then
 endif
 
 hdim = VSsp_dim / 2
-Vcut = 1.0d-13
+Vcut = 5.0d-14
 if (ALL_ISOS) Vcut = 1.0d-10
 kk = 0
 NOT_DEL_FILE = .FALSE.
