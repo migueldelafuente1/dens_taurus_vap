@@ -1905,9 +1905,6 @@ do aa = 1, VSsp_dim / 2 ! (prev = HOsp_dim)
         rearrangement_me = zero
 
         me_Vdec = matrix_element_v_DD(a,b, c,d, ALL_ISOS)
-!        print "(4I4,4F18.13,L5)", a,b,c,d,  &
-!          me_Vdec(1), me_Vdec(2), me_Vdec(3), me_Vdec(4), &
-!          (maxval(me_Vdec).GE.Vcut).OR.(abs(minval(me_Vdec)).GE.Vcut)
 
         !!! Select only matrix elements above a given cutoff to reduce the
         !!! CPU time and storage
@@ -1966,25 +1963,24 @@ do aa = 1, VSsp_dim / 2 ! (prev = HOsp_dim)
     enddo  !end loop d
   enddo  !end loop c
 enddo  !end loop a
-print "(A,I5)", "[DONE] Calculating temporal hamiltonian, dim=", kk
+
+print "(A,I5)", "[DONE] kk =", kk
 
 !!! At the first iteration, the values of the hamiltonian are saved via file
 if (ALL_ISOS) then
 
   hamil_DD_H2dim     = kk
   hamil_DD_H2dim_all = kk
+  print "(A,2I5)", "[DONE] kk =", kk, hamil_DD_H2dim
 
   allocate( hamil_DD_H2_byT(4, hamil_DD_H2dim), &
             hamil_DD_abcd(4*hamil_DD_H2dim), &
             stat=ialloc )
-  print "(A)", "here 1"
   if ( ialloc /= 0 ) stop 'Error during allocation of array of indices [DD]'
   rewind(uth6)
   rewind(uth7)
-  print "(A)", "here 2"
 
   read(uth6) (hamil_DD_abcd(kk), kk=1, 4*hamil_DD_H2dim)
-  print "(A)", "here 3"
   do kk = 1, hamil_DD_H2dim
     read(uth7) hamil_DD_H2_byT(1, 4*(kk-1) + 1)
     read(uth7) hamil_DD_H2_byT(2, 4*(kk-1) + 2)
@@ -1994,17 +1990,17 @@ if (ALL_ISOS) then
 
   close(uth6)
   close(uth7)
-  print "(A)", "here 4"
   call print_uncoupled_hamiltonian_DD(ALL_ISOS)
 
-else if (iteration < CONVERG_ITER) then !!!
+else if (iteration < CONVERG_ITER) then !!! Normal Gradient DD dep. process ****
 
   if ((iteration > 1).AND.(eval_explicit_fieldsDD)) then
     deallocate(hamil_DD_H2, hamil_DD_abcd, hamil_DD_trperm)
   end if
 
   hamil_DD_H2dim = kk ! final value
-  hamil_DD_H2dim_all = kk ! this index is used (only) in print_hamilt and cmpi in read reducced hamiltonian
+  hamil_DD_H2dim_all = kk
+  ! this index is used (only) in print_hamilt and cmpi in read reducced hamiltonian
 
   !!! Final allocation and reading of two-body matrix elements
   allocate ( hamil_DD_H2(hamil_DD_H2dim), hamil_DD_abcd(4*hamil_DD_H2dim), &
@@ -2068,16 +2064,22 @@ endif
 
 open (123, file=filename)
 write(123, fmt='(A)') "//SINGLE PARTICLE INDEX (i_sp, i_sh, n,l,2j,2m, 2mt,tr)"
-do i=1, HOsp_dim
-  write(123, fmt='(I3,7(A,I4))') i,',', HOsp_sh(i), &
-    ',', HOsp_n(i),',', HOsp_l(i),',', HOsp_2j(i),',', HOsp_2mj(i), &
-    ',', HOsp_2mt(i),',', HOsp_tr(i)
-enddo
 if (ALL_ISOS) then
+  do i=kk, VSsp_dim
+    i = VStoHOsp_index(kk)
+    write(123, fmt='(I3,7(A,I4))') i,',', HOsp_sh(i), &
+      ',', HOsp_n(i),',', HOsp_l(i),',', HOsp_2j(i),',', HOsp_2mj(i), &
+      ',', HOsp_2mt(i),',', HOsp_tr(i)
+  enddo
   write(123, fmt='(3A,2I8)')"//    a    b    c    d           pppp", &
     "           pnpn           pnnp           nnnn", &
     "  . DD/noDD DIM=", hamil_DD_H2dim, hamil_H2dim
 else
+  do i=1, HOsp_dim
+    write(123, fmt='(I3,7(A,I4))') i,',', HOsp_sh(i), &
+      ',', HOsp_n(i),',', HOsp_l(i),',', HOsp_2j(i),',', HOsp_2mj(i), &
+      ',', HOsp_2mt(i),',', HOsp_tr(i)
+  enddo
   write(123, fmt='(2A,2I8)')"//DD ME     a     b     c     d                ",&
     "h2bDD    DD/noDD DIM=", hamil_DD_H2dim, hamil_H2dim
 endif
@@ -2088,7 +2090,7 @@ do kk = 1, hamil_DD_H2dim
     c = hamil_DD_abcd(3+4*(kk-1))
     d = hamil_DD_abcd(4+4*(kk-1))
     if (ALL_ISOS) then
-      write(123, fmt='(1I7,3I5,4F16.12)') a, b, c, d, hamil_DD_H2_byT(1,kk), &
+      write(123, fmt='(I7,3I5,4F16.12)')  a, b, c, d, hamil_DD_H2_byT(1,kk), &
         hamil_DD_H2_byT(2,kk), hamil_DD_H2_byT(3,kk), hamil_DD_H2_byT(4,kk)
     else
       Vdec = hamil_DD_H2(kk)
