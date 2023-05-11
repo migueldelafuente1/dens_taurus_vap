@@ -1859,7 +1859,7 @@ if (iteration < CONVERG_ITER) then
 endif
 
 hdim = VSsp_dim / 2
-Vcut = 1.0d-15
+Vcut = 1.0d-12
 kk = 0
 NOT_DEL_FILE = .FALSE.
 
@@ -2075,7 +2075,7 @@ if (ALL_ISOS) then
   enddo
   write(123, fmt='(3A,3I12)')"//    a    b    c    d              pppp", &
     "              pnpn              pnnp              nnnn    ", &
-    "* VS array DD/noDD DIM/ALL=", hamil_DD_H2dim, hamil_H2dim, (VSsh_dim/2)**4
+    "* VS array DD/noDD DIM/ALL=", hamil_DD_H2dim, hamil_H2dim, (VSsp_dim/2)**4
 else
   do i=1, HOsp_dim
     write(123, fmt='(I3,7(A,I4))') i,',', HOsp_sh(i), &
@@ -2105,7 +2105,7 @@ close(123)
 
 print "(3A,3I12)", &
   "[OK] EXPORT Hamiltonian (uncoupled) for reduced Valence space [", filename,&
-  "] * VS array DD/noDD DIM/ALL=", hamil_DD_H2dim, hamil_H2dim, (VSsh_dim/2)**4
+  "]   * VS array DD/all possible=", hamil_DD_H2dim, (VSsp_dim/2)**4
 
 end subroutine print_uncoupled_hamiltonian_DD
 
