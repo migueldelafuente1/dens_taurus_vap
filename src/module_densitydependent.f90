@@ -1835,8 +1835,8 @@ integer(i16) :: ared, bred, cred, dred
 integer(i32) :: ht, j, t, tmax, uth6=uth+8, uth7=uth+9, fac_ht, ialloc=0, &
                 a, ma, la, ta, b, mb, lb, tb, dmax, bmax,  bmin, cmin, dmin,&
                 c, mc, lc, tc, d, md, ld, td, aa, bb, cc, dd
-integer(i64) :: kk, i, kkk
-integer, parameter :: CONVERG_ITER = 10000, hdim
+integer(i64) :: kk, i, kkk, hdim
+integer, parameter :: CONVERG_ITER = 10000
 real(r64) :: xja, xjb, xjc, xjd, xjtot, xttot, phasab, phascd, Vtmp, &
              Vcut, Vdec
 real(r64) :: Vred
