@@ -4298,25 +4298,25 @@ logical :: pass_as
 
 if (MOD(HOsp_l(a)+HOsp_l(b)+HOsp_l(c)+HOsp_l(d), 2)== 0) return
 !! Test the antisymmetrization
-V_baT = matrix_element_v_DD(b,a, c,d)
+V_baT = matrix_element_v_DD(b,a, c,d, .FALSE.)
 V_ba  = V_baT(1)
 !print '(A,F15.8)', "  v = ", V_ba
-V_dcT = matrix_element_v_DD(a,b, d,c)
+V_dcT = matrix_element_v_DD(a,b, d,c, .FALSE.)
 V_dc  = V_dcT(1)
 !print '(A,F15.8)', "  v = ", V_dc
-V_ba_dcT = matrix_element_v_DD(b,a, d,c)
+V_ba_dcT = matrix_element_v_DD(b,a, d,c, .FALSE.)
 V_ba_dc  = V_ba_dcT(1)
 !print '(A,F15.8)', "  v = ", V_ba_dc
-V_2T     = matrix_element_v_DD(c,d, a,b)
+V_2T     = matrix_element_v_DD(c,d, a,b, .FALSE.)
 V_2      = V_2T(1)
 !print '(A,F15.8)', "  v = ", V_2
-V_2_baT  = matrix_element_v_DD(c,d, b,a)
+V_2_baT  = matrix_element_v_DD(c,d, b,a, .FALSE.)
 V_2_ba   = V_2_baT(1)
 !print '(A,F15.8)', "  v = ", V_2_ba
-V_2_dcT  = matrix_element_v_DD(d,c, a,b)
+V_2_dcT  = matrix_element_v_DD(d,c, a,b, .FALSE.)
 V_2_dc   = V_2_dcT(1)
 !print '(A,F15.8)', "  v = ", V_2_dc
-V_2_ba_dcT = matrix_element_v_DD(d,c, b,a)
+V_2_ba_dcT = matrix_element_v_DD(d,c, b,a, .FALSE.)
 V_2_ba_dc  = V_2_ba_dcT(1)
 !print '(A,F15.8)', "  v = ", V_2_ba_dc
 
@@ -4552,25 +4552,25 @@ if (MOD((HOsp_2mj(a)+HOsp_2mj(b)-HOsp_2mj(c)-HOsp_2mj(d))/ 2, 2) == 0) then
 end if
 
 !! Test the antisymmetrization
-V_baT    = matrix_element_v_DD(b_tr,a_tr, c_tr,d_tr)
+V_baT    = matrix_element_v_DD(b_tr,a_tr, c_tr,d_tr, .FALSE.)
 V_ba     = V_baT(1) * phase * (-1)
 !print '(A,F15.8)', "  v = ", V_ba
-V_dcT    = matrix_element_v_DD(a_tr,b_tr, d_tr,c_tr)
+V_dcT    = matrix_element_v_DD(a_tr,b_tr, d_tr,c_tr, .FALSE.)
 V_dc     = V_dcT(1) * phase * (-1)
 !print '(A,F15.8)', "  v = ", V_dc
-V_ba_dcT = matrix_element_v_DD(b_tr,a_tr, d_tr,c_tr)
+V_ba_dcT = matrix_element_v_DD(b_tr,a_tr, d_tr,c_tr, .FALSE.)
 V_ba_dc  = V_ba_dcT(1) * phase
 !print '(A,F15.8)', "  v = ", V_ba_dc
-V_2T     = matrix_element_v_DD(c_tr,d_tr, a_tr,b_tr)
+V_2T     = matrix_element_v_DD(c_tr,d_tr, a_tr,b_tr, .FALSE.)
 V_2      = V_2T(1) * phase
 !print '(A,F15.8)', "  v = ", V_2
-V_2_baT  = matrix_element_v_DD(c_tr,d_tr, b_tr,a_tr)
+V_2_baT  = matrix_element_v_DD(c_tr,d_tr, b_tr,a_tr, .FALSE.)
 V_2_ba   = V_2_baT(1) * phase * (-1)
 !print '(A,F15.8)', "  v = ", V_2_ba
-V_2_dcT  = matrix_element_v_DD(d_tr,c_tr, a_tr,b_tr)
+V_2_dcT  = matrix_element_v_DD(d_tr,c_tr, a_tr,b_tr, .FALSE.)
 V_2_dc   = V_2_dcT(1) * phase * (-1)
 !print '(A,F15.8)', "  v = ", V_2_dc
-V_2_ba_dcT=matrix_element_v_DD(d_tr,c_tr, b_tr,a_tr)
+V_2_ba_dcT=matrix_element_v_DD(d_tr,c_tr, b_tr,a_tr, .FALSE.)
 V_2_ba_dc =V_2_ba_dcT(1) * phase
 !print '(A,F15.8)', "  v = ", V_2_ba_dc
 
