@@ -1905,15 +1905,15 @@ do aa = 1, VSsp_dim / 2 ! (prev = HOsp_dim)
         rearrangement_me = zero
 
         me_Vdec = matrix_element_v_DD(a,b, c,d, ALL_ISOS)
-        print "(4I4,4F10.6,L5)", a,b,c,d,  &
-          me_Vdec(1), me_Vdec(2), me_Vdec(3), me_Vdec(4), &
-          (maxval(me_Vdec).GE.Vcut).OR.(abs(minval(me_Vdec)).GE.Vcut)
+!        print "(4I4,4F18.13,L5)", a,b,c,d,  &
+!          me_Vdec(1), me_Vdec(2), me_Vdec(3), me_Vdec(4), &
+!          (maxval(me_Vdec).GE.Vcut).OR.(abs(minval(me_Vdec)).GE.Vcut)
 
         !!! Select only matrix elements above a given cutoff to reduce the
         !!! CPU time and storage
         if (ALL_ISOS) then
           if ((maxval(me_Vdec).GE.Vcut).OR.(abs(minval(me_Vdec)).GE.Vcut)) then
-            kk = kk + 4
+            kk = kk + 1
 
             ared = int(a,i16)
             bred = int(b,i16)
@@ -1966,11 +1966,12 @@ do aa = 1, VSsp_dim / 2 ! (prev = HOsp_dim)
     enddo  !end loop d
   enddo  !end loop c
 enddo  !end loop a
+print "(A)", "[DONE] Calculating temporal hamiltonian, dim=", kk
 
 !!! At the first iteration, the values of the hamiltonian are saved via file
 if (ALL_ISOS) then
 
-  hamil_DD_H2dim     = kk / 4
+  hamil_DD_H2dim     = kk
   hamil_DD_H2dim_all = kk
 
   allocate( hamil_DD_H2_byT(4, hamil_DD_H2dim), &
@@ -1981,7 +1982,7 @@ if (ALL_ISOS) then
   rewind(uth7)
 
   read(uth6) (hamil_DD_abcd(kk), kk=1, 4*hamil_DD_H2dim)
-  do kk = 1, hamil_DD_H2dim
+  do kk = 1, 4 * hamil_DD_H2dim
     read(uth7) hamil_DD_H2_byT(1, 4*(kk-1) + 1)
     read(uth7) hamil_DD_H2_byT(2, 4*(kk-1) + 2)
     read(uth7) hamil_DD_H2_byT(3, 4*(kk-1) + 3)
