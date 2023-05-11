@@ -1653,6 +1653,8 @@ ld = HOsp_l(d)
 d_sh = HOsp_sh(d)
 ind_jm_d = angular_momentum_index(jd, md, .TRUE.)
 
+delta_dir  = one
+delta_exch = one
 if (.NOT.ALL_ISOS) then ! compute the
   !else ! evaluate the element isospin directly
   ta = HOsp_2mt(a)
