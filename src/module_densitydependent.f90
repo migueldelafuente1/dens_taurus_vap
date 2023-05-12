@@ -307,7 +307,7 @@ VSsp_dim2 = VSsp_dim ** 2
 allocate(VStoHOsp_index(VSsp_dim))
 do i=1, VSsp_dim
   VStoHOsp_index(i) = temp_list_index(i)
-  !print "(A,2I6)", "VS index in HO basis:", i, VStoHOsp_index(i)
+  print "(A,2I6)", "VS index in HO basis:", i, VStoHOsp_index(i)
 end do
 deallocate(temp_list_index)
 
