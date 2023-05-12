@@ -3619,9 +3619,9 @@ integer, intent(in) :: dim_sh, dim_jm
 real(r64), dimension(4,dim_jm,dim_jm,dim_sh,dim_sh), intent(in) :: hamilJM
 
 integer(i32) :: a, b, aa, a2, b2, a_min, a_max, b_min, b_max, ialloc=0
-integer      :: a_ant,b_ant, t, tt, a_sh, b_sh, a_sh_vs, la,lb, na,nb,&
+integer      :: a_ant,b_ant, t, tt, a_sh, b_sh, a_sh_vs, la,lb,&
                 J, J_min, J_max, M,&
-                ja,jb, ma,mb,ma2,mb2,mta2,mtb2, ja_prev, jb_prev,&
+                ja,jb, ma,mb,ta,tb, ma2,mb2,mta2,mtb2, ja_prev, jb_prev,&
                 i_jm, i_sab, Na, Nb, spO2, NormAB, delta_ab, CORE_NUMBER
 real(r64) :: aux_t, aux_v, E_core, cgc1, cgc2, cgc_t1, cgc_t2, h2int
 real(r64), dimension(:), allocatable :: e_sp_vs,t_sp_vs, T_core, V_core
@@ -3648,10 +3648,10 @@ jb_prev = 0
 do a = 1, spO2
 
   Na = 2*HOsp_n(a) + HOsp_l(a)
-  na = HOsp_n(a)
   ja = HOsp_2j (a)
   ma = HOsp_2mj(a)
   a_sh = HOsp_sh(a)
+  ta = HOsp_2mt(a)
 
   if ((a_min.EQ.0).OR.(ja.NE.ja_prev)) then ! update the first mj to evaluate b
     a_min = a
@@ -3675,12 +3675,11 @@ do a = 1, spO2
   !! Calculate the 2Body Interaction for the CORE and the VALENCE
   do b = a_min, spO2
     Nb = 2*HOsp_n(b) + HOsp_l(b)
-    nb = HOsp_n(b)
     jb = HOsp_2j(b)
     mb = HOsp_2mj(b)
 
     delta_ab = 0
-    if ((ja.EQ.jb).AND.(la.EQ.lb).AND.(na.EQ.nb)) delta_ab = 1
+    if ((ja.EQ.jb).AND.(la.EQ.lb).AND.(HOsp_n(a).EQ.HOsp_n(b))) delta_ab = 1
 
     if (Nb .GT. NHO_vs) cycle ! outer vs outer are neglected/ useless
     if ((b_min.EQ.0).OR.(jb.NE.jb_prev)) then ! update the first mj to evaluate b
