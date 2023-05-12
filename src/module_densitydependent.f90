@@ -3818,7 +3818,7 @@ do a_sh = 1, HOsh_dim
   endif
 
 enddo
-print "(A)", "---------- ** HERE 4"
+
 E_core = zero
 do tt = 1, 3
   E_core  = E_core + T_core(tt) + (1.0d0 * V_core(tt)) !! we sum all
@@ -3832,8 +3832,8 @@ write(298, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2I5)') &
 write(298, fmt="(2I4,F12.6)") INT(CORE_NUMBER), INT(CORE_NUMBER), E_core
 
 do a_sh_vs = 1, VSsh_dim
-  a_ant = HOsh_ant (VSsh_list(a_sh_vs))
-  write(298, fmt="(I6)", advance='no') a_ant
+  a_ant = VSsh_list(a_sh_vs)
+  write(298, fmt="(I8)", advance='no') a_ant
 enddo
 write(298,*) ""
 do a_sh_vs = 1, VSsh_dim
