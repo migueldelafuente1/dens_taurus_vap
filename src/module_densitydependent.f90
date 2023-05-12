@@ -3671,7 +3671,7 @@ do a = 1, spO2
   else if (Na .LE. NHO_vs) then    !! Kinetic Energy Valence Space --------
     t_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (aux_t / sqrt(2*ja + 1.0))
   endif   !!    --------
-
+  print "(A,I3)", "---------- ** HERE 1 a=",a
   !! Calculate the 2Body Interaction for the CORE and the VALENCE
   do b = a_min, spO2
     Nb = 2*HOsp_n(b) + HOsp_l(b)
@@ -3740,7 +3740,7 @@ do a = 1, spO2
 
   enddo
 enddo
-
+print "(A)", "---------- ** HERE 2"
 !! SUM the DENSITY INDEPENDENT HAMILTONIAN (shell indexes)
 CORE_NUMBER = 0
 do a_sh = 1, HOsh_dim
@@ -3756,7 +3756,7 @@ do a_sh = 1, HOsh_dim
   do a_sh_vs = 1, VSsh_dim ! find the index in the VS
     if (VSsh_list(a_sh_vs).EQ.HOsh_ant(a_sh)) exit
   enddo
-
+  print "(A,I3)", "---------- ** HERE 3.  a_sh=", a_sh
   do b_sh = 1, spO2
     Nb = 2*HOsh_n(b_sh) + HOsh_l(b_sh)
     jb = HOsh_2j(b_sh)
@@ -3811,7 +3811,7 @@ do a_sh = 1, HOsh_dim
   e_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (0.5d0 * e_sp_vs(a_sh_vs)/(ja + 1.0d0))
 
 enddo
-
+print "(A)", "---------- ** HERE 4"
 E_core = zero
 do tt = 1, 3
   E_core  = E_core + T_core(tt) + (0.5 * V_core(tt)) !! we sum all
