@@ -3800,7 +3800,7 @@ do a_sh = 1, HOsh_dim
       endif
 
       h2int = hamil_H2cpd_DD(5, J, a_sh, b_sh, a_sh, b_sh)
-      if (Nb .LE. NHO_co)) then !! CORE PART :
+      if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(3) = V_core(3) + (aux_v * h2int)
       else  ! ----------------- !! VALENCE SPACE SP Energies :
         e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + (aux_v * h2int)
@@ -4011,7 +4011,7 @@ integer      :: a_ant,b_ant,c_ant,d_ant, t, tt, &
 
 real(r64)    :: aux_val,aux_val2, cgc1,cgc2,norm, &
                 delta_ab,delta_cd, TOL=1.0e-10, aux_3, aux_4, phs_pnk0
-real(r64), dimension(4) :: real(r64)    :: h2b  ! [pppp, pnpn, pnnp, nnnn]
+real(r64), dimension(4)            :: h2b  ! [pppp, pnpn, pnnp, nnnn]
 logical      :: in_v_space
 logical, dimension(:), allocatable :: all_zero
 real(r64), dimension(:,:,:,:,:), allocatable :: hamilJM ! H2JM(T,JMbra, JMket, jajb, jcjd))
@@ -4097,12 +4097,12 @@ do KK = 1, hamil_DD_H2dim
       ind_jm_b = angular_momentum_index(Jbra, Mbra, .FALSE.)
       ind_jm_k = angular_momentum_index(Jket, Mket, .FALSE.)
 
-      aux_val = cgc1 * cgc2 * h2b
-
 !      print "(A,2I3,A,2I3,A,2I4)","   (jajb),JM,JM'(",Jbra,Mbra,")(",Jket,Mket,&
 !          ") ind_jm_bra, ket=", ind_jm_b, ind_jm_k
 
       do tt = 1, 4
+        aux_val = cgc1 * cgc2 * h2b(tt)
+
         hamilJM(tt,ind_jm_b, ind_jm_k, ind_sab, ind_scd) = &
                 hamilJM(tt, ind_jm_b, ind_jm_k, ind_sab, ind_scd) + aux_val
       enddo
@@ -4119,215 +4119,215 @@ ind_sab  = two_shell_states_index(maxval(HOsp_sh),minval(HOsp_sh))
 call calculate_valenceSpaceReduced(hamilJM,ind_jm_b,ind_sab)
 
 print *, " *** I have evaluate the valence Space. Now [step 3]"
-! -------------------------------------------------------------------------
-!! 3 export the matrix elemnts in antoine format, also normalize by J
-allocate(all_zero(0:TENSOR_ORD))
-do a = 1, HOsh_dim
-  ja = HOsh_2j(a)
-  a_ant = 10000*HOsh_n(a) + 100*HOsh_l(a) + ja
-  Na = 2*HOsh_n(a) + HOsh_l(a)
-  do b = a, HOsh_dim
-    jb = HOsh_2j(b)
-    b_ant = 10000*HOsh_n(b) + 100*HOsh_l(b) + jb
-    Nb = 2*HOsh_n(b) + HOsh_l(b)
-    ind_sab = two_shell_states_index(a, b)
-
-    do c = a, HOsh_dim
-      jc = HOsh_2j(c)
-      c_ant = 10000*HOsh_n(c) + 100*HOsh_l(c) + jc
-      Nc = 2*HOsh_n(c) + HOsh_l(c)
-      do d = c, HOsh_dim
-        jd = HOsh_2j(d)
-        d_ant = 10000*HOsh_n(d) + 100*HOsh_l(d) + jd
-        Nd = 2*HOsh_n(d) + HOsh_l(d)
-        ind_scd = two_shell_states_index(c, d)
-
-  in_v_space = (Na==NHO_vs).AND.(Nb==NHO_vs).AND.(Nc==NHO_vs).AND.(Nd==NHO_vs)
-  !! ======= Loop  for the <ab cd> states to output =======================
-  ! this only see the (n,l,j) equivalence, the particle part is in the last step
-  delta_ab = 0.0
-  if (a_ant==b_ant) then
-      delta_ab = 1.0
-      endif
-  delta_cd = 0.0
-  if (c_ant==d_ant) then
-      delta_cd = 1.0
-      endif
-
-  Jb_min = abs(ja - jb) / 2
-  Jb_max = (ja + jb) / 2
-  Jk_min = abs(jc - jd) / 2
-  Jk_max = (jc + jd) / 2
-
-  all_zero = .TRUE.
-  auxHamilRed = zero
-  print *, ""
-  print "(A,4I5,2(A,2I3))", " abcd ", a_ant,b_ant,c_ant,d_ant, " lims bra:",&
-    Jb_min,Jb_max, " ket:", Jk_min,Jk_max
-  do Jbra = Jb_min, Jb_max
-    do Mbra = -Jbra, Jbra
-      ind_jm_b = angular_momentum_index(Jbra, Mbra, .FALSE.)
-      J1 = angular_momentum_index(Jbra, 0, .FALSE.)
-
-      do Jket = Jk_min, Jk_max
-        KKmin = abs(Jbra - Jket)
-        KKmax = min(Jbra + Jket, TENSOR_ORD)
-        if (KKmin > TENSOR_ORD) cycle
-
-        !! NOTE: norm for the pp2pp and nn2nn (pn2pn are indep. norm=1.0)
-        norm = sqrt((1 + delta_ab*((-1)**Jbra))*(1 + delta_cd*((-1)**Jket)))
-        norm = norm / ((1 + delta_ab) * (1 + delta_cd))
-        do Mket = -Jket, Jket
-            ind_jm_k = angular_momentum_index(Jket, Mket, .FALSE.)
-            J2 = angular_momentum_index(Jket, 0, .FALSE.)
-
-            MM = Mbra - Mket
-!! get the range of J and select the file of tensor part
-
-            do KK = KKmin,  KKmax
-              if (abs(MM) > KK) cycle
-              call ClebschGordan(2*Jbra,2*KK,2*Jket, -2*Mbra,2*MM,-2*Mket, cgc1)
-              if (abs(cgc1) < TOL) cycle ! unfulfilled triangular conditions
-!===========================================================================
-    aux_val = ((-1)**(Mbra+KK+Mket)) * sqrt((2.0*Jket +1)/(2.0*Jbra +1)) / cgc1! &
-                    !(cgc1*(2*Jbra + 1)*(2*Jket + 1)*(2*KK + 1))
-    do tt = 1, 3
-      if (dabs(hamilJM(tt, ind_jm_b, ind_jm_k, ind_sab, ind_scd)) < TOL) cycle
-
-      aux_val2 = hamilJM(tt, ind_jm_b, ind_jm_k, ind_sab, ind_scd) * aux_val
-      if (tt /= 2) aux_val2 = aux_val2 * norm
-      !auxHamilRed(tt, J1, J2) = auxHamilRed(tt, ind_jm_b, ind_jm_k) + aux_val2
-      if((tt==2).AND.(dabs(auxHamilRed(tt, KK, J1, J2))>TOL).AND.&
-         (dabs(aux_val2 - auxHamilRed(tt, KK, J1, J2))>TOL)) then
-        !! [TODO] Test the values previous value is the new one
-        print "(A,5I3,A,2F20.15)", &
-          "  [WARNING] New Hamil pn Red Differs (K, Jb,Mb,Jk,Mk) ", &
-          KK, Jbra,Mbra, Jket,Mket, &
-          " New/previous = ",aux_val2, auxHamilRed(tt, KK, J1, J2)
-      else
-        print "(A,5I3,A,2F20.15)", &
-          "  [PASS]    New Hamil pn Red Match   (K, Jb,Mb,Jk,Mk) ", &
-          KK, Jbra,Mbra, Jket,Mket, &
-          " New/previous = ",aux_val2, auxHamilRed(tt, KK, J1, J2)
-      endif
-      auxHamilRed(tt, KK, J1, J2) = aux_val2
-
-      if (abs(aux_val2) > TOL) all_zero(KK) = .FALSE.
-    end do
-
-!===========================================================================
-            enddo ! KK loop
-        enddo
-      enddo ! Jbra
-    enddo
-  enddo ! Jket loop
-
-  !! WRITE the final result of the loop for each block ============
-  do KK = 0, TENSOR_ORD
-    if (all_zero(KK)) cycle
-    if (KK > 0) then
-      !! Example of J limits implemented (being * intermediate Js))
-      !BRA Js:(Jbmin) * [J1](-KK)[       ]  * * (Jbmax=J2)
-      !KET Js:                     (Jkmin=J3) * * [        ](+KK)[J4] * (Jkmax)
-      J3 = max(Jb_min , Jk_min)
-      J2 = min(Jb_max , Jk_max)
-      J1 = max(J3 - KK, min(Jb_min, Jk_min))
-      J4 = min(J2 + KK, max(Jb_max, Jk_max))
-      write(300+KK, fmt='(A,4I8,4I3)') &
-        '0 5', a_ant, b_ant, c_ant, d_ant, J1, J2, J3, J4
-    else
-      write(300, fmt='(A,4I8,2I3)') ' 0 5', a_ant, b_ant, c_ant, d_ant, &
-         max(Jb_min, Jk_min), min(Jb_max, Jk_max)
-      if (in_v_space) then
-        write(299, fmt='(A,4I8,2I3)') ' 0 5', a_ant, b_ant, c_ant, d_ant, &
-                                        max(Jb_min, Jk_min), min(Jb_max, Jk_max)
-      endif
-    endif
-  enddo
-
-  do Jbra = Jb_min, Jb_max
-    do Jket = Jk_min, Jk_max
-      KKmin = abs(Jbra - Jket)
-      KKmax = min(Jbra + Jket, TENSOR_ORD)
-      if (KKmin > TENSOR_ORD) cycle
-
-      ind_jm_b = angular_momentum_index(Jbra, 0, .FALSE.)
-      ind_jm_k = angular_momentum_index(Jket, 0, .FALSE.)
-
-      if ((delta_ab > TOL).OR.(delta_cd > TOL)) then
-        phs_pnk0 = (-1)**(Jbra)
-        endif
-
-      do KK = KKmin, KKmax
-        if (all_zero(KK)) cycle
-!  print "(A,2I4,A,I4)", " ", Jbra, Jket, "  KK=",KK
-        !! Write line
-        if (KK > 0) then
-          write(300+KK,fmt='(2I4)',advance='no')Jbra, Jket
-        end if
-        do t = 1, 3
-
-          aux_3 = auxHamilRed(t,KK,ind_jm_b,ind_jm_k)
-
-          if (KK == 0) then
-            !! select the import hamil 2B J-scheme
-            select case(t)
-              case (1)
-                tt = 0
-              case (3)
-                tt = 5
-              case default
-                tt = t - 1
-            end select
-
-!            print "(A,4I3)", "    Nshell::", Na, Nb, Nc, Nd
-            if (in_v_space) then
-              aux_4 = aux_3
-              if (implement_H2cpd_DD) then
-                aux_4 = aux_4 + hamil_H2cpd_DD(tt, Jbra, a,b,c,d)
-                endif
-!              print "(A,2F15.9)","    In:",aux_3,hamil_H2cpd_DD(tt,Jbra,a,b,c,d)
-              if (t == 2) then ! print the permutations (for the pnpn)
-                write(299,fmt='(4F15.10)',advance='no') &
-                  aux_4, phs_pnk0*aux_4, phs_pnk0*aux_4, aux_4
-              else
-                write(299,fmt='(F15.10)',advance='no') aux_4
-              endif
-            endif
-          endif
-
-          !! Parts for the Hamil DD only -----------------------------------
-          if (t == 2) then ! print the permutations (for the pnpn)
-            write(300+KK,fmt='(4F15.10)',advance='no') &
-              aux_3, phs_pnk0*aux_3, phs_pnk0*aux_3, aux_3
-          else
-            write(300+KK,fmt='(F15.10)',advance='no') aux_3
-          endif
-          !! Parts for the Hamil DD only -----------------------------------
-        enddo ! t iter
-
-        write(300+KK,*) ''
-        if ((KK==0).AND.(in_v_space)) then
-          write(299,*) ''
-        endif
-
-      enddo ! K tensor Loop
-    enddo
-  enddo
-  !! ===============================================
-         enddo ! shell loops
-      enddo
-   enddo
-enddo
-
-deallocate(hamilJM, auxHamilRed, all_zero)!, J1,J2,J3,J4)
-if (implement_H2cpd_DD) deallocate(hamil_H2cpd_DD)
-do KK = 0, TENSOR_ORD
-  close(300 + KK)
-end do
-close(299)
-
-print *, " * [OK] Printing 2B Matrix elements DD from WF_HFB\n"
+!! -------------------------------------------------------------------------
+!!! 3 export the matrix elemnts in antoine format, also normalize by J
+!allocate(all_zero(0:TENSOR_ORD))
+!do a = 1, HOsh_dim
+!  ja = HOsh_2j(a)
+!  a_ant = 10000*HOsh_n(a) + 100*HOsh_l(a) + ja
+!  Na = 2*HOsh_n(a) + HOsh_l(a)
+!  do b = a, HOsh_dim
+!    jb = HOsh_2j(b)
+!    b_ant = 10000*HOsh_n(b) + 100*HOsh_l(b) + jb
+!    Nb = 2*HOsh_n(b) + HOsh_l(b)
+!    ind_sab = two_shell_states_index(a, b)
+!
+!    do c = a, HOsh_dim
+!      jc = HOsh_2j(c)
+!      c_ant = 10000*HOsh_n(c) + 100*HOsh_l(c) + jc
+!      Nc = 2*HOsh_n(c) + HOsh_l(c)
+!      do d = c, HOsh_dim
+!        jd = HOsh_2j(d)
+!        d_ant = 10000*HOsh_n(d) + 100*HOsh_l(d) + jd
+!        Nd = 2*HOsh_n(d) + HOsh_l(d)
+!        ind_scd = two_shell_states_index(c, d)
+!
+!  in_v_space = (Na==NHO_vs).AND.(Nb==NHO_vs).AND.(Nc==NHO_vs).AND.(Nd==NHO_vs)
+!  !! ======= Loop  for the <ab cd> states to output =======================
+!  ! this only see the (n,l,j) equivalence, the particle part is in the last step
+!  delta_ab = 0.0
+!  if (a_ant==b_ant) then
+!      delta_ab = 1.0
+!      endif
+!  delta_cd = 0.0
+!  if (c_ant==d_ant) then
+!      delta_cd = 1.0
+!      endif
+!
+!  Jb_min = abs(ja - jb) / 2
+!  Jb_max = (ja + jb) / 2
+!  Jk_min = abs(jc - jd) / 2
+!  Jk_max = (jc + jd) / 2
+!
+!  all_zero = .TRUE.
+!  auxHamilRed = zero
+!  print *, ""
+!  print "(A,4I5,2(A,2I3))", " abcd ", a_ant,b_ant,c_ant,d_ant, " lims bra:",&
+!    Jb_min,Jb_max, " ket:", Jk_min,Jk_max
+!  do Jbra = Jb_min, Jb_max
+!    do Mbra = -Jbra, Jbra
+!      ind_jm_b = angular_momentum_index(Jbra, Mbra, .FALSE.)
+!      J1 = angular_momentum_index(Jbra, 0, .FALSE.)
+!
+!      do Jket = Jk_min, Jk_max
+!        KKmin = abs(Jbra - Jket)
+!        KKmax = min(Jbra + Jket, TENSOR_ORD)
+!        if (KKmin > TENSOR_ORD) cycle
+!
+!        !! NOTE: norm for the pp2pp and nn2nn (pn2pn are indep. norm=1.0)
+!        norm = sqrt((1 + delta_ab*((-1)**Jbra))*(1 + delta_cd*((-1)**Jket)))
+!        norm = norm / ((1 + delta_ab) * (1 + delta_cd))
+!        do Mket = -Jket, Jket
+!            ind_jm_k = angular_momentum_index(Jket, Mket, .FALSE.)
+!            J2 = angular_momentum_index(Jket, 0, .FALSE.)
+!
+!            MM = Mbra - Mket
+!!! get the range of J and select the file of tensor part
+!
+!            do KK = KKmin,  KKmax
+!              if (abs(MM) > KK) cycle
+!              call ClebschGordan(2*Jbra,2*KK,2*Jket, -2*Mbra,2*MM,-2*Mket, cgc1)
+!              if (abs(cgc1) < TOL) cycle ! unfulfilled triangular conditions
+!!===========================================================================
+!    aux_val = ((-1)**(Mbra+KK+Mket)) * sqrt((2.0*Jket +1)/(2.0*Jbra +1)) / cgc1! &
+!                    !(cgc1*(2*Jbra + 1)*(2*Jket + 1)*(2*KK + 1))
+!    do tt = 1, 3
+!      if (dabs(hamilJM(tt, ind_jm_b, ind_jm_k, ind_sab, ind_scd)) < TOL) cycle
+!
+!      aux_val2 = hamilJM(tt, ind_jm_b, ind_jm_k, ind_sab, ind_scd) * aux_val
+!      if (tt /= 2) aux_val2 = aux_val2 * norm
+!      !auxHamilRed(tt, J1, J2) = auxHamilRed(tt, ind_jm_b, ind_jm_k) + aux_val2
+!      if((tt==2).AND.(dabs(auxHamilRed(tt, KK, J1, J2))>TOL).AND.&
+!         (dabs(aux_val2 - auxHamilRed(tt, KK, J1, J2))>TOL)) then
+!        !! [TODO] Test the values previous value is the new one
+!        print "(A,5I3,A,2F20.15)", &
+!          "  [WARNING] New Hamil pn Red Differs (K, Jb,Mb,Jk,Mk) ", &
+!          KK, Jbra,Mbra, Jket,Mket, &
+!          " New/previous = ",aux_val2, auxHamilRed(tt, KK, J1, J2)
+!      else
+!        print "(A,5I3,A,2F20.15)", &
+!          "  [PASS]    New Hamil pn Red Match   (K, Jb,Mb,Jk,Mk) ", &
+!          KK, Jbra,Mbra, Jket,Mket, &
+!          " New/previous = ",aux_val2, auxHamilRed(tt, KK, J1, J2)
+!      endif
+!      auxHamilRed(tt, KK, J1, J2) = aux_val2
+!
+!      if (abs(aux_val2) > TOL) all_zero(KK) = .FALSE.
+!    end do
+!
+!!===========================================================================
+!            enddo ! KK loop
+!        enddo
+!      enddo ! Jbra
+!    enddo
+!  enddo ! Jket loop
+!
+!  !! WRITE the final result of the loop for each block ============
+!  do KK = 0, TENSOR_ORD
+!    if (all_zero(KK)) cycle
+!    if (KK > 0) then
+!      !! Example of J limits implemented (being * intermediate Js))
+!      !BRA Js:(Jbmin) * [J1](-KK)[       ]  * * (Jbmax=J2)
+!      !KET Js:                     (Jkmin=J3) * * [        ](+KK)[J4] * (Jkmax)
+!      J3 = max(Jb_min , Jk_min)
+!      J2 = min(Jb_max , Jk_max)
+!      J1 = max(J3 - KK, min(Jb_min, Jk_min))
+!      J4 = min(J2 + KK, max(Jb_max, Jk_max))
+!      write(300+KK, fmt='(A,4I8,4I3)') &
+!        '0 5', a_ant, b_ant, c_ant, d_ant, J1, J2, J3, J4
+!    else
+!      write(300, fmt='(A,4I8,2I3)') ' 0 5', a_ant, b_ant, c_ant, d_ant, &
+!         max(Jb_min, Jk_min), min(Jb_max, Jk_max)
+!      if (in_v_space) then
+!        write(299, fmt='(A,4I8,2I3)') ' 0 5', a_ant, b_ant, c_ant, d_ant, &
+!                                        max(Jb_min, Jk_min), min(Jb_max, Jk_max)
+!      endif
+!    endif
+!  enddo
+!
+!  do Jbra = Jb_min, Jb_max
+!    do Jket = Jk_min, Jk_max
+!      KKmin = abs(Jbra - Jket)
+!      KKmax = min(Jbra + Jket, TENSOR_ORD)
+!      if (KKmin > TENSOR_ORD) cycle
+!
+!      ind_jm_b = angular_momentum_index(Jbra, 0, .FALSE.)
+!      ind_jm_k = angular_momentum_index(Jket, 0, .FALSE.)
+!
+!      if ((delta_ab > TOL).OR.(delta_cd > TOL)) then
+!        phs_pnk0 = (-1)**(Jbra)
+!        endif
+!
+!      do KK = KKmin, KKmax
+!        if (all_zero(KK)) cycle
+!!  print "(A,2I4,A,I4)", " ", Jbra, Jket, "  KK=",KK
+!        !! Write line
+!        if (KK > 0) then
+!          write(300+KK,fmt='(2I4)',advance='no')Jbra, Jket
+!        end if
+!        do t = 1, 3
+!
+!          aux_3 = auxHamilRed(t,KK,ind_jm_b,ind_jm_k)
+!
+!          if (KK == 0) then
+!            !! select the import hamil 2B J-scheme
+!            select case(t)
+!              case (1)
+!                tt = 0
+!              case (3)
+!                tt = 5
+!              case default
+!                tt = t - 1
+!            end select
+!
+!!            print "(A,4I3)", "    Nshell::", Na, Nb, Nc, Nd
+!            if (in_v_space) then
+!              aux_4 = aux_3
+!              if (implement_H2cpd_DD) then
+!                aux_4 = aux_4 + hamil_H2cpd_DD(tt, Jbra, a,b,c,d)
+!                endif
+!!              print "(A,2F15.9)","    In:",aux_3,hamil_H2cpd_DD(tt,Jbra,a,b,c,d)
+!              if (t == 2) then ! print the permutations (for the pnpn)
+!                write(299,fmt='(4F15.10)',advance='no') &
+!                  aux_4, phs_pnk0*aux_4, phs_pnk0*aux_4, aux_4
+!              else
+!                write(299,fmt='(F15.10)',advance='no') aux_4
+!              endif
+!            endif
+!          endif
+!
+!          !! Parts for the Hamil DD only -----------------------------------
+!          if (t == 2) then ! print the permutations (for the pnpn)
+!            write(300+KK,fmt='(4F15.10)',advance='no') &
+!              aux_3, phs_pnk0*aux_3, phs_pnk0*aux_3, aux_3
+!          else
+!            write(300+KK,fmt='(F15.10)',advance='no') aux_3
+!          endif
+!          !! Parts for the Hamil DD only -----------------------------------
+!        enddo ! t iter
+!
+!        write(300+KK,*) ''
+!        if ((KK==0).AND.(in_v_space)) then
+!          write(299,*) ''
+!        endif
+!
+!      enddo ! K tensor Loop
+!    enddo
+!  enddo
+!  !! ===============================================
+!         enddo ! shell loops
+!      enddo
+!   enddo
+!enddo
+!
+!deallocate(hamilJM, auxHamilRed, all_zero)!, J1,J2,J3,J4)
+!if (implement_H2cpd_DD) deallocate(hamil_H2cpd_DD)
+!do KK = 0, TENSOR_ORD
+!  close(300 + KK)
+!end do
+!close(299)
+!
+!print *, " * [OK] Printing 2B Matrix elements DD from WF_HFB\n"
 end subroutine print_DD_matrix_elements
 
 
