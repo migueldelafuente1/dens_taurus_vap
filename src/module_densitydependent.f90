@@ -3697,9 +3697,11 @@ do a = 1, spO2
       call ClebschGordan(ja,jb,2*J, ma,mb,2*M, cgc1)
 
       do a2 = a_min, a_max ! loop for the second CG
-        b2 = 2*M - a2
+        ma2 = HOsp_2mj(a2)
+        mb2 = 2*M - HOsp_2mj(a2)
+        b2  = b_min + (jb - mb2) / 2
 
-        call ClebschGordan(ja,jb,2*J, HOsp_2mj(a2),HOsp_2mj(b2),2*M, cgc2)
+        call ClebschGordan(ja,jb,2*J, ma2, mb2,2*M, cgc2)
 
         Vdd_dec = matrix_element_v_DD(a, b, a2, b2, .TRUE.)
         print "(A,2I3)", "---                          J,a=", J, a2
