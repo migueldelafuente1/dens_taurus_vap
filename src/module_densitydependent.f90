@@ -3704,7 +3704,7 @@ do a = 1, spO2
         ma2 = HOsp_2mj(a2)
         mb2 = 2*M - HOsp_2mj(a2)
         b2  = b_min + (jb - mb2) / 2
-        print "(A,3I4,A,3I4)","Alims" a_min,a_max,a2," Blims:",b_min,b_max,b2
+        print "(A,3I4,A,3I4)","Alims",a_min,a_max,a2," Blims:",b_min,b_max,b2
 
         call ClebschGordan(ja,jb,2*J, ma2, mb2,2*M, cgc2)
 
