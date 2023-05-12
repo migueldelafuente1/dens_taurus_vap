@@ -3637,6 +3637,7 @@ T_core  = zero
 V_core  = zero
 allocate(e_sp_vs(VSsh_dim), t_sp_vs(VSsh_dim)) ! assuming different sp.energies for p-n
 e_sp_vs = zero
+t_sp_vs = zero
 
 a_min   = 0
 a_max   = 0
@@ -3663,6 +3664,7 @@ do a = 1, spO2
     enddo
   endif
 
+  print "(A,2I3)", "---------- ** HERE 1 a, a_vs_sh=",a, a_sh_vs
   aux_t = hamil_H1(a, a)
   if (Na .GT. NHO_vs) then  ! outer vs outer are neglected/ useless ------------
     cycle
@@ -3671,7 +3673,7 @@ do a = 1, spO2
   else if (Na .LE. NHO_vs) then    !! Kinetic Energy Valence Space --------
     t_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (aux_t / sqrt(2*ja + 1.0))
   endif   !!    --------
-  print "(A,I3)", "---------- ** HERE 1 a=",a
+
   !! Calculate the 2Body Interaction for the CORE and the VALENCE
   do b = a_min, spO2
     Nb = 2*HOsp_n(b) + HOsp_l(b)
