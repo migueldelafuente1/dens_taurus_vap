@@ -3619,11 +3619,10 @@ integer, intent(in) :: dim_sh, dim_jm
 real(r64), dimension(4,dim_jm,dim_jm,dim_sh,dim_sh), intent(in) :: hamilJM
 
 integer(i32) :: a, b, aa, a2, b2, a_min, a_max, b_min, b_max, ialloc=0
-integer      :: a_ant,b_ant, t, tt, a_sh, b_sh, a_sh_vs,&
+integer      :: a_ant,b_ant, t, tt, a_sh, b_sh, a_sh_vs, la,lb, na,nb,&
                 J, J_min, J_max, M,&
-                ja,jb, ma,mb,ta,tb,ma2,mb2,mta2,mtb2, ja_prev,&
-                i_jm, i_sab, &
-                Na, Nb, spO2, NormAB, delta_ab, CORE_NUMBER
+                ja,jb, ma,mb,ma2,mb2,mta2,mtb2, ja_prev, jb_prev,&
+                i_jm, i_sab, Na, Nb, spO2, NormAB, delta_ab, CORE_NUMBER
 real(r64) :: aux_t, aux_v, E_core, cgc1, cgc2, cgc_t1, cgc_t2, h2int
 real(r64), dimension(:), allocatable :: e_sp_vs,t_sp_vs, T_core, V_core
 real(r64), dimension(4) :: Vdd_dec
@@ -3649,9 +3648,9 @@ jb_prev = 0
 do a = 1, spO2
 
   Na = 2*HOsp_n(a) + HOsp_l(a)
+  na = HOsp_n(a)
   ja = HOsp_2j (a)
   ma = HOsp_2mj(a)
-  ta = HOsp_2mt(a)
   a_sh = HOsp_sh(a)
 
   if ((a_min.EQ.0).OR.(ja.NE.ja_prev)) then ! update the first mj to evaluate b
@@ -3668,17 +3667,17 @@ do a = 1, spO2
   if (Na .GT. NHO_vs) then  ! outer vs outer are neglected/ useless ------------
     cycle
   else if (Na .LE. NHO_co) then    !! Kinetic Energy Core -----------------
-    T_core(2+ta) = T_core(2+ta) + (aux_t / sqrt(2*ja + 1))
+    T_core(2+ta) = T_core(2+ta) + (aux_t / sqrt(2*ja + 1.0))
   else if (Na .LE. NHO_vs) then    !! Kinetic Energy Valence Space --------
-    t_sp_vs(a_sp_vs) = t_sp_vs(a_sp_vs) + (aux_t / sqrt(2*ja + 1))
+    t_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (aux_t / sqrt(2*ja + 1.0))
   endif   !!    --------
 
   !! Calculate the 2Body Interaction for the CORE and the VALENCE
   do b = a_min, spO2
     Nb = 2*HOsp_n(b) + HOsp_l(b)
+    nb = HOsp_n(b)
     jb = HOsp_2j(b)
     mb = HOsp_2mj(b)
-    tb = HOsp_2mt(b)
 
     delta_ab = 0
     if ((ja.EQ.jb).AND.(la.EQ.lb).AND.(na.EQ.nb)) delta_ab = 1
