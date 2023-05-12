@@ -3760,7 +3760,6 @@ do a_sh = 1, HOsh_dim
   do aa = 1, VSsh_dim ! find the index in the VS
     if (VSsh_list(aa).EQ.HOsh_ant(a_sh)) a_sh_vs = aa
   enddo
-  print "(A,I3)", "---------- ** HERE 3.  a_sh=", a_sh
   do b_sh = a_sh, HOsh_dim
     Nb = 2*HOsh_n(b_sh) + HOsh_l(b_sh)
     jb = HOsh_2j(b_sh)
@@ -3826,7 +3825,7 @@ do tt = 1, 3
 enddo
 
 open (298, file="D1S_vs_scalar.sho")
-write(298, fmt='(A,A,F9.3,A,F10.5,A,F5.3,A,2F5.1)') &
+write(298, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2I5)') &
   'Density 2BME on explicit HFB wf from taurus, Scalar', &
   ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=', x0_DD_FACTOR, ' ALPHA=', alpha_DD, &
   '  CORE(n,p):', CORE_NUMBER, CORE_NUMBER
