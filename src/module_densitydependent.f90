@@ -3720,8 +3720,10 @@ do a = 1, spO2
         print "(A,I3)", "  .. t=0, a_vs=", a_sh_vs
         aux_v = NormAB * cgc1 * cgc2 * sqrt(2*J + 1.0)
         if (Nb .LE. NHO_co) then !! CORE PART :
+          print "(A)", "  .. t=0 core:"
           V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) - Vdd_dec(3)))
         else if (a_sh_vs.NE.0) then ! -------- !! VALENCE SPACE SP Energies :
+          print "(A)", "  .. t=0 vs:"
           aux_v = aux_v * (Vdd_dec(2) - Vdd_dec(3))
           e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v
         endif
@@ -3735,10 +3737,12 @@ do a = 1, spO2
         aux_v = NormAB * cgc1 * cgc2 * sqrt((2*J + 1.0) * 3)
         print "(A)", "  .. t=1"
         if (Nb .LE. NHO_co) then !! CORE PART :
+          print "(A)", "  .. t=1 core"
           V_core(1) = V_core(1) + (aux_v *  Vdd_dec(1))
           V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) + Vdd_dec(3)))
           V_core(3) = V_core(3) + (aux_v *  Vdd_dec(4))
         else if (a_sh_vs.NE.0) then ! ---------- !! VALENCE SPACE SP Energies :
+          print "(A)", "  .. t=1 vs:"
           e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v * Vdd_dec(1)
           e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v *(Vdd_dec(2) + Vdd_dec(3))
           e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v * Vdd_dec(4)
