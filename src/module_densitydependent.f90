@@ -3661,7 +3661,7 @@ do a = 1, spO2
 
     a_sh_vs = 0 ! if it's 0, then we do not add up to the VS energy
     do aa = 1, VSsh_dim ! find the index in the VS
-      if (VSsh_list(aa).EQ.HOsh_ant(a_sh) a_sh_vs = aa
+      if (VSsh_list(aa).EQ.HOsh_ant(a_sh)) a_sh_vs = aa
     enddo
   endif
 
