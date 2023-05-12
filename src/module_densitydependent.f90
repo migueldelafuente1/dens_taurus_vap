@@ -261,9 +261,9 @@ if (exportVSPSpace)then
 
   NHO_vs  = 0
   NHO_co  = 99
-  do aa = 1, VSsp_dim
-    a   = VStoHOsp_index(aa)
-    a_ant  = 2*HOsp_n(a) + HOsp_l(a)
+  do aa = 1, VSsh_dim
+    a   = VSsh_list(aa)
+    a_ant  = 2*HOsh_n(a) + HOsh_l(a)
     NHO_vs = max(a_ant, NHO_vs)     ! getting the maximum N shell of VS
     NHO_co = min(a_ant, NHO_co)     ! getting the minimum N shell of VS
   enddo
