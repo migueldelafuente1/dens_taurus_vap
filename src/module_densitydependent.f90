@@ -254,7 +254,7 @@ if (.NOT.exportVSPSpace) then
   deallocate(hamil_H2cpd_DD) ! It wont be used
 endif
 if (exportVSPSpace)then
-  print '(A,I3)',  '    ... sh states to export DIM(sh/sp):',VSsh_dim,VSsp_dim
+  print '(A,2I4)',  '    ... sh states to export DIM(sh/sp):',VSsh_dim,VSsp_dim
   do i=1,VSsh_dim
     print '(A,I3,I7)',  '    ', i, VSsh_list(i)
   enddo
@@ -262,13 +262,13 @@ if (exportVSPSpace)then
   NHO_vs  = 0
   NHO_co  = 99
   do aa = 1, VSsp_dim
-    a = VStoHOsp_index(aa)
-    a_ant  = 2*HOsp_n(a) + HOsh_l(a)
+    a   = VStoHOsp_index(aa)
+    a_ant  = 2*HOsp_n(a) + HOsp_l(a)
     NHO_vs = max(a_ant, NHO_vs)     ! getting the maximum N shell of VS
     NHO_co = min(a_ant, NHO_co)     ! getting the minimum N shell of VS
   enddo
   NHO_co  = max(NHO_co - 1, 0)      ! The core is 1 shell below min_N of the VS
-  print "(A,2I3)", '    ... N shell HO for core(max)/vs(max):',NHO_co,NHO_vs
+  print "(A,2I6)", '    ... N shell HO for core(max)/vs(max):',NHO_co,NHO_vs
 endif
 if (eval_explicit_fieldsDD) then
   print '(A,3L10)', " [Explicit DD Field Eval.] Compute Full Valence Space =",&
