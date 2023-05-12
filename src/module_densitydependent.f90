@@ -3692,6 +3692,7 @@ do a = 1, spO2
     J_min = max(M, max(abs(ja - jb)/2, 0))  ! i.e. cannot have J=1, M=+-3
     J_max = (ja + jb) / 2
 
+    print "(A,I3)", "--                    2  b=", b
     do J = J_min, J_max
       call ClebschGordan(ja,jb,2*J, ma,mb,2*M, cgc1)
 
@@ -3709,6 +3710,7 @@ do a = 1, spO2
           if (MOD(J, 2).EQ.0) NormAB = zero
         endif
 
+        print "(A,2I3)", "---                          J,a=", J, a2
         aux_v = NormAB * cgc1 * cgc2 * sqrt(2*J + 1.0)
         if (Nb .LE. NHO_co) then !! CORE PART :
           V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) - Vdd_dec(3)))
@@ -3757,7 +3759,7 @@ do a_sh = 1, HOsh_dim
     if (VSsh_list(a_sh_vs).EQ.HOsh_ant(a_sh)) exit
   enddo
   print "(A,I3)", "---------- ** HERE 3.  a_sh=", a_sh
-  do b_sh = 1, spO2
+  do b_sh = a_sh, spO2
     Nb = 2*HOsh_n(b_sh) + HOsh_l(b_sh)
     jb = HOsh_2j(b_sh)
     if (Nb .GT. NHO_vs) cycle ! outer vs outer are neglected/ useless
@@ -3814,7 +3816,7 @@ enddo
 print "(A)", "---------- ** HERE 4"
 E_core = zero
 do tt = 1, 3
-  E_core  = E_core + T_core(tt) + (0.5 * V_core(tt)) !! we sum all
+  E_core  = E_core + T_core(tt) + (1.0d0 * V_core(tt)) !! we sum all
 enddo
 
 open (298, file="D1S_vs_scalar.sho")
