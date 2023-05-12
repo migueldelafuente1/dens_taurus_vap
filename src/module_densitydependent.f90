@@ -3696,7 +3696,7 @@ do a = 1, spO2
     J_min = max(M, max(abs(ja - jb)/2, 0))  ! i.e. cannot have J=1, M=+-3
     J_max = (ja + jb) / 2
 
-    print "(A,2I7)", "--                    2  b=", b, HOsp_ant
+    print "(A,2I7)", "--                    2  b=", b, HOsp_ant(b)
     do J = J_min, J_max
       call ClebschGordan(ja,jb,2*J, ma,mb,2*M, cgc1)
 
@@ -3704,6 +3704,8 @@ do a = 1, spO2
         ma2 = HOsp_2mj(a2)
         mb2 = 2*M - HOsp_2mj(a2)
         b2  = b_min + (jb - mb2) / 2
+        if ((b2 .LT. b_min).OR.(b2 .GT. b_max)) cycle ! INVALID mb2 value
+
         print "(A,3I4,A,3I4)","Alims",a_min,a_max,a2," Blims:",b_min,b_max,b2
 
         call ClebschGordan(ja,jb,2*J, ma2, mb2,2*M, cgc2)
