@@ -49,7 +49,7 @@ character(len=:), allocatable :: hamil_file, & ! main name
 !real(r64), dimension(:,:,:), allocatable :: hamil_H1cpd ! 1-body
 real(r64), dimension(:,:,:,:,:,:), allocatable, private :: hamil_H2cpd ! 2-body
 real(r64), dimension(:,:,:,:,:,:), allocatable :: hamil_H2cpd_DD       ! 2-body for DD exporting module
-logical :: implement_H2cpd_DD = .FALSE.
+logical :: implement_H2cpd_DD = .TRUE.
 
 !!! Matrix elements in m-scheme (HO basis)
 complex(r64) :: hamil_H0                               ! 0-body part

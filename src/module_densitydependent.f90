@@ -133,7 +133,7 @@ CONTAINS
 subroutine import_DD_parameters
 
 integer :: runit = 99
-integer :: ios, i, seed_type_imported
+integer :: ios, i, seed_type_imported, aa, a, a_ant
 logical :: is_exist
 character(len=*), parameter :: formatST = "(1a)", &
                                formatI1 = "(1a30, 1i1)", &
@@ -249,11 +249,25 @@ print '(A,I10)',   'THE_grid           =', THE_grid
 print '(A,I10)',   'PHI_grid           =', PHI_grid
 print '(A,F10.6)', 'R_MAX (fm)         =', R_MAX
 print '(A,L10)',   'eval/export Val.Sp =', exportVSPSpace
+
+if (.NOT.exportVSPSpace) then
+  deallocate(hamil_H2cpd_DD) ! It wont be used
+endif
 if (exportVSPSpace)then
   print '(A,I3)',  '    ... sh states to export:', VSsh_dim
   do i=1,VSsh_dim
     print '(A,I3,I7)',  '    ', i, VSsh_list(i)
   enddo
+
+  NHO_vs  = 0
+  NHO_co  = 99
+  do aa = 1, VSsp_dim / 2
+    a = VStoHOsp_index(aa)
+    a_ant  = 2*HOsp_n(a) + HOsh_l(a)
+    NHO_vs = max(a_ant, NHO_vs)     ! getting the maximum N shell of VS
+    NHO_co = min(a_ant, NHO_co)     ! getting the minimum N shell of VS
+  enddo
+  NHO_co  = max(NHO_co - 1, 0)      ! The core is 1 shell below min_N of the VS
 endif
 if (eval_explicit_fieldsDD) then
   print '(A,3L10)', " [Explicit DD Field Eval.] Compute Full Valence Space =",&
@@ -1613,7 +1627,7 @@ end function step_reconstruct_2body_timerev
 function matrix_element_v_DD(a,b, c,d, ALL_ISOS) result (v_dd_val_Real)
 integer(i32), intent(in) :: a,b,c,d
 logical, intent(in) :: ALL_ISOS     !! compute 3 combinations p/n instead of the
-real(r64), dimension(4) :: v_dd_val_Real !! pppp(1), pnpn(2), npnp(3), nnnn(4)
+real(r64), dimension(4) :: v_dd_val_Real !! pppp(1), pnpn(2), pnnp(3), nnnn(4)
 
 complex(r64) :: aux, radial, aux_dir, aux_exch, ang_rea, rea,aux_rea
 complex(r64), dimension(4) :: v_dd_value
@@ -2087,7 +2101,6 @@ else
     "h2bDD    DD/noDD DIM=", hamil_DD_H2dim, hamil_H2dim
 endif
 
-print "(A,I5)", "[DONE] ", hamil_DD_H2dim
 do kk = 1, hamil_DD_H2dim
     a = hamil_DD_abcd(1+4*(kk-1))
     b = hamil_DD_abcd(2+4*(kk-1))
@@ -3601,13 +3614,245 @@ endfunction two_shell_states_index
 
 
 
-
 subroutine calculate_valenceSpaceReduced(hamilJM, dim_jm, dim_sh)
+integer, intent(in) :: dim_sh, dim_jm
+real(r64), dimension(4,dim_jm,dim_jm,dim_sh,dim_sh), intent(in) :: hamilJM
+
+integer(i32) :: a, b, aa, a2, b2, a_min, a_max, b_min, b_max, ialloc=0
+integer      :: a_ant,b_ant, t, tt, a_sh, b_sh, a_sh_vs,&
+                J, J_min, J_max, M,&
+                ja,jb, ma,mb,ta,tb,ma2,mb2,mta2,mtb2, ja_prev,&
+                i_jm, i_sab, &
+                Na, Nb, spO2, NormAB, delta_ab, CORE_NUMBER
+real(r64) :: aux_t, aux_v, E_core, cgc1, cgc2, cgc_t1, cgc_t2, h2int
+real(r64), dimension(:), allocatable :: e_sp_vs,t_sp_vs, T_core, V_core
+read(r64), dimension(4) :: Vdd_dec
+
+print *, ""
+print *, " [  ] calculate_valenceSpaceReduced"
+
+spO2 = HOsp_dim / 2
+print "(A,2I3)", "  NHO shell for valence space and core ::", NHO_vs, NHO_co
+allocate(T_core(3), V_core(3)
+T_core  = zero
+V_core  = zero
+allocate(e_sp_vs(VSsh_dim), t_sp_vs(VSsh_dim)) ! assuming different sp.energies for p-n
+e_sp_vs = zero
+
+a_min   = 0
+a_max   = 0
+ja_prev = 0
+b_min   = 0
+b_max   = 0
+jb_prev = 0
+
+do a = 1, spO2
+
+  Na = 2*HOsp_n(a) + HOsp_l(a)
+  ja = HOsp_2j (a)
+  ma = HOsp_2mj(a)
+  ta = HOsp_2mt(a)
+  a_sh = HOsp_sh(a)
+
+  if ((a_min.EQ.0).OR.(ja.NE.ja_prev)) then ! update the first mj to evaluate b
+    a_min = a
+    a_max = a + ja
+    ja_prev = ja
+
+    do a_sh_vs = 1, VSsh_dim ! find the index in the VS
+      if (VSsh_list(a_sh_vs).EQ.HOsh_ant(a_sh)) break
+    enddo
+  endif
+
+  aux_t = hamil_H1(a, a)
+  if (Na .GT. NHO_vs) then  ! outer vs outer are neglected/ useless ------------
+    cycle
+  else if (Na .LE. NHO_co) then    !! Kinetic Energy Core -----------------
+    T_core(2+ta) = T_core(2+ta) + (aux_t / sqrt(2*ja + 1))
+  else if (Na .LE. NHO_vs) then    !! Kinetic Energy Valence Space --------
+    t_sp_vs(a_sp_vs) = t_sp_vs(a_sp_vs) + (aux_t / sqrt(2*ja + 1))
+  endif   !!    --------
+
+  !! Calculate the 2Body Interaction for the CORE and the VALENCE
+  do b = a_min, spO2
+    Nb = 2*HOsp_n(b) + HOsp_l(b)
+    jb = HOsp_2j(b)
+    mb = HOsp_2mj(b)
+    tb = HOsp_2mt(b)
+
+    delta_ab = 0
+    if ((ja.EQ.jb).AND.(la.EQ.lb).AND.(na.EQ.nb)) delta_ab = 1
+
+    if (Nb .GT. NHO_vs) cycle ! outer vs outer are neglected/ useless
+    if ((b_min.EQ.0).OR.(jb.NE.jb_prev)) then ! update the first mj to evaluate b
+      b_min = b
+      b_max = b + jb
+      jb_prev = jb
+    endif
+
+    M = (ma + mb) / 2
+    J_min = max(M, max(abs(ja - jb)/2, 0))  ! i.e. cannot have J=1, M=+-3
+    J_max = (ja + jb) / 2
+
+    do J = J_min, J_max
+      call ClebschGordan(ja,jb,2*J, ma,mb,2*M, cgc1)
+
+      do a2 = a_min, a_max ! loop for the second CG
+        b2 = 2*M - a2
+
+        call ClebschGordan(ja,jb,2*J, HOsp_2mj(a2),HOsp_2mj(b2),2*M, cgc2)
+
+        Vdd_dec = matrix_element_v_DD(a, b, a2, b2, .TRUE.)
+
+        !! T = 0
+        if (delta_ab.EQ.0) NormAB = one
+        if (delta_ab.EQ.1) then
+          NormAB = one / 2
+          if (MOD(J, 2).EQ.0) NormAB = zero
+        endif
+
+        aux_v = NormAB * cgc1 * cgc2 * sqrt(2*J + 1.0)
+        if (Nb .LE. NHO_co)) then !! CORE PART :
+          V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) - Vdd_dec(3)))
+        else  ! ----------------- !! VALENCE SPACE SP Energies :
+          aux_v = aux_v * (Vdd_dec(2) - Vdd_dec(3))
+          e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v
+        endif
+
+        !! T = 1
+        if (delta_ab.EQ.1) then
+          NormAB = one / 2
+          if (MOD(J, 2).EQ.1) NormAB = zero
+        endif
+
+        aux_v = NormAB * cgc1 * cgc2 *   sqrt((2*J + 1.0) * 3)
+
+        if (Nb .LE. NHO_co)) then !! CORE PART :
+          V_core(1) = V_core(1) + (aux_v *  Vdd_dec(1))
+          V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) + Vdd_dec(3)))
+          V_core(3) = V_core(3) + (aux_v *  Vdd_dec(3))
+        else  ! ----------------- !! VALENCE SPACE SP Energies :
+          e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v * Vdd_dec(1)
+          e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v *(Vdd_dec(2 + Vdd_dec(3))
+          e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v * Vdd_dec(1)
+        endif
+
+      enddo ! loop the other m_j
+    enddo ! loop J
+
+  enddo
+enddo
+
+!! SUM the DENSITY INDEPENDENT HAMILTONIAN (shell indexes)
+CORE_NUMBER = 0
+do a_sh = 1, HOsh_dim
+  Na = 2*HOsh_n(a_sh) + HOsp_l(a_sh)
+  ja = HOsh_2j (a_sh)
+
+  if     (Na .GT. NHO_vs) then
+    cycle
+  elseif (Na .LE. NHO_co) then
+    CORE_NUMBER = CORE_NUMBER + (ja + 1)
+  endif
+
+  do a_sh_vs = 1, VSsh_dim ! find the index in the VS
+    if (VSsh_list(a_sh_vs).EQ.HOsh_ant(a_sh)) break
+  enddo
+
+  do b_sh = 1, spO2
+    Nb = 2*HOsh_n(b_sh) + HOsh_l(b_sh)
+    jb = HOsh_2j(b_sh)
+    if (Nb .GT. NHO_vs) cycle ! outer vs outer are neglected/ useless
+
+    delta_ab = 0
+    if ((ja.EQ.jb).AND.(la.EQ.lb).AND.(na.EQ.nb)) delta_ab = 1
+
+    J_min = max(abs(ja - jb)/2, 0)
+    J_max = (ja + jb) / 2
+    do J = J_min, J_max
+
+      h2int =         hamil_H2cpd_DD(1, J, a_sh, b_sh, a_sh, b_sh)
+      h2int = h2int + hamil_H2cpd_DD(2, J, a_sh, b_sh, a_sh, b_sh)
+      h2int = h2int + hamil_H2cpd_DD(3, J, a_sh, b_sh, a_sh, b_sh)
+      h2int = h2int + hamil_H2cpd_DD(4, J, a_sh, b_sh, a_sh, b_sh)
+      !! T = 1,2,3,4 (pnpn)
+      if (delta_ab.EQ.0) NormAB = one
+
+      aux_v = NormAB * sqrt(2*J + 1.0)
+      if (Nb .LE. NHO_co)) then !! CORE PART :
+        V_core(2) = V_core(2) + (aux_v * h2int)
+      else  ! ----------------- !! VALENCE SPACE SP Energies :
+        e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + (aux_v * h2int)
+      endif
+
+      !! pppp, nnnn
+      if (delta_ab.EQ.1) then
+        NormAB = one / 2
+        if (MOD(J, 2).EQ.0) NormAB = zero
+      endif
+      aux_v = NormAB * sqrt(2*J + 1.0)
+
+      h2int = hamil_H2cpd_DD(0, J, a_sh, b_sh, a_sh, b_sh)
+      if (Nb .LE. NHO_co)) then !! CORE PART :
+        V_core(1) = V_core(1) + (aux_v * h2int)
+      else  ! ----------------- !! VALENCE SPACE SP Energies :
+        e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + (aux_v * h2int)
+      endif
+
+      h2int = hamil_H2cpd_DD(5, J, a_sh, b_sh, a_sh, b_sh)
+      if (Nb .LE. NHO_co)) then !! CORE PART :
+        V_core(3) = V_core(3) + (aux_v * h2int)
+      else  ! ----------------- !! VALENCE SPACE SP Energies :
+        e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + (aux_v * h2int)
+      endif
+
+    enddo ! sum J
+
+  enddo
+
+  e_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (0.5d0 * e_sp_vs(a_sh_vs)/(ja + 1.0d0))
+
+enddo
+
+E_core = zero
+do tt = 1, 3
+  E_core  = E_core + T_core(tt) + (0.5 * V_core(tt)) !! we sum all
+enddo
+
+open (298, file="D1S_vs_scalar.sho")
+write(298, fmt='(A,A,F9.3,A,F10.5,A,F5.3,A,2F5.1)') &
+  'Density 2BME on explicit HFB wf from taurus, Scalar', &
+  ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=', x0_DD_FACTOR, ' ALPHA=', alpha_DD, &
+  '  CORE(n,p):', CORE_NUMBER, CORE_NUMBER
+write(298, fmt="(2I4,F12.6)") INT(CORE_NUMBER), INT(CORE_NUMBER), E_core
+
+do a_sh_vs = 1, VSsh_dim
+  a_ant = HOsh_ant (VSsh_list(a_sh_vs))
+  write(298, fmt="(I6)", advance='no') a_ant
+enddo
+write(298,*) ""
+do a_sh_vs = 1, VSsh_dim
+  write(298, fmt="(F12.6)", advance='no') e_sp_vs(a_sh_vs)
+enddo
+close(298)
+
+deallocate(T_core, V_core, e_sp_vs, t_sp_vs)
+
+print *,  " [OK] calculate_valenceSpaceReduced"
+print *, ""
+
+end subroutine calculate_valenceSpaceReduced
+
+
+
+
+
+subroutine calculate_valenceSpaceReduced_old(hamilJM, dim_jm, dim_sh)
 
 integer, intent(in) :: dim_sh, dim_jm
 real(r64), dimension(3,dim_jm,dim_jm,dim_sh,dim_sh), intent(in) :: hamilJM
 
-integer(i32) :: a, b, ialloc=0
+integer(i32) :: a, b, aa, ialloc=0
 integer      :: a_ant,b_ant, t, tt, a_sp, b_sp, &
                 J, Jb_min, Jb_max, M,&
                 ja,jb, ma,mb,ta,tb, &
@@ -3619,23 +3864,22 @@ real(r64), dimension(:), allocatable :: e_sp_vs, T_core, V_core, V_vsco
 print *, ""
 print *, " [  ] calculate_valenceSpaceReduced"
 
-NHO_vs  = 1
-NHO_co  = NHO_vs - 1
 print "(A,2I3)", "  NHO shell for valence space and core ::", NHO_vs, NHO_co
-allocate(T_core(3), V_core(3), V_vsco(3))
+allocate(T_core(4), V_core(4), V_vsco(4))
 T_core  = zero
 V_core  = zero
-allocate(e_sp_vs(HOsh_dim))
+allocate(e_sp_vs(VSsh_dim))
 e_sp_vs = zero
 
 !! To export the core energy and the sp energy for the valence space
 
-if ( (hamil_type == 1).or.(hamil_type == 2).or.(.NOT.implement_H2cpd_DD)) then
+if ( (hamil_type <= 2).or.(.NOT.implement_H2cpd_DD)) then
   print "(A)","[ERROR] Cannot generate VS m elements for hamil_type != 3,4, OUT"
   return
-end if
+endif
 
 do a = 1, HOsh_dim
+
   Na = 2*HOsh_n(a) + HOsh_l(a)
   ja = HOsh_2j(a)
   if (Na > NHO_vs) cycle ! outer vs outer are neglected/ useless
@@ -3750,7 +3994,7 @@ deallocate(T_core, V_core)
 
 print *,  " [OK] calculate_valenceSpaceReduced"
 print *, ""
-end subroutine calculate_valenceSpaceReduced
+end subroutine calculate_valenceSpaceReduced_old
 
 !------------------------------------------------------------------------------!
 ! subroutine print_DD_matrix_elements                                          !
@@ -3765,13 +4009,15 @@ integer      :: a_ant,b_ant,c_ant,d_ant, t, tt, &
                 TENSOR_ORD = 2, KK, MM, KKmin, KKmax, &
                 a_eq_b, a_eq_c, c_eq_d, b_eq_d, J1,J2,J3,J4
 
-real(r64)    :: h2b,aux_val,aux_val2, cgc1,cgc2,norm, &
+real(r64)    :: aux_val,aux_val2, cgc1,cgc2,norm, &
                 delta_ab,delta_cd, TOL=1.0e-10, aux_3, aux_4, phs_pnk0
+real(r64), dimension(4) :: real(r64)    :: h2b  ! [pppp, pnpn, pnnp, nnnn]
 logical      :: in_v_space
 logical, dimension(:), allocatable :: all_zero
 real(r64), dimension(:,:,:,:,:), allocatable :: hamilJM ! H2JM(T,JMbra, JMket, jajb, jcjd))
 real(r64), dimension(:,:,:,:),   allocatable :: auxHamilRed ! H2JM(T,JMbra, JMket)
 
+print *, ""
 print *, "* [  ] Printing 2B Matrix elements DD from WF_HFB /dim H2_DD:", &
     hamil_DD_H2dim
 
@@ -3792,9 +4038,9 @@ write(299, '(A,A,F9.3,A,F10.5,A,F5.3,A,2F5.1)') &
 !! allocate the big JM, Jm', ab, cd array for the matrix elements
 ind_jm_b = angular_momentum_index(2*HO_2jmax,2*HO_2jmax,.FALSE.)
 ind_sab  = two_shell_states_index(maxval(HOsp_sh),minval(HOsp_sh))
-allocate(hamilJM(3, ind_jm_b,ind_jm_b, ind_sab,ind_sab))
+allocate(hamilJM(4, ind_jm_b,ind_jm_b, ind_sab,ind_sab))
 hamilJM = zzero
-allocate(auxHamilRed(3,0:TENSOR_ORD, ind_jm_b,ind_jm_b))
+allocate(auxHamilRed(4,0:TENSOR_ORD, ind_jm_b,ind_jm_b))
 
 print *, " ----------------------------------------------- "
 print "(A,2I5)"," * Max vals: 2sh, 2jmax", maxval(HOsp_sh), 2*HO_2jmax
@@ -3809,7 +4055,9 @@ do KK = 1, hamil_DD_H2dim
   b = hamil_DD_abcd(2+4*(KK-1))
   c = hamil_DD_abcd(3+4*(KK-1))
   d = hamil_DD_abcd(4+4*(KK-1))
-  h2b = hamil_DD_H2(KK)
+  do tt=1,4
+    h2b(tt) = hamil_DD_H2_byT(tt, KK)
+  enddo
 
   ! jump elements under another additional tolerace
   !if dabs(h2b) < TOL cycle  ! USELESS, elements in H_DD_H2 were non null
@@ -3825,27 +4073,6 @@ do KK = 1, hamil_DD_H2dim
   mc = HOsp_2mj(c)
   md = HOsp_2mj(d)
 
-  ta = HOsp_2mt(a)
-  tb = HOsp_2mt(b)
-  tc = HOsp_2mt(c)
-  td = HOsp_2mt(d)
-  t = ta + tb
-  if (t /= tc + td) then
-    print "(A,4I2)", "[ASSERTION ERROR] t_ab /= t_cd t_abcd: ",ta,tb,tc,td
-    STOP
-    endif
-
-  !! only store the pnpn elements, avoid the full space permutations nppn etc
-  if ((tb < ta).OR.(td < tc)) cycle
-
-  select case (t)
-    case(-2)
-      tt = 1
-    case( 0)
-      tt = 2
-    case( 2)
-      tt = 3
-  end select
 !  print "(A,I6,A,4I3,A,I2,A,8(A,2I3,A))", "kk=",kk," [",a,b,c,d,"] tt=",tt, &
 !    " jm_abcd=","(",ja,ma,")", "(",jb,mb,")", "(",jc,mc,")", "(",jd,md,")"
 
@@ -3875,8 +4102,10 @@ do KK = 1, hamil_DD_H2dim
 !      print "(A,2I3,A,2I3,A,2I4)","   (jajb),JM,JM'(",Jbra,Mbra,")(",Jket,Mket,&
 !          ") ind_jm_bra, ket=", ind_jm_b, ind_jm_k
 
-      hamilJM(tt,ind_jm_b, ind_jm_k, ind_sab, ind_scd) = &
-            hamilJM(tt,ind_jm_b, ind_jm_k, ind_sab, ind_scd) + aux_val
+      do tt = 1, 4
+        hamilJM(tt,ind_jm_b, ind_jm_k, ind_sab, ind_scd) = &
+                hamilJM(tt, ind_jm_b, ind_jm_k, ind_sab, ind_scd) + aux_val
+      enddo
     enddo
   enddo
 !  print  *, ''
@@ -4886,20 +5115,20 @@ integral_dens = zzero
 int_dens_Z = zzero
 int_dens_N = zzero
 
-open( 613, file='density_rtp.txt') !===========================================
+open( 613, file='exp_density_rtp.txt') !=======================================
 write(613, fmt='(A,3I5,F10.6,I3)') &
                 "RDim,CThDim,PhiDim,b lenght,integration method_", &
                 r_dim, theta_dim, phi_dim, HO_b, integration_method
 write(613, fmt='(A,A)') " i_r i_t i_p    r	       cos_th         phi", &
     "            REAL(dens)     IMAG(dens)     weight_prod"
-open( 615, file='dens_pairing_rtp.txt') !======================================
+open( 615, file='exp_dens_pairing_rtp.txt') !==================================
 write(615, fmt='(A,3I5,F10.6,I3)') &
                 "RDim,CThDim,PhiDim,b lenght,integration method_", &
                 r_dim, theta_dim, phi_dim, HO_b, integration_method
 write(615, fmt='(A,A,A)') " i_r i_t i_p    r	       cos_th         phi", &
     "            REAL(kappaZ)   IMAG(kappaZ)    REAL(kappaN)    IMAG(kappaN)",&
     "     weight_prod"
-open( 614, file='density_xyz.txt') !===========================================
+open( 614, file='exp_density_xyz.txt') !=======================================
 write(614, fmt='(A,3I5,F10.6,I3)') &
                 "RDim,CThDim,PhiDim,b lenght_,integration_method", &
                 r_dim, theta_dim, phi_dim, HO_b, integration_method
