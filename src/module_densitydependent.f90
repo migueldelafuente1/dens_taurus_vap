@@ -268,7 +268,7 @@ if (exportVSPSpace)then
     NHO_co = min(a_ant, NHO_co)     ! getting the minimum N shell of VS
   enddo
   NHO_co  = max(NHO_co - 1, 0)      ! The core is 1 shell below min_N of the VS
-  print "(A,2I6)", '    ... N shell HO for core(max)/vs(max):',NHO_co,NHO_vs
+  print "(A,2I6)", '    ... N-shell HO for core(max)/vs(max):',NHO_co,NHO_vs
 endif
 if (eval_explicit_fieldsDD) then
   print '(A,3L10)', " [Explicit DD Field Eval.] Compute Full Valence Space =",&
@@ -3666,7 +3666,7 @@ do a = 1, spO2
     enddo
   endif
 
-  print "(A,2I3)", "---------- ** HERE 1 a, a_vs_sh=",a, a_sh_vs
+  print "(A,3I7)", "---------- ** HERE 1 a, a_vs_sh=", a, HOsp_ant(a), a_sh_vs
   aux_t = hamil_H1(a, a)
   if (Na .GT. NHO_vs) then  ! outer vs outer are neglected/ useless ------------
     cycle
@@ -3679,7 +3679,7 @@ do a = 1, spO2
   !! Calculate the 2Body Interaction for the CORE and the VALENCE
   do b = a_min, spO2
     Nb = 2*HOsp_n(b) + HOsp_l(b)
-    jb = HOsp_2j(b)
+    jb = HOsp_2j (b)
     mb = HOsp_2mj(b)
 
     delta_ab = 0
@@ -3696,7 +3696,7 @@ do a = 1, spO2
     J_min = max(M, max(abs(ja - jb)/2, 0))  ! i.e. cannot have J=1, M=+-3
     J_max = (ja + jb) / 2
 
-    print "(A,I3)", "--                    2  b=", b
+    print "(A,2I7)", "--                    2  b=", b, HOsp_ant
     do J = J_min, J_max
       call ClebschGordan(ja,jb,2*J, ma,mb,2*M, cgc1)
 
@@ -3704,11 +3704,12 @@ do a = 1, spO2
         ma2 = HOsp_2mj(a2)
         mb2 = 2*M - HOsp_2mj(a2)
         b2  = b_min + (jb - mb2) / 2
+        print "(A,3I4,A,3I4)","Alims" a_min,a_max,a2," Blims:",b_min,b_max,b2
 
         call ClebschGordan(ja,jb,2*J, ma2, mb2,2*M, cgc2)
 
         Vdd_dec = matrix_element_v_DD(a, b, a2, b2, .TRUE.)
-        print "(A,2I3)", "---                          J,a=", J, a2
+        print "(A,2I3)", "---                          J,a2=", J, a2
         print "(A,4I3,4F13.8)", "---     Vabcd=", a,b,a2,b2,  &
                                 Vdd_dec(1),Vdd_dec(2), Vdd_dec(3), Vdd_dec(4)
 
