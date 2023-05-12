@@ -3626,14 +3626,14 @@ integer      :: a_ant,b_ant, t, tt, a_sh, b_sh, a_sh_vs,&
                 Na, Nb, spO2, NormAB, delta_ab, CORE_NUMBER
 real(r64) :: aux_t, aux_v, E_core, cgc1, cgc2, cgc_t1, cgc_t2, h2int
 real(r64), dimension(:), allocatable :: e_sp_vs,t_sp_vs, T_core, V_core
-read(r64), dimension(4) :: Vdd_dec
+real(r64), dimension(4) :: Vdd_dec
 
 print *, ""
 print *, " [  ] calculate_valenceSpaceReduced"
 
 spO2 = HOsp_dim / 2
 print "(A,2I3)", "  NHO shell for valence space and core ::", NHO_vs, NHO_co
-allocate(T_core(3), V_core(3)
+allocate(T_core(3), V_core(3))
 T_core  = zero
 V_core  = zero
 allocate(e_sp_vs(VSsh_dim), t_sp_vs(VSsh_dim)) ! assuming different sp.energies for p-n
