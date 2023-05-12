@@ -3702,6 +3702,9 @@ do a = 1, spO2
         call ClebschGordan(ja,jb,2*J, HOsp_2mj(a2),HOsp_2mj(b2),2*M, cgc2)
 
         Vdd_dec = matrix_element_v_DD(a, b, a2, b2, .TRUE.)
+        print "(A,2I3)", "---                          J,a=", J, a2
+        print "(A,4I3,4F13.8)", "---     Vabcd=", a,b,a2,b2,  &
+                                Vdd_dec(1),Vdd_dec(2), Vdd_dec(3), Vdd_dec(4)
 
         !! T = 0
         if (delta_ab.EQ.0) NormAB = one
