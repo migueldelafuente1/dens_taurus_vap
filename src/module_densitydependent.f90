@@ -3632,7 +3632,6 @@ print *, ""
 print *, " [  ] calculate_valenceSpaceReduced"
 
 spO2 = HOsp_dim / 2
-print "(A,2I3)", "  NHO shell for valence space and core ::", NHO_vs, NHO_co
 allocate(T_core(3), V_core(3))
 T_core  = zero
 V_core  = zero
@@ -3666,7 +3665,6 @@ do a = 1, spO2
     enddo
   endif
 
-  print "(A,3I7)", "---------- ** HERE 1 a, a_vs_sh=", a, HOsp_ant(a), a_sh_vs
   aux_t = hamil_H1(a, a)
   if (Na .GT. NHO_vs) then  ! outer vs outer are neglected/ useless ------------
     cycle
@@ -3696,7 +3694,6 @@ do a = 1, spO2
     J_min = max(M, max(abs(ja - jb)/2, 0))  ! i.e. cannot have J=1, M=+-3
     J_max = (ja + jb) / 2
 
-    print "(A,2I7)", "--                    2  b=", b, HOsp_ant(b)
     do J = J_min, J_max
       call ClebschGordan(ja,jb,2*J, ma,mb,2*M, cgc1)
 
@@ -3706,14 +3703,9 @@ do a = 1, spO2
         b2  = b_min + (jb - mb2) / 2
         if ((b2 .LT. b_min).OR.(b2 .GT. b_max)) cycle ! INVALID mb2 value
 
-        print "(A,3I4,A,3I4)","Alims",a_min,a_max,a2," Blims:",b_min,b_max,b2
-
         call ClebschGordan(ja,jb,2*J, ma2, mb2,2*M, cgc2)
 
         Vdd_dec = matrix_element_v_DD(a, b, a2, b2, .TRUE.)
-        print "(A,2I3)", "---                          J,a2=", J, a2
-        print "(A,4I3,4F13.8)", "---     Vabcd=", a,b,a2,b2,  &
-                                Vdd_dec(1),Vdd_dec(2), Vdd_dec(3), Vdd_dec(4)
 
         !! T = 0
         if (delta_ab.EQ.0) NormAB = one
@@ -3721,13 +3713,10 @@ do a = 1, spO2
           NormAB = one / 2
           if (MOD(J, 2).EQ.0) NormAB = zero
         endif
-        print "(A,I3)", "  .. t=0, a_vs=", a_sh_vs
         aux_v = NormAB * cgc1 * cgc2 * sqrt(2*J + 1.0)
         if (Nb .LE. NHO_co) then !! CORE PART :
-          print "(A)", "  .. t=0 core:"
           V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) - Vdd_dec(3)))
         else if (a_sh_vs.NE.0) then ! -------- !! VALENCE SPACE SP Energies :
-          print "(A)", "  .. t=0 vs:"
           aux_v = aux_v * (Vdd_dec(2) - Vdd_dec(3))
           e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v
         endif
@@ -3739,14 +3728,11 @@ do a = 1, spO2
         endif
 
         aux_v = NormAB * cgc1 * cgc2 * sqrt((2*J + 1.0) * 3)
-        print "(A)", "  .. t=1"
         if (Nb .LE. NHO_co) then !! CORE PART :
-          print "(A)", "  .. t=1 core"
           V_core(1) = V_core(1) + (aux_v *  Vdd_dec(1))
           V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) + Vdd_dec(3)))
           V_core(3) = V_core(3) + (aux_v *  Vdd_dec(4))
         else if (a_sh_vs.NE.0) then ! ---------- !! VALENCE SPACE SP Energies :
-          print "(A)", "  .. t=1 vs:"
           e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v * Vdd_dec(1)
           e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v *(Vdd_dec(2) + Vdd_dec(3))
           e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v * Vdd_dec(4)
@@ -3757,11 +3743,11 @@ do a = 1, spO2
 
   enddo
 enddo
-print "(A)", "---------- ** HERE 2"
+
 !! SUM the DENSITY INDEPENDENT HAMILTONIAN (shell indexes)
 CORE_NUMBER = 0
 do a_sh = 1, HOsh_dim
-  Na = 2*HOsh_n(a_sh) + HOsp_l(a_sh)
+  Na = 2*HOsh_n(a_sh) + HOsh_l(a_sh)
   ja = HOsh_2j (a_sh)
 
   if     (Na .GT. NHO_vs) then
@@ -3775,13 +3761,15 @@ do a_sh = 1, HOsh_dim
     if (VSsh_list(aa).EQ.HOsh_ant(a_sh)) a_sh_vs = aa
   enddo
   print "(A,I3)", "---------- ** HERE 3.  a_sh=", a_sh
-  do b_sh = a_sh, spO2
+  do b_sh = a_sh, HOsh_dim
     Nb = 2*HOsh_n(b_sh) + HOsh_l(b_sh)
     jb = HOsh_2j(b_sh)
     if (Nb .GT. NHO_vs) cycle ! outer vs outer are neglected/ useless
 
     delta_ab = 0
-    if ((ja.EQ.jb).AND.(la.EQ.lb).AND.(na.EQ.nb)) delta_ab = 1
+    if ((ja.EQ.jb).AND.(la.EQ.lb).AND.(HOsh_n(a_sh).EQ.HOsh_n(b_sh))) then
+      delta_ab = 1
+      endif
 
     J_min = max(abs(ja - jb)/2, 0)
     J_max = (ja + jb) / 2
