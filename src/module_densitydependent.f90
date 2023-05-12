@@ -3659,8 +3659,9 @@ do a = 1, spO2
     a_max = a + ja
     ja_prev = ja
 
-    do a_sh_vs = 1, VSsh_dim ! find the index in the VS
-      if (VSsh_list(a_sh_vs).EQ.HOsh_ant(a_sh)) exit
+    a_sh_vs = 0 ! if it's 0, then we do not add up to the VS energy
+    do aa = 1, VSsh_dim ! find the index in the VS
+      if (VSsh_list(aa).EQ.HOsh_ant(a_sh) a_sh_vs = aa
     enddo
   endif
 
@@ -3670,7 +3671,7 @@ do a = 1, spO2
     cycle
   else if (Na .LE. NHO_co) then    !! Kinetic Energy Core -----------------
     T_core(2+ta) = T_core(2+ta) + (aux_t / sqrt(2*ja + 1.0))
-  else if (Na .LE. NHO_vs) then    !! Kinetic Energy Valence Space --------
+  else if ((Na .LE. NHO_vs).AND.(a_sh_vs.NE.0)) then  !! Valence Space ----
     t_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (aux_t / sqrt(2*ja + 1.0))
   endif   !!    --------
 
@@ -3720,7 +3721,7 @@ do a = 1, spO2
         aux_v = NormAB * cgc1 * cgc2 * sqrt(2*J + 1.0)
         if (Nb .LE. NHO_co) then !! CORE PART :
           V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) - Vdd_dec(3)))
-        else  ! ----------------- !! VALENCE SPACE SP Energies :
+        else if (a_sh_vs.NE.0) then ! -------- !! VALENCE SPACE SP Energies :
           aux_v = aux_v * (Vdd_dec(2) - Vdd_dec(3))
           e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v
         endif
@@ -3737,7 +3738,7 @@ do a = 1, spO2
           V_core(1) = V_core(1) + (aux_v *  Vdd_dec(1))
           V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) + Vdd_dec(3)))
           V_core(3) = V_core(3) + (aux_v *  Vdd_dec(4))
-        else  ! ----------------- !! VALENCE SPACE SP Energies :
+        else if (a_sh_vs.NE.0) then ! ---------- !! VALENCE SPACE SP Energies :
           e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v * Vdd_dec(1)
           e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v *(Vdd_dec(2) + Vdd_dec(3))
           e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v * Vdd_dec(4)
@@ -3761,8 +3762,9 @@ do a_sh = 1, HOsh_dim
     CORE_NUMBER = CORE_NUMBER + (ja + 1)
   endif
 
-  do a_sh_vs = 1, VSsh_dim ! find the index in the VS
-    if (VSsh_list(a_sh_vs).EQ.HOsh_ant(a_sh)) exit
+  a_sh_vs = 0
+  do aa = 1, VSsh_dim ! find the index in the VS
+    if (VSsh_list(aa).EQ.HOsh_ant(a_sh)) a_sh_vs = aa
   enddo
   print "(A,I3)", "---------- ** HERE 3.  a_sh=", a_sh
   do b_sh = a_sh, spO2
@@ -3787,7 +3789,7 @@ do a_sh = 1, HOsh_dim
       aux_v = NormAB * sqrt(2*J + 1.0)
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(2) = V_core(2) + (aux_v * h2int)
-      else  ! ----------------- !! VALENCE SPACE SP Energies :
+      else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
         e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + (aux_v * h2int)
       endif
 
@@ -3801,14 +3803,14 @@ do a_sh = 1, HOsh_dim
       h2int = hamil_H2cpd_DD(0, J, a_sh, b_sh, a_sh, b_sh)
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(1) = V_core(1) + (aux_v * h2int)
-      else  ! ----------------- !! VALENCE SPACE SP Energies :
+      else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
         e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + (aux_v * h2int)
       endif
 
       h2int = hamil_H2cpd_DD(5, J, a_sh, b_sh, a_sh, b_sh)
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(3) = V_core(3) + (aux_v * h2int)
-      else  ! ----------------- !! VALENCE SPACE SP Energies :
+      else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
         e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + (aux_v * h2int)
       endif
 
@@ -3816,7 +3818,9 @@ do a_sh = 1, HOsh_dim
 
   enddo
 
-  e_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (0.5d0 * e_sp_vs(a_sh_vs)/(ja + 1.0d0))
+  if (a_sh_vs.NE.0) then
+    e_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (0.5d0 * e_sp_vs(a_sh_vs)/(ja+1.0d0))
+  endif
 
 enddo
 print "(A)", "---------- ** HERE 4"
