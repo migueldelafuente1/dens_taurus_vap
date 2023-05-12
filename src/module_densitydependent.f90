@@ -254,16 +254,16 @@ if (.NOT.exportVSPSpace) then
   deallocate(hamil_H2cpd_DD) ! It wont be used
 endif
 if (exportVSPSpace)then
-  print '(A,2I4)',  '    ... sh states to export DIM(sh/sp):',VSsh_dim,VSsp_dim
+  print '(A,2I4)', '    ... sh states to export DIM(sh/sp):', VSsh_dim,VSsp_dim
   do i=1,VSsh_dim
     print '(A,I3,I7)',  '    ', i, VSsh_list(i)
   enddo
 
   NHO_vs  = 0
   NHO_co  = 99
-  do aa = 1, VSsh_dim
-    a   = VSsh_list(aa)
-    a_ant  = 2*HOsh_n(a) + HOsh_l(a)
+  do aa = 1, VSsp_dim
+    a   = VStoHOsp_index(aa)
+    a_ant  = 2*HOsp_n(a) + HOsp_l(a)
     NHO_vs = max(a_ant, NHO_vs)     ! getting the maximum N shell of VS
     NHO_co = min(a_ant, NHO_co)     ! getting the minimum N shell of VS
   enddo
@@ -305,10 +305,9 @@ enddo
 VSsp_dim2 = VSsp_dim ** 2
 
 allocate(VStoHOsp_index(VSsp_dim))
-print "(A,I3)", " [IN set Valence Space] : ", VSsp_dim
 do i=1, VSsp_dim
   VStoHOsp_index(i) = temp_list_index(i)
-  print "(A,2I6)", "VS index in HO basis:", i, VStoHOsp_index(i)
+!  print "(A,2I6)", "VS index in HO basis:", i, VStoHOsp_index(i)
 end do
 deallocate(temp_list_index)
 
