@@ -5098,7 +5098,7 @@ if (exportVSPSpace) then !-----------------------------------------------------
 
 call test_printDesityKappaWF(dens_rhoLR, dens_kappaLR,dens_kappaRL, ndim)
 call calculate_densityDep_hamiltonian(dens_rhoLR,dens_kappaLR,dens_kappaRL,ndim)
-!call print_DD_matrix_elements
+call print_DD_matrix_elements
 
 endif !------------------------------------------------------------------------
 
