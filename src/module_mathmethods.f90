@@ -474,6 +474,52 @@ c6j = ((-1)**n_min) * dexp((0.5d0*p) - q) * h
 end subroutine RacahCoeff
 
 !------------------------------------------------------------------------------!
+!  subroutine Wigner9JCoeff                                                    !
+!                                                                              !
+!    Computing 9j coefficient from Racah symbols, it validates the lsj values  !
+!                     ___                                                      !
+!  { l1   s1  j1 }    \                                                        !
+!  { l2   s2  j2 } =  /__    (2t+1) * W(l1,l2,J,S; L,t) * W(l1,s1,J,j2 ; j1,t) !
+!  {  L    S   J }    (t)                               * W(s1,S,j2,l2 ; s2,t) !
+!                                                                              !
+! Be aware that all input values of j and m are supposed to be twice their     !
+! values (such that we can treat easily half-integer angular momenta).         !
+!------------------------------------------------------------------------------!
+subroutine Wigner9JCoeff (l1,s1,j1, l2,s2,j2, L,S,J, c9j)
+
+integer, intent(in)    :: l1,s1,j1, l2,s2,j2, L,S,J
+real(r64), intent(out) :: c9j
+integer   :: t, t_max, t_min
+real(r64) :: aux1, aux2, aux3
+
+c9j = zero
+if ((abs(l1-s1) .GT. j1).OR.(l1+s1 .LT. j1)) return
+if ((abs(l2-s2) .GT. j2).OR.(l2+s2 .LT. j2)) return
+if ((abs( L- S) .GT.  J).OR.(L + S .LT.  J)) return
+if ((abs(l1-l2) .GT.  L).OR.(l1+l2 .LT.  L)) return
+if ((abs(s1-s2) .GT.  S).OR.(s1+s2 .LT.  S)) return
+if ((abs(j1-j2) .GT.  J).OR.(j1+j2 .LT.  J)) return
+
+t_min = max(0, abs(l2-S), abs(s1-j2), abs(l1-J))
+t_max = min(l2+S, s1+j2, l1+J)
+t_min = t_min / 2
+t_max = t_max / 2
+
+do t = t_min, t_max
+  call RacahCoeff (l1,l2, J,S, L, 2*t, aux1)
+  if (abs(aux1) .LE. 1e-9) cycle
+  call RacahCoeff (l1,s1,J,j2, j1,2*t, aux2)
+  if (abs(aux1) .LE. 1e-9) cycle
+  call RacahCoeff (s1,S,j2,l2, s2,2*t, aux3)
+
+  c9j = c9j  + ((2*t + 1) * aux1 * aux2 * aux3)
+enddo
+
+return
+
+end subroutine Wigner6JCoeff
+
+!------------------------------------------------------------------------------!
 ! function lapack_sel                                                          !
 !                                                                              !
 ! Dummy logical function "select" for LAPACK (used for Schur decomposition).   !
