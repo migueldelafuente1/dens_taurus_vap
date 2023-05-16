@@ -3932,13 +3932,14 @@ do aa = 1, VSsh_dim
         print "(A)", " -Found 1"
         reciprocal_nlj_shell(aa) = bb
         print "(A)", " -Found 2"
+        exit
       else
         cycle
       end if
     end if
   enddo
   bb = reciprocal_nlj_shell(aa)
-  print "(A,2I7,A,2I7)", "  * ", aa, VSsh_list(aa), " -> ", bb, HOsh_ant(bb)
+  print "(A,2I7,A,2I7)", "  * ", aa, VSsh_list(aa), " -> ", bb, VSsh_list(bb)
 enddo      !!! --------------------------------------------------------------
 
 
