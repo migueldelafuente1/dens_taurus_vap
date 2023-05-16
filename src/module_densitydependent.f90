@@ -3925,7 +3925,7 @@ allocate(reciprocal_nlj_shell(VSsh_dim))
 print "(A)", "[TEST] Reciprocal shells"
 do aa = 1, VSsh_dim
   a = VStoHOsh_index(aa)
-  do bb = aa, VSsh_dim
+  do bb = 1, VSsh_dim
     b = VStoHOsh_index(bb)
     if ((HOsh_n(a) .EQ. HOsh_n(b)).AND.(HOsh_l(a) .EQ. HOsh_l(b))) then
       if ((HOsh_2j(a) .NE. HOsh_2j(b)).OR.(HOsh_l(a) .EQ. 0)) then
