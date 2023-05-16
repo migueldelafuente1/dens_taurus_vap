@@ -218,6 +218,19 @@ if (exportVSPSpace) then
   endif
 endif
 
+!! Allocate here the Antoine index (for the Valence Space exporting) --------
+allocate(HOsh_ant(HOsh_dim))
+allocate(HOsp_ant(HOsp_dim))
+HOsh_ant = 0
+HOsp_ant = 0
+do aa = 1, HOsh_dim
+  HOsh_ant(aa) = 10000*HOsh_n(aa) + 100*HOsh_l(aa) + HOsh_2j(aa)
+enddo
+do aa = 1, HOsp_dim
+  HOsp_ant(aa) = 10000*HOsp_n(aa) + 100*HOsp_l(aa) + HOsp_2j(aa)
+enddo
+!!! -------------------------------------------------------------------------
+
 read(runit,formatST) str_
 rewind(runit)
 close(runit)
@@ -260,14 +273,13 @@ if (exportVSPSpace)then
   print "(A)", 'ok-0'
   do i=1,VSsh_dim
     do aa=1, HOsh_dim
-      if (VSsh_list(i) .EQ. (10000*HOsh_n(aa)+100*HOsh_l(aa)+HOsh_2j(aa))) then
+      if (VSsh_list(i) .EQ. (HOsh_ant(aa))) then
         VStoHOsh_index(i) = aa
         endif
     enddo
     print "(A)", 'ok1'
     aa = VStoHOsh_index(i)
-    print '(A,I3,2I7)',  '    ', i, VSsh_list(i), &
-      10000*HOsh_n(aa)+100*HOsh_l(aa)+HOsh_2j(aa)
+    print '(A,I3,2I7)',  '    ', i, VSsh_list(i), HOsh_ant(VStoHOsh_index(i)
   enddo
 
   NHO_vs  = 0
@@ -564,10 +576,6 @@ subroutine set_Radial2body_basis
 integer   :: a_sh, b_sh, i_r, na,la,nb,lb
 real(r64) :: radial, x
 
-allocate(HOsh_ant(HOsh_dim))
-allocate(HOsp_ant(HOsp_dim))
-HOsh_ant = 0
-HOsp_ant = 0
 allocate(radial_2b_sho_memo(HOsh_dim,HOsh_dim,r_dim))
 allocate(radial_2b_sho_noexp_memo(HOsh_dim,HOsh_dim,r_dim))
 
@@ -579,7 +587,6 @@ if (PRINT_GUTS) open(629, file='R_radial2B_wf.gut')
 do a_sh = 1, HOsh_dim
   na = HOsh_n(a_sh)
   la = HOsh_l(a_sh)
-  HOsh_ant(a_sh) = 10000*na + 100*la + HOsh_2j(a_sh)
   do b_sh = a_sh, HOsh_dim
     nb = HOsh_n(b_sh)
     lb = HOsh_l(b_sh)
@@ -629,10 +636,6 @@ do a_sh = 1, HOsh_dim
     enddo
     if (PRINT_GUTS) write(629, *) ""
   enddo
-enddo
-
-do a_sh = 1, HOsp_dim
-  HOsp_ant(a_sh) = 10000*HOsp_n(a_sh) + 100*HOsp_l(a_sh) + HOsp_2j(a_sh)
 enddo
 
 if (PRINT_GUTS) close(629)
