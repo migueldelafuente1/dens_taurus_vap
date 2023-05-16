@@ -257,6 +257,7 @@ endif
 if (exportVSPSpace)then
   print '(A,2I4)', '    ... sh states to export DIM(sh/sp):', VSsh_dim,VSsp_dim
   allocate(VStoHOsh_index(VSsh_dim))
+  print "(A)", 'ok-0'
   do i=1,VSsh_dim
     do aa=1, HOsh_dim
       if (VSsh_list(i) .EQ. HOsh_ant(aa)) then
