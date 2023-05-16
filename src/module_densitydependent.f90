@@ -2068,10 +2068,13 @@ subroutine print_uncoupled_hamiltonian_DD(ALL_ISOS)
 
 logical, intent(in) :: ALL_ISOS
 real(r64) :: Vdec
-character(len=25) :: filename
+character(len=20) :: filename
 integer :: i, kk, a, b, c, d
 
 filename = 'uncoupled_DD.2b'
+print "(3A,3I12)", &
+  "[  ] EXPORT Hamiltonian (uncoupled) for reduced Valence space [", filename,&
+  "]   * VS array DD/all possible=", hamil_DD_H2dim, (VSsp_dim/2)**4
 
 if (.NOT.ALL_ISOS) then
 print '(A,F10.6,A,F10.6)'," *Top H2",MINVAL(hamil_DD_H2),' ',MAXVAL(hamil_DD_H2)
@@ -3917,24 +3920,26 @@ print "(A,2I5)"," * Max vals: 2sh, 2jmax", maxval(HOsp_sh), 2*HO_2jmax
 print "(A,3I5)","Dimensions hamilJM [] [jm,] [ind_sab,]:", 3,ind_jm_b,ind_sab
 print "(A,3I5)","Dimensions auxHamilRed [] [jm,]       :", 3,ind_jm_b
 print *, " ----------------------------------------------- "
-!! define the reciprocal shells (j=l+1/2 -> j'=l-1/2)
+!! define the reciprocal shells (j=l+1/2 -> j'=l-1/2) -----------------------
 allocate(reciprocal_nlj_shell(VSsh_dim))
 print "(A)", "[TEST] Reciprocal shells"
 do aa = 1, VSsh_dim
   a = VStoHOsh_index(aa)
-  do bb = 1, VSsh_dim
+  do bb = aa, VSsh_dim
     b = VStoHOsh_index(bb)
     if ((HOsh_n(a) .EQ. HOsh_n(b)).AND.(HOsh_l(a) .EQ. HOsh_l(b))) then
       if ((HOsh_2j(a) .NE. HOsh_2j(b)).OR.(HOsh_l(a) .EQ. 0)) then
+        print "(A)", " -Found 1"
         reciprocal_nlj_shell(aa) = bb
+        print "(A)", " -Found 2"
       else
         cycle
       end if
     end if
-  end do
+  enddo
   bb = reciprocal_nlj_shell(aa)
   print "(A,2I7,A,2I7)", "  * ", aa, VSsh_list(aa), " -> ", bb, HOsh_ant(bb)
-end do
+enddo      !!! --------------------------------------------------------------
 
 
 do KK = 1, hamil_DD_H2dim
