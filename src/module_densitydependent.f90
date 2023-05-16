@@ -268,16 +268,14 @@ if (.NOT.exportVSPSpace) then
   deallocate(hamil_H2cpd_DD) ! It wont be used
 endif
 if (exportVSPSpace)then
-  print '(A,2I4)', '    ... sh states to export DIM(sh/sp):', VSsh_dim,VSsp_dim
+  print '(A,2I4)', '    ... sh states to export DIM(sh/sp):',VSsh_dim,VSsp_dim
   allocate(VStoHOsh_index(VSsh_dim))
-  print "(A)", 'ok-0'
   do i=1,VSsh_dim
     do aa=1, HOsh_dim
       if (VSsh_list(i) .EQ. (HOsh_ant(aa))) then
         VStoHOsh_index(i) = aa
         endif
     enddo
-    print "(A)", 'ok1'
     aa = VStoHOsh_index(i)
     print '(A,I3,2I7)',  '    ', i, VSsh_list(i), HOsh_ant(VStoHOsh_index(i))
   enddo
@@ -3926,7 +3924,7 @@ do aa = 1, VSsh_dim
   a = VStoHOsh_index(aa)
   do bb = 1, VSsh_dim
     b = VStoHOsh_index(bb)
-    if ((HOsh_n(a) .EQ. HOsh_n(b)).AND.(HOsh_l(a) .EQ. HOsh_n(b))) then
+    if ((HOsh_n(a) .EQ. HOsh_n(b)).AND.(HOsh_l(a) .EQ. HOsh_l(b))) then
       if ((HOsh_2j(a) .NE. HOsh_2j(b)).OR.(HOsh_l(a) .EQ. 0)) then
         reciprocal_nlj_shell(aa) = bb
       else
@@ -3935,7 +3933,7 @@ do aa = 1, VSsh_dim
     end if
   end do
   bb = reciprocal_nlj_shell(aa)
-  print "(A,4I7)", "  * ", aa, VSsh_list(aa), bb, HOsh_ant(bb)
+  print "(A,2I7,A,2I7)", "  * ", aa, VSsh_list(aa), " -> ", bb, HOsh_ant(bb)
 end do
 
 
@@ -4023,24 +4021,20 @@ allocate(all_zero(0:TENSOR_ORD))
 do aa = 1, VSsh_dim
   a  = VStoHOsh_index(aa)
   ja = HOsh_2j(a)
-!  a_ant = 10000*HOsh_n(a) + 100*HOsh_l(a) + ja
   a_ant = VSsh_list(aa)
   do bb = aa, VSsh_dim
     b  = VStoHOsh_index(bb)
     jb = HOsh_2j(b)
-!    b_ant = 10000*HOsh_n(b) + 100*HOsh_l(b) + jb
     b_ant = VSsh_list(bb)
     ind_sab = two_shell_states_index(a, b)
 
     do cc = aa, VSsh_dim
       c  = VStoHOsh_index(cc)
       jc = HOsh_2j(c)
-!      c_ant = 10000*HOsh_n(c) + 100*HOsh_l(c) + jc
       c_ant = VSsh_list(cc)
       do dd = cc, VSsh_dim
         d  = VStoHOsh_index(dd)
         jd = HOsh_2j(d)
-!        d_ant = 10000*HOsh_n(d) + 100*HOsh_l(d) + jd
         d_ant = VSsh_list(dd)
         ind_scd = two_shell_states_index(c, d)
 
