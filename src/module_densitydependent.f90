@@ -3985,7 +3985,7 @@ do KK = 1, hamil_DD_H2dim
 
 !      print "(A,2I3,A,2I3,A,2I4)","   (jajb),JM,JM'(",Jbra,Mbra,")(",Jket,Mket,&
 !          ") ind_jm_bra, ket=", ind_jm_b, ind_jm_k
-      norm = sqrt((1 + delta_ab*((-1)**Jbra))*(1 + delta_cd*((-1)**Jket)))
+      norm = sqrt((1.0d0 + delta_ab*((-1)**Jbra))*(1 + delta_cd*((-1)**Jket)))
       norm = norm / ((1 + delta_ab) * (1 + delta_cd))
 
       do tt = 1, 4
