@@ -517,7 +517,7 @@ enddo
 
 return
 
-end subroutine Wigner6JCoeff
+end subroutine Wigner9JCoeff
 
 !------------------------------------------------------------------------------!
 ! function lapack_sel                                                          !
