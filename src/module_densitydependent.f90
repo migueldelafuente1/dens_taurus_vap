@@ -259,9 +259,11 @@ if (exportVSPSpace)then
   allocate(VStoHOsh_index(VSsh_dim))
   do i=1,VSsh_dim
     do aa=1, HOsh_dim
-      if (VSsh_list(i) .EQ. aa) VStoHOsh_index(i) = aa
+      if (VSsh_list(i) .EQ. HOsh_ant(aa)) then
+        VStoHOsh_index(i) = aa
+        endif
     enddo
-
+    print "(A)", 'ok1'
     print '(A,I3,2I7)',  '    ', i, VSsh_list(i), HOsh_ant(VStoHOsh_index(i))
   enddo
 
