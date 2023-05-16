@@ -279,7 +279,7 @@ if (exportVSPSpace)then
     enddo
     print "(A)", 'ok1'
     aa = VStoHOsh_index(i)
-    print '(A,I3,2I7)',  '    ', i, VSsh_list(i), HOsh_ant(VStoHOsh_index(i)
+    print '(A,I3,2I7)',  '    ', i, VSsh_list(i), HOsh_ant(VStoHOsh_index(i))
   enddo
 
   NHO_vs  = 0
