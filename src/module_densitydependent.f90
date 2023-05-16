@@ -260,7 +260,7 @@ if (exportVSPSpace)then
   print "(A)", 'ok-0'
   do i=1,VSsh_dim
     do aa=1, HOsh_dim
-      if (VSsh_list(i) .EQ. HOsh_ant(aa)) then
+      if (VSsh_list(i) .EQ. (10000*HOsh_n(aa)+100*HOsh_l(aa)+HOsh_2j(aa))) then
         VStoHOsh_index(i) = aa
         endif
     enddo
