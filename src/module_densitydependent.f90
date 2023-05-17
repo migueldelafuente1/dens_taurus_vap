@@ -3875,11 +3875,12 @@ end subroutine calculate_valenceSpaceReduced
 subroutine recouple_jjLSConjugatedME(a,b,c,d, a_con,b_con,c_con,d_con, &
                                      Sbra,Sket,Lbra,Lket,Jbra,Jket,Mbra,Mket,&
                                      hamilJM, dim_jm, dim_sh, TENSOR_ORD, &
-                                     auxHamilRed, ind_k, kval_is_zero)
+                                     factor, auxHamilRed, ind_k, kval_is_zero)
 
-integer, intent(in) :: a,b,c,d, a_con,b_con,c_con,d_con, Sbra,Sket,Lbra,Lket,&
-                       Jbra,Jket, Mbra,Mket
+integer, intent(in)  :: a,b,c,d, a_con,b_con,c_con,d_con, Sbra,Sket,Lbra,Lket,&
+                        Jbra,Jket, Mbra,Mket
 integer, intent(in)  :: dim_sh, dim_jm, TENSOR_ORD, ind_k
+real(r64), intent(in):: factor !! factor of the 6J*9J (and all the phases)
 real(r64), dimension(4,dim_jm,dim_jm,dim_sh,dim_sh), intent(in) :: hamilJM
 real(r64), dimension(4,TENSOR_ORD,dim_jm,dim_jm) :: auxHamilRed
 logical, intent(out) :: kval_is_zero
@@ -3971,12 +3972,18 @@ do i = 2, 4
   endif
 enddo
 
+!! sum all non
 do i =  1, 4
   aa = ind_sh_ab(i)
+  if (aa .EQ. 0) cycle
   do j = 1, 4
     bb = ind_sh_cd(j)
+    if (bb .EQ. 0) cycle
+
     do tt = 1, 4
       aux_val = aux_r_ab(i)*aux_r_cd(j)*hamilJM(tt, ind_jm_b, ind_jm_k, aa, bb)
+      aux_val = aux_val * factor
+
       auxHamilRed(tt,ind_k, ind_jm_b,ind_jm_k) = &
           auxHamilRed(tt,ind_k, ind_jm_b,ind_jm_k) + aux_val
 
@@ -4005,7 +4012,7 @@ integer      :: a_ant,b_ant,c_ant,d_ant, t, tt, &
                 a_con,b_con,c_con,d_con, dim_jm,dim_sh
 logical      :: kval_is_zero
 
-real(r64)    :: aux_val,aux_val2, cgc1,cgc2,norm, &
+real(r64)    :: aux_val,aux_val2, cgc1,cgc2,norm, recoupl_factor,&
                 TOL=1.0e-10, aux_1, aux_2, aux_3, aux_4, phs_pnk0
 integer, dimension(:), allocatable :: reciprocal_nlj_shell
 real(r64), dimension(4)            :: h2b  ! [pppp, pnpn, pnnp, nnnn]
@@ -4021,8 +4028,8 @@ print *, "* [  ] Printing 2B Matrix elements DD from WF_HFB /dim H2_DD:", &
     hamil_DD_H2dim
 
 open(299, file="D1S_vs_scalar.2b")
-open(301, file="onlyDD_D1S_k1.2b")
 open(300, file="onlyDD_D1S_scalar.2b")
+open(301, file="onlyDD_D1S_k1.2b")
 open(302, file="onlyDD_D1S_k2.2b")
 do KK = 0, TENSOR_ORD
   write(300+KK, '(A,I2,A,F10.5,A,F10.5,A,F6.4)') &
@@ -4232,11 +4239,16 @@ do aa = 1, VSsh_dim
   b_con = reciprocal_nlj_shell(b)
   c_con = reciprocal_nlj_shell(c)
   d_con = reciprocal_nlj_shell(d)
+  recoupl_factor = ((-1)**(Jbra+Jket))*(2*KK + 1.0d0)*(2*Jket + 1.0d0)
+  recoupl_factor = recoupl_factor * aux_1 * aux_2 * aux_3 * aux_4
+
+  print "(A,3I4,A,I4,A,3I3,F15.9)", "   > got to the recoup!: (J,S,L)bra=", &
+        Jbra,Sbra,Lbra," KK=",KK, " (J,S,L)ket=", Jket,Sket,Lket,recoupl_factor
 
   call recouple_jjLSConjugatedME(a,b,c,d, a_con,b_con,c_con,d_con, &
                                  Sbra,Sket,Lbra,Lket,Jbra,Jket,Mbra,Mket,&
                                  hamilJM, dim_jm, dim_sh, TENSOR_ORD, &
-                                 auxHamilRed, KK, kval_is_zero)
+                                 recoupl_factor, auxHamilRed, KK, kval_is_zero)
 
   if (all_zero(KK)) all_zero(KK) = kval_is_zero ! modify just if all was zero
   !!! ================================================================
@@ -4267,10 +4279,8 @@ do aa = 1, VSsh_dim
     else
       write(300, fmt='(A,4I8,2I3)') ' 0 5', a_ant, b_ant, c_ant, d_ant, &
          max(Jb_min, Jk_min), min(Jb_max, Jk_max)
-      if (in_v_space) then
-        write(299, fmt='(A,4I8,2I3)') ' 0 5', a_ant, b_ant, c_ant, d_ant, &
-                                        max(Jb_min, Jk_min), min(Jb_max, Jk_max)
-      endif
+      write(299, fmt='(A,4I8,2I3)') ' 0 5', a_ant, b_ant, c_ant, d_ant, &
+         max(Jb_min, Jk_min), min(Jb_max, Jk_max)
     endif
   enddo
 
@@ -4283,9 +4293,9 @@ do aa = 1, VSsh_dim
       ind_jm_b = angular_momentum_index(Jbra, 0, .FALSE.)
       ind_jm_k = angular_momentum_index(Jket, 0, .FALSE.)
 
-      if ((delta_ab > TOL).OR.(delta_cd > TOL)) then
-        phs_pnk0 = (-1)**(Jbra)
-        endif
+!      if ((delta_ab > TOL).OR.(delta_cd > TOL)) then
+!        phs_pnk0 = (-1)**(Jbra)
+!        endif
 
       do KK = KKmin, KKmax
         if (all_zero(KK)) cycle
@@ -4294,49 +4304,57 @@ do aa = 1, VSsh_dim
         if (KK > 0) then
           write(300+KK,fmt='(2I4)',advance='no')Jbra, Jket
         end if
-        do t = 1, 3
+        do t = 1, 4
 
-          aux_3 = auxHamilRed(t,KK,ind_jm_b,ind_jm_k)
+          aux_1 = auxHamilRed(t,KK,ind_jm_b,ind_jm_k)
 
           if (KK == 0) then
             !! select the import hamil 2B J-scheme
             select case(t)
               case (1)
                 tt = 0
-              case (3)
+              case (4)
                 tt = 5
-              case default
+              case default  !! t=2(pnpn) tt=1(,4) & t=3(pnnp) tt=2(,3)! 1/2==4/3
                 tt = t - 1
             end select
 
 !            print "(A,4I3)", "    Nshell::", Na, Nb, Nc, Nd
-            if (in_v_space) then
-              aux_4 = aux_3
-              if (implement_H2cpd_DD) then
-                aux_4 = aux_4 + hamil_H2cpd_DD(tt, Jbra, a,b,c,d)
-                endif
-!              print "(A,2F15.9)","    In:",aux_3,hamil_H2cpd_DD(tt,Jbra,a,b,c,d)
-              if (t == 2) then ! print the permutations (for the pnpn)
-                write(299,fmt='(4F15.10)',advance='no') &
-                  aux_4, phs_pnk0*aux_4, phs_pnk0*aux_4, aux_4
-              else
-                write(299,fmt='(F15.10)',advance='no') aux_4
+            aux_4 = aux_1
+            if (implement_H2cpd_DD) then
+              aux_4 = aux_4 + hamil_H2cpd_DD(tt, Jbra, a,b,c,d)
               endif
+!              print "(A,2F15.9)","    In:",aux_3,hamil_H2cpd_DD(tt,Jbra,a,b,c,d)
+            if (t == 2) then ! print the permutations (for the pnpn)
+              aux_2 = auxHamilRed(2,KK,ind_jm_b,ind_jm_k)
+              aux_3 = auxHamilRed(3,KK,ind_jm_b,ind_jm_k)
+              write(299,fmt='(4F15.10)',advance='no') &
+                aux_2 + hamil_H2cpd_DD(1, Jbra, a,b,c,d),
+                aux_3 + hamil_H2cpd_DD(2, Jbra, a,b,c,d),
+                aux_3 + hamil_H2cpd_DD(3, Jbra, a,b,c,d),
+                aux_2 + hamil_H2cpd_DD(4, Jbra, a,b,c,d)
+            else if (t .EQ. 3) then
+              cycle
+            else
+              write(299,fmt='(F15.10)',advance='no') aux_4
             endif
-          endif
+          endif !! K=0
 
           !! Parts for the Hamil DD only -----------------------------------
-          if (t == 2) then ! print the permutations (for the pnpn)
-            write(300+KK,fmt='(4F15.10)',advance='no') &
-              aux_3, phs_pnk0*aux_3, phs_pnk0*aux_3, aux_3
+          if (t .EQ. 2) then ! print the permutations (for the pnpn)
+            aux_2 = auxHamilRed(2,KK,ind_jm_b,ind_jm_k)
+            aux_3 = auxHamilRed(3,KK,ind_jm_b,ind_jm_k)
+            write(300+KK,fmt='(4F15.10)',advance='no') aux_2,aux_3,aux_3,aux_2
+          else if (t .EQ. 3) then
+            cycle
           else
-            write(300+KK,fmt='(F15.10)',advance='no') aux_3
+            write(300+KK,fmt='(F15.10)',advance='no') aux_1
           endif
           !! Parts for the Hamil DD only -----------------------------------
         enddo ! t iter
 
         write(300+KK,*) ''
-        if ((KK==0).AND.(in_v_space)) then
+        if (KK==0) then
           write(299,*) ''
         endif
 
