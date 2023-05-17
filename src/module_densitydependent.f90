@@ -4329,9 +4329,9 @@ do aa = 1, VSsh_dim
               aux_2 = auxHamilRed(2,KK,ind_jm_b,ind_jm_k)
               aux_3 = auxHamilRed(3,KK,ind_jm_b,ind_jm_k)
               write(299,fmt='(4F15.10)',advance='no') &
-                aux_2 + hamil_H2cpd_DD(1, Jbra, a,b,c,d),
-                aux_3 + hamil_H2cpd_DD(2, Jbra, a,b,c,d),
-                aux_3 + hamil_H2cpd_DD(3, Jbra, a,b,c,d),
+                aux_2 + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
+                aux_3 + hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
+                aux_3 + hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
                 aux_2 + hamil_H2cpd_DD(4, Jbra, a,b,c,d)
             else if (t .EQ. 3) then
               cycle
