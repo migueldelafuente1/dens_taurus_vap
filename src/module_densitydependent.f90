@@ -3842,22 +3842,22 @@ do tt = 1, 3
   E_core  = E_core + T_core(tt) + (1.0d0 * V_core(tt)) !! we sum all
 enddo
 
-open (298, file="D1S_vs_scalar.sho")
-write(298, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2I5)') &
+open (297, file="D1S_vs_scalar.sho")
+write(297, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2I5)') &
   'Density 2BME on explicit HFB wf from taurus, Scalar', &
   ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=', x0_DD_FACTOR, ' ALPHA=', alpha_DD, &
   '  CORE(n,p):', CORE_NUMBER, CORE_NUMBER
-write(298, fmt="(2I4,F12.6)") INT(CORE_NUMBER), INT(CORE_NUMBER), E_core
+write(297, fmt="(2I4,F12.6)") INT(CORE_NUMBER), INT(CORE_NUMBER), E_core
 
 do a_sh_vs = 1, VSsh_dim
   a_ant = VSsh_list(a_sh_vs)
-  write(298, fmt="(I8)", advance='no') a_ant
+  write(297, fmt="(I8)", advance='no') a_ant
 enddo
-write(298,*) ""
+write(297,*) ""
 do a_sh_vs = 1, VSsh_dim
-  write(298, fmt="(F12.6)", advance='no') e_sp_vs(a_sh_vs)
+  write(297, fmt="(F12.6)", advance='no') e_sp_vs(a_sh_vs)
 enddo
-close(298)
+close(297)
 
 deallocate(T_core, V_core, e_sp_vs, t_sp_vs)
 
@@ -4230,9 +4230,9 @@ do aa = 1, VSsh_dim
         aux_3 + hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
         aux_3 + hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
         aux_2 + hamil_H2cpd_DD(4, Jbra, a,b,c,d)
-      aux_1 = auxHamilRed(4,0,ind_jm_b,ind_jm_b)
+      aux_4 = auxHamilRed(4,0,ind_jm_b,ind_jm_b)
       write(298,fmt='(F15.10)') &
-        aux_1 + hamil_H2cpd_DD(5, Jbra, a,b,c,d)
+        aux_4 + hamil_H2cpd_DD(5, Jbra, a,b,c,d)
 
       print "(A,2I4,4F15.10)", &
         "  **(INSIDE)  J=", Jbra, ind_jm_b,  aux_1, aux_2, aux_3, aux_4
