@@ -3882,7 +3882,7 @@ integer, intent(in)  :: a,b,c,d, a_con,b_con,c_con,d_con, Sbra,Sket,Lbra,Lket,&
 integer, intent(in)  :: dim_sh, dim_jm, TENSOR_ORD, ind_k
 real(r64), intent(in):: factor !! factor of the 6J*9J (and all the phases)
 real(r64), dimension(4,dim_jm,dim_jm,dim_sh,dim_sh), intent(in) :: hamilJM
-real(r64), dimension(4,TENSOR_ORD,dim_jm,dim_jm) :: auxHamilRed
+real(r64), dimension(4,0:TENSOR_ORD,dim_jm,dim_jm) :: auxHamilRed
 logical, intent(out) :: kval_is_zero
 
 integer :: i, j, aa, bb, cc, dd, ind_jm_b, ind_jm_k, ind_sab, ind_scd, &
@@ -4054,8 +4054,8 @@ allocate(auxHamilRed(4,0:TENSOR_ORD, dim_jm,dim_jm))
 
 print *, " ----------------------------------------------- "
 print "(A,2I5)"," * Max vals: 2sh, 2jmax", maxval(HOsp_sh), 2*HO_2jmax
-print "(A,3I5)","Dimensions hamilJM [] [jm,] [dim_sh,]:", 3,dim_jm,dim_sh
-print "(A,3I5)","Dimensions auxHamilRed [] [jm,]       :", 3,dim_jm
+print "(A,3I5)","Dimensions hamilJM [4] [jm,]2 [dim_sh,]2:", dim_jm, dim_sh
+print "(A,3I5)","Dimensions auxHamilRed [4,k] [jm,]2       :",TENSOR_ORD,dim_jm
 print *, " ----------------------------------------------- "
 !! define the reciprocal shells (j=l+1/2 -> j'=l-1/2) -----------------------
 allocate(reciprocal_nlj_shell(VSsh_dim))
