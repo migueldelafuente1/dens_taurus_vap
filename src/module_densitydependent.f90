@@ -3972,7 +3972,6 @@ do i = 2, 4
   endif
 enddo
 
-print "(A)", "     ** recouplings done."
 !! sum all non
 do i =  1, 4
   aa = ind_sh_ab(i)
@@ -3982,11 +3981,9 @@ do i =  1, 4
     if (bb .EQ. 0) cycle
 
     do tt = 1, 4
-      print "(A,6I3)", "     ** i,j,t=", i, j, tt, ind_k, ind_jm_b,ind_jm_k
       aux_val = aux_r_ab(i)*aux_r_cd(j)*hamilJM(tt, ind_jm_b, ind_jm_k, aa, bb)
       aux_val = aux_val * factor
 
-      print "(A,F15.9)", "     ** auxval=", aux_val
       auxHamilRed(tt,ind_k, ind_jm_b,ind_jm_k) = &
           auxHamilRed(tt,ind_k, ind_jm_b,ind_jm_k) + aux_val
 
@@ -4030,6 +4027,7 @@ print *, ""
 print *, "* [  ] Printing 2B Matrix elements DD from WF_HFB /dim H2_DD:", &
     hamil_DD_H2dim
 
+open(298, file="D1S_vs_red.2b"
 open(299, file="D1S_vs_scalar.2b")
 open(300, file="onlyDD_D1S_scalar.2b")
 open(301, file="onlyDD_D1S_k1.2b")
@@ -4039,6 +4037,10 @@ do KK = 0, TENSOR_ORD
     'Density 2BME on explicit HFB wf from taurus, Tensor=',KK, &
     ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=', x0_DD_FACTOR, ' ALPHA=', alpha_DD
 enddo
+write(298, '(A,A,F9.3,A,F10.5,A,F5.3,A,2F5.1)') &
+    'Density 2BME on explicit HFB wf from taurus, Scalar', &
+    ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=',x0_DD_FACTOR,' ALPHA=',alpha_DD, &
+    '  CORE(n,p):', valence_N, valence_Z
 write(299, '(A,A,F9.3,A,F10.5,A,F5.3,A,2F5.1)') &
     'Density 2BME on explicit HFB wf from taurus, Scalar', &
     ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=',x0_DD_FACTOR,' ALPHA=',alpha_DD, &
@@ -4187,11 +4189,51 @@ do aa = 1, VSsh_dim
   Jk_min = abs(jc - jd) / 2
   Jk_max = (jc + jd) / 2
 
+  !! ======= Extract the simpler form of the scalar D1S  ==================
   auxHamilRed = zero
-  print *, ""
-  print "(A,4I5,2(A,2I3))", " abcd ", a_ant,b_ant,c_ant,d_ant, " lims bra:",&
-    Jb_min,Jb_max, " ket:", Jk_min,Jk_max
+  kval_is_zero = .TRUE.
+  do Jbra = Jb_min, Jb_max
+    do Mbra = -Jbra, Jbra
+      ind_jm_b = angular_momentum_index(Jbra, Mbra, .FALSE.)
+      do t = 1, 4
+        aux_val = hamilJM(t, ind_jm_b, ind_jm_b, ind_sab, ind_scd)
+        if (abs(aux_val) > 1.0e-10) then
+          aux_val = aux_val * sqrt(2*Jbra + 1.0d0)
+          auxHamilRed(t,0,ind_jm_b,ind_jm_b) = aux_val + &
+                                               auxHamilRed(t,0,ind_jm_b,ind_jm_b)
+          if (kval_is_zero) kval_is_zero = .FALSE.
+        endif
+      end do
+    end do
+  enddo
+  if (.NOT.kval_is_zero) then
+    do Jbra = Jb_min, Jb_max
+      write(298, fmt='(A,4I8,2I3)') &
+          ' 0 5', a_ant, b_ant, c_ant, d_ant, Jb_min, Jb_max
 
+      ind_jm_b = angular_momentum_index(Jbra, 0, .FALSE.)
+
+      aux_1 = auxHamilRed(1,0,ind_jm_b,ind_jm_b)
+      write(298,fmt='(F15.10)',advance='no') &
+        aux_1 + hamil_H2cpd_DD(0, Jbra, a,b,c,d)
+      aux_2 = auxHamilRed(2,0,ind_jm_b,ind_jm_k)
+      aux_3 = auxHamilRed(3,0,ind_jm_b,ind_jm_b)
+      write(298,fmt='(4F15.10)',advance='no') &
+        aux_2 + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
+        aux_3 + hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
+        aux_3 + hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
+        aux_2 + hamil_H2cpd_DD(4, Jbra, a,b,c,d)
+      aux_1 = auxHamilRed(4,0,ind_jm_b,ind_jm_b)
+      write(298,fmt='(F15.10)') &
+        aux_1 + hamil_H2cpd_DD(0, Jbra, a,b,c,d)
+    end do
+  endif
+
+  !! ======= Evaluate the rearrange for tensor components on the D1S
+!  print *, ""
+!  print "(A,4I5,2(A,2I3))", " abcd ", a_ant,b_ant,c_ant,d_ant, " lims bra:",&
+!    Jb_min,Jb_max, " ket:", Jk_min,Jk_max
+  auxHamilRed = zero
   do Jbra = Jb_min, Jb_max
     Mbra = 0
     ind_jm_b = angular_momentum_index(Jbra, Mbra, .FALSE.)
@@ -4245,14 +4287,13 @@ do aa = 1, VSsh_dim
   recoupl_factor = ((-1)**(Jbra+Jket))*(2*KK + 1.0d0)*(2*Jket + 1.0d0)
   recoupl_factor = recoupl_factor * aux_1 * aux_2 * aux_3 * aux_4
 
-  print "(A,3I4,A,I4,A,3I3,F15.9)", "   > got to the recoup!: (J,S,L)bra=", &
-        Jbra,Sbra,Lbra," KK=",KK, " (J,S,L)ket=", Jket,Sket,Lket,recoupl_factor
+!  print "(A,3I4,A,I4,A,3I3,F15.9)", "   > got to the recoup!: (J,S,L)bra=", &
+!        Jbra,Sbra,Lbra," KK=",KK, " (J,S,L)ket=", Jket,Sket,Lket,recoupl_factor
 
   call recouple_jjLSConjugatedME(a,b,c,d, a_con,b_con,c_con,d_con, &
                                  Sbra,Sket,Lbra,Lket,Jbra,Jket,Mbra,Mket,&
                                  hamilJM, dim_jm, dim_sh, TENSOR_ORD, &
                                  recoupl_factor, auxHamilRed, KK, kval_is_zero)
-  print "(A)", "   < done!"
   if (all_zero(KK)) all_zero(KK) = kval_is_zero ! modify just if all was zero
   !!! ================================================================
 
@@ -4318,7 +4359,7 @@ do aa = 1, VSsh_dim
                 tt = 0
               case (4)
                 tt = 5
-              case default  !! t=2(pnpn) tt=1(,4) & t=3(pnnp) tt=2(,3)! 1/2==4/3
+              case default  !! t=2(pnpn) tt=1(,4) & t=3(pnnp) tt=2(,3)! 1,2==4,3
                 tt = t - 1
             end select
 
@@ -4376,6 +4417,7 @@ do KK = 0, TENSOR_ORD
   close(300 + KK)
 end do
 close(299)
+close(298)
 
 print *, " * [OK] Printing 2B Matrix elements DD from WF_HFB\n"
 end subroutine print_DD_matrix_elements
