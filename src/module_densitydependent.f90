@@ -3879,14 +3879,14 @@ subroutine recouple_jjLSConjugatedME(a,b,c,d, a_con,b_con,c_con,d_con, &
 
 integer, intent(in) :: a,b,c,d, a_con,b_con,c_con,d_con, Sbra,Sket,Lbra,Lket,&
                        Jbra,Jket, Mbra,Mket
-integer, intent(in) :: dim_sh, dim_jm, TENSOR_ORD, ind_k
+integer, intent(in)  :: dim_sh, dim_jm, TENSOR_ORD, ind_k
 real(r64), dimension(4,dim_jm,dim_jm,dim_sh,dim_sh), intent(in) :: hamilJM
 real(r64), dimension(4,TENSOR_ORD,dim_jm,dim_jm) :: auxHamilRed
-logical :: all_zero
+logical, intent(out) :: kval_is_zero
 
 integer :: i, j, aa, bb, cc, dd, ind_jm_b, ind_jm_k, ind_sab, ind_scd, &
-           ind_sab_2, ind_scd_2
-real(r64) :: aux_val
+           ind_sab_2, ind_scd_2, tt
+real(r64) :: aux_val, aux1, aux2
 integer  , dimension(4)   :: ind_sh_ab, ind_sh_cd
 real(r64), dimension(4)   :: aux_r_ab, aux_r_cd
 logical,   dimension(4)   :: j_isitsconjugate
@@ -3954,17 +3954,19 @@ do i = 2, 4
 
   !! If the index are zero, then the state is repeated with a previous one
   if (ind_sh_ab(i) .NE. 0) then
-    call Wigner9JCoeff(2*HOsh_l(aa), 1,HOsh_2j(aa),&
-                       2*HOsh_l(bb), 1,HOsh_2j(bb),&
+    call Wigner9JCoeff(2*HOsh_l(aa), 1,HOsh_2j(aa), &
+                       2*HOsh_l(bb), 1,HOsh_2j(bb), &
                        2*Lbra, 2*Sbra, 2*Jbra, aux1)
-    aux_r_ab(i) = sqrt((HOsh_2j(aa)+1)*(HOsh_2j(bb)+1)*(2*Sbra +1)*(2*Lbra +1))
+    aux_r_ab(i) = sqrt((HOsh_2j(aa) + 1)*(HOsh_2j(bb) + 1)* &
+                       (2*Sbra + 1)*(2*Lbra + 1.0d0))
     aux_r_ab(i) = aux_r_ab(i) * aux1
   endif
   if (ind_sh_cd(i) .NE. 0) then
-    call Wigner9JCoeff(2*HOsh_l(cc), 1,HOsh_2j(cc),&
-                       2*HOsh_l(dd), 1,HOsh_2j(dd),&
+    call Wigner9JCoeff(2*HOsh_l(cc), 1,HOsh_2j(cc), &
+                       2*HOsh_l(dd), 1,HOsh_2j(dd), &
                        2*Lket, 2*Sket, 2*Jket, aux2)
-    aux_r_cd(i) = sqrt((HOsh_2j(cc)+1)*(HOsh_2j(dd)+1)*(2*Sket +1)*(2*Lket +1))
+    aux_r_cd(i) = sqrt((HOsh_2j(cc) + 1)*(HOsh_2j(dd) + 1)* &
+                       (2*Sket + 1)*(2*Lket + 1.0d0))
     aux_r_cd(i) = aux_r_cd(i) * aux2
   endif
 enddo
@@ -4221,8 +4223,8 @@ do aa = 1, VSsh_dim
                                         2*Lket, 2*Sket, 2*Jbra, aux_4)
                 if (abs(aux_4) .LE. TOL) cycle
 
-                aux_3 = aux_3 * sqrt((ja+1)*(jb+1)*(2*Sbra + 1)*(2*Lbra + 1))
-                aux_4 = aux_4 * sqrt((jc+1)*(jd+1)*(2*Sket + 1)*(2*Lket + 1))
+                aux_3 = aux_3 * sqrt((ja+1)*(jb+1)*(2*Sbra + 1)*(2*Lbra + 1.0))
+                aux_4 = aux_4 * sqrt((jc+1)*(jd+1)*(2*Sket + 1)*(2*Lket + 1.0))
 
   !!! ================================================================
   ! part to recouple with the j and conjugate j elements
@@ -4235,7 +4237,8 @@ do aa = 1, VSsh_dim
                                  Sbra,Sket,Lbra,Lket,Jbra,Jket,Mbra,Mket,&
                                  hamilJM, dim_jm, dim_sh, TENSOR_ORD, &
                                  auxHamilRed, KK, kval_is_zero)
-  all_zero(KK) = kval_is_zero
+
+  if (all_zero(KK)) all_zero(KK) = kval_is_zero ! modify just if all was zero
   !!! ================================================================
 
               enddo ! L ket_ loop
