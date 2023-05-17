@@ -3903,13 +3903,13 @@ kval_is_zero = .TRUE.
 !! case 1 is always required  -------------------------------------------------
 call Wigner9JCoeff(2*HOsh_l(a), 1,HOsh_2j(a), 2*HOsh_l(b), 1,HOsh_2j(b),&
                    2*Lbra, 2*Sbra, 2*Jbra, aux1)
-aux_r_ab (1) = sqrt((HOsh_2j(a)+1)*(HOsh_2j(b)+1)*(2*Sbra + 1)*(2*Lbra + 1))
+aux_r_ab (1) = sqrt((HOsh_2j(a)+1)*(HOsh_2j(b)+1)*(2*Sbra + 1)*(2*Lbra + 1.0d0))
 aux_r_ab (1) = aux_r_ab(1) * aux1
 ind_sh_ab(1) = two_shell_states_index(a, b)
 
 call Wigner9JCoeff(2*HOsh_l(c), 1,HOsh_2j(c), 2*HOsh_l(d), 1,HOsh_2j(d),&
                    2*Lket, 2*Sket, 2*Jket, aux2)
-aux_r_cd (1) = sqrt((HOsh_2j(c)+1)*(HOsh_2j(d)+1)*(2*Sket + 1)*(2*Lket + 1))
+aux_r_cd (1) = sqrt((HOsh_2j(c)+1)*(HOsh_2j(d)+1)*(2*Sket + 1)*(2*Lket + 1.0d0))
 aux_r_cd (1) = aux_r_cd(1) * aux2
 ind_sh_cd(1) = two_shell_states_index(c, d)
 
