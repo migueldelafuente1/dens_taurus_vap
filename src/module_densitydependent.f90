@@ -4215,8 +4215,8 @@ do aa = 1, VSsh_dim
       "  **(INSIDE), do limits Jbra=", max(Jb_min, Jk_min), min(Jb_max, Jk_max)
     do Jbra = max(Jb_min, Jk_min), min(Jb_max, Jk_max)
 
-      write(298, fmt='(A,4I8,2I3)') &
-        ' 0 5', a_ant,b_ant,c_ant,d_ant, max(Jb_min,Jk_min), min(Jb_max,Jk_max)
+      write(298, fmt='(A,4I8,2I3)') ' 0 5', a_ant,b_ant,c_ant,d_ant, &
+                                    max(Jb_min,Jk_min), min(Jb_max,Jk_max)
 
       ind_jm_b = angular_momentum_index(Jbra, 0, .FALSE.)
 
@@ -4233,6 +4233,9 @@ do aa = 1, VSsh_dim
       aux_1 = auxHamilRed(4,0,ind_jm_b,ind_jm_b)
       write(298,fmt='(F15.10)') &
         aux_1 + hamil_H2cpd_DD(5, Jbra, a,b,c,d)
+
+      print "(A,2I4,4F15.10)", &
+        "  **(INSIDE)  J=", Jbra, ind_jm_b,  aux_1, aux_2, aux_3, aux_4
     end do
   endif
 
