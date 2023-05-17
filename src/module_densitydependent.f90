@@ -3868,8 +3868,9 @@ end subroutine calculate_valenceSpaceReduced
 
 
 !------------------------------------------------------------------------------!
-! subroutine                                           !
-!    recouple with the conjugated elements                                     !
+! subroutine  recouple_jjLSConjugatedME                                        !
+!    recouple with the conjugated elements, include the hamiltonian_ state and !
+!    and verify if the current KK state is null or not.                        !
 !------------------------------------------------------------------------------!
 subroutine recouple_jjLSConjugatedME(a,b,c,d, a_con,b_con,c_con,d_con, &
                                      Sbra,Sket,Lbra,Lket,Jbra,Jket,Mbra,Mket,&
@@ -3982,7 +3983,7 @@ do i =  1, 4
   enddo
 enddo
 
-end subroutine recouple_jjConjugatedMatrixElements
+end subroutine recouple_jjLSConjugatedME
 
 
 !------------------------------------------------------------------------------!
@@ -4230,10 +4231,10 @@ do aa = 1, VSsh_dim
   c_con = reciprocal_nlj_shell(c)
   d_con = reciprocal_nlj_shell(d)
 
-  recouple_jjLSConjugatedME(a,b,c,d, a_con,b_con,c_con,d_con, &
-                            Sbra,Sket,Lbra,Lket,Jbra,Jket,Mbra,Mket,&
-                            hamilJM, dim_jm, dim_sh, TENSOR_ORD, &
-                            auxHamilRed, KK, kval_is_zero)
+  call recouple_jjLSConjugatedME(a,b,c,d, a_con,b_con,c_con,d_con, &
+                                 Sbra,Sket,Lbra,Lket,Jbra,Jket,Mbra,Mket,&
+                                 hamilJM, dim_jm, dim_sh, TENSOR_ORD, &
+                                 auxHamilRed, KK, kval_is_zero)
   all_zero(KK) = kval_is_zero
   !!! ================================================================
 
