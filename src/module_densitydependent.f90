@@ -4027,7 +4027,7 @@ print *, ""
 print *, "* [  ] Printing 2B Matrix elements DD from WF_HFB /dim H2_DD:", &
     hamil_DD_H2dim
 
-open(298, file="D1S_vs_red.2b"
+open(298, file="D1S_vs_red.2b")
 open(299, file="D1S_vs_scalar.2b")
 open(300, file="onlyDD_D1S_scalar.2b")
 open(301, file="onlyDD_D1S_k1.2b")
