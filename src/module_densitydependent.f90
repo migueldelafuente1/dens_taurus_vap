@@ -4199,7 +4199,7 @@ do aa = 1, VSsh_dim
       do t = 1, 4
         aux_val = hamilJM(t, ind_jm_b, ind_jm_b, ind_sab, ind_scd)
         if (dabs(aux_val) .GT. TOL) then
-          print "(A)", " aux value is non null", aux_val
+          print "(A,F15.10)", " aux value is non null", aux_val
           aux_val = aux_val * sqrt(2*Jbra + 1.0d0) ! factor for the Reduced ME
           auxHamilRed(t,0,ind_jm_k,ind_jm_k) = &
               auxHamilRed(t,0,ind_jm_k,ind_jm_k) + aux_val
@@ -4212,7 +4212,7 @@ do aa = 1, VSsh_dim
   if (.NOT.kval_is_zero) then
     do Jbra = max(Jb_min, Jk_min), min(Jb_max, Jk_max)
       write(298, fmt='(A,4I8,2I3)') &
-          ' 0 5', a_ant, b_ant, c_ant, d_ant, Jb_min, Jb_max
+        ' 0 5', a_ant,b_ant,c_ant,d_ant, max(Jb_min,Jk_min), min(Jb_max,Jk_max)
 
       ind_jm_b = angular_momentum_index(Jbra, 0, .FALSE.)
 
