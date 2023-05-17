@@ -4211,7 +4211,10 @@ do aa = 1, VSsh_dim
   enddo
   print "(A,2L4)", "  **kval_is_zero, expr=", kval_is_zero, .NOT.kval_is_zero
   if (.NOT.kval_is_zero) then
+    print "(A,2I4,)", &
+      "  **(INSIDE), do limits Jbra=", max(Jb_min, Jk_min), min(Jb_max, Jk_max)
     do Jbra = max(Jb_min, Jk_min), min(Jb_max, Jk_max)
+
       write(298, fmt='(A,4I8,2I3)') &
         ' 0 5', a_ant,b_ant,c_ant,d_ant, max(Jb_min,Jk_min), min(Jb_max,Jk_max)
 
