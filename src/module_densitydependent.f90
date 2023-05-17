@@ -4249,7 +4249,7 @@ do aa = 1, VSsh_dim
                                  Sbra,Sket,Lbra,Lket,Jbra,Jket,Mbra,Mket,&
                                  hamilJM, dim_jm, dim_sh, TENSOR_ORD, &
                                  recoupl_factor, auxHamilRed, KK, kval_is_zero)
-
+  print "(A)", "   < done!"
   if (all_zero(KK)) all_zero(KK) = kval_is_zero ! modify just if all was zero
   !!! ================================================================
 
