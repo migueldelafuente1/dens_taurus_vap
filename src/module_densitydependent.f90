@@ -262,7 +262,7 @@ print '(A,I10)',   'Omega_Order        =', Omega_Order
 print '(A,I10)',   'THE_grid           =', THE_grid
 print '(A,I10)',   'PHI_grid           =', PHI_grid
 print '(A,F10.6)', 'R_MAX (fm)         =', R_MAX
-print '(A,L10)',   'eval/export Val.Sp =', exportVSPSpace
+print '(A,2L10)',  'eval/export Val.Sp =', evalFullSPSpace, exportVSPSpace
 
 if (.NOT.exportVSPSpace) then
   deallocate(hamil_H2cpd_DD) ! It wont be used
@@ -4117,9 +4117,9 @@ do KK = 1, hamil_DD_H2dim
   Mket = (mc + md) / 2
 
   Jb_min = abs(ja - jb) / 2
-  Jb_max = (ja + jb) / 2
+  Jb_max =    (ja + jb) / 2
   Jk_min = abs(jc - jd) / 2
-  Jk_max = (jc + jd) / 2
+  Jk_max =    (jc + jd) / 2
 
 !  print "(A,2I3,A,3I3,A,3I3,A)", " *ind_j_ab, cd=", ind_sab, ind_scd, &
 !    " JM,J'M', range=[", Jb_min,Jb_max,Mbra, "]   [", Jk_min,Jk_max, Mket,"]"
@@ -5187,20 +5187,20 @@ integral_dens = zzero
 int_dens_Z = zzero
 int_dens_N = zzero
 
-open( 613, file='exp_density_rtp.txt') !=======================================
+open( 613, file='export_density_rtp.txt') !====================================
 write(613, fmt='(A,3I5,F10.6,I3)') &
                 "RDim,CThDim,PhiDim,b lenght,integration method_", &
                 r_dim, theta_dim, phi_dim, HO_b, integration_method
 write(613, fmt='(A,A)') " i_r i_t i_p    r	       cos_th         phi", &
     "            REAL(dens)     IMAG(dens)     weight_prod"
-open( 615, file='exp_dens_pairing_rtp.txt') !==================================
+open( 615, file='export_dens_pairing_rtp.txt') !===============================
 write(615, fmt='(A,3I5,F10.6,I3)') &
                 "RDim,CThDim,PhiDim,b lenght,integration method_", &
                 r_dim, theta_dim, phi_dim, HO_b, integration_method
 write(615, fmt='(A,A,A)') " i_r i_t i_p    r	       cos_th         phi", &
     "            REAL(kappaZ)   IMAG(kappaZ)    REAL(kappaN)    IMAG(kappaN)",&
     "     weight_prod"
-open( 614, file='exp_density_xyz.txt') !=======================================
+open( 614, file='export_density_xyz.txt') !====================================
 write(614, fmt='(A,3I5,F10.6,I3)') &
                 "RDim,CThDim,PhiDim,b lenght_,integration_method", &
                 r_dim, theta_dim, phi_dim, HO_b, integration_method
@@ -5367,7 +5367,8 @@ close(614)
 close(615)
 
 !! TEST ELEMENTS DELTA INTgRAL
-open(557, file='test_dens_expl.gut')
+if (PRINT_GUTS) then
+open(557, file='test_density_delta_me.gut')
 do i=1, ndim
   do j=1, ndim
 
@@ -5377,6 +5378,7 @@ do i=1, ndim
   end do
 end do
 close(557)
+endif
 
 print '(A,F18.15,A,F18.15)', "Integral density  dr^3 =", real(integral_dens), &
                                                  ' +j ', imag(integral_dens)
