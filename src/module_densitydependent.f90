@@ -3982,7 +3982,7 @@ do i =  1, 4
     if (bb .EQ. 0) cycle
 
     do tt = 1, 4
-      print "(A,3I3)", "     ** i,j,t=", i, j, tt
+      print "(A,6I3)", "     ** i,j,t=", i, j, tt, ind_k, ind_jm_b,ind_jm_k
       aux_val = aux_r_ab(i)*aux_r_cd(j)*hamilJM(tt, ind_jm_b, ind_jm_k, aa, bb)
       aux_val = aux_val * factor
 
