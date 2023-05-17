@@ -4056,8 +4056,8 @@ allocate(auxHamilRed(4,0:TENSOR_ORD, dim_jm,dim_jm))
 
 print *, " ----------------------------------------------- "
 print "(A,2I5)"," * Max vals: 2sh, 2jmax", maxval(HOsp_sh), 2*HO_2jmax
-print "(A,3I5)","Dimensions hamilJM [4] [jm,]2 [dim_sh,]2:", dim_jm, dim_sh
-print "(A,3I5)","Dimensions auxHamilRed [4,k] [jm,]2       :",TENSOR_ORD,dim_jm
+print "(A,2I5)","Dimensions hamilJM [4] [jm,]2 [dim_sh,]2 :", dim_jm, dim_sh
+print "(A,3I5)","Dimensions auxHamilRed [4] [k] [jm,]2    :", TENSOR_ORD,dim_jm
 print *, " ----------------------------------------------- "
 !! define the reciprocal shells (j=l+1/2 -> j'=l-1/2) -----------------------
 allocate(reciprocal_nlj_shell(VSsh_dim))
@@ -4192,22 +4192,25 @@ do aa = 1, VSsh_dim
   !! ======= Extract the simpler form of the scalar D1S  ==================
   auxHamilRed = zero
   kval_is_zero = .TRUE.
-  do Jbra = Jb_min, Jb_max
+  do Jbra = max(Jb_min, Jk_min), min(Jb_max, Jk_max)
     do Mbra = -Jbra, Jbra
       ind_jm_b = angular_momentum_index(Jbra, Mbra, .FALSE.)
+      ind_jm_k = angular_momentum_index(Jbra, 0, .FALSE.) ! for auxHamil to save
       do t = 1, 4
         aux_val = hamilJM(t, ind_jm_b, ind_jm_b, ind_sab, ind_scd)
-        if (abs(aux_val) > 1.0e-10) then
-          aux_val = aux_val * sqrt(2*Jbra + 1.0d0)
-          auxHamilRed(t,0,ind_jm_b,ind_jm_b) = aux_val + &
-                                               auxHamilRed(t,0,ind_jm_b,ind_jm_b)
-          if (kval_is_zero) kval_is_zero = .FALSE.
+        if (dabs(aux_val) .GT. TOL) then
+          print "(A)", " aux value is non null", aux_val
+          aux_val = aux_val * sqrt(2*Jbra + 1.0d0) ! factor for the Reduced ME
+          auxHamilRed(t,0,ind_jm_k,ind_jm_k) = &
+              auxHamilRed(t,0,ind_jm_k,ind_jm_k) + aux_val
+
+          kval_is_zero = .FALSE.
         endif
       end do
     end do
   enddo
   if (.NOT.kval_is_zero) then
-    do Jbra = Jb_min, Jb_max
+    do Jbra = max(Jb_min, Jk_min), min(Jb_max, Jk_max)
       write(298, fmt='(A,4I8,2I3)') &
           ' 0 5', a_ant, b_ant, c_ant, d_ant, Jb_min, Jb_max
 
@@ -4216,7 +4219,7 @@ do aa = 1, VSsh_dim
       aux_1 = auxHamilRed(1,0,ind_jm_b,ind_jm_b)
       write(298,fmt='(F15.10)',advance='no') &
         aux_1 + hamil_H2cpd_DD(0, Jbra, a,b,c,d)
-      aux_2 = auxHamilRed(2,0,ind_jm_b,ind_jm_k)
+      aux_2 = auxHamilRed(2,0,ind_jm_b,ind_jm_b)
       aux_3 = auxHamilRed(3,0,ind_jm_b,ind_jm_b)
       write(298,fmt='(4F15.10)',advance='no') &
         aux_2 + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
@@ -4225,7 +4228,7 @@ do aa = 1, VSsh_dim
         aux_2 + hamil_H2cpd_DD(4, Jbra, a,b,c,d)
       aux_1 = auxHamilRed(4,0,ind_jm_b,ind_jm_b)
       write(298,fmt='(F15.10)') &
-        aux_1 + hamil_H2cpd_DD(0, Jbra, a,b,c,d)
+        aux_1 + hamil_H2cpd_DD(5, Jbra, a,b,c,d)
     end do
   endif
 
