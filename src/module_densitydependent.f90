@@ -4141,7 +4141,7 @@ do KK = 1, hamil_DD_H2dim
 
       do tt = 1, 4
         aux_val = cgc1 * cgc2 * h2b(tt)
-        if ((tt .NE. 2).AND.(tt .NE. 3)) aux_val = aux_val * norm
+        if ((tt .NE. 2).AND.(tt .NE. 3)) aux_val = aux_val / norm
 
         hamilJM(tt,ind_jm_b, ind_jm_k, ind_sab, ind_scd) = &
                 hamilJM(tt, ind_jm_b, ind_jm_k, ind_sab, ind_scd) + aux_val
@@ -4199,7 +4199,6 @@ do aa = 1, VSsh_dim
       do t = 1, 4
         aux_val = hamilJM(t, ind_jm_b, ind_jm_b, ind_sab, ind_scd)
         if (dabs(aux_val) .GT. TOL) then
-          print "(A,F15.10)", " ** aux value is non null", aux_val
           aux_val = aux_val * sqrt(2*Jbra + 1.0d0) ! factor for the Reduced ME
           auxHamilRed(t,0,ind_jm_k,ind_jm_k) = &
               auxHamilRed(t,0,ind_jm_k,ind_jm_k) + aux_val
@@ -4209,14 +4208,11 @@ do aa = 1, VSsh_dim
       end do
     end do
   enddo
-  print "(A,2L4)", "  **kval_is_zero, expr=", kval_is_zero, .NOT.kval_is_zero
   if (.NOT.kval_is_zero) then
-    print "(A,2I4)", &
-      "  **(INSIDE), do limits Jbra=", max(Jb_min, Jk_min), min(Jb_max, Jk_max)
-    do Jbra = max(Jb_min, Jk_min), min(Jb_max, Jk_max)
-
-      write(298, fmt='(A,4I8,2I3)') ' 0 5', a_ant,b_ant,c_ant,d_ant, &
+    write(298, fmt='(A,4I8,2I3)') ' 0 5', a_ant,b_ant,c_ant,d_ant, &
                                     max(Jb_min,Jk_min), min(Jb_max,Jk_max)
+
+    do Jbra = max(Jb_min, Jk_min), min(Jb_max, Jk_max)
 
       ind_jm_b = angular_momentum_index(Jbra, 0, .FALSE.)
 
@@ -4231,12 +4227,10 @@ do aa = 1, VSsh_dim
         aux_3 + hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
         aux_2 + hamil_H2cpd_DD(4, Jbra, a,b,c,d)
       aux_4 = auxHamilRed(4,0,ind_jm_b,ind_jm_b)
-      write(298,fmt='(F15.10)') &
+      write(298,fmt='(F15.10)', advance='no') &
         aux_4 + hamil_H2cpd_DD(5, Jbra, a,b,c,d)
-
-      print "(A,2I4,4F15.10)", &
-        "  **(INSIDE)  J=", Jbra, ind_jm_b,  aux_1, aux_2, aux_3, aux_4
-    end do
+      write(298,*) ''
+    enddo
   endif
 
   !! ======= Evaluate the rearrange for tensor components on the D1S
