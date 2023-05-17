@@ -3868,6 +3868,124 @@ end subroutine calculate_valenceSpaceReduced
 
 
 !------------------------------------------------------------------------------!
+! subroutine                                           !
+!    recouple with the conjugated elements                                     !
+!------------------------------------------------------------------------------!
+subroutine recouple_jjLSConjugatedME(a,b,c,d, a_con,b_con,c_con,d_con, &
+                                     Sbra,Sket,Lbra,Lket,Jbra,Jket,Mbra,Mket,&
+                                     hamilJM, dim_jm, dim_sh, TENSOR_ORD, &
+                                     auxHamilRed, ind_k, kval_is_zero)
+
+integer, intent(in) :: a,b,c,d, a_con,b_con,c_con,d_con, Sbra,Sket,Lbra,Lket,&
+                       Jbra,Jket, Mbra,Mket
+integer, intent(in) :: dim_sh, dim_jm, TENSOR_ORD, ind_k
+real(r64), dimension(4,dim_jm,dim_jm,dim_sh,dim_sh), intent(in) :: hamilJM
+real(r64), dimension(4,TENSOR_ORD,dim_jm,dim_jm) :: auxHamilRed
+logical :: all_zero
+
+integer :: i, j, aa, bb, cc, dd, ind_jm_b, ind_jm_k, ind_sab, ind_scd, &
+           ind_sab_2, ind_scd_2
+real(r64) :: aux_val
+integer  , dimension(4)   :: ind_sh_ab, ind_sh_cd
+real(r64), dimension(4)   :: aux_r_ab, aux_r_cd
+logical,   dimension(4)   :: j_isitsconjugate
+
+j_isitsconjugate = (/ a.EQ.a_con, b.EQ.b_con, c.EQ.c_con, d.EQ.d_con /)
+ind_jm_b  = angular_momentum_index(Jbra, Mbra, .FALSE.)
+ind_jm_k  = angular_momentum_index(Jket, Mket, .FALSE.)
+aux_r_ab = zero
+aux_r_cd = zero
+kval_is_zero = .TRUE.
+!! a, a_con, .. are shell states
+!! aux_r_ab = [(a, b), (a, b_con), (a_con, b), (a_con, b_con)]
+
+!! case 1 is always required  -------------------------------------------------
+call Wigner9JCoeff(2*HOsh_l(a), 1,HOsh_2j(a), 2*HOsh_l(b), 1,HOsh_2j(b),&
+                   2*Lbra, 2*Sbra, 2*Jbra, aux1)
+aux_r_ab (1) = sqrt((HOsh_2j(a)+1)*(HOsh_2j(b)+1)*(2*Sbra + 1)*(2*Lbra + 1))
+aux_r_ab (1) = aux_r_ab(1) * aux1
+ind_sh_ab(1) = two_shell_states_index(a, b)
+
+call Wigner9JCoeff(2*HOsh_l(c), 1,HOsh_2j(c), 2*HOsh_l(d), 1,HOsh_2j(d),&
+                   2*Lket, 2*Sket, 2*Jket, aux2)
+aux_r_cd (1) = sqrt((HOsh_2j(c)+1)*(HOsh_2j(d)+1)*(2*Sket + 1)*(2*Lket + 1))
+aux_r_cd (1) = aux_r_cd(1) * aux2
+ind_sh_cd(1) = two_shell_states_index(c, d)
+
+!! cases for complementary j, avoid calculating twice if j=j_con_ ------------
+do i = 2, 4
+  aa = a
+  bb = b
+  cc = d
+  dd = d
+  if ((i .EQ. 2) .OR. (i .EQ. 4)) then
+    bb = b_con
+    if ((b .EQ. b_con) .OR. ((i.EQ.4).AND.(a .EQ. a_con))) then
+      ind_sh_ab(i) = 0
+    else
+      ind_sh_ab(i) = two_shell_states_index(aa, bb)
+    end if
+
+    dd = d_con
+    if ((d .EQ. d_con) .OR. ((i.EQ.4).AND.(c .EQ. c_con))) then
+      ind_sh_cd(i) = 0
+    else
+      ind_sh_cd(i) = two_shell_states_index(cc, dd)
+    end if
+  endif
+  !!
+  if ((i .EQ. 3) .OR. (i .EQ. 4)) then
+    aa = a_con
+    if ((a .EQ. a_con) .OR. ((i.EQ.4).AND.(a .EQ. a_con))) then
+      ind_sh_ab(i) = 0
+    else
+      ind_sh_ab(i) = two_shell_states_index(aa, bb)
+    end if
+
+    cc = c_con
+    if ((c .EQ. c_con) .OR. ((i.EQ.4).AND.(d .EQ. d_con))) then
+      ind_sh_cd(i) = 0
+    else
+      ind_sh_cd(i) = two_shell_states_index(cc, dd)
+    end if
+
+  endif
+
+  !! If the index are zero, then the state is repeated with a previous one
+  if (ind_sh_ab(i) .NE. 0) then
+    call Wigner9JCoeff(2*HOsh_l(aa), 1,HOsh_2j(aa),&
+                       2*HOsh_l(bb), 1,HOsh_2j(bb),&
+                       2*Lbra, 2*Sbra, 2*Jbra, aux1)
+    aux_r_ab(i) = sqrt((HOsh_2j(aa)+1)*(HOsh_2j(bb)+1)*(2*Sbra +1)*(2*Lbra +1))
+    aux_r_ab(i) = aux_r_ab(i) * aux1
+  endif
+  if (ind_sh_cd(i) .NE. 0) then
+    call Wigner9JCoeff(2*HOsh_l(cc), 1,HOsh_2j(cc),&
+                       2*HOsh_l(dd), 1,HOsh_2j(dd),&
+                       2*Lket, 2*Sket, 2*Jket, aux2)
+    aux_r_cd(i) = sqrt((HOsh_2j(cc)+1)*(HOsh_2j(dd)+1)*(2*Sket +1)*(2*Lket +1))
+    aux_r_cd(i) = aux_r_cd(i) * aux2
+  endif
+enddo
+
+do i =  1, 4
+  aa = ind_sh_ab(i)
+  do j = 1, 4
+    bb = ind_sh_cd(j)
+    do tt = 1, 4
+      aux_val = aux_r_ab(i)*aux_r_cd(j)*hamilJM(tt, ind_jm_b, ind_jm_k, aa, bb)
+      auxHamilRed(tt,ind_k, ind_jm_b,ind_jm_k) = &
+          auxHamilRed(tt,ind_k, ind_jm_b,ind_jm_k) + aux_val
+
+      if (abs(aux_val) .GT. 1.0e-10) kval_is_zero = .FALSE.
+    enddo
+  enddo
+enddo
+
+end subroutine recouple_jjConjugatedMatrixElements
+
+
+!------------------------------------------------------------------------------!
 ! subroutine print_DD_matrix_elements                                          !
 !
 !------------------------------------------------------------------------------!
@@ -3879,24 +3997,29 @@ integer      :: a_ant,b_ant,c_ant,d_ant, t, tt, &
                 ind_jm_b, ind_jm_k, ind_sab, ind_scd, delta_ab, delta_cd,&
                 TENSOR_ORD = 2, KK, MM, KKmin, KKmax, &
                 a_eq_b, a_eq_c, c_eq_d, b_eq_d, J1,J2,J3,J4, &
-                aa, bb, cc, dd
+                aa, bb, cc, dd, &
+                Sbra,Sket,Lbra,Lket,Lb_min,Lk_min,Lb_max,Lk_max,Sk_min,Sk_max,&
+                a_con,b_con,c_con,d_con, dim_jm,dim_sh
+logical      :: kval_is_zero
 
 real(r64)    :: aux_val,aux_val2, cgc1,cgc2,norm, &
-                TOL=1.0e-10, aux_3, aux_4, phs_pnk0
+                TOL=1.0e-10, aux_1, aux_2, aux_3, aux_4, phs_pnk0
 integer, dimension(:), allocatable :: reciprocal_nlj_shell
 real(r64), dimension(4)            :: h2b  ! [pppp, pnpn, pnnp, nnnn]
 logical      :: in_v_space
-logical, dimension(:), allocatable :: all_zero
-real(r64), dimension(:,:,:,:,:), allocatable :: hamilJM ! H2JM(T,JMbra, JMket, jajb, jcjd))
-real(r64), dimension(:,:,:,:),   allocatable :: auxHamilRed ! H2JM(T,JMbra, JMket)
+logical,   dimension(:), allocatable :: all_zero            ! all_zero(K)
+real(r64), dimension(:,:,:,:,:), allocatable :: hamilJM     ! H2JM(T,JMbra, JMket, jajb, jcjd))
+real(r64), dimension(:,:,:,:),   allocatable :: auxHamilRed ! H2JM(T, K, JMbra, JMket)
+
+
 
 print *, ""
 print *, "* [  ] Printing 2B Matrix elements DD from WF_HFB /dim H2_DD:", &
     hamil_DD_H2dim
 
 open(299, file="D1S_vs_scalar.2b")
-open(300, file="onlyDD_D1S_scalar.2b")
 open(301, file="onlyDD_D1S_k1.2b")
+open(300, file="onlyDD_D1S_scalar.2b")
 open(302, file="onlyDD_D1S_k2.2b")
 do KK = 0, TENSOR_ORD
   write(300+KK, '(A,I2,A,F10.5,A,F10.5,A,F6.4)') &
@@ -3909,20 +4032,21 @@ write(299, '(A,A,F9.3,A,F10.5,A,F5.3,A,2F5.1)') &
     '  CORE(n,p):', valence_N, valence_Z
 
 !! allocate the big JM, Jm', ab, cd array for the matrix elements
-ind_jm_b = angular_momentum_index(2*HO_2jmax,2*HO_2jmax,.FALSE.)
-ind_sab  = two_shell_states_index(maxval(HOsp_sh),minval(HOsp_sh))
-allocate(hamilJM(4, ind_jm_b,ind_jm_b, ind_sab,ind_sab))
+dim_jm = angular_momentum_index(2*HO_2jmax,2*HO_2jmax,.FALSE.)
+dim_sh = two_shell_states_index(maxval(HOsp_sh),minval(HOsp_sh))
+
+allocate(hamilJM(4, dim_jm,dim_jm, dim_sh,dim_sh))
 hamilJM = zzero
-allocate(auxHamilRed(4,0:TENSOR_ORD, ind_jm_b,ind_jm_b))
+allocate(auxHamilRed(4,0:TENSOR_ORD, dim_jm,dim_jm))
 
 print *, " ----------------------------------------------- "
 print "(A,2I5)"," * Max vals: 2sh, 2jmax", maxval(HOsp_sh), 2*HO_2jmax
-print "(A,3I5)","Dimensions hamilJM [] [jm,] [ind_sab,]:", 3,ind_jm_b,ind_sab
-print "(A,3I5)","Dimensions auxHamilRed [] [jm,]       :", 3,ind_jm_b
+print "(A,3I5)","Dimensions hamilJM [] [jm,] [dim_sh,]:", 3,dim_jm,dim_sh
+print "(A,3I5)","Dimensions auxHamilRed [] [jm,]       :", 3,dim_jm
 print *, " ----------------------------------------------- "
 !! define the reciprocal shells (j=l+1/2 -> j'=l-1/2) -----------------------
 allocate(reciprocal_nlj_shell(VSsh_dim))
-print "(A)", "[TEST] Reciprocal shells"
+!print "(A)", "[TEST] Reciprocal shells"
 do aa = 1, VSsh_dim
   a = VStoHOsh_index(aa)
   reciprocal_nlj_shell(aa) = aa !! (default value)
@@ -3938,10 +4062,11 @@ do aa = 1, VSsh_dim
     end if
   enddo
   bb = reciprocal_nlj_shell(aa)
-  print "(A,2I7,A,2I7)", "  * ", aa, VSsh_list(aa), " -> ", bb, VSsh_list(bb)
+!  print "(A,2I7,A,2I7)", "  * ", aa, VSsh_list(aa), " -> ", bb, VSsh_list(bb)
 enddo      !!! --------------------------------------------------------------
 
-
+!! TODO: The HamilJM can be reduced to just Core + VS -Shells
+!        (saving the memory and time required by the outer shells)
 do KK = 1, hamil_DD_H2dim
   a = hamil_DD_abcd(1+4*(KK-1))
   b = hamil_DD_abcd(2+4*(KK-1))
@@ -4014,12 +4139,10 @@ print *, " *** I have read the full uncoupled hamiltonian. Now [step 2]"
 
 ! -------------------------------------------------------------------------
 !! 2. Calculate SP-Energy and core energy from Global Hamil and DD hamil
-ind_jm_b = angular_momentum_index(2*HO_2jmax,2*HO_2jmax,.FALSE.)
-ind_sab  = two_shell_states_index(maxval(HOsp_sh),minval(HOsp_sh))
-call calculate_valenceSpaceReduced(hamilJM,ind_jm_b,ind_sab)
+call calculate_valenceSpaceReduced(hamilJM,dim_jm,dim_sh)
 
 print *, " *** I have evaluate the valence Space. Now [step 3]"
-return
+!return
 ! -------------------------------------------------------------------------
 !! 3 export the matrix elemnts in antoine format, also normalize by J
 allocate(all_zero(0:TENSOR_ORD))
@@ -4043,81 +4166,86 @@ do aa = 1, VSsh_dim
         d_ant = VSsh_list(dd)
         ind_scd = two_shell_states_index(c, d)
 
-  in_v_space = .TRUE.
   !! ======= Loop  for the <ab cd> states to output =======================
   ! this only see the (n,l,j) equivalence, the particle part is in the last step
-!  delta_ab = 0
-!  if (a_ant==b_ant) delta_ab = 1
-!  delta_cd = 0
-!  if (c_ant==d_ant) delta_cd = 1
 
   Jb_min = abs(ja - jb) / 2
   Jb_max = (ja + jb) / 2
   Jk_min = abs(jc - jd) / 2
   Jk_max = (jc + jd) / 2
 
-  all_zero = .TRUE.
   auxHamilRed = zero
   print *, ""
   print "(A,4I5,2(A,2I3))", " abcd ", a_ant,b_ant,c_ant,d_ant, " lims bra:",&
     Jb_min,Jb_max, " ket:", Jk_min,Jk_max
+
   do Jbra = Jb_min, Jb_max
-    do Mbra = -Jbra, Jbra
-      ind_jm_b = angular_momentum_index(Jbra, Mbra, .FALSE.)
-      J1 = angular_momentum_index(Jbra, 0, .FALSE.)
+    Mbra = 0
+    ind_jm_b = angular_momentum_index(Jbra, Mbra, .FALSE.)
+    J1 = angular_momentum_index(Jbra, 0, .FALSE.)
 
+    do KK = 0, TENSOR_ORD
       do Jket = Jk_min, Jk_max
-        KKmin = abs(Jbra - Jket)
-        KKmax = min(Jbra + Jket, TENSOR_ORD)
-        if (KKmin > TENSOR_ORD) cycle
+        Mket = 0
+        ind_jm_k = angular_momentum_index(Jket, Mket, .FALSE.)
+        J2 = angular_momentum_index(Jket, 0, .FALSE.)
 
-        !! NOTE: norm for the pp2pp and nn2nn (pn2pn are indep. norm=1.0)
-!        norm = sqrt((1 + delta_ab*((-1)**Jbra))*(1 + delta_cd*((-1)**Jket)))
-!        norm = norm / ((1 + delta_ab) * (1 + delta_cd))
-        do Mket = -Jket, Jket
-            ind_jm_k = angular_momentum_index(Jket, Mket, .FALSE.)
-            J2 = angular_momentum_index(Jket, 0, .FALSE.)
+        do Sbra = 0, 1
+          Lb_min = abs(Jbra - Sbra)
+          Lb_max =     Jbra + Sbra
 
-            MM = Mbra - Mket
-!! get the range of J and select the file of tensor part
+          do Lbra = Lb_min, Lb_max
+            Sk_min = max(abs(Sbra -   KK), 0 )
+            Sk_max = min(    Sbra +   KK , 1 )
 
-            do KK = KKmin,  KKmax
-              if (abs(MM) > KK) cycle
-              call ClebschGordan(2*Jbra,2*KK,2*Jket, -2*Mbra,2*MM,-2*Mket, cgc1)
-              if (abs(cgc1) < TOL) cycle ! unfulfilled triangular conditions
-!===========================================================================
-    aux_val = ((-1)**(Mbra+KK+Mket)) * sqrt((2.0*Jket +1)/(2.0*Jbra +1)) / cgc1! &
-                    !(cgc1*(2*Jbra + 1)*(2*Jket + 1)*(2*KK + 1))
-    do tt = 1, 3
-      if (dabs(hamilJM(tt, ind_jm_b, ind_jm_k, ind_sab, ind_scd)) < TOL) cycle
+            do Sket = Sk_min, Sk_max
+              Lk_min = max(abs(Jket - Sket), abs(Jbra - Sket), abs(Lbra - KK))
+              Lk_max = min(    Jket + Sket ,     Jbra + Sket ,     Lbra - KK )
 
-      aux_val2 = hamilJM(tt, ind_jm_b, ind_jm_k, ind_sab, ind_scd) * aux_val
-      if (tt /= 2) aux_val2 = aux_val2! * norm
-      !auxHamilRed(tt, J1, J2) = auxHamilRed(tt, ind_jm_b, ind_jm_k) + aux_val2
-      if((tt==2).AND.(dabs(auxHamilRed(tt, KK, J1, J2))>TOL).AND.&
-         (dabs(aux_val2 - auxHamilRed(tt, KK, J1, J2))>TOL)) then
-        !! [TODO] Test the values previous value is the new one
-        print "(A,5I3,A,2F20.15)", &
-          "  [WARNING] New Hamil pn Red Differs (K, Jb,Mb,Jk,Mk) ", &
-          KK, Jbra,Mbra, Jket,Mket, &
-          " New/previous = ",aux_val2, auxHamilRed(tt, KK, J1, J2)
-      else
-        print "(A,5I3,A,2F20.15)", &
-          "  [PASS]    New Hamil pn Red Match   (K, Jb,Mb,Jk,Mk) ", &
-          KK, Jbra,Mbra, Jket,Mket, &
-          " New/previous = ",aux_val2, auxHamilRed(tt, KK, J1, J2)
-      endif
-      auxHamilRed(tt, KK, J1, J2) = aux_val2
+              do Lket = Lk_min, Lk_max
+                !!! Calculate the 6j coeffs LS-J to k on bra and ket
+                call Wigner6JCoeff(2*Lbra, 2*Sbra, 2*Jbra, &
+                                   2*Sket, 2*Lket, 2*KK  , aux_1)
+                call Wigner6JCoeff(2*Lbra, 2*Sbra, 2*Jket, &
+                                   2*Sket, 2*Lket, 2*KK  , aux_2)
+                if (abs(aux_1*aux_2) .LE. TOL) cycle
 
-      if (abs(aux_val2) > TOL) all_zero(KK) = .FALSE.
-    end do
+                !!! Calculate the LS.J recoupling_ for coefficients
+                call Wigner9JCoeff(2*HOsh_l(a),      1,     ja, &
+                                   2*HOsh_l(b),      1,     jb, &
+                                        2*Lbra, 2*Sbra, 2*Jbra, aux_3)
+                if (abs(aux_3) .LE. TOL) cycle
+                call Wigner9JCoeff(2*HOsh_l(c),      1,     jc, &
+                                   2*HOsh_l(d),      1,     jd, &
+                                        2*Lket, 2*Sket, 2*Jbra, aux_4)
+                if (abs(aux_4) .LE. TOL) cycle
 
-!===========================================================================
-            enddo ! KK loop
-        enddo
-      enddo ! Jbra
-    enddo
-  enddo ! Jket loop
+                aux_3 = aux_3 * sqrt((ja+1)*(jb+1)*(2*Sbra + 1)*(2*Lbra + 1))
+                aux_4 = aux_4 * sqrt((jc+1)*(jd+1)*(2*Sket + 1)*(2*Lket + 1))
+
+  !!! ================================================================
+  ! part to recouple with the j and conjugate j elements
+  a_con = reciprocal_nlj_shell(a)
+  b_con = reciprocal_nlj_shell(b)
+  c_con = reciprocal_nlj_shell(c)
+  d_con = reciprocal_nlj_shell(d)
+
+  recouple_jjLSConjugatedME(a,b,c,d, a_con,b_con,c_con,d_con, &
+                            Sbra,Sket,Lbra,Lket,Jbra,Jket,Mbra,Mket,&
+                            hamilJM, dim_jm, dim_sh, TENSOR_ORD, &
+                            auxHamilRed, KK, kval_is_zero)
+  all_zero(KK) = kval_is_zero
+  !!! ================================================================
+
+              enddo ! L ket_ loop
+
+            enddo ! S ket_ loop
+          enddo ! L bra_ loop
+        enddo ! Sbra_ loop
+      enddo ! J ket_ loop
+
+    enddo ! k loop
+  enddo ! Jbra loop
 
   !! WRITE the final result of the loop for each block ============
   do KK = 0, TENSOR_ORD
@@ -4144,7 +4272,7 @@ do aa = 1, VSsh_dim
 
   do Jbra = Jb_min, Jb_max
     do Jket = Jk_min, Jk_max
-      KKmin = abs(Jbra - Jket)
+      KKmin = min(abs(Jbra - Jket), TENSOR_ORD)
       KKmax = min(Jbra + Jket, TENSOR_ORD)
       if (KKmin > TENSOR_ORD) cycle
 
