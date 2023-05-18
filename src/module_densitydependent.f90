@@ -4110,8 +4110,8 @@ do KK = 1, hamil_DD_H2dim
   mc = HOsp_2mj(c)
   md = HOsp_2mj(d)
 
-!  print "(A,I6,A,4I3,A,I2,A,8(A,2I3,A))", "kk=",kk," [",a,b,c,d,"] tt=",tt, &
-!    " jm_abcd=","(",ja,ma,")", "(",jb,mb,")", "(",jc,mc,")", "(",jd,md,")"
+  print "(A,I6,A,4I3,A,I2,A,8(A,2I3,A))", "kk=",kk," [",a,b,c,d,"] tt=",tt, &
+    " jm_abcd=","(",ja,ma,")", "(",jb,mb,")", "(",jc,mc,")", "(",jd,md,")"
 
   Mbra = (ma + mb) / 2
   Mket = (mc + md) / 2
@@ -4121,8 +4121,8 @@ do KK = 1, hamil_DD_H2dim
   Jk_min = abs(jc - jd) / 2
   Jk_max =    (jc + jd) / 2
 
-!  print "(A,2I3,A,3I3,A,3I3,A)", " *ind_j_ab, cd=", ind_sab, ind_scd, &
-!    " JM,J'M', range=[", Jb_min,Jb_max,Mbra, "]   [", Jk_min,Jk_max, Mket,"]"
+  print "(A,2I3,A,3I3,A,3I3,A)", " *ind_j_ab, cd=", ind_sab, ind_scd, &
+    " JM,J'M', range=[", Jb_min,Jb_max,Mbra, "]   [", Jk_min,Jk_max, Mket,"]"
 
   do Jbra = Jb_min, Jb_max
     if (abs(Mbra) > Jbra) cycle
@@ -4134,11 +4134,12 @@ do KK = 1, hamil_DD_H2dim
       ind_jm_b = angular_momentum_index(Jbra, Mbra, .FALSE.)
       ind_jm_k = angular_momentum_index(Jket, Mket, .FALSE.)
 
-!      print "(A,2I3,A,2I3,A,2I4)","   (jajb),JM,JM'(",Jbra,Mbra,")(",Jket,Mket,&
-!          ") ind_jm_bra, ket=", ind_jm_b, ind_jm_k
       norm = sqrt((1.0d0 + delta_ab*((-1)**Jbra))*(1 + delta_cd*((-1)**Jket)))
       norm = norm / ((1 + delta_ab) * (1 + delta_cd))
 
+      print "(A,2I3,A,2I3,A,2I4,A,F15.9)","   (jajb),JM,JM'(",Jbra,Mbra, &
+          ")(",Jket,Mket,") ind_jm_bra, ket=", ind_jm_b, ind_jm_k, " +=",&
+          cgc1 * cgc2 * h2b(tt)
       do tt = 1, 4
         aux_val = cgc1 * cgc2 * h2b(tt)
         if ((tt .NE. 2).AND.(tt .NE. 3)) aux_val = aux_val * norm
@@ -4148,7 +4149,7 @@ do KK = 1, hamil_DD_H2dim
       enddo
     enddo
   enddo
-!  print  *, ''
+  print  *, ''
 enddo !k
 print *, " *** I have read the full uncoupled hamiltonian. Now [step 2]"
 
