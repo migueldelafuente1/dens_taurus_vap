@@ -4137,9 +4137,9 @@ do KK = 1, hamil_DD_H2dim
       norm = sqrt((1.0d0 + delta_ab*((-1)**Jbra))*(1 + delta_cd*((-1)**Jket)))
       norm = norm / ((1 + delta_ab) * (1 + delta_cd))
 
-      print "(A,2I3,A,2I3,A,2I4,A,3F15.9)","   (jajb),JM,JM'(",Jbra,Mbra, &
+      print "(A,2I3,A,2I3,A,2I4,A,4F15.9)","   (jajb),JM,JM'(",Jbra,Mbra, &
           ")(",Jket,Mket,") ind_jm_bra, ket=", ind_jm_b, ind_jm_k, " +=",&
-          cgc1 * cgc2, h2b(2), cgc1 * cgc2 * h2b(2)
+          cgc1 , cgc2, h2b(2), cgc1 * cgc2 * h2b(2)
       do tt = 1, 4
         aux_val = cgc1 * cgc2 * h2b(tt)
         if ((tt .NE. 2).AND.(tt .NE. 3)) aux_val = aux_val * norm
