@@ -4141,7 +4141,7 @@ do KK = 1, hamil_DD_H2dim
           ")(",Jket,Mket,") ind_jm_bra, ket=", ind_jm_b, ind_jm_k, " +=",&
           cgc1 * cgc2 * h2b(tt)
       do tt = 1, 4
-        aux_val = cgc1 * cgc2 * h2b(tt)
+        aux_val = cgc1 * cgc2 * h2b(2)
         if ((tt .NE. 2).AND.(tt .NE. 3)) aux_val = aux_val * norm
 
         hamilJM(tt,ind_jm_b, ind_jm_k, ind_sab, ind_scd) = &
