@@ -2100,7 +2100,7 @@ write(123, fmt='(A)') "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, 2mt,tr)"
 if (ALL_ISOS) then
   do kk=1, VSsp_dim
     i = VStoHOsp_index(kk)
-    write(123, fmt='(I3,8(A,I4))') k,',',i,',', HOsp_sh(i), &
+    write(123, fmt='(I4,8(A,I4))') kk,',',i,',', HOsp_sh(i), &
       ',', HOsp_n(i),',', HOsp_l(i),',', HOsp_2j(i),',', HOsp_2mj(i), &
       ',', HOsp_2mt(i),',', HOsp_tr(i)
   enddo
@@ -4225,7 +4225,7 @@ do aa = 1, VSsh_dim
         aux_2 ,&! + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
         aux_3 ,&!+ hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
         aux_3 ,&!+ hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
-        aux_2 ,&!+ hamil_H2cpd_DD(4, Jbra, a,b,c,d)
+        aux_2 !+ hamil_H2cpd_DD(4, Jbra, a,b,c,d)
       aux_4 = auxHamilRed(4,0,ind_jm_b,ind_jm_b)
       write(298,fmt='(F15.10)', advance='no') &
         aux_4 !+ hamil_H2cpd_DD(5, Jbra, a,b,c,d)
