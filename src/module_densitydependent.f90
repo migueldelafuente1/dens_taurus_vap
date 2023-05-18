@@ -4200,7 +4200,7 @@ do aa = 1, VSsh_dim
       do t = 1, 4
         aux_val = hamilJM(t, ind_jm_b, ind_jm_b, ind_sab, ind_scd)
         if (dabs(aux_val) .GT. TOL) then
-          aux_val = aux_val * sqrt(2*Jbra + 1.0d0) ! factor for the Reduced ME
+          !aux_val = aux_val * sqrt(2*Jbra + 1.0d0) ! factor for the Reduced ME
           auxHamilRed(t,0,ind_jm_k,ind_jm_k) = &
               auxHamilRed(t,0,ind_jm_k,ind_jm_k) + aux_val
 
