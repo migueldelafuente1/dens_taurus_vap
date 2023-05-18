@@ -1969,11 +1969,11 @@ do aa = 1, VSsp_dim / 2 ! (prev = HOsp_dim)
                   (b /= hamil_DD_abcd(2+4*(kk-1))).OR. &
                   (c /= hamil_DD_abcd(3+4*(kk-1))).OR. &
                   (d /= hamil_DD_abcd(4+4*(kk-1)))) then
-                  print *, "[ASSERTION ERROR]: the final v_abcd indexes change"
-                  print '(A,4I4,A,I9,A,I6,A,4I4)', "abcd",a,b,c,d," [kk=", kk,&
-                    "] [iteration=",iteration,"] to",&
-                    hamil_DD_abcd(1+4*(kk-1)),hamil_DD_abcd(2+4*(kk-1)),&
-                    hamil_DD_abcd(3+4*(kk-1)),hamil_DD_abcd(4+4*(kk-1))
+                print *, "[ASSERTION ERROR]: the final v_abcd indexes change"
+                print '(A,4I4,A,I9,A,I6,A,4I4)', "abcd",a,b,c,d," [kk=", kk, &
+                  "] [iteration=",iteration,"] to",&
+                  hamil_DD_abcd(1+4*(kk-1)),hamil_DD_abcd(2+4*(kk-1)), &
+                  hamil_DD_abcd(3+4*(kk-1)),hamil_DD_abcd(4+4*(kk-1))
 
               endif
               !! Fix the new matrix element
@@ -2096,15 +2096,15 @@ print '(A,F10.6,A,F10.6)'," *Top H2",MINVAL(hamil_DD_H2),' ',MAXVAL(hamil_DD_H2)
 endif
 
 open (123, file=filename)
-write(123, fmt='(A)') "//SINGLE PARTICLE INDEX (i_sp, i_sh, n,l,2j,2m, 2mt,tr)"
+write(123, fmt='(A)') "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, 2mt,tr)"
 if (ALL_ISOS) then
   do kk=1, VSsp_dim
     i = VStoHOsp_index(kk)
-    write(123, fmt='(I3,7(A,I4))') i,',', HOsp_sh(i), &
+    write(123, fmt='(I3,8(A,I4))') k,',',i,',', HOsp_sh(i), &
       ',', HOsp_n(i),',', HOsp_l(i),',', HOsp_2j(i),',', HOsp_2mj(i), &
       ',', HOsp_2mt(i),',', HOsp_tr(i)
   enddo
-  write(123, fmt='(3A,3I12)')"//    a    b    c    d              pppp", &
+  write(123, fmt='(3A,3I12)')"//(vs)a    b    c    d              pppp", &
     "              pnpn              pnnp              nnnn    ", &
     "* VS array DD/noDD DIM/ALL=", hamil_DD_H2dim, hamil_H2dim, (VSsp_dim/2)**4
 else
@@ -4141,7 +4141,7 @@ do KK = 1, hamil_DD_H2dim
 
       do tt = 1, 4
         aux_val = cgc1 * cgc2 * h2b(tt)
-        if ((tt .NE. 2).AND.(tt .NE. 3)) aux_val = aux_val / norm
+        if ((tt .NE. 2).AND.(tt .NE. 3)) aux_val = aux_val * norm
 
         hamilJM(tt,ind_jm_b, ind_jm_k, ind_sab, ind_scd) = &
                 hamilJM(tt, ind_jm_b, ind_jm_k, ind_sab, ind_scd) + aux_val
@@ -4218,17 +4218,17 @@ do aa = 1, VSsh_dim
 
       aux_1 = auxHamilRed(1,0,ind_jm_b,ind_jm_b)
       write(298,fmt='(F15.10)',advance='no') &
-        aux_1 + hamil_H2cpd_DD(0, Jbra, a,b,c,d)
+        aux_1 !+ hamil_H2cpd_DD(0, Jbra, a,b,c,d)
       aux_2 = auxHamilRed(2,0,ind_jm_b,ind_jm_b)
       aux_3 = auxHamilRed(3,0,ind_jm_b,ind_jm_b)
       write(298,fmt='(4F15.10)',advance='no') &
-        aux_2 + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
-        aux_3 + hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
-        aux_3 + hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
-        aux_2 + hamil_H2cpd_DD(4, Jbra, a,b,c,d)
+        aux_2 ,&! + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
+        aux_3 ,&!+ hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
+        aux_3 ,&!+ hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
+        aux_2 ,&!+ hamil_H2cpd_DD(4, Jbra, a,b,c,d)
       aux_4 = auxHamilRed(4,0,ind_jm_b,ind_jm_b)
       write(298,fmt='(F15.10)', advance='no') &
-        aux_4 + hamil_H2cpd_DD(5, Jbra, a,b,c,d)
+        aux_4 !+ hamil_H2cpd_DD(5, Jbra, a,b,c,d)
       write(298,*) ''
     enddo
   endif
