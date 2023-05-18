@@ -4129,7 +4129,7 @@ do KK = 1, hamil_DD_H2dim
     call ClebschGordan(ja,jb,2*Jbra, ma,mb,2*Mbra, cgc1)
     do Jket = Jk_min, Jk_max
       if (abs(Mket) > Jket) cycle
-      call ClebschGordan(jc,jb,2*Jket, mc,md,2*Mket, cgc2)
+      call ClebschGordan(jc,jd,2*Jket, mc,md,2*Mket, cgc2)
 
       ind_jm_b = angular_momentum_index(Jbra, Mbra, .FALSE.)
       ind_jm_k = angular_momentum_index(Jket, Mket, .FALSE.)
