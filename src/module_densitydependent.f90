@@ -4457,10 +4457,12 @@ kk=0
 do i = 1, ndim
   if (eigen_H11(i).LT.THRESHOLD) then
     kk = kk + 1
+
+
   endif
 enddo
 
-deallocate(VStoHOsp_index))
+deallocate(VStoHOsp_index)
 VSsp_dim = kk
 allocate(VStoHOsp_index(VSsp_dim))
 
