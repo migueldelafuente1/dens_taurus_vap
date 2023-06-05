@@ -24,7 +24,7 @@ use Constants
 use MathMethods
 use Basis
 use Hamiltonian
-!use AngularMomentum
+use Fields
 use Lebedev
 
 implicit none
@@ -49,7 +49,7 @@ integer   :: phi_dim        ! dimension of the phi array
 integer   :: Leb_dim
 integer   :: angular_dim    ! dimension of the 1 dim array ThetaPhi
 
-real(r64) :: R_MAX    = 1.0d0
+real(r64) :: R_MAX    = 7.5d0
 integer   :: THE_grid = 1
 integer   :: PHI_grid = 1
 
@@ -117,6 +117,7 @@ integer   :: seed_type_sym  = 0        ! (UNDEFINED)
 logical   :: haveX0M1       = .FALSE.  ! |x0 - 1| > 1E-6
 logical   :: evalFullSPSpace= .TRUE.   ! compute the full a,b, c,d space for explicit DD fields (cannot be set)
 logical   :: exportVSPSpace = .FALSE.  ! the export of a reduced val.space
+logical   :: evalQuasiParticleVSpace = .FALSE. ! Export for the QP sp states, not the VS procedure
 
 integer   :: NHO_vs, NHO_co !! Major Shell number of the Valence. Sp to be exported
 logical   :: NOT_DEL_FILE
@@ -187,7 +188,8 @@ read(runit,formatI3) str_, r_dim
 read(runit,formatI3) str_, Omega_Order
 read(runit,formatI3) str_, THE_grid
 read(runit,formatI3) str_, PHI_grid
-read(runit,formatEE) str_, R_MAX
+read(runit,formatEE) str_, aux_int
+evalQuasiParticleVSpace = aux_int.GE.1
 read(runit,formatI1) str_, aux_int
 exportVSPSpace = aux_int.GE.1
 
@@ -261,8 +263,9 @@ print '(A,I10)',   'r_dim              =', r_dim
 print '(A,I10)',   'Omega_Order        =', Omega_Order
 print '(A,I10)',   'THE_grid           =', THE_grid
 print '(A,I10)',   'PHI_grid           =', PHI_grid
-print '(A,F10.6)', 'R_MAX (fm)         =', R_MAX
+!print '(A,F10.6)', 'R_MAX (fm)         =', R_MAX
 print '(A,2L10)',  'eval/export Val.Sp =', evalFullSPSpace, exportVSPSpace
+print '(A,2L10)',  'export QP Val.Sp   =', evalQuasiParticleVSpace
 
 if (.NOT.exportVSPSpace) then
   deallocate(hamil_H2cpd_DD) ! It wont be used
@@ -1899,7 +1902,7 @@ do aa = 1, VSsp_dim / 2 ! (prev = HOsp_dim)
   ma = HOsp_2mj(a)
   ta = HOsp_2mt(a)
 
-  bmin = aa+1
+  bmin = aa!+1
   if (evalFullSPSpace) bmin = 1
   do bb = bmin, VSsp_dim / 2 ! (prev = HOsp_dim)
     b  = VStoHOsp_index(bb)
@@ -1920,7 +1923,7 @@ do aa = 1, VSsp_dim / 2 ! (prev = HOsp_dim)
       dmin = 1
       dmax = VSsp_dim / 2 ! (prev = HOsp_dim)
       if (.NOT.evalFullSPSpace) then
-        dmin = cc+1
+        dmin = cc!+1
         if ( cc == aa ) dmax = bb
       endif
       do dd = dmin, dmax
@@ -3997,7 +4000,7 @@ end subroutine recouple_jjLSConjugatedME
 
 !------------------------------------------------------------------------------!
 ! subroutine print_DD_matrix_elements                                          !
-!
+!  Export of the DD + Hamil Matrix elements for a Valence space after process  !
 !------------------------------------------------------------------------------!
 subroutine print_DD_matrix_elements
 integer(i32) :: a, b, c, d
@@ -4426,6 +4429,46 @@ close(298)
 
 print *, " * [OK] Printing 2B Matrix elements DD from WF_HFB\n"
 end subroutine print_DD_matrix_elements
+
+
+!------------------------------------------------------------------------------!
+! subroutine print_quasipartile_DD_matrix_elements                             !
+!  Export of the DD + Hamil Hamiltonian in a reduced quasiparticle basis using !
+!  formulas of appendix E.2 in Ring-Schuck                                     !
+!------------------------------------------------------------------------------!
+subroutine print_quasipartile_DD_matrix_elements(bogo_zU0, bogo_zV0, ndim)
+
+integer, intent(in) :: ndim
+complex(r64), dimension(ndim,ndim), intent(in) :: bogo_zU0,bogo_zV0
+
+integer :: i, kk, k1,k2,k3,k4, l1,l2,l3,l4
+integer :: iH11
+real(r64), dimension(3*ndim-1) :: work
+real(r64) :: THRESHOLD = 10.0d0
+
+
+
+! 1 Diagonalize H11 matrix to select the first states of the quasiparticles
+call calculate_H11_real(ndim)
+
+call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,iH11)
+
+kk=0
+do i = 1, ndim
+  if (eigen_H11(i).LT.THRESHOLD) then
+    kk = kk + 1
+  endif
+enddo
+
+
+allocate()
+
+! 2
+
+
+
+end subroutine print_quasipartile_DD_matrix_elements
+
 
 
 
@@ -5137,11 +5180,13 @@ end subroutine test_integrate_bulk_densities
 ! Subroutine to export a file for plotting the density in an integrable form.  !
 ! Whether the integral is trapezoidal, Legendre, Legendre-radial Laguerre.     !
 !==============================================================================!
-subroutine export_expectval_density(dens_rhoLR,dens_kappaLR,dens_kappaRL, ndim)
+subroutine export_expectval_density(dens_rhoLR,dens_kappaLR,dens_kappaRL, &
+                                    bogo_zU0,bogo_zV0, ndim)
 
 integer, intent(in) :: ndim
 complex(r64), dimension(ndim,ndim), intent(in) :: dens_rhoLR
 complex(r64), dimension(ndim,ndim), intent(in) :: dens_kappaLR,dens_kappaRL
+complex(r64), dimension(ndim,ndim), intent(in) :: bogo_zU0,bogo_zV0
 
 integer :: i,j, a_sh,la,ja,ma,mta, b_sh,lb,jb,mb,mtb, K
 integer :: ind_jm_a, ind_jm_b, ind_km
@@ -5173,7 +5218,12 @@ if (exportVSPSpace) then !-----------------------------------------------------
 
 call test_printDesityKappaWF(dens_rhoLR, dens_kappaLR,dens_kappaRL, ndim)
 call calculate_densityDep_hamiltonian(dens_rhoLR,dens_kappaLR,dens_kappaRL,ndim)
+
+if (.NOT.evalQuasiParticleVSpace) then
 call print_DD_matrix_elements
+else
+call print_quasipartile_DD_matrix_elements(bogo_zU0, bogo_zV0, ndim)
+endif
 
 endif !------------------------------------------------------------------------
 

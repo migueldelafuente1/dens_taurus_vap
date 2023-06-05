@@ -282,7 +282,8 @@ do nangle = nangle_min, nangle_max
                                      ndim, iopt)
     if (((iteration==global_iter_max).AND.export_density) &
         .OR.(export_density.AND.(iopt==1)))then
-      call export_expectval_density(dens_rhoLR, dens_kappaLR, dens_kappaRL,ndim)
+      call export_expectval_density(dens_rhoLR, dens_kappaLR, dens_kappaRL, &
+                                    bogo_zU0,bogo_zV0 ,ndim)
     endif
 
     if (eval_explicit_fieldsDD) then

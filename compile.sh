@@ -96,8 +96,8 @@ code=taurus_vap
 filelist="module_constants.xx module_mathmethods.xx MPI module_nucleus.xx \
           module_lebedev.xx \
           module_basis.xx module_hamiltonian.xx module_wavefunctions.xx   \
-          module_densitydependent.xx \
           module_fields.xx module_particlenumber.xx module_pairs.xx       \
+		  module_densitydependent.xx \
           module_angularmomentum.xx module_multipoles.xx module_radius.xx \
           module_operators.xx module_projection.xx  module_constraints.xx \
           module_gradient.xx module_initialization.xx subroutines_pfaffian.yy"
