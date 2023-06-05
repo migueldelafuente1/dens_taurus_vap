@@ -4441,12 +4441,16 @@ subroutine print_quasipartile_DD_matrix_elements(bogo_zU0, bogo_zV0, ndim)
 integer, intent(in) :: ndim
 complex(r64), dimension(ndim,ndim), intent(in) :: bogo_zU0,bogo_zV0
 
+real(r64), dimension(:), allocatable :: eigen_H11    ! qp    "
 integer :: i, kk, k1,k2,k3,k4, l1,l2,l3,l4
-integer :: iH11
+integer :: iH11, ialloc
 real(r64), dimension(3*ndim-1) :: work
 real(r64) :: THRESHOLD = 10.0d0
 
 
+allocate(eigen_H11(HOsp_dim), stat=ialloc )
+if ( ialloc /= 0 ) stop 'Error during allocation of gradient'
+eigen_H11 = zero
 
 ! 1 Diagonalize H11 matrix to select the first states of the quasiparticles
 call calculate_H11_real(ndim)
