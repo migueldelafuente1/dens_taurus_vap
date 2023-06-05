@@ -327,8 +327,7 @@ do a = 1, HOsh_dim
                 ! for HamilType=1,2 raise error here since it's not allocated
                 do tt = 1, 7
                   Vtmp = hamil_H2cpd(find_iso(T,tt,ht),J,a,b,d,c)
-                    hamil_H2cpd_DD(find_iso(T,tt,ht),J,a,b,d,c) = Vtmp
-
+                  hamil_H2cpd_DD(find_iso(T,tt,ht),J,a,b,d,c) = Vtmp
                 enddo
               endif
               !! ------------

@@ -383,42 +383,6 @@ return
 end function two_sho_radial_functions
 
 
-
-
-function two_sho_radial_functions_sp(a, b, r, with_exp_part) result (wf_prod)
-
-integer,   intent(in) :: a, b
-real(r64), intent(in) :: r
-logical,   intent(in) :: with_exp_part
-integer   :: na, la, nb, lb, a_sh, b_sh
-real(r64) :: wf_prod
-
-integer   :: n_phs, p
-real(r64) :: b_coeff, norm
-
-na = HOsp_n(a)
-nb = HOsp_n(b)
-la = HOsp_l(a)
-lb = HOsp_l(b)
-
-a_sh = HOsp_sh(a)
-b_sh = HOsp_sh(b)
-
-wf_prod = 0.0d0
-do p = 0, na + nb
-  !b_coeff = calculate_B_coeff_radial(na, la, nb, lb, p)
-  n_phs = 2*p + la + lb
-  wf_prod = wf_prod + (B_coeff_radial(a_sh,b_sh,p)*(r**n_phs))
-enddo
-
-if (with_exp_part) then
-    wf_prod = wf_prod  / exp(r**2)
-else
-    wf_prod = wf_prod
-endif
-
-end function two_sho_radial_functions_sp
-
 !-----------------------------------------------------------------------------!
 ! function two_sho_radial_functions_bench                                     !
 !                                                                             !
