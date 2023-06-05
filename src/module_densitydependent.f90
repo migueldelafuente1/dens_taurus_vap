@@ -188,7 +188,7 @@ read(runit,formatI3) str_, r_dim
 read(runit,formatI3) str_, Omega_Order
 read(runit,formatI3) str_, THE_grid
 read(runit,formatI3) str_, PHI_grid
-read(runit,formatEE) str_, aux_int
+read(runit,formatI1) str_, aux_int
 evalQuasiParticleVSpace = aux_int.GE.1
 read(runit,formatI1) str_, aux_int
 exportVSPSpace = aux_int.GE.1
