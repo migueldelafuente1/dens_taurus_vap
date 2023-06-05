@@ -4460,8 +4460,9 @@ do i = 1, ndim
   endif
 enddo
 
-
-allocate()
+deallocate(VStoHOsp_index))
+VSsp_dim = kk
+allocate(VStoHOsp_index(VSsp_dim))
 
 ! 2
 
