@@ -4442,7 +4442,7 @@ integer, intent(in) :: ndim
 complex(r64), dimension(ndim,ndim), intent(in) :: bogo_zU0,bogo_zV0
 
 real(r64), dimension(:), allocatable :: eigen_H11    ! qp    "
-real(r64) :: xneut, xprot, xpar, xjz, xn, xj2, xl2
+real(r64) :: xneut, xprot, xpar, xjz, xn, xj, xl, xj2, xl2
 integer :: i,j, kk, k1,k2,k3,k4, l1,l2,l3,l4
 integer :: iH11, ialloc
 real(r64), dimension(3*ndim-1) :: work
