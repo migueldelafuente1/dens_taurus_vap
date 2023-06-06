@@ -91,10 +91,6 @@ do ia = 1, HOsp_dim
         factor =  1.0d0 / sqrt(2.0d0)
     end select
 
-    !!! delafuen: fix to include the phase from kappa and kappa*(RR)
-    !phs_ = MOD( (ja + jb - ma - mb)/2, 2) !! SEN: 1/2*(1 - (-)^{2ja-M})
-    !factor = factor * phs_
-
     !!! T=0 (isoscalar)
     call ClebschGordan(1,1,0,ta,tb,0,cg1)
     if ( pairs_scheme < 2 ) then

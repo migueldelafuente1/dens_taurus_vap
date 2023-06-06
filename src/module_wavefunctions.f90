@@ -670,11 +670,12 @@ end subroutine read_wavefunction
 !                                                                              !
 ! Input: iopt = 0 writes "final_wf.bin/txt"                                    !
 !             = 1   "    "intermediate_wf.bin/txt"                             !
-!        ener = particle-number projected energy (optional)                    !
+!        iter = iteraction number                                              !
+!        ener = particle-number projected energy                               !
 !------------------------------------------------------------------------------!
-subroutine write_wavefunction(iopt,ener)           
+subroutine write_wavefunction(iopt,iter,ener)           
 
-integer, intent(in) :: iopt
+integer, intent(in) :: iopt, iter
 real(r64), intent(in) :: ener 
 integer :: i, j
 real(r64) :: absener
@@ -685,13 +686,15 @@ logical :: is_binary
 
 !!! Determines the label of the state based on a random number and the 
 !!! particle-number projected energy.
-absener = abs(ener)
+if ( iter > 0 ) then
+  absener = abs(ener)
 
-do while (absener >= one) 
-  absener = absener / 10.d0
-enddo
+  do while (absener >= one) 
+    absener = absener / 10.d0
+  enddo
 
-bogo_label = int(absener*(1.0d18),i64)
+  bogo_label = int(absener*(1.0d18),i64)
+endif
 
 !!! Opens the file depending if intermediate or final writing and if binary
 !!! or text writing
@@ -1140,8 +1143,8 @@ filename1 = adjustl('spatial_density_R.dat')
 filename2 = adjustl('spatial_density_RThetaPhi.dat')
 filename3 = adjustl('spatial_density_XYZ.dat')
 
-!!! If dens_spatial = 1: r1 = r, r2 = theta, r3 = phi
-!!! If dens_spatial = 2: r1 = x, r2 = y    , r3 = z  
+!!! If dens_spatial <= 2: r1 = r, r2 = theta, r3 = phi
+!!! If dens_spatial  = 3: r1 = x, r2 = y    , r3 = z  
 if ( dens_spatial <= 2 ) then
   r1min = 0 
   r1max = dens_nr(1) - 1
@@ -1153,11 +1156,11 @@ if ( dens_spatial <= 2 ) then
   dr2 =   pi / (r2max+1)
   dr3 = 2*pi / (r3max+1)
 else 
-  r1min = -dens_nr(1) + 1
+  r1min = -dens_nr(1) 
   r1max =  dens_nr(1)
-  r2min = -dens_nr(2) + 1
+  r2min = -dens_nr(2)
   r2max =  dens_nr(2)
-  r3min = -dens_nr(3) + 1
+  r3min = -dens_nr(3)
   r3max =  dens_nr(3)
   dr1 = dens_dr(1)
   dr2 = dens_dr(2)
@@ -1223,7 +1226,7 @@ if ( dens_spatial == 2 ) then
 else
   open(utd, file=filename3, status='replace', action='write', form='formatted')        
   write(utd,*) "                             unprojected          projected   "
-  write(utd,*) "   r       y       z       rho_p     rho_n     rho_p     rho_n"
+  write(utd,*) "   x       y       z       rho_p     rho_n     rho_p     rho_n"
 endif
 
 do r1 = r1min, r1max
@@ -1235,13 +1238,19 @@ do r1 = r1min, r1max
         theta = r2 * dr2 + dr2/2
         phi = r3 * dr3 + dr3/2
       else
-        x = r1 * dr1 + dr1/2
-        y = r2 * dr2 + dr2/2
-        z = r3 * dr3 + dr3/2
+        x = r1 * dr1 
+        y = r2 * dr2
+        z = r3 * dr3
 
         r = sqrt( x**2 + y**2 + z**2 )
-        theta = acos( z / r )
-        phi = acos( x / sqrt(x**2 + y**2) )
+        if ( abs(r) > epsilon0 ) then
+          theta = acos( z / r )
+          phi = atan2(y,x)
+          if ( phi < 0 ) phi = phi + 2*pi
+        else 
+          theta = zero 
+          phi = zero
+        endif
       endif
 
       rho_p = zero
@@ -1269,12 +1278,13 @@ do r1 = r1min, r1max
           do mla = -la, la
             ms = mja - 2*mla
             mlb = (mjb - mja + 2*mla)/2
+            if ( abs(ms)  > 1  ) cycle
             if ( abs(mlb) > lb ) cycle
 
             Ylma = conjg(spherharmonic(la,mla,theta,phi))
             Ylmb = spherharmonic(lb,mlb,theta,phi)
-            call ClebschGordan(1,2*la,ja,ms,2*mla,mja,cga)
-            call ClebschGordan(1,2*lb,jb,ms,2*mlb,mjb,cgb)
+            call ClebschGordan(2*la,1,ja,2*mla,ms,mja,cga)
+            call ClebschGordan(2*lb,1,jb,2*mlb,ms,mjb,cgb)
             angular = angular + Ylma * Ylmb * cga * cgb 
           enddo
          

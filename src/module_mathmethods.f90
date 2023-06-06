@@ -269,13 +269,6 @@ end subroutine GaussLegendre
 ! from technical notes from NASA written by W. F. Ford and R. C. Bruley.       !
 ! Ref: NASA TN D-6173                                                          !
 !                                                                              !
-!------------------------------------------------------------------------------!
-! subroutine ClebschGordan                                                     !
-!                                                                              !
-! Computes the ClebschGordan for the group SU(2). The algorithm used was taken !
-! from technical notes from NASA written by W. F. Ford and R. C. Bruley.       !
-! Ref: NASA TN D-6173                                                          !
-!                                                                              !
 ! (j1,m1,j2,m2|j3,m3) = c * g                                                  !
 ! with                                                                         !
 ! c = D(j1j2j3) * [(j1-m1)!(j2+m2)!(j1+m1)!(j2-m2)!(j3+m3)!(j3-m3)!]**1/2      !

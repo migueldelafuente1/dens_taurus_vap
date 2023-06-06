@@ -41,7 +41,7 @@ fi
 
 if [ $FC = "ifort" ] || [ $FC = "mpiifort" ]; then
   LIB=""
-  OPT="-O3 -mkl" 
+  OPT="-O3 -qmkl" 
 elif [ $FC = "gfortran" ] || [ $FC = "mpif90" ]; then
   LIB="-L/usr/lib -llapack -lblas"
   OPT="-O3" 
@@ -127,14 +127,14 @@ for file in $filef90
 do 
   cp $srcdir/$file $wrkdir/
   if [ $FC = "mpiifort" ] || [ $FC = "mpif90" ]; then 
-    sed "s/\!cmpi /     /g" $wrkdir/$file > $wrkdir/tmp.f90
+    sed "s/\!cmpi //g" $wrkdir/$file > $wrkdir/tmp.f90
     mv $wrkdir/tmp.f90 $wrkdir/$file 
   fi
 done
 
 cp $srcdir/${code}.f90 $wrkdir/
 if [ $FC = "mpiifort" ] || [ $FC = "mpif90" ]; then 
-  sed "s/\!cmpi /     /g" $wrkdir/${code}.f90 > $wrkdir/tmp.f90 
+  sed "s/\!cmpi //g" $wrkdir/${code}.f90 > $wrkdir/tmp.f90 
   mv $wrkdir/tmp.f90 $wrkdir/${code}.f90
 fi
 
@@ -172,7 +172,7 @@ if [ $wrkc = 1 ]; then
  rm -rf $wrkdir
  echo "directory '$wrkdir' deleted"
 else 
-  for file in $filef90 $fileo $filemod
+  for file in $filef90 $fileo $filemod ${code}.f90
   do 
     rm -f $wrkdir/$file
   done

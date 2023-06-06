@@ -19,12 +19,12 @@ use Wavefunctions
 use Operators
 use Fields, only: factor_delta
 use Projection, only: proj_Mphip, proj_Mphin
-
+                     
 
 implicit none
 
 !!! Number of constraints and options for specific cases
-integer, parameter :: constraint_types=27, & ! Number of constraint types
+integer, parameter :: constraint_types=27, & ! Number of constraint types     
                       constraint_max=42      ! Maximum number of constraints
 integer :: constraint_dim=0,  & ! Number of constraints to be applied
            constraint_pair=0, & ! Number of pairing constraints
@@ -35,13 +35,13 @@ integer :: constraint_dim=0,  & ! Number of constraints to be applied
 
 !!! Matrix elements and values of constraints
 real(r64), dimension(:), allocatable :: constraint_HO,  & ! Mat. elem. (HO)
-                                        constraint_val, & ! Values
-                                        constraint_20,  & ! Mat. elem. 20 (QP)
-                                        constraint_11     ! Mat. elem. 11 (QP)
-real(r64) :: constraint_eps, & ! Tolerance for constraints convergence
+                                        constraint_val, & ! Values 
+                                        constraint_20,  & ! Mat. elem. 20 (QP) 
+                                        constraint_11     ! Mat. elem. 11 (QP) 
+real(r64) :: constraint_eps, & ! Tolerance for constraints convergence 
              constraint_read(constraint_types,2) ! Values read as inputs
 
-!!! Lagrange multipliers
+!!! Lagrange multipliers                        
 real(r64), dimension(:), allocatable :: lagrange_lambda0, & ! Lag. mult. before
                                         lagrange_lambda1    ! Lag. mult. after
 !!! Others
@@ -104,8 +104,8 @@ allocate ( Q(HOsp_dim2), Lchol(HOsp_dim,HOsp_dim),  &
            constraint_HO(constraint_dim*HOsp_dim2), &
            constraint_20(constraint_dim*HOsp_dim2), &
            constraint_11(constraint_dim*HOsp_dim2), &
-           constraint_val(constraint_dim),   &
-           lagrange_lambda0(constraint_dim), &
+           constraint_val(constraint_dim),   &  
+           lagrange_lambda0(constraint_dim), & 
            lagrange_lambda1(constraint_dim), &
            stat=ialloc )
 if ( ialloc /= 0 ) stop 'Error during allocation of constraints'
@@ -122,34 +122,34 @@ Lchol = zero
 !!! If opt_betalm > 0, calculates the corresponding value of Qlm
 constraint_beta(:)  = constraint_read(5,:)
 constraint_gamma(:) = constraint_read(7,:) * pi / 180.d0
-
-if ( opt_betalm > 0 ) then
+                             
+if ( opt_betalm > 0 ) then                             
   m = 2
   do i = 1, 4
-    do j = 0, i
-      m = m + 1
+    do j = 0, i 
+      m = m + 1      
       p = 2 * (kdelta(constraint_switch(m),1) + kdelta(constraint_switch(m),3))
       do n = 1, min(constraint_switch(m),2)
         constraint_read(m,n) = constraint_read(m,n) / coeff_betalm(n+p,i)
       enddo
-    enddo
-  enddo
-endif
-
-if ( opt_betalm > 1 ) then
-  !!! beta triaxial
+    enddo           
+  enddo           
+endif           
+                             
+if ( opt_betalm > 1 ) then                             
+  !!! beta triaxial          
   p = 2 * (kdelta(constraint_switch(5),1) + kdelta(constraint_switch(5),3))
-
+                             
   do n = 1, min(constraint_switch(5),2)
     constraint_read(5,n) = constraint_beta(n) * cos(constraint_gamma(n)) &
                            / coeff_betalm(n+p,2)
   enddo
-
-  !!! gamma triaxial
+                             
+  !!! gamma triaxial         
   p = 2 * (kdelta(constraint_switch(7),1) + kdelta(constraint_switch(7),3))
-
+                             
   do n = 1, min(constraint_switch(7),2)
-    constraint_read(7,n) = constraint_beta(n) * sin(constraint_gamma(n)) &
+    constraint_read(7,n) = constraint_beta(n) * sin(constraint_gamma(n)) & 
                            / (sqrt(2.d0) * coeff_betalm(n+p,2))
   enddo
 endif
@@ -160,31 +160,31 @@ sig = sign(one,constraint_read(17,2))
 
 constraint_read(17,1) = constraint_read(17,1)**2 / coeff_r2(1+p)
 constraint_read(17,2) =  sig * constraint_read(17,2)**2 / coeff_r2(2+p)
-
+                             
 !!! If constraint_switch = 3, calculates the proton/neutron constraints
 !!! conrresponding to the isoscalar/isovector constraints
 do i = 1, constraint_types
-  if ( constraint_switch(i) == 3 ) then
+  if ( constraint_switch(i) == 3 ) then 
     value_is = constraint_read(i,1)
     value_iv = constraint_read(i,2)
 
     constraint_read(i,1) = (value_is - value_iv) / 2
     constraint_read(i,2) = (value_is + value_iv) / 2
-  endif
+  endif 
 enddo
 
 !!! Collects all single-particle matrix elements from the different constraints
 j = 0
-constraint_id = 0
+constraint_id = 0 
 
 do i = 1, constraint_types
   do m = 1, min(constraint_switch(i),2)
     j = j + 1
-    k = (j - 1) * HOsp_dim2
-    if ( (i >= 20) .and. (i < 27) ) constraint_pair = constraint_pair + 1
-
-    constraint_id(j) = i
-
+    k = (j - 1) * HOsp_dim2 
+    if ( (i >= 21) .and. (i < 27) ) constraint_pair = constraint_pair + 1
+ 
+    constraint_id(j) = i 
+ 
     select case (i)
       case (1)
         Q = partnumb_Z
@@ -245,7 +245,7 @@ do i = 1, constraint_types
       case (27)
         factor_delta = constraint_read(i,1)
     end select
-
+   
     if ( i < 27 ) then
       constraint_HO(k+1:k+HOsp_dim2) = Q(1:HOsp_dim2)
       constraint_val(j) = constraint_read(i,m)
@@ -259,11 +259,11 @@ end subroutine set_constraints
 
 !------------------------------------------------------------------------------!
 ! subroutine adjust_constraints                                                !
-!                                                                              !
-! Adjusts the constraints of the wavefunction until they satisfy the values    !
-! of the constraints read in the input file. At the end of the process, the    !
-! Bogoliubov matrices U0,V0 are updated                                        !
-!                                                                              !
+!                                                                              ! 
+! Adjusts the constraints of the wavefunction until they satisfy the values    ! 
+! of the constraints read in the input file. At the end of the process, the    ! 
+! Bogoliubov matrices U0,V0 are updated                                        ! 
+!                                                                              ! 
 ! Input: ndim = dimension of the sp basis                                      !
 !        Zi = gradient                                                         !
 !------------------------------------------------------------------------------!
@@ -271,7 +271,7 @@ subroutine adjust_constraints(Zi,ndim)
 
 integer, intent(in) :: ndim
 real(r64), dimension(ndim**2), intent(inout) :: Zi
-integer, parameter :: iter_constr=100
+integer, parameter :: iter_constr=100 
 integer :: i, j, k, iter, m, ia, idig, info
 integer(i64), parameter :: d1=1
 integer(i64) :: ndim2, indi, indj, indk
@@ -294,11 +294,11 @@ do iter = 1, iter_constr
       call calculate_expectval_obo(dens_rhoRR,constraint_HO(1+(m-1)*ndim2), &
                                    expvalp,expvaln,ndim)
       expecval(m) =  expvalp + expvaln
-    else
+    else 
       call calculate_expectval_pair(dens_kappaRR,constraint_HO(1+(m-1)*ndim2), &
                                     expecval(m),ndim)
-    endif
-  enddo
+    endif  
+  enddo        
 
   !!! Updates the matrix elements of the constraints in the QP basis.
   !!! Then, exits the loop if all constraints are satisfied (up to tolerance)
@@ -308,12 +308,12 @@ do iter = 1, iter_constr
     B(i) = constraint_val(i) - expecval(i)
     if ( abs(B(i)) > constraint_eps ) ia = ia + 1
     if ( i <= constraint_dim-constraint_pair ) then
-      call set_operator_qpbasis('f20',bogo_U1,bogo_V1,constraint_HO(indi), &
+      call set_operator_qpbasis('f20',bogo_U1,bogo_V1,constraint_HO(indi), & 
                                 constraint_20(indi),ndim)
-    else
+    else 
       call set_operator_qpbasis('g20',bogo_U1,bogo_V1,constraint_HO(indi), &
                                 constraint_20(indi),ndim)
-    endif
+    endif 
   enddo
 
   if ( ia == 0 ) exit
@@ -330,30 +330,30 @@ do iter = 1, iter_constr
                  constraint_20(indj),ndim,zero,A1(indk),ndim)
     enddo
   enddo
-
+        
   k = 0
   do i = 1, constraint_dim
     do j = i, constraint_dim
       k = k + 1
       indk = (k-1)*(ndim2) + 1
-      A(j,i) = zero
+      A(j,i) = zero   
       do m = 1, ndim
         idig = (m-1)*ndim + m - 1
-        A(j,i) = A(j,i) + A1(indk+idig)
-      enddo
-    enddo
+        A(j,i) = A(j,i) + A1(indk+idig)   
+      enddo 
+    enddo 
   enddo
-
+        
   do i = 1, constraint_dim
     do j = i+1, constraint_dim
-      A(i,j) = A(j,i)
+      A(i,j) = A(j,i)   
     enddo
   enddo
 
   call dsysv('U',constraint_dim,1,A,constraint_dim,ipiv,B,constraint_dim,work, &
              constraint_dim,info)
-
-  !!! Update the gradient
+       
+  !!! Update the gradient 
   k = 0
   do i = 1, ndim
     do j = 1, ndim
@@ -374,16 +374,16 @@ end subroutine adjust_constraints
 
 !------------------------------------------------------------------------------!
 ! subroutine update_constraints_qpbasis                                        !
-!                                                                              !
-! Updates the matrix elements of the constraints in the quasiparticle basis    !
-! of the new wave function.                                                    !
+!                                                                              ! 
+! Updates the matrix elements of the constraints in the quasiparticle basis    ! 
+! of the new wave function.                                                    ! 
 !------------------------------------------------------------------------------!
 subroutine update_constraints_qpbasis
 
 integer :: i
 integer(i64) :: j
 
-do i = 1, constraint_dim
+do i = 1, constraint_dim                 
   j = (i-1)*HOsp_dim2 + 1
   if ( i <= (constraint_dim - constraint_pair) ) then
     call set_operator_qpbasis('f20',bogo_U0,bogo_V0,constraint_HO(j), &
@@ -398,17 +398,17 @@ end subroutine update_constraints_qpbasis
 
 !------------------------------------------------------------------------------!
 ! subroutine calculate_lagrange_multipliers                                    !
-!                                                                              !
-! Computes the Lagrange multipliers lambdas solving a system of equations.     !
-!   A x = b                                                                    !
-! where                                                                        !
-!   A_ij = Tr(Q20(i) Q20^T(j))                                                 !
-!   b_i  = Tr(H20 Q20^T(i))                                                    !
-!                                                                              !
+!                                                                              ! 
+! Computes the Lagrange multipliers lambdas solving a system of equations.     ! 
+!   A x = b                                                                    ! 
+! where                                                                        ! 
+!   A_ij = Tr(Q20(i) Q20^T(j))                                                 ! 
+!   b_i  = Tr(H20 Q20^T(i))                                                    ! 
+!                                                                              ! 
 ! This is taken from appendix A of Egido.1980.NuclPhysA.334.1                  !
-!                                                                              !
+!                                                                              ! 
 ! Input: ndim = dimension of the sp basis                                      !
-!        H20 = 20 part of the Hamiltonian in the quasi-particle basis          !
+!        H20 = 20 part of the Hamiltonian in the quasi-particle basis          ! 
 !------------------------------------------------------------------------------!
 subroutine calculate_lagrange_multipliers(H20,ndim)
 
@@ -430,7 +430,7 @@ do i = 1, constraint_dim
     indj = (j-1) * ndim * ndim + 1
     l = l + 1
     indl = (l-1) * ndim * ndim + 1
-    call dgemm('n','t',ndim,ndim,ndim,one,constraint_20(indi),ndim, &
+    call dgemm('n','t',ndim,ndim,ndim,one,constraint_20(indi),ndim, & 
                constraint_20(indj),ndim,zero,A1(indl),ndim)
   enddo
   call dgemm('n','t',ndim,ndim,ndim,one,H20(1),ndim,constraint_20(indi), &
@@ -450,7 +450,7 @@ do i = 1, constraint_dim
     enddo
     A(i,j) = A(j,i)
   enddo
-
+  
   B(i) = zero
   do m = 1, ndim
     idig = (m-1) * ndim + m - 1
@@ -466,11 +466,11 @@ do i = 1, constraint_dim
 enddo
 
 !!! BB: to avoid the singular system when constraining things that are exactly
-!!! zero, I guess it should be necessary to remove the constraint for the
+!!! zero, I guess it should be necessary to remove the constraint for the     
 !!! current iteration when it is too small.
 if ( info /= 0 ) then
   print '("Warning: impossible to obtain the new lagrange multipliers. Using &
-         &the one of the previous iteration instead.")'
+         &the one of the previous iteration instead.")' 
   do i = 1, constraint_dim
     lagrange_lambda1(i) = lagrange_lambda0(i)
   enddo
@@ -487,7 +487,7 @@ end subroutine calculate_lagrange_multipliers
 ! subroutine cholesky_factorization                                            !
 !                                                                              !
 ! Computes the cholesky factorization                                          !
-!   LL^+ = 1 + Z^t Z^*   where Z is the Thouless matrix                        !
+!   LL^+ = 1 + Z^t Z^*   where Z is the Thouless matrix                        !  
 !                                                                              !
 ! Input: ndim = dimension of the sp basis                                      !
 !         Z = (real) Thouless matrix                                           !
@@ -503,7 +503,7 @@ integer :: i, j, k, m, info
 real(r64), dimension(ndim,ndim) :: A1, A2
 real(r64), dimension(ndim+1,ndim) :: A3
 
-!!! 1 + Z^t Z^*
+!!! 1 + Z^t Z^* 
 call dgemm('t','n',ndim,ndim,ndim,one,Z,ndim,Z,ndim,zero,A1,ndim)
 
 do i = 1, ndim
@@ -511,23 +511,23 @@ do i = 1, ndim
     A2(i,j) = A1(i,j)
     A2(j,i) = A2(i,j)
   enddo
-  A2(i,i) = A1(i,i) + one
+  A2(i,i) = A1(i,i) + one 
 enddo
 
 ! Switch to dpbtrf format
 do i = 1, ndim
-  do j = 1, i
+  do j = 1, i   
     k = 1 + i - j
     A3(k,j) = A2(i,j)
   enddo
 enddo
 
-!!! Cholesky
+!!! Cholesky                             
 call dpbtrf('L',ndim,ndim,A3,ndim+1,info)
 
 if ( info /= 0 ) then
   print*, 'Cholesky factorization has failed, info = ', info
-  stop
+  stop 
 endif
 
 ! Switch back to our format
@@ -558,7 +558,7 @@ end subroutine cholesky_factorization
 !------------------------------------------------------------------------------!
 subroutine evolve_wavefunction(Z,ndim)
 
-integer, intent(in) :: ndim
+integer, intent(in) :: ndim 
 real(r64), dimension(ndim,ndim), intent(in) :: Z
 integer :: i, j, info
 real(r64), dimension(ndim,ndim) :: A1, A2
@@ -567,26 +567,26 @@ real(r64), dimension(ndim,ndim) :: A1, A2
 call dtrtri('L','N',ndim,Lchol,ndim,info)
 if ( info /= 0 ) then
   print*, 'Error in the inverse of L (Cholesky), info = ', info
-  stop
+  stop 
 endif
 
 !!! A1 = U0 + V0 * Z
 !!! A2 = V0 + U0 * Z
 call dgemm('n','n',ndim,ndim,ndim,one,bogo_V0,ndim,Z,ndim,zero,A1,ndim)
-call dgemm('n','n',ndim,ndim,ndim,one,bogo_U0,ndim,Z,ndim,zero,A2,ndim)
+call dgemm('n','n',ndim,ndim,ndim,one,bogo_U0,ndim,Z,ndim,zero,A2,ndim)        
 
 do j = 1, ndim
   do i = 1, ndim
-    A1(i,j) = A1(i,j) + bogo_U0(i,j)
-    A2(i,j) = A2(i,j) + bogo_V0(i,j)
+    A1(i,j) = A1(i,j) + bogo_U0(i,j)  
+    A2(i,j) = A2(i,j) + bogo_V0(i,j)  
   enddo
 enddo
-
-!!! U1 = A1 * Lchol^{-t}
+        
+!!! U1 = A1 * Lchol^{-t}   
 !!! V1 = A2 * Lchol^{-t}
-call dgemm('n','t',ndim,ndim,ndim,one,A1,ndim,Lchol,ndim,zero,bogo_U1,ndim)
-call dgemm('n','t',ndim,ndim,ndim,one,A2,ndim,Lchol,ndim,zero,bogo_V1,ndim)
-
+call dgemm('n','t',ndim,ndim,ndim,one,A1,ndim,Lchol,ndim,zero,bogo_U1,ndim)    
+call dgemm('n','t',ndim,ndim,ndim,one,A2,ndim,Lchol,ndim,zero,bogo_V1,ndim)  
+ 
 end subroutine evolve_wavefunction
 
 !------------------------------------------------------------------------------!
@@ -627,7 +627,7 @@ is_good_N0 = .false.
 if ( max(proj_Mphip,proj_Mphin) > 1 ) then
   nparity = (-1)**(int(valence_A))
   if ( nparity /= bogo_nparity ) then
-    !cmpi if ( paral_myrank == 0 ) then
+    !cmpi if ( paral_myrank == 0 ) then        
     print '(/,1a)', "Critical warning: the number parity of the seed wave &
                   & function is not consistent with the particle number in &
                   & the projection operator."
@@ -660,7 +660,7 @@ if ( (sum_np+sum_pn) < eps ) then
   is_separate_NZ0 = .true.
   ch_separate_NZ = "yes"
 
-  if ( (sum_np+sum_pn+sum_pp) < eps ) then
+  if ( (sum_np+sum_pn+sum_pp) < eps ) then 
     is_good_Z  = .true.
     is_good_Z0 = .true.
     ch_good_Z = "yes"
@@ -668,12 +668,12 @@ if ( (sum_np+sum_pn) < eps ) then
 
   if ( (sum_np+sum_pn+sum_nn) < eps ) then
     is_good_N  = .true.
-    is_good_N0 = .true.
+    is_good_N0 = .true.    
     ch_good_N = "yes"
   endif
 endif
 
-!!! Calculates parity
+!!! Calculates parity  
 call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
                                ovac0,nocc0,nemp0,ndim)
 if ( ndim-nocc0-nemp0 == 0 ) ovac0 = 0.0d0
@@ -683,7 +683,7 @@ voveru0 = zero
 
 j = 1
 do i = 1+nemp0, ndim-nocc0
-  if ( (-1)**j == -1 ) then
+  if ( (-1)**j == -1 ) then 
     voveru0(i) = real( bogo_zV0c(i,i+1) / bogo_zU0c(i,i) )
   else
     voveru0(i) = real( bogo_zV0c(i,i-1) / bogo_zU0c(i,i) )
@@ -704,7 +704,7 @@ do j = 1, ndim
   lj = HOsp_l(j)
   do i = 1, ndim
     li = HOsp_l(i)
-    if ( (-1)**li /= (-1)**lj ) sum_p = sum_p + abs(dens_rhoRR(i,j)) &
+    if ( (-1)**li /= (-1)**lj ) sum_p = sum_p + abs(dens_rhoRR(i,j)) & 
                                               + abs(dens_kappaRR(i,j))
   enddo
 enddo
@@ -716,7 +716,7 @@ endif
 
 !!! Calculates <Jz> and <Jz^2>
 call calculate_expectval_obo(dens_rhoRR,angumome_Jz,value_Kp,value_Kn,ndim)
-call calculate_expectval_obos(dens_rhoRR,dens_kappaRR,angumome_Jz,angumome_Jz2,&
+call calculate_expectval_obos(dens_rhoRR,dens_kappaRR,angumome_Jz,angumome_Jz2, &
                               value_K2,ndim)
 value_K = value_Kp + value_Kn
 
@@ -762,7 +762,7 @@ else
   endif
 endif
 
-!!! Simplification good Z
+!!! Simplification good Z      
 if ( is_good_Z ) then
   if ( seed_symm == 0 ) then
     proj_Mphip = 1
@@ -795,7 +795,7 @@ else
 endif
 
 !!! Prints the summary
-!cmpi if ( paral_myrank == 0 ) then
+!cmpi if ( paral_myrank == 0 ) then        
 print '(/,2x,"Symmetry",7x,"?",6x,"Mean",14x,"Action",/,58("-"))'
 print format2, 'Separate N/Z',ch_separate_NZ, action_NZ
 print format1, 'Good Z      ',ch_good_Z, value_Z, action_Z

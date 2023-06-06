@@ -19,7 +19,8 @@ real(r64), dimension(:), allocatable :: angumome_Jx,  & ! Jx
                                         angumome_Jz,  & ! Jz
                                         angumome_Jx2, & ! Jx^2
                                         angumome_Jy2, & ! Jy^2
-                                        angumome_Jz2    ! Jz^2
+                                        angumome_Jz2, & ! Jz^2
+                                        angumome_so     ! spin-orbit
 
 CONTAINS
 
@@ -32,11 +33,11 @@ CONTAINS
 subroutine set_angular_momentum
 
 integer :: ia, ina, ila, ija, ima, ita, ib, inb, ilb, ijb, imb, itb, &
-           incr, ialloc=0
-real(r64) :: rja, rma, rjb, rmb
-real(r64) :: fp1, fm1, fp1p2, fm1m2, f02
-real(r64) :: delta_ma_mbp1, delta_ma_mbm1, delta_ma_mb
-real(r64) :: delta_ma_mbp2, delta_ma_mbm2 
+           ja, la, incr, ialloc=0
+real(r64) :: rja, rma, rjb, rmb, xja, &
+             fp1, fm1, fp1p2, fm1m2, f02, &
+             delta_ma_mbp1, delta_ma_mbm1, delta_ma_mb, &
+             delta_ma_mbp2, delta_ma_mbm2 
 
 allocate( angumome_Jx(HOsp_dim2), angumome_Jx2(HOsp_dim2), &
           angumome_Jy(HOsp_dim2), angumome_Jy2(HOsp_dim2), &
@@ -97,6 +98,23 @@ do ia = 1, HOsp_dim
       angumome_Jz2(incr) = (rmb * delta_ma_mb)**2
     endif
 
+  enddo
+enddo
+
+!!! Spin-orbit
+allocate( angumome_so(HOsp_dim2), source=zero, stat=ialloc )
+if ( ialloc /= 0 ) stop 'Error during allocation of spin-orbit operator'
+
+incr = 0
+
+do ia = 1, HOsp_dim
+  la = HOsp_l(ia)
+  ja = HOsp_2j(ia)
+  xja = ja / 2.d0
+  do ib = 1, HOsp_dim
+    incr = incr + 1
+    if ( ia /= ib ) cycle
+    angumome_so(incr) = xja*(xja+1) - la*(la+1) - 0.75d0 
   enddo
 enddo
 

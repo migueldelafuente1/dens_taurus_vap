@@ -6,7 +6,6 @@
 # BLAS/LAPACK libraries. When using the intel compiler "ifort", we recommend
 # to use of their specific Math Kernel Library (MKL).
 
-# and the directories of the libraries.
 # This script is only given as an example and we do not guarantee that it will
 # work on your system. In particular, check the version of your compiler and
 # the directories of the libraries.
@@ -86,7 +85,7 @@ $(code): $(OBJ90) $(OBJ77) | $(OBJDIR)/ $(MODDIR)/ $(EXEDIR)/
 $(OBJDIR)/%.o: $(SRCDIR)/%.f90 | $(OBJDIR)/ $(MODDIR)/
 	@cp $< $(OBJDIR)/tmp.f90
 	@if [ $(FC) = "mpiifort" ] || [ $(FC) = "mpif90" ]; then \
- 	   sed "s/\!cmpi /     /g" $(OBJDIR)/tmp.f90 > $(OBJDIR)/tmp2.f90 ; \
+ 	   sed "s/\!cmpi //g" $(OBJDIR)/tmp.f90 > $(OBJDIR)/tmp2.f90 ; \
  	   mv $(OBJDIR)/tmp2.f90 $(OBJDIR)/tmp.f90 ; \
 	 fi 
 	$(FC) $(OPT) -o $@ -c $(OBJDIR)/tmp.f90
