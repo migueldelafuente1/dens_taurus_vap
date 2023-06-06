@@ -251,7 +251,7 @@ subroutine set_hamiltonian_2body
 integer(i16) :: ared, bred, cred, dred
 integer(i32) :: ht, j, t, tmax, uth6=uth+6, uth7=uth+7, fac_ht, ialloc=0, &
                 a, ma, la, ta, b, mb, lb, tb, &
-                c, mc, lc, tc, d, md, ld, td, dmax
+                c, mc, lc, tc, d, md, ld, td, dmax, tt
 integer(i64) :: kk
 real(r64) :: xja, xjb, xjc, xjd, xjtot, xttot, phasab, phascd, Vtmp, &
              Vcut, Vdec
