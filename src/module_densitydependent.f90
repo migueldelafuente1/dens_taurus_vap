@@ -5268,8 +5268,8 @@ call calculate_densityDep_hamiltonian(dens_rhoLR,dens_kappaLR,dens_kappaRL,ndim)
 if (.NOT.evalQuasiParticleVSpace) then
 call print_DD_matrix_elements
 else
-call print_quasipartile_DD_matrix_elements( &
-             bogo_zU0, bogo_zV0, dreal(dens_rhoRR), dreal(dens_kappaRR), ndim)
+call print_quasipartile_DD_matrix_elements(bogo_zU0, bogo_zV0, &
+                    real(dens_rhoRR, real64), real(dens_kappaRR, real64), ndim)
 endif
 
 endif !------------------------------------------------------------------------
