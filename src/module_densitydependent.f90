@@ -5269,7 +5269,7 @@ if (.NOT.evalQuasiParticleVSpace) then
 call print_DD_matrix_elements
 else
 call print_quasipartile_DD_matrix_elements( &
-             bogo_zU0, bogo_zV0, real(dens_rhoRR), real(dens_kappaRR), ndim)
+             bogo_zU0, bogo_zV0, dreal(dens_rhoRR), dreal(dens_kappaRR), ndim)
 endif
 
 endif !------------------------------------------------------------------------
