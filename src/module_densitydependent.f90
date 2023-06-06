@@ -4442,10 +4442,13 @@ integer, intent(in) :: ndim
 complex(r64), dimension(ndim,ndim), intent(in) :: bogo_zU0,bogo_zV0
 
 real(r64), dimension(:), allocatable :: eigen_H11    ! qp    "
-integer :: i, kk, k1,k2,k3,k4, l1,l2,l3,l4
+real(r64) :: xneut, xprot, xpar, xjz, xn, xj2, xl2
+integer :: i,j, kk, k1,k2,k3,k4, l1,l2,l3,l4
 integer :: iH11, ialloc
 real(r64), dimension(3*ndim-1) :: work
 real(r64) :: THRESHOLD = 10.0d0
+
+character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)"
 
 
 allocate(eigen_H11(HOsp_dim), stat=ialloc )
@@ -4470,8 +4473,31 @@ deallocate(VStoHOsp_index)
 VSsp_dim = kk
 allocate(VStoHOsp_index(VSsp_dim))
 
-! 2
 
+! 2
+print "(A)", " *** Start test of H11 in DD subroutine  ********** "
+do i = 1, ndim
+  xneut = zero
+  xprot = zero
+  xpar  = zero
+  xjz   = zero
+  xj2   = zero
+  xn    = zero
+  xl2   = zero
+  do j = 1, ndim
+    xprot = xprot + field_H11(j,i)**2 * (-HOsp_2mt(j) + 1)/2.0d0
+    xneut = xneut + field_H11(j,i)**2 * ( HOsp_2mt(j) + 1)/2.0d0
+    xpar  = xpar  + field_H11(j,i)**2 * (-1.d0)**HOsp_l(j)
+    xn    = xn    + field_H11(j,i)**2 * HOsp_n(j)
+    xjz   = xjz   + field_H11(j,i)**2 * HOsp_2mj(j)/2.0d0
+    xj2   = xj2   + field_H11(j,i)**2 * (HOsp_2j(j)*(HOsp_2j(j)+2))/4.0d0
+    xl2   = xl2   + field_H11(j,i)**2 * (HOsp_l(j)*(HOsp_l(j)+1))
+  enddo
+  xj = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xj2)))
+  xl = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xl2)))
+  print format1, i, xprot, xneut, xn, xl, xpar, xj, xjz, eigen_H11(i)
+enddo
+print "(A)", " *** End test of H11 in DD subroutine  ********** "
 
 
 end subroutine print_quasipartile_DD_matrix_elements
