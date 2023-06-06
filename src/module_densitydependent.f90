@@ -4476,6 +4476,8 @@ allocate(VStoHOsp_index(VSsp_dim))
 
 ! 2
 print "(A)", " *** Start test of H11 in DD subroutine  ********** "
+print "(A)", "   #      Z        N        n        l        p &
+                     &       j       jz         H11"
 do i = 1, ndim
   xneut = zero
   xprot = zero
