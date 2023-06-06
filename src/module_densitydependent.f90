@@ -4436,17 +4436,23 @@ end subroutine print_DD_matrix_elements
 !  Export of the DD + Hamil Hamiltonian in a reduced quasiparticle basis using !
 !  formulas of appendix E.2 in Ring-Schuck                                     !
 !------------------------------------------------------------------------------!
-subroutine print_quasipartile_DD_matrix_elements(bogo_zU0, bogo_zV0, ndim)
+subroutine print_quasipartile_DD_matrix_elements(bogo_zU0, bogo_zV0, &
+                                                 dens_rhoRR, dens_kappaRR, ndim)
 
 integer, intent(in) :: ndim
 complex(r64), dimension(ndim,ndim), intent(in) :: bogo_zU0,bogo_zV0
+real(r64), dimension(ndim,ndim), intent(in)    :: dens_rhoRR, dens_kappaRR
 
 real(r64), dimension(:), allocatable :: eigen_H11    ! qp    "
+complex(r64), dimension(ndim,ndim) :: hspRR, gammaRR, deltaRR
+real(r64), dimension(ndim,ndim) :: field_hspRR, field_deltaRR
+
 real(r64) :: xneut, xprot, xpar, xjz, xn, xj, xl, xj2, xl2
 integer :: i,j, kk, k1,k2,k3,k4, l1,l2,l3,l4
 integer :: iH11, ialloc
 real(r64), dimension(3*ndim-1) :: work
-real(r64) :: THRESHOLD = 10.0d0
+real(r64) :: THRESHOLD = 0.0d0
+
 
 character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)"
 
@@ -4454,6 +4460,11 @@ character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)"
 allocate(eigen_H11(HOsp_dim), stat=ialloc )
 if ( ialloc /= 0 ) stop 'Error during allocation of gradient'
 eigen_H11 = zero
+
+call calculate_fields_diag(zone*dens_rhoRR,zone*dens_kappaRR,gammaRR,hspRR, &
+                             deltaRR,ndim=ndim)
+field_hspRR = real(hspRR)
+field_deltaRR = real(deltaRR)
 
 ! 1 Diagonalize H11 matrix to select the first states of the quasiparticles
 call calculate_H11_real(ndim)
@@ -5257,7 +5268,8 @@ call calculate_densityDep_hamiltonian(dens_rhoLR,dens_kappaLR,dens_kappaRL,ndim)
 if (.NOT.evalQuasiParticleVSpace) then
 call print_DD_matrix_elements
 else
-call print_quasipartile_DD_matrix_elements(bogo_zU0, bogo_zV0, ndim)
+call print_quasipartile_DD_matrix_elements( &
+             bogo_zU0, bogo_zV0, real(dens_rhoRR), real(dens_kappaRR), ndim)
 endif
 
 endif !------------------------------------------------------------------------
