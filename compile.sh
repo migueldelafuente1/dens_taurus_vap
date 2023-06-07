@@ -100,7 +100,8 @@ filelist="module_constants.xx module_mathmethods.xx MPI module_nucleus.xx \
 		  module_densitydependent.xx \
           module_angularmomentum.xx module_multipoles.xx module_radius.xx \
           module_operators.xx module_projection.xx  module_constraints.xx \
-          module_gradient.xx module_initialization.xx subroutines_pfaffian.yy"
+          module_gradient.xx module_initialization.xx \
+		  module_exportings.xx subroutines_pfaffian.yy"
 
 # Remove the module parallelization when not doing MPI         
 if [ $FC = "mpiifort" ] || [ $FC = "mpif90" ]; then
