@@ -166,7 +166,7 @@ call print_results(1,1)
 !! Exporting of the spherical QP valence space from DD interaction
 if ((eval_density_dependent).AND.(exportValSpace).AND. &
     (evalQuasiParticleVSpace)) then
-  call print_quasipartile_DD_matrix_elements(dens_rhoRR, dens_kappaRR, ndim)
+  call print_quasipartile_DD_matrix_elements(dens_rhoRR,dens_kappaRR,HOsp_dim)
 endif
 
 !cmpi if ( paral_myrank == 0 ) then
