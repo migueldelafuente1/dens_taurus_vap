@@ -37,7 +37,7 @@ subroutine export_DensityAndHamiltonian(dens_rhoRR, dens_kappaRR, ndim)
 integer, intent(in) :: ndim
 real(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR, dens_kappaRR
 
-if (.NOT.eval_density_dependent) exit
+if (.NOT.eval_density_dependent) return
 
 
 if (export_density)then
@@ -46,8 +46,8 @@ endif
 
 if (exportValSpace) then !-----------------------------------------------------
 
-call test_printDesityKappaWF(dens_rhoLR, dens_kappaLR,dens_kappaRL, ndim)
-call calculate_densityDep_hamiltonian(dens_rhoLR,dens_kappaLR,dens_kappaRL,ndim)
+call test_printDesityKappaWF(dens_rhoRR, dens_kappaRR,dens_kappaRR, ndim)
+call calculate_densityDep_hamiltonian(dens_rhoRR,dens_kappaRR,dens_kappaRR,ndim)
 
 if (.NOT.evalQuasiParticleVSpace) then
   call print_DD_matrix_elements
