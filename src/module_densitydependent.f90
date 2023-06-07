@@ -3213,11 +3213,7 @@ complex(r64), allocatable, dimension(:,:) :: test_dens
 allocate(test_dens(ndim, ndim))
 test_dens = zzero
 
-
-
 if (.NOT.export_density) return
-
-endif !------------------------------------------------------------------------
 
 density_export    = zzero
 density_export_n  = zzero
