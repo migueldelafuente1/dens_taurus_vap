@@ -11,12 +11,7 @@
 !                                                                              !
 ! Testing Methods                                                              !
 ! - subroutine test_printDesityWF                                              !
-! - subroutine test_legendrePolynomials                                        !
-! - subroutine test_sphericalHarmonics_print                                   !
-! - subroutine test_sphericalHarmonics_ortogonality                            !
-! - subroutine test_radial_2wf                                                 !
-! - subroutine test_density_1BME_positive_def                                  !
-! - subroutine test_print_density_me                                           !
+! - subroutine test_integrate_bulk_densities                                   !
 !==============================================================================!
 MODULE DensityDep
 
@@ -3279,7 +3274,6 @@ enddo
 close(621)
 
 end subroutine test_print_basis_quantum_numbers
-
 
 
 !------------------------------------------------------------------------------!
