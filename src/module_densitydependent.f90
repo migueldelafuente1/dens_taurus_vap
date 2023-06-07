@@ -3184,13 +3184,12 @@ end subroutine test_integrate_bulk_densities
 ! Subroutine to export a file for plotting the density in an integrable form.  !
 ! Whether the integral is trapezoidal, Legendre, Legendre-radial Laguerre.     !
 !==============================================================================!
-subroutine export_expectval_density(dens_rhoLR,dens_kappaLR,dens_kappaRL, &
-                                    bogo_zU0,bogo_zV0, ndim)
+subroutine export_expectval_density(dens_rhoLR,dens_kappaLR,dens_kappaRL,ndim)
 
 integer, intent(in) :: ndim
 complex(r64), dimension(ndim,ndim), intent(in) :: dens_rhoLR
 complex(r64), dimension(ndim,ndim), intent(in) :: dens_kappaLR,dens_kappaRL
-complex(r64), dimension(ndim,ndim), intent(in) :: bogo_zU0,bogo_zV0
+!complex(r64), dimension(ndim,ndim), intent(in) :: bogo_zU0,bogo_zV0
 
 integer :: i,j, a_sh,la,ja,ma,mta, b_sh,lb,jb,mb,mtb, K
 integer :: ind_jm_a, ind_jm_b, ind_km
@@ -3217,15 +3216,6 @@ test_dens = zzero
 
 
 if (.NOT.export_density) return
-
-if (exportValSpace) then !-----------------------------------------------------
-
-call test_printDesityKappaWF(dens_rhoLR, dens_kappaLR,dens_kappaRL, ndim)
-call calculate_densityDep_hamiltonian(dens_rhoLR,dens_kappaLR,dens_kappaRL,ndim)
-
-if (.NOT.evalQuasiParticleVSpace) then
-call print_DD_matrix_elements
-endif
 
 endif !------------------------------------------------------------------------
 

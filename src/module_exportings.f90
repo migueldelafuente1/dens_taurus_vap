@@ -32,6 +32,34 @@ PUBLIC
 
 CONTAINS
 
+subroutine export_DensityAndHamiltonian(dens_rhoRR, dens_kappaRR, ndim)
+
+integer, intent(in) :: ndim
+real(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR, dens_kappaRR
+
+if (.NOT.eval_density_dependent) exit
+
+
+if (export_density)then
+  call export_expectval_density(dens_rhoRR, dens_kappaRR, dens_kappaRR, ndim)
+endif
+
+if (exportValSpace) then !-----------------------------------------------------
+
+call test_printDesityKappaWF(dens_rhoLR, dens_kappaLR,dens_kappaRL, ndim)
+call calculate_densityDep_hamiltonian(dens_rhoLR,dens_kappaLR,dens_kappaRL,ndim)
+
+if (.NOT.evalQuasiParticleVSpace) then
+  call print_DD_matrix_elements
+else
+  call print_quasipartile_DD_matrix_elements(dens_rhoRR,dens_kappaRR,HOsp_dim)
+endif
+endif
+
+
+end subroutine export_DensityAndHamiltonian
+
+
 
 subroutine calculate_valenceSpaceReduced(hamilJM, dim_jm, dim_sh)
 integer, intent(in) :: dim_sh, dim_jm
