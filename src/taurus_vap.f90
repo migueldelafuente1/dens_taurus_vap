@@ -23,6 +23,7 @@ use Projection
 use Gradient
 use Initialization
 use DensityDep
+use DensDepResultExportings
 
 implicit none
 
@@ -161,6 +162,12 @@ if ( max(proj_Mphip,proj_Mphin) > 1 ) then
   call print_results(proj_Mphip,proj_Mphin)
 endif
 call print_results(1,1)
+
+!! Exporting of the spherical QP valence space from DD interaction
+if ((eval_density_dependent).AND.(exportValSpace).AND. &
+    (evalQuasiParticleVSpace)) then
+  call print_quasipartile_DD_matrix_elements(dens_rhoRR, dens_kappaRR, ndim)
+endif
 
 !cmpi if ( paral_myrank == 0 ) then
 print '(/,"This is the end, my only friend, the end.")'
