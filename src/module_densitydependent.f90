@@ -4279,7 +4279,104 @@ close(626)
 !print *, "[OK] Export Rho LR matrix in file = 'DIMENS_indexes_and_rhoLRkappas.gut'"
 end subroutine test_printDesityKappaWF
 
+!------------------------------------------------------------------------------!
+! Integrate the matrix elements of the density  S<a|delta(r)|b> dr3 = delta_ab !
+!------------------------------------------------------------------------------!
+subroutine test_integrate_bulk_densities
 
+integer :: i_r, i_a, i_t, ms, tt
+real(r64)    :: radInt, int_fact, int_const
+complex(r64), dimension(4)   :: int_dens  ! [pp, nn, pn, np]
+complex(r64), dimension(5,4) :: int_A, int_B1, int_B2 ! [pp (++,+-,-+,--), nn,pn,np, total]
+complex(r64), dimension(5) :: sum_A, sum_B1, sum_B2
+character(len=28) :: fmt1 , fmt2
+character(len=4), dimension(4) :: ms_str
+ms_str = [character(len=4) :: " ++ ", " +- ", " -+ ", " -- "]
+fmt1 = '(A,4(F17.12,SP,F16.12,"j")))'
+fmt2 = '(A,5(F17.12,SP,F16.12,"j")))'
+
+int_dens = zzero
+int_A    = zzero
+int_B1   = zzero
+int_B2   = zzero
+
+int_const =  2 * pi * (HO_b**3) / ((2.0 + alpha_DD)**1.5)
+
+do i_r = 1, r_dim
+  !! [TEST] For the density to be integrated in the variable for the m.e.
+  radInt = int_const * weight_R(i_r) * exp((r(i_r)/HO_b)**2 * (1.0+alpha_DD))
+  do i_a = 1, angular_dim
+    int_fact = radInt * weight_LEB(i_a)
+
+    do i_t = 1, 4
+      int_dens(i_t) = int_dens(i_t) + (int_fact*dens_pnt(i_t, i_r, i_a))
+    enddo
+    !! TOTAL bulk densities
+    do ms = 1, 4
+      do tt = 1, 5
+        int_A (tt, ms) = int_A (tt, ms) + (int_fact * BulkHF(tt,ms, i_r, i_a))
+        int_B1(tt, ms) = int_B1(tt, ms) + (int_fact * BulkP1(tt,ms, i_r, i_a))
+        int_B2(tt, ms) = int_B2(tt, ms) + (int_fact * BulkP2(tt,ms, i_r, i_a))
+      enddo
+    end do
+  enddo
+enddo
+
+sum_A  = zzero
+sum_B1 = zzero
+sum_B2 = zzero
+
+!!! WRITE STUFF --------------------------------------------------------------
+open(321, file='test_dens_integrals.gut')
+write(321, fmt='(A)') " [TEST] Integrals of Bulk densities over R3 (approx)"
+write(321, fmt='(A)') "   RHO"
+write(321, fmt='(12x,"real(pp)",10x,"imag(pp)",8x,"real(nn)",10x,&
+  "imag(nn)",8x,"real(pn)",10x,"imag(pn)",8x,"real(np)",10x,"imag(np)")')
+
+write(321, fmt=fmt1) "    ", int_dens(1),int_dens(2),int_dens(3),int_dens(4)
+write(321, fmt='(A)') ""
+write(321, fmt='(A)') "   BULK A(ms)"
+write(321, fmt='(12x,"real(pp)",10x,"imag(pp)",8x,"real(nn)",10x,&
+  "imag(nn)",8x,"real(pn)",10x,"imag(pn)",8x,"real(np)",10x,"imag(np)",&
+  8x,"real(tt)",10x,"imag(tt)")')
+do ms = 1, 4
+  write(321, fmt=fmt2) ms_str(ms), &
+    int_A(1,ms), int_A(2,ms), int_A(3,ms), int_A(4,ms), int_A(5,ms)
+  do i_t = 1, 5
+    sum_A(i_t) = sum_A(i_t) + int_A(i_t, ms)
+  enddo
+enddo
+write(321, fmt=fmt2) " tt ", sum_A(1), sum_A(2), sum_A(3), sum_A(4), sum_A(5)
+write(321, fmt='(A)') ""
+write(321, fmt='(A)') "   BULK B1(ms)"
+write(321, fmt='(12x,"real(pp)",10x,"imag(pp)",8x,"real(nn)",10x,&
+  "imag(nn)",8x,"real(pn)",10x,"imag(pn)",8x,"real(np)",10x,"imag(np)",&
+  8x,"real(tt)",10x,"imag(tt)")')
+do ms = 1, 4
+  write(321, fmt=fmt2) ms_str(ms), &
+    int_B1(1,ms), int_B1(2,ms), int_B1(3,ms), int_B1(4,ms), int_B1(5,ms)
+  do i_t = 1, 5
+    sum_B1(i_t) = sum_B1(i_t) + int_B1(i_t, ms)
+  enddo
+enddo
+write(321, fmt=fmt2) " tt ", sum_B1(1),sum_B1(2),sum_B1(3),sum_B1(4),sum_B1(5)
+write(321, fmt='(A)') ""
+write(321, fmt='(A)') "   BULK B2(ms)"
+write(321, fmt='(12x,"real(pp)",10x,"imag(pp)",8x,"real(nn)",10x,&
+  "imag(nn)",8x,"real(pn)",10x,"imag(pn)",8x,"real(np)",10x,"imag(np)",&
+  8x,"real(tt)",10x,"imag(tt)")')
+do ms = 1, 4
+  write(321, fmt=fmt2) ms_str(ms), &
+    int_B2(1,ms), int_B2(2,ms), int_B2(3,ms), int_B2(4,ms), int_B2(5,ms)
+  do i_t = 1, 5
+    sum_B2(i_t) = sum_B2(i_t) + int_B2(i_t, ms)
+  enddo
+enddo
+write(321, fmt=fmt2) " tt ", sum_B2(1),sum_B2(2),sum_B2(3),sum_B2(4),sum_B2(5)
+
+close(321) !!! ---------------------------------------------------------------
+
+end subroutine test_integrate_bulk_densities
 
 !==============================================================================!
 ! Subroutine to export a file for plotting the density in an integrable form.  !
