@@ -164,7 +164,7 @@ endif
 call print_results(1,1)
 
 !! Exporting of the spherical QP valence space from DD interaction
-call export_DensityAndHamiltonian(dens_rhoRR, dens_kappaRR, HOsp_dim)
+call export_densityAndHamiltonian(dens_rhoRR, dens_kappaRR, HOsp_dim)
 
 !cmpi if ( paral_myrank == 0 ) then
 print '(/,"This is the end, my only friend, the end.")'
