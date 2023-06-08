@@ -64,8 +64,8 @@ if (exportValSpace) then !-----------------------------------------------------
   end do
 
   call test_printDesityKappaWF(dens_rhoRRc, dens_kappaRRc, dens_kappaRRc, ndim)
-  call calculate_densityDep_hamiltonian(dens_rhoRR, &
-                                        dens_kappaRR, dens_kappaRR, ndim)
+  call calculate_densityDep_hamiltonian(dens_rhoRRc, &
+                                        dens_kappaRRc, dens_kappaRRc, ndim)
 
   if (.NOT.evalQuasiParticleVSpace) then
     call print_DD_matrix_elements
