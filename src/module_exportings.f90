@@ -904,12 +904,12 @@ real(r64), dimension(ndim,ndim), intent(in)    :: dens_rhoRR, dens_kappaRR
 !real(r64), dimension(:), allocatable :: eigen_H11    ! qp    "
 !complex(r64), dimension(ndim,ndim) :: hspRR, gammaRR, deltaRR
 real(r64), dimension(ndim,ndim) :: hspRR_eigenvect, U_trans, V_trans
-real(r64), dimension(ndim,ndim) :: op_xjz, op_j2, op_l2, op_n
+real(r64), dimension(ndim,ndim) :: op_xjz, op_xj2, op_l2, op_n
 real(r64), dimension(ndim) :: eigen_A
 
 real(r64) :: xneut, xprot, xpar, xjz, xn, xj, xl, xj2, xl2
 integer :: i,j,ll,kk, k1,k2,k3,k4, l1,l2,l3,l4, d1,d2,d3,d4
-integer :: iH11, ialloc
+integer :: iH11, ialloc, info_hsp
 real(r64), dimension(3*ndim-1) :: work
 
 character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)"
@@ -962,7 +962,7 @@ do i=1, ndim
 enddo
 
 print "(A)", "  *** Results for the h diagonal states expected values :\\"
-print "(A)", "     i    <n>   <l2>    <l>   <j2>    <j>   Eigen_h"
+print "(A)", "     i    <n>   <l2>    <l>   <j2>    <j>   <jz>   Eigen_h"
 do i = 1, ndim
   xneut = zero
   xprot = zero
@@ -976,17 +976,19 @@ do i = 1, ndim
   do j = 1, ndim
     do kk = 1, ndim
       do ll = 1, ndim
-        xn = xn + ((U_trans(kk, i)*op_n(kk,ll)*U_trans(ll, j)) - &
-                   (V_trans(kk, i)*op_n(ll,kk)*V_trans(ll, j)) )
+        xn  = xn  + ((U_trans(kk, i)*op_n(kk,ll)*U_trans(ll, j)) - &
+                     (V_trans(kk, i)*op_n(ll,kk)*V_trans(ll, j)) )
         xl2 = xl2 + ((U_trans(kk, i)*op_l2(kk,ll)*U_trans(ll, j)) - &
                      (V_trans(kk, i)*op_l2(ll,kk)*V_trans(ll, j)) )
         xj2 = xj2 + ((U_trans(kk, i)*op_xj2(kk,ll)*U_trans(ll, j)) - &
                      (V_trans(kk, i)*op_xj2(ll,kk)*V_trans(ll, j)) )
+        xjz = xjz + ((U_trans(kk, i)*op_xjz(kk,ll)*U_trans(ll, j)) - &
+                     (V_trans(kk, i)*op_xjz(ll,kk)*V_trans(ll, j)) )
       end do
     end do
   end do
 
-  print "(I6,6F7.3)", i, xn, xl2, sqrt(xl2), xj2, sqrt(xj2), eigen_A
+  print "(I6,7F7.3)", i, xn, xl2, sqrt(xl2), xj2, sqrt(xj2), xjz, eigen_A
 end do
 print "(A)", "  *** Results for the h diagonal states expected values :\\"
 
