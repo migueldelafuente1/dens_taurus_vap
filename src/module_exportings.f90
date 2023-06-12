@@ -57,8 +57,8 @@ endif
 
 !! deallocate HF arrays from D1S to increase memory
 deallocate(sphharmDUAL_memo, AngFunctDUAL_HF, AngFunctDUAL_P1, &
-           AngFunctDUAL_P2, BulkHF, BulkP1, BulkP2, &
-           rearrang_field, rea_common_RadAng, REACommonFields)
+           AngFunctDUAL_P2, BulkHF, BulkP1, BulkP2)!, &
+           !rearrang_field, rea_common_RadAng, REACommonFields)
 
 if (exportValSpace) then !-----------------------------------------------------
 
