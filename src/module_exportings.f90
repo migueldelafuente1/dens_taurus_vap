@@ -914,6 +914,8 @@ real(r64), dimension(3*ndim-1) :: work
 
 character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)"
 
+print "(A)", " [  ] print_quasipartile_DD_matrix_elements"
+
 !call calculate_fields_diag(zone*dens_rhoRR,zone*dens_kappaRR,gammaRR,hspRR, &
 !                             deltaRR,ndim=ndim)
 !field_hspRR   = real(hspRR)
@@ -924,14 +926,17 @@ do i=1, ndim
   end do
 end do
 
+print "(A)", " [OK] copied field_hsRR diag matrix c.b"
 !!TODO: 1. get diagonalization of h_sp and the basis for the ho->spherical
 call dsyev('v','u',ndim,hspRR_eigenvect,ndim,eigen_A,work,3*ndim-1,info_hsp)
 
+print "(A)", " [OK] diagonalized hspRR to get the hsp_eigenV"
 !!TODO: 2. convert H11 to the canonical basis
 !! diagonalize_hsp_and_H11 already use dsyev, so eigen_H11 at this point is the
 !! eigenvectors and not H11, nead to call again H11
 call calculate_H11_real(ndim)
 
+print "(A)", " [OK] Calculated the H11 operator"
 !!TODO: 3. identify the valence space with the quasi part states indexes
 
 
@@ -957,8 +962,6 @@ do i=1, ndim
     op_l2 (i,j) = HOsp_l(i) * (HOsh_l(i)  + 1.0d0)
     op_n  (i,j) = HOsp_n(i)
   endif
-
-
 enddo
 
 print "(A)", "  *** Results for the h diagonal states expected values :\\"
