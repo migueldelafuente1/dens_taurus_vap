@@ -51,14 +51,14 @@ integer  :: i, j
 
 if (.NOT.eval_density_dependent) return
 
+if (export_density)then
+  call export_expectval_density(dens_rhoRR, dens_kappaRR, dens_kappaRR, ndim)
+endif
+
 !! deallocate HF arrays from D1S to increase memory
 deallocate(sphharmDUAL_memo, AngFunctDUAL_HF, AngFunctDUAL_P1, &
            AngFunctDUAL_P2, BulkHF, BulkP1, BulkP2, rearrangement_me, &
            rearrang_field, rea_common_RadAng, REACommonFields)
-
-if (export_density)then
-  call export_expectval_density(dens_rhoRR, dens_kappaRR, dens_kappaRR, ndim)
-endif
 
 if (exportValSpace) then !-----------------------------------------------------
 
