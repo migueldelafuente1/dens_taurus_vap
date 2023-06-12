@@ -6,9 +6,12 @@
 ! single particle hamiltonian with the j_z observable.                         !
 !                                                                              !
 ! List of routines and functions:                                              !
-! - subroutine                                             !
-! - subroutine                                                    !
-! - function                                        !
+! - subroutine  export_densityAndHamiltonian                                   !
+! - subroutine  calculate_valenceSpaceReduced                                  !
+! - subroutine  recouple_jjLSConjugatedME                                      !
+! - subroutine  print_DD_matrix_elements                                       !
+! - subroutine  print_quasipartile_DD_matrix_elements                          !
+! - subroutine  export_expectval_density                                       !
 !                                                                              !
 !==============================================================================!
 MODULE DensDepResultExportings
@@ -48,6 +51,10 @@ integer  :: i, j
 
 if (.NOT.eval_density_dependent) return
 
+!! deallocate HF arrays from D1S to increase memory
+deallocate(sphharmDUAL_memo, AngFunctDUAL_HF, AngFunctDUAL_P1, &
+           AngFunctDUAL_P2, BulkHF, BulkP1, BulkP2, rearrangement_me, &
+           rearrang_field, rea_common_RadAng, REACommonFields)
 
 if (export_density)then
   call export_expectval_density(dens_rhoRR, dens_kappaRR, dens_kappaRR, ndim)
@@ -70,6 +77,11 @@ if (exportValSpace) then !-----------------------------------------------------
   if (.NOT.evalQuasiParticleVSpace) then
     call print_DD_matrix_elements
   else
+    if (is_good_K) then
+      print "(a)", "[WARNING] Wavefunction is not axial, cannot extract &
+                    & spherical quasiparticle matrix elements. Exit."
+      return
+    endif
     call print_quasipartile_DD_matrix_elements(dens_rhoRR,dens_kappaRR,HOsp_dim)
   endif
 endif
@@ -889,73 +901,94 @@ integer, intent(in) :: ndim
 !complex(r64), dimension(ndim,ndim), intent(in) :: bogo_zU0,bogo_zV0
 real(r64), dimension(ndim,ndim), intent(in)    :: dens_rhoRR, dens_kappaRR
 
-real(r64), dimension(:), allocatable :: eigen_H11    ! qp    "
-complex(r64), dimension(ndim,ndim) :: hspRR, gammaRR, deltaRR
-real(r64), dimension(ndim,ndim) :: field_hspRR, field_deltaRR
+!real(r64), dimension(:), allocatable :: eigen_H11    ! qp    "
+!complex(r64), dimension(ndim,ndim) :: hspRR, gammaRR, deltaRR
+real(r64), dimension(ndim,ndim) :: hspRR_eigenvect, U_trans, V_trans
+real(r64), dimension(ndim,ndim) :: op_xjz, op_j2, op_l2, op_n
+real(r64), dimension(ndim) :: eigen_A
 
 real(r64) :: xneut, xprot, xpar, xjz, xn, xj, xl, xj2, xl2
-integer :: i,j, kk, k1,k2,k3,k4, l1,l2,l3,l4
+integer :: i,j,ll,kk, k1,k2,k3,k4, l1,l2,l3,l4, d1,d2,d3,d4
 integer :: iH11, ialloc
 real(r64), dimension(3*ndim-1) :: work
-real(r64) :: THRESHOLD = 0.0d0
-
 
 character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)"
 
+!call calculate_fields_diag(zone*dens_rhoRR,zone*dens_kappaRR,gammaRR,hspRR, &
+!                             deltaRR,ndim=ndim)
+!field_hspRR   = real(hspRR)
+!field_deltaRR = real(deltaRR)
+do i=1, ndim
+  do j=1, ndim
+    hspRR_eigenvect(i,j) = field_hspRR(i,j)
+  end do
+end do
 
-allocate(eigen_H11(HOsp_dim), stat=ialloc )
-if ( ialloc /= 0 ) stop 'Error during allocation of gradient'
-eigen_H11 = zero
+!!TODO: 1. get diagonalization of h_sp and the basis for the ho->spherical
+call dsyev('v','u',ndim,hspRR_eigenvect,ndim,eigen_A,work,3*ndim-1,info_hsp)
 
-call calculate_fields_diag(zone*dens_rhoRR,zone*dens_kappaRR,gammaRR,hspRR, &
-                             deltaRR,ndim=ndim)
-field_hspRR = real(hspRR)
-field_deltaRR = real(deltaRR)
-
-! 1 Diagonalize H11 matrix to select the first states of the quasiparticles
+!!TODO: 2. convert H11 to the canonical basis
+!! diagonalize_hsp_and_H11 already use dsyev, so eigen_H11 at this point is the
+!! eigenvectors and not H11, nead to call again H11
 call calculate_H11_real(ndim)
 
-call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,iH11)
+!!TODO: 3. identify the valence space with the quasi part states indexes
 
-kk=0
-do i = 1, ndim
-  if (eigen_H11(i).LT.THRESHOLD) then
-    kk = kk + 1
 
+U_trans = zero
+V_trans = zero
+op_xjz  = zero
+op_xj2  = zero
+op_l2   = zero
+op_n    = zero
+do i=1, ndim
+  do j=1, ndim
+    do kk = 1, ndim
+      U_trans(i,j) = U_trans(i,j) + dreal(bogo_zU0(i,kk))*hspRR_eigenvect(kk,j)
+      V_trans(i,j) = V_trans(i,j) + dreal(bogo_zV0(i,kk))*hspRR_eigenvect(kk,j)
+    enddo
+  enddo
+
+  if ((HOsp_sh(i) .NE. HOsp_sh(j)) .OR. (HOsp_2mj(i) .NE. HOsp_2mj(j))) then
+    cycle
+  else
+    op_xjz(i,j) = HOsp_2mj(i)
+    op_xj2(i,j) = HOsp_2j(i)* (HOsp_2j(i) + 2.0d0) / 4.0d0
+    op_l2 (i,j) = HOsp_l(i) * (HOsh_l(i)  + 1.0d0)
+    op_n  (i,j) = HOsp_n(i)
   endif
+
+
 enddo
 
-deallocate(VStoHOsp_index)
-VSsp_dim = kk
-allocate(VStoHOsp_index(VSsp_dim))
-
-
-! 2
-print "(A)", " *** Start test of H11 in DD subroutine  ********** "
-print "(A)", "   #      Z        N        n        l        p &
-                     &       j       jz         H11"
+print "(A)", "  *** Results for the h diagonal states expected values :\\"
+print "(A)", "     i    <n>   <l2>    <l>   <j2>    <j>   Eigen_h"
 do i = 1, ndim
   xneut = zero
   xprot = zero
-  xpar  = zero
-  xjz   = zero
-  xj2   = zero
-  xn    = zero
-  xl2   = zero
+  xjz = zero
+  xn  = zero
+  xj  = zero
+  xl  = zero
+  xj2 = zero
+  xl2 = zero
+
   do j = 1, ndim
-    xprot = xprot + field_H11(j,i)**2 * (-HOsp_2mt(j) + 1)/2.0d0
-    xneut = xneut + field_H11(j,i)**2 * ( HOsp_2mt(j) + 1)/2.0d0
-    xpar  = xpar  + field_H11(j,i)**2 * (-1.d0)**HOsp_l(j)
-    xn    = xn    + field_H11(j,i)**2 * HOsp_n(j)
-    xjz   = xjz   + field_H11(j,i)**2 * HOsp_2mj(j)/2.0d0
-    xj2   = xj2   + field_H11(j,i)**2 * (HOsp_2j(j)*(HOsp_2j(j)+2))/4.0d0
-    xl2   = xl2   + field_H11(j,i)**2 * (HOsp_l(j)*(HOsp_l(j)+1))
-  enddo
-  xj = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xj2)))
-  xl = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xl2)))
-  print format1, i, xprot, xneut, xn, xl, xpar, xj, xjz, eigen_H11(i)
-enddo
-print "(A)", " *** End test of H11 in DD subroutine  ********** "
+    do kk = 1, ndim
+      do ll = 1, ndim
+        xn = xn + ((U_trans(kk, i)*op_n(kk,ll)*U_trans(ll, j)) - &
+                   (V_trans(kk, i)*op_n(ll,kk)*V_trans(ll, j)) )
+        xl2 = xl2 + ((U_trans(kk, i)*op_l2(kk,ll)*U_trans(ll, j)) - &
+                     (V_trans(kk, i)*op_l2(ll,kk)*V_trans(ll, j)) )
+        xj2 = xj2 + ((U_trans(kk, i)*op_xj2(kk,ll)*U_trans(ll, j)) - &
+                     (V_trans(kk, i)*op_xj2(ll,kk)*V_trans(ll, j)) )
+      end do
+    end do
+  end do
+
+  print "(I6,6F7.3)", i, xn, xl2, sqrt(xl2), xj2, sqrt(xj2), eigen_A
+end do
+print "(A)", "  *** Results for the h diagonal states expected values :\\"
 
 
 end subroutine print_quasipartile_DD_matrix_elements

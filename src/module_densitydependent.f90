@@ -79,9 +79,9 @@ real(r64), dimension(:, :, :), allocatable, save :: radial_2b_sho_memo        !(
 real(r64), dimension(:, :, :), allocatable, save :: radial_2b_sho_noexp_memo  !(ish1, ish2, ir)
 real(r64), dimension(:, :, :), allocatable, save :: radial_2b_sho_export_memo !(ish1, ish2, ir)
 
-complex(r64), dimension(:, :), allocatable, save    :: sph_harmonics_memo
-complex(r64), dimension(:, :, :), allocatable, save :: sphharmDUAL_memo ! Y*(a) Y(b)
-real(r64), dimension(:, :, :), allocatable, save    :: dens_Y_KM_me
+complex(r64), dimension(:,:), allocatable,   save :: sph_harmonics_memo
+complex(r64), dimension(:,:,:), allocatable, save :: sphharmDUAL_memo ! Y*(a) Y(b)
+real(r64), dimension(:,:,:), allocatable,    save :: dens_Y_KM_me
 
 complex(r64), dimension(:,:,:,:), allocatable, save :: AngFunctDUAL_HF ! CGa CGb Y*(a) Y (b)
 complex(r64), dimension(:,:,:,:), allocatable, save :: AngFunctDUAL_P1 ! CGa CGb Y (a) Y (b)
@@ -90,15 +90,16 @@ complex(r64), dimension(:,:,:,:), allocatable, save :: BulkHF ! (tt,msms',r,ang)
 complex(r64), dimension(:,:,:,:), allocatable, save :: BulkP1 ! (tt,msms',r,ang) DEF:Sum AngFunctDUAL_P1(msms') - AngFunctDUAL_P1(ms'ms) * kappaLR
 complex(r64), dimension(:,:,:,:), allocatable, save :: BulkP2 ! (tt,msms',r,ang) DEF:Sum AngFunctDUAL_P2 * kappaRL
 
-complex(r64), dimension(:, :), allocatable    :: rearrangement_me  !(isp1, isp2)
-complex(r64), dimension(:, :), allocatable    :: rearrang_field    !(isp1, isp2)
-complex(r64), dimension(:, :, :, :), allocatable :: rea_common_RadAng !(isp1,isp2, ir,iang)
-complex(r64), dimension(:, :), allocatable    :: REACommonFields   !(ir, iang))
+complex(r64), dimension(:,:), allocatable     :: rearrangement_me  !(isp1, isp2)
+complex(r64), dimension(:,:), allocatable     :: rearrang_field    !(isp1, isp2)
+complex(r64), dimension(:,:,:,:), allocatable :: rea_common_RadAng !(isp1,isp2, ir,iang)
+complex(r64), dimension(:,:), allocatable     :: REACommonFields   !(ir, iang))
 
 integer, dimension(:), allocatable :: HOsh_ant, HOsp_ant
 
+
 !! Related to the hamiltonian and Fields
-real(r64), dimension(:), allocatable :: hamil_DD_H2        ! 2-body part
+real(r64), dimension(:),   allocatable :: hamil_DD_H2      ! 2-body part
 real(r64), dimension(:,:), allocatable :: hamil_DD_H2_byT  ! 2-body part
 integer(i64) :: hamil_DD_H2dim, hamil_DD_H2dim_all         ! number of 2BME stored
 integer(i16), dimension(:), allocatable :: hamil_DD_abcd   ! indices of 2BME
