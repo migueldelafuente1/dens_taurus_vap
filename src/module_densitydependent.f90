@@ -191,7 +191,7 @@ exportValSpace = aux_int.GE.1
 
 VSsh_dim = aux_int
 if (exportValSpace) then
-  if ((VSsh_dim.LE.HOsh_dim).OR.(evalQuasiParticleVSpace)) then
+  if ((VSsh_dim.LE.HOsh_dim).OR.(.NOT.evalQuasiParticleVSpace)) then
     print "(A,I3,A)", "   ... Reading VS sh states", VSsh_dim, &
       " (error if wrong sh dimension)"
     print *, ""
