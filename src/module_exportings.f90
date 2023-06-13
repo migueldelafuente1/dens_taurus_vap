@@ -57,8 +57,7 @@ endif
 
 !! deallocate HF arrays from D1S to increase memory
 deallocate(sphharmDUAL_memo, AngFunctDUAL_HF, AngFunctDUAL_P1, &
-           AngFunctDUAL_P2, BulkHF, BulkP1, BulkP2)!, &
-           !rearrang_field, rea_common_RadAng, REACommonFields)
+           AngFunctDUAL_P2, BulkHF, BulkP1, BulkP2)
 
 if (exportValSpace) then !-----------------------------------------------------
 
@@ -74,7 +73,8 @@ if (exportValSpace) then !-----------------------------------------------------
   call calculate_densityDep_hamiltonian(dens_rhoRRc, &
                                         dens_kappaRRc, dens_kappaRRc, ndim)
 
-  deallocate(rearrangement_me)
+  deallocate(rearrangement_me, rearrang_field, &
+             rea_common_RadAng, REACommonFields)
   if (.NOT.evalQuasiParticleVSpace) then
     call print_DD_matrix_elements
   else
