@@ -905,7 +905,7 @@ integer, intent(in) :: ndim
 !complex(r64), dimension(ndim,ndim), intent(in) :: bogo_zU0,bogo_zV0
 real(r64), dimension(ndim,ndim), intent(in)    :: dens_rhoRR, dens_kappaRR
 
-integer :: i, j, k, l, m, nocc0, nemp0, evnum
+integer :: i, j, k, l, m, nocc0, nemp0, evnum, ialloc=0
 integer, dimension(1) :: tabmin
 integer, dimension(ndim) :: eigenh_order, evdeg
 real(r64), dimension(ndim) :: eigenh_tmp
@@ -919,6 +919,15 @@ complex(r64), dimension(ndim,ndim) :: hspRR, gammaRR, deltaRR
 character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)", &
                                format2 = "(1a77,/,80('-'))", &
                                format3 = "(1a89,/,92('-'))"
+
+allocate(eigen_hsp(HOsp_dim), eigen_H11(HOsp_dim), stat=ialloc )
+if ( ialloc /= 0 ) stop 'Error during allocation of gradient'
+
+gradient_Zi = zero
+gradient_Zim1 = zero
+gradient_norm = zero
+eigen_hsp = zero
+eigen_H11 = zero
 
 !!! Computes the fields
 call calculate_fields_diag(zone*dens_rhoRR,zone*dens_kappaRR,gammaRR,hspRR, &
