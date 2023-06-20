@@ -29,8 +29,10 @@ PUBLIC
 
 !! Attributes
 
-real(r64), dimension(:,:), allocatable, save :: h11_transf
-real(r64), dimension(:),   allocatable, save :: h11_eigenvalues
+integer, private :: info_H11, & ! check if problem during diag(field_H11)
+
+real(r64), dimension(:), allocatable, private :: eigen_hsp, & ! sp energies
+                                                 eigen_H11    ! qp    "
 
 
 !! Methods
@@ -943,7 +945,7 @@ call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
 if ( nemp0 > 0 ) then
   allocate (hspr(nemp0,nemp0), eigenr(nemp0),workr(3*nemp0-1))
   hspr(1:nemp0,1:nemp0) = hspc(1:nemp0,1:nemp0)
-  call dsyev('v','u',nemp0,hspr,nemp0,eigenr,workr,3*nemp0-1,info_hsp)
+  call dsyev('v','u',nemp0,hspr,nemp0,eigenr,workr,3*nemp0-1,info_H11)
   A1 = zero
   A2 = D0
   do i = 1, ndim
@@ -957,7 +959,7 @@ endif
 if ( nocc0 > 0 ) then
   allocate (hspr(nocc0,nocc0), eigenr(nocc0),workr(3*nocc0-1))
   hspr(1:nocc0,1:nocc0) = hspc(ndim-nocc0+1:ndim,ndim-nocc0+1:ndim)
-  call dsyev('v','u',nocc0,hspr,nocc0,eigenr,workr,3*nocc0-1,info_hsp)
+  call dsyev('v','u',nocc0,hspr,nocc0,eigenr,workr,3*nocc0-1,info_H11)
   A1 = zero
   A2 = D0
   do i = 1, ndim
@@ -1004,7 +1006,7 @@ do i = l+1, ndim
 enddo
 
 !!! Diagonalizes hsp
-call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_hsp)
+call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
 
 ! In the case of axial symmetry, further diagonalizes Jz in this basis
 if (is_good_K) then
@@ -1015,7 +1017,7 @@ if (is_good_K) then
   evdeg(1) = 1
 
   do i = 2, ndim
-    if ( abs(eigen_hsp(i-1) - eigen_hsp(i)) < 1.0d-6 ) then
+    if ( abs(eigen_H11(i-1) - eigen_H11(i)) < 1.0d-6 ) then
       evdeg(evnum) = evdeg(evnum) + 1
     else
       evnum = evnum + 1
@@ -1037,7 +1039,7 @@ if (is_good_K) then
     k = evdeg(i)
     allocate( hspr(k,k), eigenr(k), workr(3*k-1) )
     hspr(:,:) = A2(1+j:j+k,1+j:j+k)
-    call dsyev('v','u',k,hspr,k,eigenr,workr,3*k-1,info_hsp)
+    call dsyev('v','u',k,hspr,k,eigenr,workr,3*k-1,info_H11)
     A1(1+j:j+k,1+j:j+k) = hspr(1:k,1:k)
     j = j + k
     deallocate( hspr, eigenr, workr )
@@ -1083,7 +1085,7 @@ do i = 1, ndim
   enddo
   xj = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xj2)))
   xl = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xl2)))
-  write(ute,format1) i, xprot, xneut, xn, xl, xpar, xj, xjz, eigen_hsp(i)
+  write(ute,format1) i, xprot, xneut, xn, xl, xpar, xj, xjz, eigen_H11(i)
 enddo
 close(ute, status='keep')
 
