@@ -29,7 +29,7 @@ PUBLIC
 
 !! Attributes
 
-integer, private :: info_H11, & ! check if problem during diag(field_H11)
+integer, private :: info_H11       ! check if problem during diag(field_H11)
 
 real(r64), dimension(:), allocatable, private :: eigen_hsp, & ! sp energies
                                                  eigen_H11    ! qp    "
