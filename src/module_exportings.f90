@@ -29,6 +29,8 @@ PUBLIC
 
 !! Attributes
 
+real(r64), dimension(:,:), allocatable, save :: h11_transf
+real(r64), dimension(:),   allocatable, save :: h11_eigenvalues
 
 
 !! Methods
@@ -78,11 +80,11 @@ if (exportValSpace) then !-----------------------------------------------------
   if (.NOT.evalQuasiParticleVSpace) then
     call print_DD_matrix_elements
   else
-    if (is_good_K) then
-      print "(a)", "[WARNING] Wavefunction is not axial, cannot extract &
-                    & spherical quasiparticle matrix elements. Exit."
-      return
-    endif
+!    if (is_good_K) then
+!      print "(a)", "[WARNING] Wavefunction is not axial, cannot extract &
+!                    & spherical quasiparticle matrix elements. Exit."
+!      return
+!    endif
     call print_quasipartile_DD_matrix_elements(dens_rhoRR,dens_kappaRR,HOsp_dim)
   endif
 endif
@@ -891,6 +893,204 @@ end subroutine print_DD_matrix_elements
 
 
 !------------------------------------------------------------------------------!
+! subroutine diagonalize_H11_and_jz                                            !
+!  Obtains the simultaneous diagonalization of H11 and the Jz operator,        !
+!  following the same process from the module_gradient for printing eigenbasis !
+!------------------------------------------------------------------------------!
+subroutine diagonalize_H11_with_jz(dens_rhoRR, dens_kappaRR, ndim)
+
+integer, intent(in) :: ndim
+!complex(r64), dimension(ndim,ndim), intent(in) :: bogo_zU0,bogo_zV0
+real(r64), dimension(ndim,ndim), intent(in)    :: dens_rhoRR, dens_kappaRR
+
+integer :: i, j, k, l, m, nocc0, nemp0, evnum
+integer, dimension(1) :: tabmin
+integer, dimension(ndim) :: eigenh_order, evdeg
+real(r64), dimension(ndim) :: eigenh_tmp
+real(r64), dimension(3*ndim-1) :: work
+real(r64), dimension(ndim,ndim) :: D0, rhoc, hspc, A1, A2
+real(r64) :: q11_aux, q00_aux, xn, xl2, xl, xneut, xprot, xpar, xjz, xj2, xj, &
+             fermi_p, fermi_n, ovac0
+real(r64), dimension(:,:), allocatable :: hspr
+real(r64), dimension(:), allocatable :: workr, eigenr
+complex(r64), dimension(ndim,ndim) :: hspRR, gammaRR, deltaRR
+character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)", &
+                               format2 = "(1a77,/,80('-'))", &
+                               format3 = "(1a89,/,92('-'))"
+
+!!! Computes the fields
+call calculate_fields_diag(zone*dens_rhoRR,zone*dens_kappaRR,gammaRR,hspRR, &
+                           deltaRR,ndim=ndim)
+field_hspRR   = real(hspRR)
+field_deltaRR = real(deltaRR)
+
+!cmpi if ( paral_myrank /= 0 ) return
+
+call calculate_H11_real(ndim)
+
+!!! hsp in canonical basis
+call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
+                               ovac0,nocc0,nemp0,ndim)
+D0 = real(bogo_zD0)
+
+call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_rhoRR,ndim,zero,A1,ndim)
+call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,rhoc,ndim)
+
+call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,field_H11,ndim,zero,A1,ndim)
+call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
+
+!!! Further reduces h in case of fully empty/occupides states
+if ( nemp0 > 0 ) then
+  allocate (hspr(nemp0,nemp0), eigenr(nemp0),workr(3*nemp0-1))
+  hspr(1:nemp0,1:nemp0) = hspc(1:nemp0,1:nemp0)
+  call dsyev('v','u',nemp0,hspr,nemp0,eigenr,workr,3*nemp0-1,info_hsp)
+  A1 = zero
+  A2 = D0
+  do i = 1, ndim
+    A1(i,i) = one
+  enddo
+  A1(1:nemp0,1:nemp0) = hspr(1:nemp0,1:nemp0)
+  call dgemm('n','n',ndim,ndim,ndim,one,A2,ndim,A1,ndim,zero,D0,ndim)
+  deallocate(hspr, eigenr, workr)
+endif
+
+if ( nocc0 > 0 ) then
+  allocate (hspr(nocc0,nocc0), eigenr(nocc0),workr(3*nocc0-1))
+  hspr(1:nocc0,1:nocc0) = hspc(ndim-nocc0+1:ndim,ndim-nocc0+1:ndim)
+  call dsyev('v','u',nocc0,hspr,nocc0,eigenr,workr,3*nocc0-1,info_hsp)
+  A1 = zero
+  A2 = D0
+  do i = 1, ndim
+    A1(i,i) = one
+  enddo
+  A1(ndim-nocc0+1:ndim,ndim-nocc0+1:ndim) = hspr(1:nocc0,1:nocc0)
+  call dgemm('n','n',ndim,ndim,ndim,one,A2,ndim,A1,ndim,zero,D0,ndim)
+  deallocate(hspr, eigenr, workr)
+endif
+
+call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,field_H11,ndim,zero,A1,ndim)
+call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
+
+!!! Ordering of energies
+l = 0
+eigenh_order = 0
+eigenh_tmp = 999
+
+do i = 1, ndim
+  if ( abs(rhoc(i,i)) > 1.d-7 ) then
+    l = l + 1
+    eigenh_tmp(i) = hspc(i,i)
+  endif
+enddo
+
+do i = 1, l
+  tabmin = minloc(eigenh_tmp)
+  eigenh_order(i) = tabmin(1)
+  eigenh_tmp(tabmin(1)) = 1000
+enddo
+
+eigenh_tmp = 999
+
+do i = 1, ndim
+  if ( abs(rhoc(i,i)) <= 1.d-7 ) then
+    eigenh_tmp(i) = hspc(i,i)
+  endif
+enddo
+
+do i = l+1, ndim
+  tabmin = minloc(eigenh_tmp)
+  eigenh_order(i) = tabmin(1)
+  eigenh_tmp(tabmin(1)) = 1000
+enddo
+
+!!! Diagonalizes hsp
+call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_hsp)
+
+! In the case of axial symmetry, further diagonalizes Jz in this basis
+if (is_good_K) then
+
+  ! counts the number of eigenspaces and their degeneracy
+  evnum = 1
+  evdeg = 0
+  evdeg(1) = 1
+
+  do i = 2, ndim
+    if ( abs(eigen_hsp(i-1) - eigen_hsp(i)) < 1.0d-6 ) then
+      evdeg(evnum) = evdeg(evnum) + 1
+    else
+      evnum = evnum + 1
+      evdeg(evnum) = evdeg(evnum) + 1
+    endif
+  enddo
+
+  ! Jz in the matrix that diagonalizes h
+  D0 = field_H11
+  call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,angumome_Jz(1:ndim**2),ndim, &
+             zero,A1,ndim)
+  call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,A2,ndim)
+
+  ! block diagonalization
+  j = 0
+  A1 = zero
+
+  do i = 1, evnum
+    k = evdeg(i)
+    allocate( hspr(k,k), eigenr(k), workr(3*k-1) )
+    hspr(:,:) = A2(1+j:j+k,1+j:j+k)
+    call dsyev('v','u',k,hspr,k,eigenr,workr,3*k-1,info_hsp)
+    A1(1+j:j+k,1+j:j+k) = hspr(1:k,1:k)
+    j = j + k
+    deallocate( hspr, eigenr, workr )
+  enddo
+
+  call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,zero,field_H11,ndim)
+endif
+
+!!! Writes the properties of the single-particle states in a file
+fermi_p = 0.d0
+fermi_n = 0.d0
+
+if ( constraint_switch(1) == 1 ) then
+  fermi_p = lagrange_lambda1(1)
+endif
+if ( constraint_switch(2) == 1 ) then
+  fermi_n = lagrange_lambda1(1 + constraint_switch(1))
+endif
+
+!!! Basis that diagonalizes h
+open(ute, file='eigenbasis2_H11.dat', status='replace', action='write', &
+         form='formatted')
+write(ute,"(1a,1f12.6)")   "Proton  fermi energy = ",fermi_p
+write(ute,"(1a,1f12.6,/)") "Neutron fermi energy = ",fermi_n
+write(ute,format2) "   #      Z        N        n        l        p &
+                   &       j       jz         h  "
+do i = 1, ndim
+  xneut = zero
+  xprot = zero
+  xpar  = zero
+  xjz   = zero
+  xj2   = zero
+  xn    = zero
+  xl2   = zero
+  do j = 1, ndim
+    xprot = xprot + field_H11(j,i)**2 * (-HOsp_2mt(j) + 1)/2.0d0
+    xneut = xneut + field_H11(j,i)**2 * ( HOsp_2mt(j) + 1)/2.0d0
+    xpar  = xpar  + field_H11(j,i)**2 * (-1.d0)**HOsp_l(j)
+    xn    = xn    + field_H11(j,i)**2 * HOsp_n(j)
+    xjz   = xjz   + field_H11(j,i)**2 * HOsp_2mj(j)/2.0d0
+    xj2   = xj2   + field_H11(j,i)**2 * (HOsp_2j(j)*(HOsp_2j(j)+2))/4.0d0
+    xl2   = xl2   + field_H11(j,i)**2 * (HOsp_l(j)*(HOsp_l(j)+1))
+  enddo
+  xj = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xj2)))
+  xl = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xl2)))
+  write(ute,format1) i, xprot, xneut, xn, xl, xpar, xj, xjz, eigen_hsp(i)
+enddo
+close(ute, status='keep')
+
+
+end subroutine
+
+!------------------------------------------------------------------------------!
 ! subroutine print_quasipartile_DD_matrix_elements                             !
 !  Export of the DD + Hamil Hamiltonian in a reduced quasiparticle basis using !
 !  formulas of appendix E.2 in Ring-Schuck, modified to apply in the h_sp      !
@@ -917,84 +1117,9 @@ character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)"
 
 print "(A)", " [  ] print_quasipartile_DD_matrix_elements"
 
-!call calculate_fields_diag(zone*dens_rhoRR,zone*dens_kappaRR,gammaRR,hspRR, &
-!                             deltaRR,ndim=ndim)
-!field_hspRR   = real(hspRR)
-!field_deltaRR = real(deltaRR)
-do i=1, ndim
-  do j=1, ndim
-    hspRR_eigenvect(i,j) = field_hspRR(i,j)
-  end do
-end do
+call diagonalize_H11_with_jz(dens_rhoRR, dens_kappaRR, ndim)
 
-print "(A)", " [OK] copied field_hsRR diag matrix c.b"
-!!TODO: 1. get diagonalization of h_sp and the basis for the ho->spherical
-call dsyev('v','u',ndim,hspRR_eigenvect,ndim,eigen_A,work,3*ndim-1,info_hsp)
-
-print "(A)", " [OK] diagonalized hspRR to get the hsp_eigenV"
-!!TODO: 2. convert H11 to the canonical basis
-!! diagonalize_hsp_and_H11 already use dsyev, so eigen_H11 at this point is the
-!! eigenvectors and not H11, nead to call again H11
-call calculate_H11_real(ndim)
-
-print "(A)", " [OK] Calculated the H11 operator"
-!!TODO: 3. identify the valence space with the quasi part states indexes
-
-
-U_trans = zero
-V_trans = zero
-op_xjz  = zero
-op_xj2  = zero
-op_l2   = zero
-op_n    = zero
-do i=1, ndim
-  do j=1, ndim
-    do kk = 1, ndim
-      U_trans(i,j) = U_trans(i,j) + dreal(bogo_zU0(i,kk))*hspRR_eigenvect(kk,j)
-      V_trans(i,j) = V_trans(i,j) + dreal(bogo_zV0(i,kk))*hspRR_eigenvect(kk,j)
-    enddo
-  enddo
-
-  if ((HOsp_sh(i) .NE. HOsp_sh(j)) .OR. (HOsp_2mj(i) .NE. HOsp_2mj(j))) then
-    cycle
-  else
-    op_xjz(i,j) = HOsp_2mj(i)
-    op_xj2(i,j) = HOsp_2j(i)* (HOsp_2j(i) + 2.0d0) / 4.0d0
-    op_l2 (i,j) = HOsp_l(i) * (HOsh_l(i)  + 1.0d0)
-    op_n  (i,j) = HOsp_n(i)
-  endif
-enddo
-
-print "(A)", "  *** Results for the h diagonal states expected values :\\"
-print "(A)", "     i    <n>   <l2>    <l>   <j2>    <j>   <jz>   Eigen_h"
-do i = 1, ndim
-  xneut = zero
-  xprot = zero
-  xjz = zero
-  xn  = zero
-  xj  = zero
-  xl  = zero
-  xj2 = zero
-  xl2 = zero
-
-  do j = 1, ndim
-    do kk = 1, ndim
-      do ll = 1, ndim
-        xn  = xn  + ((U_trans(kk, i)*op_n(kk,ll)*U_trans(ll, j)) - &
-                     (V_trans(kk, i)*op_n(ll,kk)*V_trans(ll, j)) )
-        xl2 = xl2 + ((U_trans(kk, i)*op_l2(kk,ll)*U_trans(ll, j)) - &
-                     (V_trans(kk, i)*op_l2(ll,kk)*V_trans(ll, j)) )
-        xj2 = xj2 + ((U_trans(kk, i)*op_xj2(kk,ll)*U_trans(ll, j)) - &
-                     (V_trans(kk, i)*op_xj2(ll,kk)*V_trans(ll, j)) )
-        xjz = xjz + ((U_trans(kk, i)*op_xjz(kk,ll)*U_trans(ll, j)) - &
-                     (V_trans(kk, i)*op_xjz(ll,kk)*V_trans(ll, j)) )
-      end do
-    end do
-  end do
-
-  print "(I6,7F7.3)", i, xn, xl2, sqrt(xl2), xj2, sqrt(xj2), xjz, eigen_A
-end do
-print "(A)", "  *** Results for the h diagonal states expected values :\\"
+print "(A)", " [OK] H11 is in diagonal with Jz."
 
 
 end subroutine print_quasipartile_DD_matrix_elements

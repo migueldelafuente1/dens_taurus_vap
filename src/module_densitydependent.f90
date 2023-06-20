@@ -105,8 +105,9 @@ integer(i64) :: hamil_DD_H2dim, hamil_DD_H2dim_all         ! number of 2BME stor
 integer(i16), dimension(:), allocatable :: hamil_DD_abcd   ! indices of 2BME
 integer(i8) , dimension(:), allocatable :: hamil_DD_trperm ! time reversal permut.
 integer   :: iteration = 0, global_iter_max = 0
-integer   :: VSsh_dim = 0,  VSsp_dim = 0, VSsp_dim2 = 0
-integer, dimension(:), allocatable     :: VSsh_list, &
+integer   :: VSsh_dim = 0, VSsp_dim = 0, VSsp_dim2 = 0
+integer   :: WBsh_dim = 0, WBsp_dim = 0
+integer, dimension(:), allocatable     :: VSsh_list, WBtoHOsp_index, &
                                           VStoHOsp_index, VStoHOsh_index
 
 integer   :: seed_type_sym  = 0        ! (UNDEFINED)
@@ -191,7 +192,7 @@ exportValSpace = aux_int.GE.1
 
 VSsh_dim = aux_int
 if (exportValSpace) then
-  if ((VSsh_dim.LE.HOsh_dim).AND.(.NOT.evalQuasiParticleVSpace)) then
+  if ((VSsh_dim.LE.HOsh_dim).OR.(evalQuasiParticleVSpace)) then
     print "(A,I3,A)", "   ... Reading VS sh states", VSsh_dim, &
       " (error if wrong sh dimension)"
     print *, ""
@@ -205,8 +206,12 @@ if (exportValSpace) then
     VSsh_dim  = HOsh_dim
     VSsp_dim  = HOsp_dim
     VSsp_dim2 = HOsp_dim2
+
+    WBsh_dim  = HOsh_dim
+    WBsp_dim  = HOsp_dim
     allocate(VSsh_list(VSsh_dim))
     allocate(VStoHOsp_index(VSsp_dim))
+    allocate(WBtoHOsp_index(HOsp_dim))
     do i=1, VSsh_dim
       VSsh_list(i) = HOsh_na(i)
     end do
@@ -323,12 +328,30 @@ do i=1, HOsp_dim
 enddo
 
 VSsp_dim2 = VSsp_dim ** 2
-
+if (evalQuasiParticleVSpace) then
+  WBsp_dim  = HOsp_dim
+  WBsh_dim  = HOsh_dim
+else
+  WBsp_dim  = VSsp_dim
+  WBsh_dim  = VSsh_dim
+end if
+allocate(WBtoHOsp_index(WBsp_dim))
 allocate(VStoHOsp_index(VSsp_dim))
+
 do i=1, VSsp_dim
   VStoHOsp_index(i) = temp_list_index(i)
-!  print "(A,2I6)", "VS index in HO basis:", i, VStoHOsp_index(i)
+  if (.NOT.evalQuasiParticleVSpace) then !! WB for VS eval are the reduced states
+    WBtoHOsp_index(i) = temp_list_index(i)
+  endif
 end do
+
+!! in case the QP evaluation, Working basis for the hamiltonian reads all states
+if (evalQuasiParticleVSpace) then
+  do i = 1, HOsp_dim
+    WBtoHOsp_index(i) = i
+  enddo
+endif
+
 deallocate(temp_list_index)
 
 end subroutine set_valence_space_to_export
@@ -1848,7 +1871,7 @@ integer(i16) :: ared, bred, cred, dred
 integer(i32) :: ht, j, t, tmax, uth6=uth+8, uth7=uth+9, fac_ht, ialloc=0, &
                 a, ma, la, ta, b, mb, lb, tb, dmax, bmax,  bmin, cmin, dmin,&
                 c, mc, lc, tc, d, md, ld, td, aa, bb, cc, dd
-integer(i64) :: kk, i, kkk, hdim
+integer(i64) :: kk, i, kkk
 integer, parameter :: CONVERG_ITER = 10000
 real(r64) :: xja, xjb, xjc, xjd, xjtot, xttot, phasab, phascd, Vtmp, &
              Vcut, Vdec, Vred
@@ -1871,7 +1894,6 @@ if (iteration < CONVERG_ITER) then
                  form='unformatted')
 endif
 
-hdim = VSsp_dim / 2
 Vcut = 5.0d-14
 if (ALL_ISOS) Vcut = 1.0d-10
 kk = 0
@@ -1879,16 +1901,16 @@ NOT_DEL_FILE = .FALSE.
 
 rearrang_field = zero
 
-do aa = 1, VSsp_dim / 2 ! (prev = HOsp_dim)
-  a  = VStoHOsp_index(aa)
+do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
+  a  = WBtoHOsp_index(aa) !VStoHOsp_index(aa)
   la = HOsp_l(a)
   ma = HOsp_2mj(a)
   ta = HOsp_2mt(a)
 
   bmin = aa!+1
   if (evalFullSPSpace) bmin = 1
-  do bb = bmin, VSsp_dim / 2 ! (prev = HOsp_dim)
-    b  = VStoHOsp_index(bb)
+  do bb = bmin, WBsp_dim / 2 ! (prev = HOsp_dim)
+    b  = WBtoHOsp_index(bb)
     lb = HOsp_l(b)
     mb = HOsp_2mj(b)
     tb = HOsp_2mt(b)
@@ -1897,20 +1919,20 @@ do aa = 1, VSsp_dim / 2 ! (prev = HOsp_dim)
 
     cmin = aa
     if (evalFullSPSpace) cmin = 1
-    do cc = cmin, VSsp_dim / 2 ! (prev = HOsp_dim)
-      c  = VStoHOsp_index(cc)
+    do cc = cmin, WBsp_dim / 2 ! (prev = HOsp_dim)
+      c  = WBtoHOsp_index(cc)
       lc = HOsp_l(c)
       mc = HOsp_2mj(c)
       tc = HOsp_2mt(c)
 
       dmin = 1
-      dmax = VSsp_dim / 2 ! (prev = HOsp_dim)
+      dmax = WBsp_dim / 2 ! (prev = HOsp_dim)
       if (.NOT.evalFullSPSpace) then
         dmin = cc!+1
         if ( cc == aa ) dmax = bb
       endif
       do dd = dmin, dmax
-        d  = VStoHOsp_index(dd)
+        d  = WBtoHOsp_index(dd)
         ld = HOsp_l(d)
         md = HOsp_2mj(d)
         td = HOsp_2mt(d)
