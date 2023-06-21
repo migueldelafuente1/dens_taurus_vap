@@ -906,7 +906,7 @@ integer, intent(in) :: ndim
 real(r64), dimension(ndim,ndim), intent(in)    :: dens_rhoRR, dens_kappaRR
 
 integer :: i, j, k, l, m, nocc0, nemp0, evnum, ialloc=0
-real(r64) :: ovacc
+real(r64) :: ovac0
 integer, dimension(1) :: tabmin
 integer, dimension(ndim) :: eigenh_order, evdeg
 real(r64), dimension(ndim) :: eigenh_tmp
