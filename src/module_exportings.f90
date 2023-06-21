@@ -33,7 +33,7 @@ integer, private :: info_H11       ! check if problem during diag(field_H11)
 
 real(r64), dimension(:), allocatable, private :: eigen_hsp, & ! sp energies
                                                  eigen_H11    ! qp    "
-
+real(r64), dimension(:,:) allocatable, private :: transf_H11
 
 !! Methods
 
@@ -911,23 +911,19 @@ integer, dimension(ndim) :: eigenh_order, evdeg
 real(r64), dimension(ndim) :: eigenh_tmp
 real(r64), dimension(3*ndim-1) :: work
 real(r64), dimension(ndim,ndim) :: D0, rhoc, hspc, A1, A2
-real(r64) :: q11_aux, q00_aux, xn, xl2, xl, xneut, xprot, xpar, xjz, xj2, xj, &
-             fermi_p, fermi_n, ovac0
+
 real(r64), dimension(:,:), allocatable :: hspr
 real(r64), dimension(:), allocatable :: workr, eigenr
 complex(r64), dimension(ndim,ndim) :: hspRR, gammaRR, deltaRR
-character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)", &
-                               format2 = "(1a77,/,80('-'))", &
-                               format3 = "(1a89,/,92('-'))"
 
-allocate(eigen_hsp(HOsp_dim), eigen_H11(HOsp_dim), stat=ialloc )
+
+allocate(eigen_hsp(HOsp_dim), eigen_H11(HOsp_dim), &
+         transf_H11(HOsp_dim, HOsp_dim), stat=ialloc )
 if ( ialloc /= 0 ) stop 'Error during allocation of gradient'
 
-gradient_Zi = zero
-gradient_Zim1 = zero
-gradient_norm = zero
-eigen_hsp = zero
-eigen_H11 = zero
+eigen_hsp  = zero
+eigen_H11  = zero
+transf_H11 = zero
 
 !!! Computes the fields
 call calculate_fields_diag(zone*dens_rhoRR,zone*dens_kappaRR,gammaRR,hspRR, &
@@ -1057,6 +1053,24 @@ if (is_good_K) then
   call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,zero,field_H11,ndim)
 endif
 
+call sort_quasiparticle_basis(ndim)
+
+
+end subroutine
+
+!------------------------------------------------------------------------------!
+! subroutine sort_quasiparticle_basis
+!
+!------------------------------------------------------------------------------!
+subroutine sort_quasiparticle_basis(ndim)
+
+integer, intent(in) :: ndim
+real(r64) :: xn, xl2, xl, xneut, xprot, xpar, xjz, xj2, xj, fermi_p, fermi_n
+real(r64), dimension(ndim)  :: qpsp_z, qpsp_n, qpsp_par, qpsp_jz, qpsp_n, &
+                               qpsp_j, qpsp_l
+character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)", &
+                               format2 = "(1a77,/,80('-'))"
+integer :: i, j, kk
 !!! Writes the properties of the single-particle states in a file
 fermi_p = 0.d0
 fermi_n = 0.d0
@@ -1068,8 +1082,8 @@ if ( constraint_switch(2) == 1 ) then
   fermi_n = lagrange_lambda1(1 + constraint_switch(1))
 endif
 
-!!! Basis that diagonalizes h
-open(ute, file='eigenbasis2_H11.dat', status='replace', action='write', &
+!!! Basis that diagonalizes h and search the QP basis
+open(ute, file='eigenbasis_jzH11.dat', status='replace', action='write', &
          form='formatted')
 write(ute,"(1a,1f12.6)")   "Proton  fermi energy = ",fermi_p
 write(ute,"(1a,1f12.6,/)") "Neutron fermi energy = ",fermi_n
@@ -1084,6 +1098,8 @@ do i = 1, ndim
   xn    = zero
   xl2   = zero
   do j = 1, ndim
+    transf_H11(j,i) = field_H11(j,i)
+
     xprot = xprot + field_H11(j,i)**2 * (-HOsp_2mt(j) + 1)/2.0d0
     xneut = xneut + field_H11(j,i)**2 * ( HOsp_2mt(j) + 1)/2.0d0
     xpar  = xpar  + field_H11(j,i)**2 * (-1.d0)**HOsp_l(j)
@@ -1094,12 +1110,35 @@ do i = 1, ndim
   enddo
   xj = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xj2)))
   xl = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xl2)))
+
+  qpsp_z(i) = xprot
+  qpsp_n(i) = xneut
+  qpsp_n(i) = xn
+  qpsp_l(i) = xl
+  qpsp_j(i) = xj
+  qpsp_jz(i)  = xjz
+  qpsp_par(i) = xpar
+
   write(ute,format1) i, xprot, xneut, xn, xl, xpar, xj, xjz, eigen_H11(i)
 enddo
 close(ute, status='keep')
 
+!!! Search and assign the QP basis
+print "(A)", " *** Print the sp states of the VS index and WB state"
+do i = 1, VSsp_dim
+  kk = VStoHOsp_index(i)
+  print "(A,3i4,A,4i3)", i, kk, HOsh_ant(HOsp_sh(kk)), " (nljm) :: ", &
+                   HOsp_n(kk), HOsh_l(kk), HOsp_2j(kk), HOsp_2mj(kk)
+enddo
 
-end subroutine
+!print "(A)", " *** Result"
+!do i = 1, ndim
+!  print "(A)",
+!end do
+
+
+end subroutine sort_quasiparticle_basis
+
 
 !------------------------------------------------------------------------------!
 ! subroutine print_quasipartile_DD_matrix_elements                             !
