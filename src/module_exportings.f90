@@ -33,7 +33,7 @@ integer, private :: info_H11       ! check if problem during diag(field_H11)
 
 real(r64), dimension(:), allocatable, private :: eigen_hsp, & ! sp energies
                                                  eigen_H11    ! qp    "
-real(r64), dimension(:,:) allocatable, private :: transf_H11
+real(r64), dimension(:,:), allocatable, private :: transf_H11
 
 !! Methods
 
@@ -906,6 +906,7 @@ integer, intent(in) :: ndim
 real(r64), dimension(ndim,ndim), intent(in)    :: dens_rhoRR, dens_kappaRR
 
 integer :: i, j, k, l, m, nocc0, nemp0, evnum, ialloc=0
+real(r64) :: ovacc
 integer, dimension(1) :: tabmin
 integer, dimension(ndim) :: eigenh_order, evdeg
 real(r64), dimension(ndim) :: eigenh_tmp
@@ -915,7 +916,6 @@ real(r64), dimension(ndim,ndim) :: D0, rhoc, hspc, A1, A2
 real(r64), dimension(:,:), allocatable :: hspr
 real(r64), dimension(:), allocatable :: workr, eigenr
 complex(r64), dimension(ndim,ndim) :: hspRR, gammaRR, deltaRR
-
 
 allocate(eigen_hsp(HOsp_dim), eigen_H11(HOsp_dim), &
          transf_H11(HOsp_dim, HOsp_dim), stat=ialloc )
@@ -1066,7 +1066,7 @@ subroutine sort_quasiparticle_basis(ndim)
 
 integer, intent(in) :: ndim
 real(r64) :: xn, xl2, xl, xneut, xprot, xpar, xjz, xj2, xj, fermi_p, fermi_n
-real(r64), dimension(ndim)  :: qpsp_z, qpsp_n, qpsp_par, qpsp_jz, qpsp_n, &
+real(r64), dimension(ndim)  :: qpsp_zz, qpsp_nn, qpsp_par, qpsp_jz, qpsp_n, &
                                qpsp_j, qpsp_l
 character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)", &
                                format2 = "(1a77,/,80('-'))"
@@ -1111,8 +1111,8 @@ do i = 1, ndim
   xj = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xj2)))
   xl = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xl2)))
 
-  qpsp_z(i) = xprot
-  qpsp_n(i) = xneut
+  qpsp_zz(i) = xprot
+  qpsp_nn(i) = xneut
   qpsp_n(i) = xn
   qpsp_l(i) = xl
   qpsp_j(i) = xj
