@@ -1127,7 +1127,7 @@ close(ute, status='keep')
 print "(A)", " *** Print the sp states of the VS index and WB state"
 do i = 1, VSsp_dim
   kk = VStoHOsp_index(i)
-  print "(A,6i4,A,4i3)", " HOsp(vs):", i, kk, HOsh_ant(HOsp_sh(kk)), &
+  print "(A,3i6,A,4i3)", " HOsp(vs):", i, kk, HOsh_ant(HOsp_sh(kk)), &
               " (nljm) :: ", HOsp_n(kk), HOsp_l(kk), HOsp_2j(kk), HOsp_2mj(kk)
 enddo
 
