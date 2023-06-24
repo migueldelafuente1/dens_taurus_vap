@@ -1364,6 +1364,8 @@ do i = 1, HOsp_dim
   print "(A)", "c"
   k = HOsp_2mt(kk)
   print "(A)", "d"
+  fermi_p = eigen_H11(i)
+  print "(A)", "e"
 
   print "(i5,8f6.3,A,2i7,i3)", i,xprot,xneut,xn,xl,xpar,xj,xjz,eigen_H11(i),&
         " qp ::", kk, HOsp_ant(kk), HOsp_2mt(kk)
