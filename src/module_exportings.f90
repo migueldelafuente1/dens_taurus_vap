@@ -1086,7 +1086,7 @@ integer :: sp_n,sp_l,sp_2j,sp_2mj,sp_2mt, sp_sh, nmaj_sh, Nsh, VSNdim, HONdim,&
            VSlim=0, HOlim=0, index_Nsh, Nsh_i, n
 
 !!!
-integer :: METHOD_SORT = 1  ! 0 vs assumed to be the first n, 1 to sort with the HO-N shell order
+integer :: METHOD_SORT = 0  ! 0 vs assumed to be the first n, 1 to sort with the HO-N shell order
 !!!
 
 allocate(QP_index_found(ndim), QPtoHOsp_index(ndim))
@@ -1283,7 +1283,7 @@ do i = 1, ndim
         ! order the shells with to n (that must conserve the order of Nshell)
         do k1 = 1, items_found
           do k2 = k1, items_found
-            if (possible_n_for_qp(k1) > possible_n_for_qp(k2)) then
+            if (possible_n_for_qp(k1) .GT. possible_n_for_qp(k2)) then
               xn = possible_n_for_qp(k2)
               possible_n_for_qp(k2) = possible_n_for_qp(k1)
               possible_n_for_qp(k1) = xn
