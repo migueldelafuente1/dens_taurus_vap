@@ -1124,6 +1124,7 @@ select case(METHOD_SORT)
           if (Nsh == VSshells(j)) then
             found = .TRUE.
             items_found = items_found + 1
+          endif
         enddo
         if (.NOT.found) VSshells(items_found)
       enddo
@@ -1137,6 +1138,7 @@ select case(METHOD_SORT)
           if (Nsh == HOshells(j)) then
             found = .TRUE.
             items_found_2 = items_found_2 + 1
+          endif
         enddo
         if (.NOT.found) VSshells(items_found_2)
       enddo
@@ -1359,6 +1361,7 @@ do i = 1, HOsp_dim
         kk, HOsp_ant(kk), HOsp_2mt(kk)
 enddo
 
+!! Read the indexes of the QP just to have the Valence Space
 
 
 end subroutine sort_quasiparticle_basis
