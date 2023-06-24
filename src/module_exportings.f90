@@ -1079,7 +1079,7 @@ logical, dimension(:), allocatable :: QP_index_found
 integer, dimension(:), allocatable :: VStoQPsp_index, &
                                       HOshells, VSshells, sortedShells
 character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)", &
-                               format2 = "(1a77,/,80('-'))"
+                               format2 = "(1a77,/,120('-'))"
 logical :: found
 integer :: i,j,k,k1,k2, kk, items_found=0, items_found_2=0, alloc_it
 integer :: sp_n,sp_l,sp_2j,sp_2mj,sp_2mt, sp_sh, nmaj_sh, Nsh, VSNdim, HONdim,&
@@ -1360,7 +1360,7 @@ do i = 1, HOsp_dim
 
   kk = QPtoHOsp_index(i)
 
-  write(ute,"(i5,8f6.3,A,2i7,i3)"), i,xprot,xneut,xn,xl,xpar,xj,xjz,&
+  write(ute,"(i4,7f6.2,1f9.4,A,2i7,i3)"), i,xprot,xneut,xn,xl,xpar,xj,xjz,&
         eigen_H11(i)," qp ::", kk, HOsp_ant(kk), HOsp_2mt(kk)
 enddo
 close(ute, status='keep')
