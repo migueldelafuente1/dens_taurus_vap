@@ -1359,7 +1359,7 @@ do i = 1, HOsp_dim
 
   kk = QPtoHOsp_index(i)
   print "(i5,8f6.3,A,2i7,i3)", i,xprot,xneut,xn,xl,xpar,xj,xjz,eigen_H11(i),&
-        kk, HOsp_ant(kk), HOsp_2mt(kk)
+        " qp ::", kk, HOsp_ant(kk), HOsp_2mt(kk)
 enddo
 
 !! Read the indexes of the QP just to have the Valence Space
