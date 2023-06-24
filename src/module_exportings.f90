@@ -1367,8 +1367,10 @@ do i = 1, HOsp_dim
   fermi_p = eigen_H11(i)
   print "(A)", "e"
 
-  print "(i5,8f6.3,A,2i7,i3)", i,xprot,xneut,xn,xl,xpar,xj,xjz,eigen_H11(i),&
-        " qp ::", kk, HOsp_ant(kk), HOsp_2mt(kk)
+!  print "(i5,8f6.3,A,2i7,i3)", i,xprot,xneut,xn,xl,xpar,xj,xjz,eigen_H11(i),&
+!        " qp ::", kk, HOsp_ant(kk), HOsp_2mt(kk)
+  print "(A,2i7,i3)", " qp ::", kk, HOsp_ant(kk), HOsp_2mt(kk)
+  print "(i5,8f6.3)", i,xprot,xneut,xn,xl,xpar,xj,xjz,eigen_H11(i)
 enddo
 print "(A)", " [DONE] Results for the QP states sorted."
 !! Read the indexes of the QP just to have the Valence Space
