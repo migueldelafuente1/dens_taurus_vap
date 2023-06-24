@@ -1233,17 +1233,16 @@ close(ute, status='keep')
 
 !!! Search and assign the QP basis
 print "(A)", " *** Print the sp states of the VS index and WB state"
-do i = 1, VSsp_dim
-  kk = VStoHOsp_index(i)
-  print "(A,2i3,i6,A,4i3)", " HOsp(vs):", i, kk, HOsh_ant(HOsp_sh(kk)), &
-              " (nljm) :: ", HOsp_n(kk), HOsp_l(kk), HOsp_2j(kk), HOsp_2mj(kk)
+do i = 1, ndim
+!  kk = VStoHOsp_index(i)
+!  print "(A,2i3,i6,A,4i3)", " HOsp(vs):", i, kk, HOsh_ant(HOsp_sh(kk)), &
+!              " (nljm) :: ", HOsp_n(kk), HOsp_l(kk), HOsp_2j(kk), HOsp_2mj(kk)
+  print "(A,5f6.2,L3)", "qp_sts(i):",qpsp_zz(i),qpsp_nn(i),qpsp_l(i),&
+      2*qpsp_j(i),2*qpsp_jz(i), QP_index_found(i)
 enddo
 
 !! locate the order of the shells of the VS to export.
 !!    n is not conserved, the N shell of the state sh_(vs) will be the Nth.
-
-
-
 
 print *, ""
 print "(A)", " *** Reading the full HO space to assign the QP sp states. "
