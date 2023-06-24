@@ -1360,7 +1360,7 @@ do i = 1, HOsp_dim
 
   kk = QPtoHOsp_index(i)
 
-  write(ute,"(i4,7f6.2,1f9.4,A,2i7,i3)"), i,xprot,xneut,xn,xl,xpar,xj,xjz,&
+  write(ute,"(i4,7f6.2,1f9.4,A,2i7,i3)") i,xprot,xneut,xn,xl,xpar,xj,xjz,&
         eigen_H11(i)," qp ::", kk, HOsp_ant(kk), HOsp_2mt(kk)
 enddo
 close(ute, status='keep')
