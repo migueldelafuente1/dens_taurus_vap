@@ -1309,7 +1309,7 @@ do i = 1, ndim
           if (Nsh_i .NE. Nsh) then
             index_Nsh = index_Nsh + 1
           else
-            exit
+            EXIT
           endif
         end do
 
