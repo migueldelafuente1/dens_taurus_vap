@@ -1104,6 +1104,7 @@ select CASE(METHOD_SORT)
     VSlim = VSsh_dim
     HOlim = HOsh_dim
     do alloc_it = 1,2
+      print "(A,i2)" , " *** ialoc=",alloc_it
       if (alloc_it.EQ.2) then
         deallocate(HOshells, VSshells, sortedShells)
         allocate(HOshells(items_found_2), VSshells(items_found),&
@@ -1115,6 +1116,7 @@ select CASE(METHOD_SORT)
       VSshells     = -1
       HOshells     = -1
 
+      print "(A,2i4)", "  aa 1=",VSlim, HOlim
       ! Write the valence space oscillator N shells
       items_found=0
       do i = 1, VSlim
@@ -1129,6 +1131,7 @@ select CASE(METHOD_SORT)
         enddo
         if (.NOT.found) VSshells(items_found) = Nsh
       enddo
+      print "(A,i3)", "  aa 2=", items_found
 
       ! Write all shells
       items_found_2=0
@@ -1144,6 +1147,7 @@ select CASE(METHOD_SORT)
         if (.NOT.found) VSshells(items_found_2) = Nsh
       enddo
 
+      print "(A,i3)", "  aa 3=", items_found_2
       !Construct the shell order to print
       do i = 1, VSlim
         sortedShells(i) = VSshells(i)
@@ -1159,7 +1163,7 @@ select CASE(METHOD_SORT)
         sortedShells(kk) = HOshells(i)
         kk = kk + 1
       enddo
-
+      print "(A,i3)", "  aa 4=", kk
     enddo !alloc_iter
     !! TEST PRINT
     do i = 1, VSlim
