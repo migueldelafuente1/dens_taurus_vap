@@ -1294,6 +1294,11 @@ do i = 1, ndim
             endif
           end do
         end do
+        print "(A,i3)", ">> multpl case, possible qp and n sorted, Nshi",Nsh_i
+        do k1 = 1, items_found
+          print "(A,i3,f7.3)", ">> > qp/n=", possible_qp_for_hosp(k1), &
+                                             possible_n_for_qp(k1)
+        end do
 
         ! find the place of the current Nshell of the same parity
         ! (same length as possible_qp_for_hosp)
@@ -1307,7 +1312,8 @@ do i = 1, ndim
             EXIT
           endif
         end do
-
+        print "(A,2i3,A,i4)", ">> Nsh=", Nsh, index_Nsh, " selected=", &
+          possible_qp_for_hosp(index_Nsh)
         QPtoHOsp_index(possible_qp_for_hosp(index_Nsh)) = i
         QP_index_found(possible_qp_for_hosp(index_Nsh)) = .TRUE.
 
