@@ -1118,18 +1118,18 @@ select CASE(METHOD_SORT)
 
       print "(A,2i4)", "  aa 1=",VSlim, HOlim
       ! Write the valence space oscillator N shells
-      items_found=0
+      items_found = 0
       do i = 1, VSlim
         kk = VStoHOsh_index(i)
         Nsh = 2*HOsh_n(kk) + HOsh_l(kk)
         found = .FALSE.
         do j = 1, VSlim
-          if (Nsh == VSshells(j)) then
-            found = .TRUE.
-            items_found = items_found + 1
-          endif
+          if (Nsh .EQ. VSshells(j)) found = .TRUE.
         enddo
-        if (.NOT.found) VSshells(items_found) = Nsh
+        if (.NOT.found) then
+          items_found = items_found + 1
+          VSshells(items_found) = Nsh
+        endif
       enddo
       print "(A,i3)", "  aa 2=", items_found
 
@@ -1139,12 +1139,12 @@ select CASE(METHOD_SORT)
         Nsh = 2*HOsh_n(kk) + HOsh_l(kk)
         found = .FALSE.
         do j = 1, HOlim
-          if (Nsh == HOshells(j)) then
-            found = .TRUE.
-            items_found_2 = items_found_2 + 1
-          endif
+          if (Nsh == HOshells(j)) found = .TRUE.
         enddo
-        if (.NOT.found) VSshells(items_found_2) = Nsh
+        if (.NOT.found) then
+          items_found_2 = items_found_2 + 1
+          VSshells(items_found_2) = Nsh
+        endif
       enddo
 
       print "(A,i3)", "  aa 3=", items_found_2
