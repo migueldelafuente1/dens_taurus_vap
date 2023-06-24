@@ -1139,15 +1139,15 @@ select CASE(METHOD_SORT)
         Nsh = 2*HOsh_n(kk) + HOsh_l(kk)
         found = .FALSE.
         do j = 1, HOlim
-          if (Nsh == HOshells(j)) found = .TRUE.
+          if (Nsh .EQ. HOshells(j)) found = .TRUE.
         enddo
         if (.NOT.found) then
           items_found_2 = items_found_2 + 1
-          VSshells(items_found_2) = Nsh
+          HOshells(items_found_2) = Nsh
         endif
       enddo
-
       print "(A,i3)", "  aa 3=", items_found_2
+
       !Construct the shell order to print
       do i = 1, VSlim
         sortedShells(i) = VSshells(i)
@@ -1156,7 +1156,7 @@ select CASE(METHOD_SORT)
       do i=1, HOlim
         found = .FALSE.
         do j = 1, VSlim
-          if (HOshells(i) == VSshells(j)) found =.TRUE.
+          if (HOshells(i) .EQ. VSshells(j)) found =.TRUE.
         enddo
         if (found) cycle
 
@@ -1169,9 +1169,11 @@ select CASE(METHOD_SORT)
     do i = 1, VSlim
       print "(A,2i5)", " test VSshells i,N=", i, VSshells(i)
     enddo
+    print *, ""
     do i = 1, HOlim
-      print "(A,2i5)", " test HOshells i,N=", i, HOshells(i), sortedShells(i)
+      print "(A,3i5)", " test HOshells i,N=", i, HOshells(i), sortedShells(i)
     enddo
+    print *, ""
 
   CASE DEFAULT
     print "(A)", " [ERROR] Invalid METHOD_SORT in sort_quasiparticle_basis &
