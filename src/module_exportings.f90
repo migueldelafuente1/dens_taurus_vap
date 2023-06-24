@@ -1359,13 +1359,10 @@ do i = 1, HOsp_dim
 
   print "(A)", "a"
   kk = QPtoHOsp_index(i)
-  print "(A)", "b"
-  k = HOsp_ant(kk)
-  print "(A)", "c"
-  k = HOsp_2mt(kk)
-  print "(A)", "d"
+  print "(A,i4)", "b", HOsp_ant(kk)
+  print "(A,i4)", "c", HOsp_2mt(kk)
   fermi_p = eigen_H11(i)
-  print "(A)", "e"
+  print "(A)", "d"
 
 !  print "(i5,8f6.3,A,2i7,i3)", i,xprot,xneut,xn,xl,xpar,xj,xjz,eigen_H11(i),&
 !        " qp ::", kk, HOsp_ant(kk), HOsp_2mt(kk)
