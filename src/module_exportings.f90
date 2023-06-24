@@ -1359,6 +1359,7 @@ do i = 1, HOsp_dim
 
   print "(A)", "a"
   kk = QPtoHOsp_index(i)
+  print "(A,i9)", "kk=", kk
   print "(A,i4)", "b", HOsp_ant(kk)
   print "(A,i4)", "c", HOsp_2mt(kk)
   fermi_p = eigen_H11(i)
