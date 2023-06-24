@@ -1256,13 +1256,13 @@ do i = 1, ndim
   !! QP loop to find it
   do j = 1, ndim
     ! is proton or neutron state, is l, j, jz
-    if ((abs(qpsp_zz(j) - 1.0) .LT. 1.0d-2) .AND. (sp_2mt .EQ. 1)) cycle
-    if ((abs(qpsp_nn(j) - 1.0) .LT. 1.0d-2) .AND. (sp_2mt .EQ.-1)) cycle
-    if ( abs(  qpsp_l(j)  - HOsp_l(i)) .GT. 1.0d-2) cycle
-    if ( abs(2*qpsp_j(j)  - HOsp_2j(i)) .GT. 1.0d-2) cycle
+    if ((abs(qpsp_zz(j) - 1.0d0) .LT. 1.0d-2) .AND. (sp_2mt .EQ. 1)) cycle
+    if ((abs(qpsp_nn(j) - 1.0d0) .LT. 1.0d-2) .AND. (sp_2mt .EQ.-1)) cycle
+    if ( abs(  qpsp_l (j) - HOsp_l  (i)) .GT. 1.0d-2) cycle
+    if ( abs(2*qpsp_j (j) - HOsp_2j (i)) .GT. 1.0d-2) cycle
     if ( abs(2*qpsp_jz(j) - HOsp_2mj(i)) .GT. 1.0d-2) cycle
 
-    if (QP_index_found(i)) cycle
+    if (QP_index_found(j)) cycle
 
     items_found = items_found + 1
     possible_qp_for_hosp(items_found) = j
@@ -1329,12 +1329,13 @@ do i = 1, ndim
           if (MOD(HOsh_l(i)+Nsh, 2).NE.0) cycle
 
           n = (Nsh - HOsp_l(i)) / 2
-          print "(A,2i3)", "  Nshell, n=", Nsh, n
+          print "(A,2i3)", ">> multpl case,  Nshell, n=", Nsh, n
           if ((n - hosp_n(i)) .NE. 0) then
             kk = kk + 1
             cycle
           endif
 
+          print "(A,3i4)", ">> elment accepted:",i,kk,possible_qp_for_hosp(kk)
           QPtoHOsp_index(possible_qp_for_hosp(kk)) = i
           QP_index_found(possible_qp_for_hosp(kk)) = .TRUE.
           EXIT
