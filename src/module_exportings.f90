@@ -1253,14 +1253,15 @@ do i = 1, ndim
   possible_n_for_qp    = 99
   items_found = 0
 
+  sp_2mt = HOsp_2mt(i)
   !! QP loop to find it
   do j = 1, ndim
     ! is proton or neutron state, is l, j, jz
-    if ((abs(qpsp_zz(j) - 1.0) .LT. 1.0d-6) .AND. (sp_2mt .EQ. 1)) cycle
-    if ((abs(qpsp_nn(j) - 1.0) .LT. 1.0d-6) .AND. (sp_2mt .EQ.-1)) cycle
-    if ( abs(qpsp_l(j) - sp_l) .GT. 1.0d-6) cycle
-    if ( abs(2*qpsp_j(j) - sp_2j) .GT. 1.0d-6) cycle
-    if ( abs(2*qpsp_jz(j) - sp_2mj) .GT. 1.0d-6) cycle
+    if ((abs(qpsp_zz(j) - 1.0) .LT. 1.0d-2) .AND. (sp_2mt .EQ. 1)) cycle
+    if ((abs(qpsp_nn(j) - 1.0) .LT. 1.0d-2) .AND. (sp_2mt .EQ.-1)) cycle
+    if ( abs(  qpsp_l(j)  - HOsp_l(i)) .GT. 1.0d-2) cycle
+    if ( abs(2*qpsp_j(j)  - HOsp_2j(i)) .GT. 1.0d-2) cycle
+    if ( abs(2*qpsp_jz(j) - HOsp_2mj(i)) .GT. 1.0d-2) cycle
 
     if (QP_index_found(i)) cycle
 
