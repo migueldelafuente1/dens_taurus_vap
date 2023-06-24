@@ -1083,10 +1083,10 @@ character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)", &
 logical :: found
 integer :: i,j,k,k1,k2, kk, items_found=0, items_found_2=0, alloc_it
 integer :: sp_n,sp_l,sp_2j,sp_2mj,sp_2mt, sp_sh, nmaj_sh, Nsh, VSNdim, HONdim,&
-           VSlim=0, HOlim=0, index_Nsh, Nsh_i
+           VSlim=0, HOlim=0, index_Nsh, Nsh_i, n
 
 !!!
-integer, parameter :: METHOD_SORT = 0  ! 0 vs assumed to be the first n, 1 to sort with the HO-N shell order
+integer :: METHOD_SORT = 0  ! 0 vs assumed to be the first n, 1 to sort with the HO-N shell order
 !!!
 
 allocate(QP_index_found(ndim), QPtoHOsp_index(ndim))
@@ -1151,7 +1151,7 @@ select case(METHOD_SORT)
       do i=1, HOlim
         found = .FALSE.
         do j = 1, VSlim
-          if (HOshells[i] == VSshells[j]) found =.TRUE.
+          if (HOshells(i) == VSshells(j)) found =.TRUE.
         enddo
         if (found) cycle
 
@@ -1264,8 +1264,8 @@ do i = 1, ndim
 
     if (QP_index_found(i)) cycle
 
-    possible_qp_for_hosp[items_found] = j
-    possible_n_for_qp[items_found] = qpsp_n(j)
+    possible_qp_for_hosp(items_found) = j
+    possible_n_for_qp(items_found) = qpsp_n(j)
     items_found = items_found + 1
   enddo
 !  print "(A,2i3,i6,A,4i3)", " HOsp(vs):", i, kk, HOsh_ant(HOsp_sh(kk)), &
@@ -1278,7 +1278,7 @@ do i = 1, ndim
     QP_index_found(possible_qp_for_hosp(1)) = .TRUE.
   else
     do k = 1, items_found
-      print "2(A,i4)", "  * posible_qp_for i=",i," :",possible_qp_for_hosp(k)
+      print "(2(A,i4))", "  * posible_qp_for i=",i," :",possible_qp_for_hosp(k)
     end do
     print *, ""
     select case(METHOD_SORT)
@@ -1350,11 +1350,11 @@ print "(A)","   #      Z        N        n        l        p        j       jz&
 do i = 1, HOsp_dim
   xprot = qpsp_zz(i)
   xneut = qpsp_nn(i)
-  xn   = qpsp_n(i)
-  xl   = qpsp_l(i)
-  xpar = qpsp_par
-  xj   = qpsp_j(i)
-  xjz  = qpsp_jz(i)
+  xn    = qpsp_n(i)
+  xl    = qpsp_l(i)
+  xpar  = qpsp_par(i)
+  xj    = qpsp_j(i)
+  xjz   = qpsp_jz(i)
 
   kk = QPtoHOsp_index(i)
   print "(i5,8f6.3,A,2i7,i3)", i,xprot,xneut,xn,xl,xpar,xj,xjz,eigen_H11(i),&
