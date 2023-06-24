@@ -1270,7 +1270,7 @@ do i = 1, ndim
   enddo
 !  print "(A,2i3,i6,A,4i3)", " HOsp(vs):", i, kk, HOsh_ant(HOsp_sh(kk)), &
 !              " (nljm) :: ", sp_n, sp_l, sp_2j, sp_2mj, sp_2mt
-  print "(A,3i7)", i, HOsp_ant(i), items_found
+  print "(A,3i7)", "> i,Hoant,items_found=", i, HOsp_ant(i), items_found
 
   if (items_found.EQ.0) then
     print "(A,i3)", "    [ERROR] Index not found::", i
