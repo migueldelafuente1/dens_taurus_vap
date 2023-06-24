@@ -1074,7 +1074,8 @@ integer, intent(in) :: ndim
 real(r64) :: xn, xl2, xl, xneut, xprot, xpar, xjz, xj2, xj, fermi_p, fermi_n
 real(r64), dimension(ndim)  :: qpsp_zz, qpsp_nn, qpsp_par, qpsp_jz, qpsp_n, &
                                qpsp_j, qpsp_l
-integer, dimension(3) :: possible_qp_for_hosp, possible_n_for_qp ! only to export up to 3 shells
+integer, dimension(3) :: possible_qp_for_hosp ! only to export up to 3 shells
+real(r64), dimension(3) :: possible_n_for_qp
 logical, dimension(:), allocatable :: QP_index_found
 integer, dimension(:), allocatable :: VStoQPsp_index, &
                                       HOshells, VSshells, sortedShells
@@ -1243,7 +1244,7 @@ print "(A)", " *** Reading the full HO space to assign the QP sp states. "
 !! HO element loop
 do i = 1, ndim
   possible_qp_for_hosp = -1
-  possible_n_for_qp    = 99
+      = 99.0
   items_found = 0
 
   sp_2mt = HOsp_2mt(i)
