@@ -78,11 +78,11 @@ if (exportValSpace) then !-----------------------------------------------------
   end do
 
   call test_printDesityKappaWF(dens_rhoRRc, dens_kappaRRc, dens_kappaRRc, ndim)
-  print "(A)", "  [  SR] Evaluating the Hamiltonian."
+  print "(A)", " [  SR] Evaluating the Hamiltonian."
   if (evalQuasiParticleVSpace) print "(A)","    For full space, Be patient ..."
   call calculate_densityDep_hamiltonian(dens_rhoRRc, &
                                         dens_kappaRRc, dens_kappaRRc, ndim)
-  print "(A)", "  [DONE] Evaluating the Hamiltonian."
+  print "(A)", " [DONE] Evaluating the Hamiltonian."
   deallocate(rearrangement_me, rearrang_field, &
              rea_common_RadAng, REACommonFields)
   if (.NOT.evalQuasiParticleVSpace) then
@@ -1237,7 +1237,7 @@ do i = 1, ndim
 !  kk = VStoHOsp_index(i)
 !  print "(A,2i3,i6,A,4i3)", " HOsp(vs):", i, kk, HOsh_ant(HOsp_sh(kk)), &
 !              " (nljm) :: ", HOsp_n(kk), HOsp_l(kk), HOsp_2j(kk), HOsp_2mj(kk)
-  print "(A,5f6.2,L3)", "qp_sts(i):",qpsp_zz(i),qpsp_nn(i),qpsp_l(i),&
+  print "(A,i3,5f6.2,L3)", "qp_sts(i):", i, qpsp_zz(i), qpsp_nn(i), qpsp_l(i),&
       2*qpsp_j(i),2*qpsp_jz(i), QP_index_found(i)
 enddo
 
