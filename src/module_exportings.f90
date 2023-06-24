@@ -35,6 +35,7 @@ real(r64), dimension(:), allocatable, private :: eigen_hsp, & ! sp energies
                                                  eigen_H11    ! qp    "
 real(r64), dimension(:,:), allocatable, private :: transf_H11
 
+integer, dimension(:), allocatable, private :: QPtoHOsp_index
 !! Methods
 
 CONTAINS
@@ -54,8 +55,11 @@ complex(r64), dimension(ndim,ndim) :: dens_rhoRRc, dens_kappaRRc
 integer  :: i, j
 
 if (.NOT.eval_density_dependent) return
+print *, ""
+print "(A)", " [  SR] Exporting Hamiltonian and/or spatial density on the&
+             & integration grid."
 
-if (export_density)then
+if (export_density) then
   call export_expectval_density(dens_rhoRR, dens_kappaRR, dens_kappaRR, ndim)
 endif
 
@@ -74,9 +78,11 @@ if (exportValSpace) then !-----------------------------------------------------
   end do
 
   call test_printDesityKappaWF(dens_rhoRRc, dens_kappaRRc, dens_kappaRRc, ndim)
+  print "(A)", "  [  SR] Evaluating the Hamiltonian."
+  if (evalQuasiParticleVSpace) print "(A)","    For full space, Be patient ..."
   call calculate_densityDep_hamiltonian(dens_rhoRRc, &
                                         dens_kappaRRc, dens_kappaRRc, ndim)
-
+  print "(A)", "  [DONE] Evaluating the Hamiltonian."
   deallocate(rearrangement_me, rearrang_field, &
              rea_common_RadAng, REACommonFields)
   if (.NOT.evalQuasiParticleVSpace) then
@@ -1068,9 +1074,107 @@ integer, intent(in) :: ndim
 real(r64) :: xn, xl2, xl, xneut, xprot, xpar, xjz, xj2, xj, fermi_p, fermi_n
 real(r64), dimension(ndim)  :: qpsp_zz, qpsp_nn, qpsp_par, qpsp_jz, qpsp_n, &
                                qpsp_j, qpsp_l
+integer, dimension(3) :: possible_qp_for_hosp, possible_n_for_qp ! only to export up to 3 shells
+logical, dimension(:), allocatable :: QP_index_found
+integer, dimension(:), allocatable :: VStoQPsp_index, &
+                                      HOshells, VSshells, sortedShells
 character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)", &
                                format2 = "(1a77,/,80('-'))"
-integer :: i, j, kk
+logical :: found
+integer :: i,j,k,k1,k2, kk, items_found=0, items_found_2=0, alloc_it
+integer :: sp_n,sp_l,sp_2j,sp_2mj,sp_2mt, sp_sh, nmaj_sh, Nsh, VSNdim, HONdim,&
+           VSlim=0, HOlim=0, index_Nsh, Nsh_i
+
+!!!
+integer, parameter :: METHOD_SORT = 0  ! 0 vs assumed to be the first n, 1 to sort with the HO-N shell order
+!!!
+
+allocate(QP_index_found(ndim), QPtoHOsp_index(ndim))
+print "(A)", " Sorting the "
+! sort the shells and check if the METHOD_SORT is 1 or 0
+select case(METHOD_SORT)
+  case(0)
+    print "(A)", " ** METHOD_SORT=0 to select the n in the quasiparticles by &
+                 & the order in the HO shells, the <n>_qp order preserves"
+  case(1)
+    print "(A)", " ** METHOD_SORT=1, the shells will be ordered assuming the &
+                 & valence space states are the first to be assigned."
+
+    allocate(HOshells(HOsh_dim), VSshells(VSsh_dim), sortedShells(HOsh_dim))
+    VSlim = VSsh_dim
+    HOlim = HOsh_dim
+    do alloc_it = 1,2
+      if (alloc_it.EQ.2) then
+        allocate(HOshells(items_found_2), VSshells(items_found),&
+                 sortedShells(items_found_2))
+        VSlim = items_found
+        HOlim = items_found_2
+      endif
+      sortedShells = -1
+      VSshells     = -1
+      HOshells     = -1
+
+      ! Write the valence space oscillator N shells
+      items_found=0
+      do i = 1, VSlim
+        kk = VStoHOsh_index(i)
+        Nsh = 2*HOsh_n(kk) + HOsh_l(kk)
+        found = .FALSE.
+        do j = 1, VSlim
+          if (Nsh == VSshells(j)) then
+            found = .TRUE.
+            items_found = items_found + 1
+        enddo
+        if (.NOT.found) VSshells(items_found)
+      enddo
+
+      ! Write all shells
+      items_found_2=0
+      do kk = 1, HOlim
+        Nsh = 2*HOsh_n(kk) + HOsh_l(kk)
+        found = .FALSE.
+        do j = 1, HOlim
+          if (Nsh == HOshells(j)) then
+            found = .TRUE.
+            items_found_2 = items_found_2 + 1
+        enddo
+        if (.NOT.found) VSshells(items_found_2)
+      enddo
+
+      !Construct the shell order to print
+      do i = 1, VSlim
+        sortedShells(i) = VSshells(i)
+      enddo
+      kk = VSlim + 1
+      do i=1, HOlim
+        found = .FALSE.
+        do j = 1, VSlim
+          if (HOshells[i] == VSshells[j]) found =.TRUE.
+        enddo
+        if (found) cycle
+
+        sortedShells(kk) = HOshells(i)
+        kk = kk + 1
+      enddo
+
+    enddo !alloc_iter
+    !! TEST PRINT
+    do i = 1, VSlim
+      print "(A,2i5)", " test VSshells i,N=", i, VSshells(i)
+    enddo
+    do i = 1, HOlim
+      print "(A,2i5)", " test HOshells i,N=", i, HOshells(i), sortedShells(i)
+    enddo
+
+  case (default)
+    print "(A)", " [ERROR] Invalid METHOD_SORT in sort_quasiparticle_basis &
+                 & subroutine, default METHOD_SORT=0 selected:"
+    print "(A)", " ** METHOD_SORT=0 to select the n in the quasiparticles by &
+                 & the order in the HO shells, the <n>_qp order preserves"
+    METHOD_SORT = 0
+end select
+
+allocate(QP_index_found(ndim))
 !!! Writes the properties of the single-particle states in a file
 fermi_p = 0.d0
 fermi_n = 0.d0
@@ -1119,6 +1223,8 @@ do i = 1, ndim
   qpsp_jz(i)  = xjz
   qpsp_par(i) = xpar
 
+  QP_index_found(i) = .FALSE.
+
   write(ute,format1) i, xprot, xneut, xn, xl, xpar, xj, xjz, eigen_H11(i)
 enddo
 close(ute, status='keep')
@@ -1127,14 +1233,132 @@ close(ute, status='keep')
 print "(A)", " *** Print the sp states of the VS index and WB state"
 do i = 1, VSsp_dim
   kk = VStoHOsp_index(i)
-  print "(A,3i6,A,4i3)", " HOsp(vs):", i, kk, HOsh_ant(HOsp_sh(kk)), &
+  print "(A,2i3,i6,A,4i3)", " HOsp(vs):", i, kk, HOsh_ant(HOsp_sh(kk)), &
               " (nljm) :: ", HOsp_n(kk), HOsp_l(kk), HOsp_2j(kk), HOsp_2mj(kk)
 enddo
 
-!print "(A)", " *** Result"
-!do i = 1, ndim
-!  print "(A)",
-!end do
+!! locate the order of the shells of the VS to export.
+!!    n is not conserved, the N shell of the state sh_(vs) will be the Nth.
+
+
+
+
+print *, ""
+print "(A)", " *** Reading the full HO space to assign the QP sp states. "
+!! HO element loop
+do i = 1, ndim
+  possible_qp_for_hosp = -1
+  possible_n_for_qp    = 99
+  items_found = 1
+
+  !! QP loop to find it
+  do j = 1, ndim
+    ! is proton or neutron state, is l, j, jz
+    if ((abs(qpsp_zz(j) - 1.0) .LT. 1.0d-6) .AND. (sp_2mt .EQ. 1)) cycle
+    if ((abs(qpsp_nn(j) - 1.0) .LT. 1.0d-6) .AND. (sp_2mt .EQ.-1)) cycle
+    if ( abs(qpsp_l(j) - sp_l) .GT. 1.0d-6) cycle
+    if ( abs(2*qpsp_j(j) - sp_2j) .GT. 1.0d-6) cycle
+    if ( abs(2*qpsp_jz(j) - sp_2mj) .GT. 1.0d-6) cycle
+
+    if (QP_index_found(i)) cycle
+
+    possible_qp_for_hosp[items_found] = j
+    possible_n_for_qp[items_found] = qpsp_n(j)
+    items_found = items_found + 1
+  enddo
+!  print "(A,2i3,i6,A,4i3)", " HOsp(vs):", i, kk, HOsh_ant(HOsp_sh(kk)), &
+!              " (nljm) :: ", sp_n, sp_l, sp_2j, sp_2mj, sp_2mt
+
+  if (items_found.EQ.0) then
+    print "(A,i3)", "    [ERROR] Index not found::", i
+  elseif (items_found.EQ.1) then
+    QPtoHOsp_index(possible_qp_for_hosp(1)) = i
+    QP_index_found(possible_qp_for_hosp(1)) = .TRUE.
+  else
+    do k = 1, items_found
+      print "2(A,i4)", "  * posible_qp_for i=",i," :",possible_qp_for_hosp(k)
+    end do
+    print *, ""
+    select case(METHOD_SORT)
+      case (0) !--------------------------------------------------------------!
+        ! Method to sort by the <n> of qp
+        Nsh_i = 2* HOsp_n(i) + HOsp_l(i)
+        ! order the shells with to n (that must conserve the order of Nshell)
+        do k1 = 1, items_found
+          do k2 = k1, items_found
+            if (possible_n_for_qp(k1) > possible_n_for_qp(k2)) then
+              xn = possible_n_for_qp(k2)
+              possible_n_for_qp(k2) = possible_n_for_qp(k1)
+              possible_n_for_qp(k1) = xn
+
+              kk = possible_qp_for_hosp(k2)
+              possible_qp_for_hosp(k2) = possible_qp_for_hosp(k1)
+              possible_qp_for_hosp(k1) = kk
+            endif
+          end do
+        end do
+
+        ! find the place of the current Nshell of the same parity
+        ! (same length as possible_qp_for_hosp)
+        index_Nsh = 1
+        do Nsh = 1, HOlim
+          if (MOD(HOsp_l(i) + Nsh, 2) .NE. 0) cycle
+
+          if (Nsh_i .NE. Nsh) then
+            index_Nsh = index_Nsh + 1
+          else
+            break
+          endif
+        end do
+
+        QPtoHOsp_index(possible_qp_for_hosp(index_Nsh)) = i
+        QP_index_found(possible_qp_for_hosp(index_Nsh)) = .TRUE.
+
+      case (1) !--------------------------------------------------------------!
+        ! 1. Find the correct value by assuming the VS state is the first in
+        ! for the different quasi particles, this is intuitive if the nuclei is
+        ! in a closed shell, then the lower excitation energy will be in the ones
+        ! we usually consider for the VS, the rest of states will be in the core
+        ! or outer, so we don't care if they are right or wrong.
+        kk = 1
+        do k = 1, HOlim
+          Nsh = sortedShells(k)
+          if (MOD(HOsh_l(i)+Nsh, 2).NE.0) cycle
+
+          n = (Nsh - HOsp_l(i)) / 2
+          print "(A,2i3)", "  Nshell, n=", Nsh, n
+          if ((n - hosp_n(i)) .NE. 0) then
+            kk = kk + 1
+            cycle
+          endif
+          QPtoHOsp_index(possible_qp_for_hosp(kk)) = i
+          QP_index_found(possible_qp_for_hosp(kk)) = .TRUE.
+          break
+        enddo
+    end select
+  endif
+
+enddo
+
+! TEST
+print *, ""
+print "(A)", " * Results for the QP states sorted."
+print "(A)","   #      Z        N        n        l        p        j       jz&
+            &         h      :: qp_assigned   2mt"
+do i = 1, HOsp_dim
+  xprot = qpsp_zz(i)
+  xneut = qpsp_nn(i)
+  xn   = qpsp_n(i)
+  xl   = qpsp_l(i)
+  xpar = qpsp_par
+  xj   = qpsp_j(i)
+  xjz  = qpsp_jz(i)
+
+  kk = QPtoHOsp_index(i)
+  print "(i5,8f6.3,A,2i7,i3)", i,xprot,xneut,xn,xl,xpar,xj,xjz,eigen_H11(i),&
+        kk, HOsp_ant(kk), HOsp_2mt(kk)
+enddo
+
 
 
 end subroutine sort_quasiparticle_basis
@@ -1165,12 +1389,14 @@ real(r64), dimension(3*ndim-1) :: work
 
 character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)"
 
-print "(A)", " [  ] print_quasipartile_DD_matrix_elements"
+print "(A)", "  1[  ] print_quasipartile_DD_matrix_elements"
 
 call diagonalize_H11_with_jz(dens_rhoRR, dens_kappaRR, ndim)
 
-print "(A)", " [OK] H11 is in diagonal with Jz."
-
+print "(A)", "  1[OK] H11 is in diagonal with Jz."
+print "(A)", "  2[  ] Sorting the QP states for the Valence sp. identification"
+call sort_quasiparticle_basis(ndim)
+print "(A)", "  2[OK] Sorting the QP states for the Valence sp. identification"
 
 end subroutine print_quasipartile_DD_matrix_elements
 
