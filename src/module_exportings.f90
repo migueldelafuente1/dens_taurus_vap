@@ -1104,7 +1104,6 @@ select CASE(METHOD_SORT)
     VSlim = VSsh_dim
     HOlim = HOsh_dim
     do alloc_it = 1,2
-      print "(A,i2)" , " *** ialoc=",alloc_it
       if (alloc_it.EQ.2) then
         deallocate(HOshells, VSshells, sortedShells)
         allocate(HOshells(items_found_2), VSshells(items_found),&
@@ -1116,7 +1115,6 @@ select CASE(METHOD_SORT)
       VSshells     = -1
       HOshells     = -1
 
-      print "(A,2i4)", "  aa 1=",VSlim, HOlim
       ! Write the valence space oscillator N shells
       items_found = 0
       do i = 1, VSsh_dim
@@ -1131,7 +1129,6 @@ select CASE(METHOD_SORT)
           VSshells(items_found) = Nsh
         endif
       enddo
-      print "(A,i3)", "  aa 2=", items_found
 
       ! Write all shells
       items_found_2=0
@@ -1146,7 +1143,6 @@ select CASE(METHOD_SORT)
           HOshells(items_found_2) = Nsh
         endif
       enddo
-      print "(A,i3)", "  aa 3=", items_found_2
 
       !Construct the shell order to print
       do i = 1, VSlim
@@ -1159,11 +1155,9 @@ select CASE(METHOD_SORT)
           if (HOshells(i) .EQ. VSshells(j)) found =.TRUE.
         enddo
         if (found) cycle
-
         sortedShells(kk) = HOshells(i)
         kk = kk + 1
       enddo
-      print "(A,i3)", "  aa 4=", kk
     enddo !alloc_iter
     !! TEST PRINT
     do i = 1, VSlim
@@ -1257,7 +1251,7 @@ print "(A)", " *** Reading the full HO space to assign the QP sp states. "
 do i = 1, ndim
   possible_qp_for_hosp = -1
   possible_n_for_qp    = 99
-  items_found = 1
+  items_found = 0
 
   !! QP loop to find it
   do j = 1, ndim
@@ -1270,12 +1264,13 @@ do i = 1, ndim
 
     if (QP_index_found(i)) cycle
 
+    items_found = items_found + 1
     possible_qp_for_hosp(items_found) = j
     possible_n_for_qp(items_found) = qpsp_n(j)
-    items_found = items_found + 1
   enddo
 !  print "(A,2i3,i6,A,4i3)", " HOsp(vs):", i, kk, HOsh_ant(HOsp_sh(kk)), &
 !              " (nljm) :: ", sp_n, sp_l, sp_2j, sp_2mj, sp_2mt
+  print "(A,3i7)", i, HOsp_ant(i), items_found
 
   if (items_found.EQ.0) then
     print "(A,i3)", "    [ERROR] Index not found::", i
