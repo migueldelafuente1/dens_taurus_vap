@@ -1189,12 +1189,6 @@ if ( constraint_switch(2) == 1 ) then
 endif
 
 !!! Basis that diagonalizes h and search the QP basis
-open(ute, file='eigenbasis_jzH11.dat', status='replace', action='write', &
-         form='formatted')
-write(ute,"(1a,1f12.6)")   "Proton  fermi energy = ",fermi_p
-write(ute,"(1a,1f12.6,/)") "Neutron fermi energy = ",fermi_n
-write(ute,format2) "   #      Z        N        n        l        p &
-                   &       j       jz         h  "
 do i = 1, ndim
   xneut = zero
   xprot = zero
@@ -1227,9 +1221,9 @@ do i = 1, ndim
 
   QP_index_found(i) = .FALSE.
 
-  write(ute,format1) i, xprot, xneut, xn, xl, xpar, xj, xjz, eigen_H11(i)
+  print format1, i, xprot, xneut, xn, xl, xpar, xj, xjz, eigen_H11(i)
 enddo
-close(ute, status='keep')
+!close(ute, status='keep')
 
 !!! Search and assign the QP basis
 print "(A)", " *** Print the sp states of the VS index and WB state"
@@ -1348,8 +1342,13 @@ enddo
 ! TEST
 print *, ""
 print "(A)", " * Results for the QP states sorted."
-print "(A)","   #      Z        N        n        l        p        j       jz&
-            &         h      :: qp_assigned   2mt"
+
+open(ute, file='eigenbasis_jzH11.dat', status='replace', action='write', &
+         form='formatted')
+write(ute,"(1a,1f12.6)")   "Proton  fermi energy = ",fermi_p
+write(ute,"(1a,1f12.6,/)") "Neutron fermi energy = ",fermi_n
+write(ute,format2) "   #      Z        N        n        l        p &
+                   &       j       jz         h     :: qp_assigned   2mt"
 do i = 1, HOsp_dim
   xprot = qpsp_zz(i)
   xneut = qpsp_nn(i)
@@ -1359,19 +1358,13 @@ do i = 1, HOsp_dim
   xj    = qpsp_j(i)
   xjz   = qpsp_jz(i)
 
-  print "(A)", "a"
   kk = QPtoHOsp_index(i)
-  print "(A,i9)", "kk=", kk
-  print "(A,i4)", "b", HOsp_ant(kk)
-  print "(A,i4)", "c", HOsp_2mt(kk)
-  fermi_p = eigen_H11(i)
-  print "(A)", "d"
 
-!  print "(i5,8f6.3,A,2i7,i3)", i,xprot,xneut,xn,xl,xpar,xj,xjz,eigen_H11(i),&
-!        " qp ::", kk, HOsp_ant(kk), HOsp_2mt(kk)
-  print "(i5,7f6.2,f9.3)", i, xprot,xneut,xn,xl,xpar,xj,xjz, eigen_H11(i)
-  print "(A,3i7)", " qp ::", kk, HOsp_ant(kk), HOsp_2mt(kk)
+  write(ute,"(i5,8f6.3,A,2i7,i3)"), i,xprot,xneut,xn,xl,xpar,xj,xjz,&
+        eigen_H11(i)," qp ::", kk, HOsp_ant(kk), HOsp_2mt(kk)
 enddo
+close(ute, status='keep')
+
 print "(A)", " [DONE] Results for the QP states sorted."
 !! Read the indexes of the QP just to have the Valence Space
 
