@@ -1105,6 +1105,7 @@ select CASE(METHOD_SORT)
     HOlim = HOsh_dim
     do alloc_it = 1,2
       if (alloc_it.EQ.2) then
+        deallocate(HOshells, VSshells, sortedShells)
         allocate(HOshells(items_found_2), VSshells(items_found),&
                  sortedShells(items_found_2))
         VSlim = items_found
@@ -1176,7 +1177,6 @@ select CASE(METHOD_SORT)
     METHOD_SORT = 0
 end select
 
-allocate(QP_index_found(ndim))
 !!! Writes the properties of the single-particle states in a file
 fermi_p = 0.d0
 fermi_n = 0.d0
