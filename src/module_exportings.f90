@@ -1333,9 +1333,10 @@ do i = 1, ndim
             kk = kk + 1
             cycle
           endif
+
           QPtoHOsp_index(possible_qp_for_hosp(kk)) = i
           QP_index_found(possible_qp_for_hosp(kk)) = .TRUE.
-          break
+          EXIT
         enddo
     end select
   endif
