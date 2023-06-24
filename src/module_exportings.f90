@@ -1244,7 +1244,7 @@ print "(A)", " *** Reading the full HO space to assign the QP sp states. "
 !! HO element loop
 do i = 1, ndim
   possible_qp_for_hosp = -1
-      = 99.0
+  possible_n_for_qp    = 99.0
   items_found = 0
 
   sp_2mt = HOsp_2mt(i)
