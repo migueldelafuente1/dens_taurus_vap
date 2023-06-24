@@ -1092,11 +1092,11 @@ integer :: METHOD_SORT = 0  ! 0 vs assumed to be the first n, 1 to sort with the
 allocate(QP_index_found(ndim), QPtoHOsp_index(ndim))
 print "(A)", " Sorting the "
 ! sort the shells and check if the METHOD_SORT is 1 or 0
-select case(METHOD_SORT)
-  case(0)
+select CASE(METHOD_SORT)
+  CASE(0)
     print "(A)", " ** METHOD_SORT=0 to select the n in the quasiparticles by &
                  & the order in the HO shells, the <n>_qp order preserves"
-  case(1)
+  CASE(1)
     print "(A)", " ** METHOD_SORT=1, the shells will be ordered assuming the &
                  & valence space states are the first to be assigned."
 
@@ -1126,7 +1126,7 @@ select case(METHOD_SORT)
             items_found = items_found + 1
           endif
         enddo
-        if (.NOT.found) VSshells(items_found)
+        if (.NOT.found) VSshells(items_found) = Nsh
       enddo
 
       ! Write all shells
@@ -1140,7 +1140,7 @@ select case(METHOD_SORT)
             items_found_2 = items_found_2 + 1
           endif
         enddo
-        if (.NOT.found) VSshells(items_found_2)
+        if (.NOT.found) VSshells(items_found_2) = Nsh
       enddo
 
       !Construct the shell order to print
@@ -1168,7 +1168,7 @@ select case(METHOD_SORT)
       print "(A,2i5)", " test HOshells i,N=", i, HOshells(i), sortedShells(i)
     enddo
 
-  case (default)
+  CASE DEFAULT
     print "(A)", " [ERROR] Invalid METHOD_SORT in sort_quasiparticle_basis &
                  & subroutine, default METHOD_SORT=0 selected:"
     print "(A)", " ** METHOD_SORT=0 to select the n in the quasiparticles by &
