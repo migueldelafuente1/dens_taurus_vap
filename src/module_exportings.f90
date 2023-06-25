@@ -1365,8 +1365,8 @@ print *, ""
 !! Read the indexes of the QP just to have the Valence Space
 print "(A)", " [  ] Valence Space extracted results for the sorted QP. "
 allocate(VSQPtoQPsp_index(VSsp_dim), VStoQPsp_index(VSsp_dim),&
-         VSQPtoQPsp_index(VSsp_dim), VSQPtoHOsp_index(VSsp_dim),&
-         VSQPtoVSsp_index(VSsp_dim))
+         VSQPtoHOsp_index(VSsp_dim), VSQPtoVSsp_index(VSsp_dim), &
+         VStoVSQPsp_index(VSsp_dim))
 
 !! TEST.
 print *, " Test of reading VS to HO. vs(i)=HOsp(vs(i)) :ant"
