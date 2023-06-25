@@ -1996,9 +1996,10 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
           endif
         endif ! select the process or to export the matrix elements
 
-      enddo  !end loop b
-    enddo  !end loop d
-  enddo  !end loop c
+      enddo  !end loop d
+    enddo  !end loop c
+  enddo  !end loop b
+  call progress_bar_iteration(aa, WBsp_dim / 2)
 enddo  !end loop a
 
 !!! At the first iteration, the values of the hamiltonian are saved via file
@@ -2980,6 +2981,34 @@ endif
 
 
 end subroutine calculate_fields_DD
+
+
+!-----------------------------------------------------------------------------!
+! subroutine to print the progress of iter/iter_max as a progress bar         !
+!-----------------------------------------------------------------------------!
+subroutine progress_bar_iteration(iter, max_iter)
+integer, intent(in) :: iter, max_iter
+integer :: TOTAL_SPACE=62, BAR_SPACE_LEN, completed_int, k
+real    :: completed
+character(len=70) :: bar=" [???.??%] |                                       &
+                         &           |"
+BAR_SPACE_LEN = 62 - 12
+completed_int = nint(BAR_SPACE_LEN * iter / max_iter)
+
+write(unit=bar(3:8),fmt="(f5.2)") 100.0d0 * iter / max_iter
+do k = 1, completed_int
+  bar(12+k:12+k)='*'
+end do
+
+write(unit=857639,fmt="(a1,a17)",advance="no") char(50), bar
+! print the progress bar
+if (iter .NE. max_iter) then
+  flush(unit=857639, fmt="(a1,a70)", advance='no')
+else
+  write(unit=857639,fmt=*)
+end if
+
+end subroutine progress_bar_iteration
 
 !-----------------------------------------------------------------------------!
 ! subroutine TESTS FOR THE DENSITY, SPHERICAL HARMONICS AND FUNCTIONS         !

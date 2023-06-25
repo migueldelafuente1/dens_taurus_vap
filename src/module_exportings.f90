@@ -1087,7 +1087,7 @@ integer :: sp_n,sp_l,sp_2j,sp_2mj,sp_2mt, sp_sh, nmaj_sh, Nsh, VSNdim, HONdim,&
            VSlim=0, HOlim=0, index_Nsh, Nsh_i, n
 
 !!!
-integer :: METHOD_SORT = 0  ! 0 vs assumed to be the first n, 1 to sort with the HO-N shell order
+integer :: METHOD_SORT = 1  ! 0 vs assumed to be the first n, 1 to sort with the HO-N shell order
 !!!
 
 allocate(QP_index_found(ndim), QPtoHOsp_index(ndim))
