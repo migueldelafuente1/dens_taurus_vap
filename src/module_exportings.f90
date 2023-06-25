@@ -1079,7 +1079,7 @@ logical, dimension(:), allocatable :: QP_index_found
 integer, dimension(:), allocatable :: VStoQPsp_index, &
                                       HOshells, VSshells, sortedShells
 character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)", &
-                               format2 = "(1a120,/,120('-'))"
+                               format2 = "(1a110,/,120('-'))"
 
 logical :: found
 integer :: i,j,k,k1,k2, kk, items_found=0, items_found_2=0, alloc_it
@@ -1333,8 +1333,8 @@ open(ute, file='eigenbasis_jzH11.dat', status='replace', action='write', &
          form='formatted')
 write(ute,"(1a,1f12.6)")   "Proton  fermi energy = ",fermi_p
 write(ute,"(1a,1f12.6,/)") "Neutron fermi energy = ",fermi_n
-write(ute,format2) "   #      Z        N        n        l        p &
-                   &       j       jz         h      :: HOsp assigned  2mj 2mt"
+write(ute,format2) "   #      Z        N        n        l        p        j  &
+                   &     jz         h      :: HOsp assigned  2mj  2mt   "
 do i = 1, HOsp_dim
   xprot = qpsp_zz(i)
   xneut = qpsp_nn(i)
@@ -1346,8 +1346,8 @@ do i = 1, HOsp_dim
 
   kk = QPtoHOsp_index(i)
 
-  write(ute,"(i4,7f9.3,1f12.6,A,2i7,i3)") i, xprot,xneut,xn,xl,xpar,xj,xjz,&
-        eigen_H11(i),"  qp:", kk, HOsp_ant(kk), HOsp_2mt(kk)
+  write(ute,"(i4,7f9.3,1f12.6,A,2i6,2i5)") i, xprot,xneut,xn,xl,xpar,xj,xjz,&
+        eigen_H11(i),"   ho:", kk, HOsp_ant(kk), HOsp_2mt(kk)
 enddo
 close(ute, status='keep')
 
