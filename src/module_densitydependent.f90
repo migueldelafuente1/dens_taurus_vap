@@ -3000,10 +3000,10 @@ do k = 1, completed_int
   bar(12+k:12+k)='*'
 end do
 
-write(unit=857639,fmt="(a1,a17)",advance="no") char(50), bar
+write(unit=857639, fmt="(a1,a70)",advance="no") char(50), bar
 ! print the progress bar
 if (iter .NE. max_iter) then
-  flush(unit=857639, fmt="(a1,a70)", advance='no')
+  flush(unit=857639)
 else
   write(unit=857639,fmt=*)
 end if
