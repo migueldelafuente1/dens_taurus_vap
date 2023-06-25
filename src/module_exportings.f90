@@ -35,9 +35,16 @@ real(r64), dimension(:), allocatable, private :: eigen_hsp, & ! sp energies
                                                  eigen_H11    ! qp    "
 real(r64), dimension(:,:), allocatable, private :: transf_H11
 
-integer, dimension(:), allocatable, private :: QPtoHOsp_index
-integer, dimension(:), allocatable, private :: VSQPtoSortedQPsp_index
+!! As for VStoHO_index, this arrays give the index of "right" array for the
+!! corresponding "left" element. i.e the HO index of the i-th VS state
+integer, dimension(:), allocatable, private :: QPtoHOsp_index, HOtoQPsp_index
+integer, dimension(:), allocatable, private :: VSQPtoQPsp_index
+integer, dimension(:), allocatable, private :: VSQPtoHOsp_index, &
+                                               VStoVSQPsp_index
+integer, dimension(:), allocatable, private :: VStoQPsp_index, VSQPtoVSsp_index
 
+real(r64), dimension(:), allocatable, private :: qpsp_zz, qpsp_nn, qpsp_n, &
+                                                 qpsp_j, qpsp_jz, qpsp_l
 
 !! Methods
 
@@ -1071,13 +1078,11 @@ subroutine sort_quasiparticle_basis(ndim)
 
 integer, intent(in) :: ndim
 real(r64) :: xn, xl2, xl, xneut, xprot, xpar, xjz, xj2, xj, fermi_p, fermi_n
-real(r64), dimension(ndim)  :: qpsp_zz, qpsp_nn, qpsp_par, qpsp_jz, qpsp_n, &
-                               qpsp_j, qpsp_l
-integer, dimension(3) :: possible_qp_for_hosp ! only to export up to 3 shells
+integer,   dimension(3) :: possible_qp_for_hosp ! only to export up to 3 shells
 real(r64), dimension(3) :: possible_n_for_qp
+real(r64), dimension(ndim) :: qpsp_par
 logical, dimension(:), allocatable :: QP_index_found
-integer, dimension(:), allocatable :: VStoQPsp_index, &
-                                      HOshells, VSshells, sortedShells
+integer, dimension(:), allocatable :: HOshells, VSshells, sortedShells
 character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)", &
                                format2 = "(1a110,/,120('-'))"
 
@@ -1090,7 +1095,9 @@ integer :: sp_n,sp_l,sp_2j,sp_2mj,sp_2mt, sp_sh, nmaj_sh, Nsh, VSNdim, HONdim,&
 integer :: METHOD_SORT = 1
 !!!
 
-allocate(QP_index_found(ndim), QPtoHOsp_index(ndim))
+allocate(QP_index_found(ndim), QPtoHOsp_index(ndim), HOtoQPsp_index(ndim), &
+         qpsp_zz(ndim), qpsp_nn(ndim), qpsp_n(ndim), &
+         qpsp_j (ndim), qpsp_jz(ndim), qpsp_l(ndim))
 
 print *, ""
 print "(A)", " Sorting the states to identify the shells of the Quasi particles"
@@ -1345,6 +1352,7 @@ do i = 1, HOsp_dim
   xjz   = qpsp_jz(i)
 
   kk = QPtoHOsp_index(i)
+  HOtoQPsp_index(i) = kk
 
   write(ute,"(i4,7f9.3,1f12.6,A,2i6,2i5)") i, xprot,xneut,xn,xl,xpar,xj,xjz,&
         eigen_H11(i),"   ho:", kk, HOsp_ant(kk), HOsp_2mt(kk)
@@ -1356,11 +1364,44 @@ print *, ""
 
 !! Read the indexes of the QP just to have the Valence Space
 print "(A)", " [  ] Valence Space extracted results for the sorted QP. "
-allocate(VSQPtoSortedQPsp_index(VSsp_dim))
+allocate(VSQPtoQPsp_index(VSsp_dim), VStoQPsp_index(VSsp_dim),&
+         VSQPtoQPsp_index(VSsp_dim), VSQPtoHOsp_index(VSsp_dim),&
+         VSQPtoVSsp_index(VSsp_dim))
+
+!! TEST.
+print *, " Test of reading VS to HO. vs(i)=HOsp(vs(i)) :ant"
+do i = 1, VSsp_dim
+  print "(A,3i6)", "i:", i, VStoHOsp_index(i), HOsp_ant(VStoHOsp_index(i))
+end do
+
 kk = 0
 do i = 1, ndim ! QP loop
+  k1 = QPtoHOsp_index(i)
 
-  k = QPtoHOsp_index(i)
+  found = .FALSE.
+  do j = 1, VSsp_dim
+    k2 = VStoHOsp_index(j)
+    if (HOsp_n(k1) .NE. HOsp_n(k2)) cycle
+    if (HOsp_l(k1) .NE. HOsp_l(k2)) cycle
+    if (HOsp_2j(k1) .NE. HOsp_2j(k2)) cycle
+    if (HOsp_2mj(k1) .NE. HOsp_2mj(k2)) cycle
+    if (HOsp_2mt(k1) .NE. HOsp_2mt(k2)) cycle
+
+    found = .TRUE.
+
+    kk = kk + 1
+    VSQPtoQPsp_index(kk) = i
+    VStoVSQPsp_index (j) = kk
+    VSQPtoVSsp_index(kk) = j
+    VSQPtoHOsp_index(kk) = k2
+    EXIT
+  end do
+  if (found) then
+    print "(3(A,2i3),2i4)", " FND(QP,HO):",i,k1, "  (VS,VSHO):", j,k2, &
+          "   (VSQP/VSQP.HO)",kk, VSQPtoHOsp_index(kk), &
+          VSQPtoQPsp_index(kk),VSQPtoVSsp_index(kk)
+  endif
+
 enddo
 
 deallocate(QP_index_found)
@@ -1381,19 +1422,8 @@ subroutine print_quasipartile_DD_matrix_elements(dens_rhoRR, dens_kappaRR, ndim)
 integer, intent(in) :: ndim
 !complex(r64), dimension(ndim,ndim), intent(in) :: bogo_zU0,bogo_zV0
 real(r64), dimension(ndim,ndim), intent(in)    :: dens_rhoRR, dens_kappaRR
-
-!real(r64), dimension(:), allocatable :: eigen_H11    ! qp    "
-!complex(r64), dimension(ndim,ndim) :: hspRR, gammaRR, deltaRR
 real(r64), dimension(ndim,ndim) :: hspRR_eigenvect, U_trans, V_trans
-real(r64), dimension(ndim,ndim) :: op_xjz, op_xj2, op_l2, op_n
-real(r64), dimension(ndim) :: eigen_A
 
-real(r64) :: xneut, xprot, xpar, xjz, xn, xj, xl, xj2, xl2
-integer :: i,j,ll,kk, k1,k2,k3,k4, l1,l2,l3,l4, d1,d2,d3,d4
-integer :: iH11, ialloc, info_hsp
-real(r64), dimension(3*ndim-1) :: work
-
-character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)"
 
 print "(A)", "  1[  ] print_quasipartile_DD_matrix_elements"
 
