@@ -1330,7 +1330,7 @@ do i = 1, ndim
           if (MOD(HOsh_l(i)+Nsh, 2).NE.0) cycle
 
           n = (Nsh - HOsp_l(i)) / 2
-          print "(A,3i3,L5)", ">> multpl case,  Nshell, n=", Nsh, n, HOsp_n, &
+          print "(A,3i3,L5)", ">> multpl case,  Nshell, n=", Nsh,n,HOsp_n(i),&
                 (n - HOsp_n(i)) .NE. 0
           if ((n - HOsp_n(i)) .NE. 0) then
             kk = kk + 1

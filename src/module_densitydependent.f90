@@ -1999,7 +1999,7 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
       enddo  !end loop d
     enddo  !end loop c
   enddo  !end loop b
-  if (.NOT.evalFullSPSpace) call progress_bar_iteration(aa, WBsp_dim / 2)
+  if (.NOT.eval_explicit_fieldsDD) call progress_bar_iteration(aa, WBsp_dim/2)
 enddo  !end loop a
 
 !!! At the first iteration, the values of the hamiltonian are saved via file
