@@ -36,6 +36,9 @@ real(r64), dimension(:), allocatable, private :: eigen_hsp, & ! sp energies
 real(r64), dimension(:,:), allocatable, private :: transf_H11
 
 integer, dimension(:), allocatable, private :: QPtoHOsp_index
+integer, dimension(:), allocatable, private :: VSQPtoSortedQPsp_index
+
+
 !! Methods
 
 CONTAINS
@@ -1058,9 +1061,6 @@ if (is_good_K) then
   call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,zero,field_H11,ndim)
 endif
 
-call sort_quasiparticle_basis(ndim)
-
-
 end subroutine
 
 !------------------------------------------------------------------------------!
@@ -1079,17 +1079,19 @@ logical, dimension(:), allocatable :: QP_index_found
 integer, dimension(:), allocatable :: VStoQPsp_index, &
                                       HOshells, VSshells, sortedShells
 character(len=*), parameter :: format1 = "(1i4,7f9.3,1x,2f12.6)", &
-                               format2 = "(1a77,/,120('-'))"
+                               format2 = "(1a120,/,120('-'))"
+
 logical :: found
 integer :: i,j,k,k1,k2, kk, items_found=0, items_found_2=0, alloc_it
 integer :: sp_n,sp_l,sp_2j,sp_2mj,sp_2mt, sp_sh, nmaj_sh, Nsh, VSNdim, HONdim,&
            VSlim=0, HOlim=0, index_Nsh, Nsh_i, n
-
 !!!
-integer :: METHOD_SORT = 1  ! 0 vs assumed to be the first n, 1 to sort with the HO-N shell order
+! 0 vs assumed to be the first n, 1 to sort with the HO-N shell order
+integer :: METHOD_SORT = 1
 !!!
 
 allocate(QP_index_found(ndim), QPtoHOsp_index(ndim))
+
 print *, ""
 print "(A)", " Sorting the states to identify the shells of the Quasi particles"
 ! sort the shells and check if the METHOD_SORT is 1 or 0
@@ -1218,8 +1220,8 @@ enddo
 !! locate the order of the shells of the VS to export.
 !!    n is not conserved, the N shell of the state sh_(vs) will be the Nth.
 
-print *, ""
-print "(A)", " *** Reading the full HO space to assign the QP sp states. "
+!print *, ""
+!print "(A)", " *** Reading the full HO space to assign the QP sp states. "
 !! HO element loop
 do i = 1, ndim
   possible_qp_for_hosp = -1
@@ -1254,7 +1256,7 @@ do i = 1, ndim
 !    do k = 1, items_found
 !      print "(2(A,i4))", "  * posible_qp_for i=",i," :",possible_qp_for_hosp(k)
 !    end do
-    print *, ""
+!    print *, ""
     select case(METHOD_SORT)
       case (0) !--------------------------------------------------------------!
         ! Method to sort by the <n> of qp
@@ -1326,13 +1328,13 @@ do i = 1, ndim
 enddo
 
 ! TEST
-print *, ""
+!print *, ""
 open(ute, file='eigenbasis_jzH11.dat', status='replace', action='write', &
          form='formatted')
 write(ute,"(1a,1f12.6)")   "Proton  fermi energy = ",fermi_p
 write(ute,"(1a,1f12.6,/)") "Neutron fermi energy = ",fermi_n
 write(ute,format2) "   #      Z        N        n        l        p &
-                   &       j       jz         h     :: qp assigned   2mt"
+                   &       j       jz         h      :: HOsp assigned  2mj 2mt"
 do i = 1, HOsp_dim
   xprot = qpsp_zz(i)
   xneut = qpsp_nn(i)
@@ -1354,11 +1356,14 @@ print *, ""
 
 !! Read the indexes of the QP just to have the Valence Space
 print "(A)", " [  ] Valence Space extracted results for the sorted QP. "
+allocate(VSQPtoSortedQPsp_index(VSsp_dim))
+kk = 0
 do i = 1, ndim ! QP loop
 
-  kk = QPtoHOsp_index(i)
+  k = QPtoHOsp_index(i)
 enddo
 
+deallocate(QP_index_found)
 print "(A)", " [OK] Valence Space extracted results for the sorted QP. "
 print *, ""
 
