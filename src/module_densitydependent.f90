@@ -1999,7 +1999,7 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
       enddo  !end loop d
     enddo  !end loop c
   enddo  !end loop b
-  call progress_bar_iteration(aa, WBsp_dim / 2)
+  if (.NOT.evalFullSPSpace) call progress_bar_iteration(aa, WBsp_dim / 2)
 enddo  !end loop a
 
 !!! At the first iteration, the values of the hamiltonian are saved via file
@@ -2994,17 +2994,17 @@ character(len=70) :: bar=" [???.??%] |                                       &
                          &           |"
 BAR_SPACE_LEN = 62 - 12
 completed_int = nint(100.0d0 * iter / max_iter)
-if (MOD(completed_int, 5) .NE. 0) return
+if (MOD(completed_int, 3) .NE. 0) return
 
 completed_int = nint(1.0d0 * BAR_SPACE_LEN * iter / max_iter)
 
-write(unit=bar(3:8),fmt="(f5.2)") 100.0d0 * iter / max_iter
+write(unit=bar(3:9),fmt="(f5.2)") 100.0d0 * iter / max_iter
 do k = 1, completed_int
   bar(12+k:12+k)='*'
 end do
 
 print "(A)", bar
-
+!! this writes in a binary ---------------------------------------------------
 !write(unit=857639, fmt="(a1,a70)",advance="no") char(50), bar
 !! print the progress bar
 !if (iter .NE. max_iter) then
@@ -3012,7 +3012,6 @@ print "(A)", bar
 !else
 !  write(unit=857639,fmt=*)
 !end if
-
 end subroutine progress_bar_iteration
 
 !-----------------------------------------------------------------------------!

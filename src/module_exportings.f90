@@ -1166,7 +1166,7 @@ select CASE(METHOD_SORT)
     enddo
     print *, ""
     do i = 1, HOlim
-      print "(A,3i5)", " test HOshells i,N=", i, HOshells(i), sortedShells(i)
+      print "(A,2i5)", " test HOshells i,N=", i, sortedShells(i)
     enddo
     print *, ""
 
@@ -1330,8 +1330,9 @@ do i = 1, ndim
           if (MOD(HOsh_l(i)+Nsh, 2).NE.0) cycle
 
           n = (Nsh - HOsp_l(i)) / 2
-          print "(A,2i3)", ">> multpl case,  Nshell, n=", Nsh, n
-          if ((n - hosp_n(i)) .NE. 0) then
+          print "(A,3i3,L5)", ">> multpl case,  Nshell, n=", Nsh, n, HOsp_n, &
+                (n - HOsp_n(i)) .NE. 0
+          if ((n - HOsp_n(i)) .NE. 0) then
             kk = kk + 1
             cycle
           endif
