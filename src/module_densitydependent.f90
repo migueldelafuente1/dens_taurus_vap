@@ -2998,7 +2998,7 @@ if (MOD(completed_int, 5) .NE. 0) return
 
 completed_int = nint(1.0d0 * BAR_SPACE_LEN * iter / max_iter)
 
-write(unit=bar(3:9),fmt="(f5.2)") 100.0d0 * iter / max_iter
+write(unit=bar(3:8),fmt="(f6.2)") 100.0d0 * iter / max_iter
 do k = 1, completed_int
   bar(12+k:12+k)='*'
 end do

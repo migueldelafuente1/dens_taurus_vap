@@ -1091,7 +1091,8 @@ integer :: METHOD_SORT = 1  ! 0 vs assumed to be the first n, 1 to sort with the
 !!!
 
 allocate(QP_index_found(ndim), QPtoHOsp_index(ndim))
-print "(A)", " Sorting the "
+print *, ""
+print "(A)", " Sorting the states to identify the shells of the Quasi particles"
 ! sort the shells and check if the METHOD_SORT is 1 or 0
 select CASE(METHOD_SORT)
   CASE(0)
@@ -1160,15 +1161,6 @@ select CASE(METHOD_SORT)
         kk = kk + 1
       enddo
     enddo !alloc_iter
-    !! TEST PRINT
-    do i = 1, VSlim
-      print "(A,2i5)", " test VSshells i,N=", i, VSshells(i)
-    enddo
-    print *, ""
-    do i = 1, HOlim
-      print "(A,2i5)", " test HOshells i,N=", i, sortedShells(i)
-    enddo
-    print *, ""
 
   CASE DEFAULT
     print "(A)", " [ERROR] Invalid METHOD_SORT in sort_quasiparticle_basis &
@@ -1221,20 +1213,8 @@ do i = 1, ndim
   qpsp_par(i) = xpar
 
   QP_index_found(i) = .FALSE.
-
-  print format1, i, xprot, xneut, xn, xl, xpar, xj, xjz, eigen_H11(i)
 enddo
 !close(ute, status='keep')
-
-!!! Search and assign the QP basis
-print "(A)", " *** Print the sp states of the VS index and WB state"
-do i = 1, ndim
-!  kk = VStoHOsp_index(i)
-!  print "(A,2i3,i6,A,4i3)", " HOsp(vs):", i, kk, HOsh_ant(HOsp_sh(kk)), &
-!              " (nljm) :: ", HOsp_n(kk), HOsp_l(kk), HOsp_2j(kk), HOsp_2mj(kk)
-  print "(A,i3,5f6.2,L3)", "qp_sts(i):", i, qpsp_zz(i), qpsp_nn(i), qpsp_l(i),&
-      2*qpsp_j(i),2*qpsp_jz(i), QP_index_found(i)
-enddo
 
 !! locate the order of the shells of the VS to export.
 !!    n is not conserved, the N shell of the state sh_(vs) will be the Nth.
@@ -1263,9 +1243,8 @@ do i = 1, ndim
     possible_qp_for_hosp(items_found) = j
     possible_n_for_qp(items_found) = qpsp_n(j)
   enddo
-!  print "(A,2i3,i6,A,4i3)", " HOsp(vs):", i, kk, HOsh_ant(HOsp_sh(kk)), &
-!              " (nljm) :: ", sp_n, sp_l, sp_2j, sp_2mj, sp_2mt
-  print "(A,3i7)", "> i,Hoant,items_found=", i, HOsp_ant(i), items_found
+
+!  print "(A,3i7)", "> i,Hoant,items_found=", i, HOsp_ant(i), items_found
 
   if (items_found.EQ.0) then
     print "(A,i3)", "    [ERROR] Index not found::", i
@@ -1273,9 +1252,9 @@ do i = 1, ndim
     QPtoHOsp_index(possible_qp_for_hosp(1)) = i
     QP_index_found(possible_qp_for_hosp(1)) = .TRUE.
   else
-    do k = 1, items_found
-      print "(2(A,i4))", "  * posible_qp_for i=",i," :",possible_qp_for_hosp(k)
-    end do
+!    do k = 1, items_found
+!      print "(2(A,i4))", "  * posible_qp_for i=",i," :",possible_qp_for_hosp(k)
+!    end do
     print *, ""
     select case(METHOD_SORT)
       case (0) !--------------------------------------------------------------!
@@ -1295,11 +1274,11 @@ do i = 1, ndim
             endif
           end do
         end do
-        print "(A,i3)", ">> multpl case, possible qp and n sorted, Nshi",Nsh_i
-        do k1 = 1, items_found
-          print "(A,i3,f7.3)", ">> > qp/n=", possible_qp_for_hosp(k1), &
-                                             possible_n_for_qp(k1)
-        end do
+!        print "(A,i3)", ">> multpl case, possible qp and n sorted, Nshi",Nsh_i
+!        do k1 = 1, items_found
+!          print "(A,i3,f7.3)", ">> > qp/n=", possible_qp_for_hosp(k1), &
+!                                             possible_n_for_qp(k1)
+!        end do
 
         ! find the place of the current Nshell of the same parity
         ! (same length as possible_qp_for_hosp)
@@ -1313,7 +1292,7 @@ do i = 1, ndim
             EXIT
           endif
         end do
-        print "(A,2i3,A,i4)", ">> Nsh=", Nsh, index_Nsh, " selected=", &
+!        print "(A,2i3,A,i4)", ">> Nsh=", Nsh, index_Nsh, " selected=", &
           possible_qp_for_hosp(index_Nsh)
         QPtoHOsp_index(possible_qp_for_hosp(index_Nsh)) = i
         QP_index_found(possible_qp_for_hosp(index_Nsh)) = .TRUE.
@@ -1330,14 +1309,14 @@ do i = 1, ndim
           if (MOD(HOsp_l(i)+Nsh, 2).NE.0) cycle
 
           n = (Nsh - HOsp_l(i)) / 2
-          print "(A,3i3,L5)", ">> multpl case,  Nshell, n=", Nsh,n,HOsp_n(i),&
-                (n - HOsp_n(i)) .NE. 0
+!          print "(A,3i3,L5)", ">> multpl case,  Nshell, n=", Nsh,n,HOsp_n(i),&
+!                (n - HOsp_n(i)) .NE. 0
           if ((n - HOsp_n(i)) .NE. 0) then
             kk = kk + 1
             cycle
           endif
 
-          print "(A,3i4)", ">> elment accepted:",i,kk,possible_qp_for_hosp(kk)
+!          print "(A,3i4)", ">> elment accepted:",i,kk,possible_qp_for_hosp(kk)
           QPtoHOsp_index(possible_qp_for_hosp(kk)) = i
           QP_index_found(possible_qp_for_hosp(kk)) = .TRUE.
           EXIT
@@ -1349,14 +1328,12 @@ enddo
 
 ! TEST
 print *, ""
-print "(A)", " * Results for the QP states sorted."
-
 open(ute, file='eigenbasis_jzH11.dat', status='replace', action='write', &
          form='formatted')
 write(ute,"(1a,1f12.6)")   "Proton  fermi energy = ",fermi_p
 write(ute,"(1a,1f12.6,/)") "Neutron fermi energy = ",fermi_n
 write(ute,format2) "   #      Z        N        n        l        p &
-                   &       j       jz         h     :: qp_assigned   2mt"
+                   &       j       jz         h     :: qp assigned   2mt"
 do i = 1, HOsp_dim
   xprot = qpsp_zz(i)
   xneut = qpsp_nn(i)
@@ -1367,16 +1344,16 @@ do i = 1, HOsp_dim
   xjz   = qpsp_jz(i)
 
   kk = QPtoHOsp_index(i)
+  format1 = "(1i4,7f9.3,1x,2f12.6)"
 
-  write(ute,"(i4,7f6.2,1f9.4,A,2i7,i3)") i,xprot,xneut,xn,xl,xpar,xj,xjz,&
-        eigen_H11(i)," qp ::", kk, HOsp_ant(kk), HOsp_2mt(kk)
+  write(ute,"(i4,7f9.3,1f12.6,A,2i7,i3)") i, xprot,xneut,xn,xl,xpar,xj,xjz,&
+        eigen_H11(i),"  qp:", kk, HOsp_ant(kk), HOsp_2mt(kk)
 enddo
 close(ute, status='keep')
 
-print "(A)", " [DONE] Results for the QP states sorted."
+print "(A)", " [OK] Results for the QP states sorted."
+print *, ""
 !! Read the indexes of the QP just to have the Valence Space
-
-
 end subroutine sort_quasiparticle_basis
 
 
