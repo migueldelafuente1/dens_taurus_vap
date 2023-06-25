@@ -78,21 +78,20 @@ if (exportValSpace) then !-----------------------------------------------------
   end do
 
   call test_printDesityKappaWF(dens_rhoRRc, dens_kappaRRc, dens_kappaRRc, ndim)
+
   print "(A)", " [  SR] Evaluating the Hamiltonian."
-  if (evalQuasiParticleVSpace) print "(A)","    For full space, Be patient ..."
+  if (evalQuasiParticleVSpace) then
+    print "(A,/,A)","        For full space, Be patient ...",""
+    endif
   call calculate_densityDep_hamiltonian(dens_rhoRRc, &
                                         dens_kappaRRc, dens_kappaRRc, ndim)
-  print "(A)", " [DONE] Evaluating the Hamiltonian."
+  print "(A,/,A)", "", " [DONE] Evaluating the Hamiltonian."
   deallocate(rearrangement_me, rearrang_field, &
              rea_common_RadAng, REACommonFields)
+
   if (.NOT.evalQuasiParticleVSpace) then
     call print_DD_matrix_elements
   else
-!    if (is_good_K) then
-!      print "(a)", "[WARNING] Wavefunction is not axial, cannot extract &
-!                    & spherical quasiparticle matrix elements. Exit."
-!      return
-!    endif
     call print_quasipartile_DD_matrix_elements(dens_rhoRR,dens_kappaRR,HOsp_dim)
   endif
 endif
@@ -1293,7 +1292,7 @@ do i = 1, ndim
           endif
         end do
 !        print "(A,2i3,A,i4)", ">> Nsh=", Nsh, index_Nsh, " selected=", &
-          possible_qp_for_hosp(index_Nsh)
+!          possible_qp_for_hosp(index_Nsh)
         QPtoHOsp_index(possible_qp_for_hosp(index_Nsh)) = i
         QP_index_found(possible_qp_for_hosp(index_Nsh)) = .TRUE.
 
@@ -1344,7 +1343,6 @@ do i = 1, HOsp_dim
   xjz   = qpsp_jz(i)
 
   kk = QPtoHOsp_index(i)
-  format1 = "(1i4,7f9.3,1x,2f12.6)"
 
   write(ute,"(i4,7f9.3,1f12.6,A,2i7,i3)") i, xprot,xneut,xn,xl,xpar,xj,xjz,&
         eigen_H11(i),"  qp:", kk, HOsp_ant(kk), HOsp_2mt(kk)
@@ -1353,7 +1351,17 @@ close(ute, status='keep')
 
 print "(A)", " [OK] Results for the QP states sorted."
 print *, ""
+
 !! Read the indexes of the QP just to have the Valence Space
+print "(A)", " [  ] Valence Space extracted results for the sorted QP. "
+do i = 1, ndim ! QP loop
+
+  kk = QPtoHOsp_index(i)
+enddo
+
+print "(A)", " [OK] Valence Space extracted results for the sorted QP. "
+print *, ""
+
 end subroutine sort_quasiparticle_basis
 
 
