@@ -2993,7 +2993,7 @@ real    :: completed
 character(len=70) :: bar=" [???.??%] |                                       &
                          &           |"
 BAR_SPACE_LEN = 62 - 12
-completed_int = nint(BAR_SPACE_LEN * iter / max_iter)
+completed_int = nint(1.0d0 * BAR_SPACE_LEN * iter / max_iter)
 
 write(unit=bar(3:8),fmt="(f5.2)") 100.0d0 * iter / max_iter
 do k = 1, completed_int
