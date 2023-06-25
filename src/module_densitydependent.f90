@@ -2994,7 +2994,7 @@ character(len=70) :: bar=" [???.??%] |                                       &
                          &           |"
 BAR_SPACE_LEN = 62 - 12
 completed_int = nint(100.0d0 * iter / max_iter)
-if (MOD(completed_int, 3) .NE. 0) return
+if (MOD(completed_int, 5) .NE. 0) return
 
 completed_int = nint(1.0d0 * BAR_SPACE_LEN * iter / max_iter)
 

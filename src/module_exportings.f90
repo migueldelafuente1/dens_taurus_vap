@@ -1327,7 +1327,7 @@ do i = 1, ndim
         kk = 1
         do k = 1, HOlim
           Nsh = sortedShells(k)
-          if (MOD(HOsh_l(i)+Nsh, 2).NE.0) cycle
+          if (MOD(HOsp_l(i)+Nsh, 2).NE.0) cycle
 
           n = (Nsh - HOsp_l(i)) / 2
           print "(A,3i3,L5)", ">> multpl case,  Nshell, n=", Nsh,n,HOsp_n(i),&
