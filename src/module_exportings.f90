@@ -1459,6 +1459,8 @@ call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
 
 
 !! Transformation for the QP valence space
+open(334, file='uncoupled_hamil_qp.txt')
+
 do qq1 = 1, VSsp_dim
   q1 = VStoVSQPsp_index(qq1)
 
@@ -1534,10 +1536,15 @@ do kk = 1, hamil_DD_H2dim
 end do
 !!---------------------------------------------------------------------------
 
+        write(334, fmt='(4i5,1f12.6)') qq1, qq2, qq3, qq4, &
+                                       uncoupled_H22_VS(qq1,qq2,qq3,qq4)
       end do
     end do
+
+    call progress_bar_iteration(qq1, VSsp_dim)
   end do
 end do
+CLOSE(334)
 
 end subroutine calculate_QuasiParticle_Hamiltonian_H22
 
