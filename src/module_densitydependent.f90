@@ -318,7 +318,7 @@ end subroutine import_DD_parameters
 ! TODO: Introduce an additional subroutine to paste the Rearr Field in the projection module
 !
 subroutine import_Rearrange_field_if_exist
-
+integer   :: runit = 333
 logical   :: is_exist
 CHARACTER(LEN=20) :: file_input = "initial_rearrangement.txt"
 INTEGER   :: io, aux_int
@@ -330,6 +330,7 @@ else
   return
 endif
 
+CLOSE(runit)
 
 
 
