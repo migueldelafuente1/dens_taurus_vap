@@ -1542,8 +1542,8 @@ end do
                                          uncoupled_H22_VS(qq1,qq2,qq3,qq4)
         endif
       end do
-      print "(A,3i5,A,i5)", "Progress to loop3:", qq1,qq2,qq3," of ",VSsp_dim
     end do
+    print "(A,2i5,A,i5)", "Progress to loop2:", qq1,qq2," of ",VSsp_dim
   end do
 end do
 CLOSE(334)
