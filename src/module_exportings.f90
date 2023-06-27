@@ -1536,12 +1536,14 @@ do kk = 1, hamil_DD_H2dim
 end do
 !!---------------------------------------------------------------------------
 
-        write(334, fmt='(4i5,1f12.6)') qq1, qq2, qq3, qq4, &
-                                       uncoupled_H22_VS(qq1,qq2,qq3,qq4)
-      end do
-    end do
 
-    call progress_bar_iteration(qq1, VSsp_dim)
+        if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
+          write(334, fmt='(4i5,1f12.6)') qq1, qq2, qq3, qq4, &
+                                         uncoupled_H22_VS(qq1,qq2,qq3,qq4)
+        endif
+      end do
+      print "(A,3i5,A,i5)", "Progress to loop3:", qq1,qq2,qq3," of ",VSsp_dim
+    end do
   end do
 end do
 CLOSE(334)
