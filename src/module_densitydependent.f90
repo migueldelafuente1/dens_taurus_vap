@@ -94,6 +94,7 @@ complex(r64), dimension(:,:), allocatable     :: rearrangement_me  !(isp1, isp2)
 complex(r64), dimension(:,:), allocatable     :: rearrang_field    !(isp1, isp2)
 complex(r64), dimension(:,:,:,:), allocatable :: rea_common_RadAng !(isp1,isp2, ir,iang)
 complex(r64), dimension(:,:), allocatable     :: REACommonFields   !(ir, iang))
+complex(r64), dimension(:,:), allocatable     :: fixed_rearrang_field
 
 integer, dimension(:), allocatable :: HOsh_ant, HOsp_ant
 
@@ -120,6 +121,7 @@ integer   :: NHO_vs, NHO_co !! Major Shell number of the Valence. Sp to be expor
 logical   :: NOT_DEL_FILE
 logical   :: PRINT_GUTS = .FALSE.
 logical   :: DOING_PROJECTION = .FALSE.
+logical   :: usingFixedRearrangement = .FALSE.
 
 !! [END] DENSITY DEPENDENT MODIFICATIONS =====================================
 
@@ -304,6 +306,35 @@ print *, ''
 haveX0M1 = abs(x0_DD_FACTOR - 1.0d+0) > 1.0d-6
 
 end subroutine import_DD_parameters
+
+
+!-----------------------------------------------------------------------------!
+! If there is a File called fixed_rearrangement.txt, import this matrix and   !
+! set up the arguments necessary to add up as constant for the Gamma Field    !
+!-----------------------------------------------------------------------------!
+!
+! TODO: Design and Import a Matrix for the rearrangement
+! TODO: Write "final_rearrangement.txt" in the loop of the Fields
+! TODO: Introduce an additional subroutine to paste the Rearr Field in the projection module
+!
+subroutine import_Rearrange_field_if_exist
+
+logical   :: is_exist
+CHARACTER(LEN=20) :: file_input = "initial_rearrangement.txt"
+INTEGER   :: io, aux_int
+
+inquire (file=file_input, exist=is_exist)
+if ( is_exist ) then
+  OPEN(runit, FILE=file_input, FORM="FORMATTED", STATUS="OLD", ACTION="READ")
+else
+  return
+endif
+
+
+
+
+end subroutine import_Rearrange_field_if_exist
+
 
 
 !-----------------------------------------------------------------------------!

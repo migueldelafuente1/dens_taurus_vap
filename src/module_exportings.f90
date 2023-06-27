@@ -31,9 +31,10 @@ PUBLIC
 
 integer, private :: info_H11       ! check if problem during diag(field_H11)
 
-real(r64), dimension(:), allocatable, private :: eigen_hsp, & ! sp energies
-                                                 eigen_H11    ! qp    "
+real(r64), dimension(:), allocatable, private   :: eigen_hsp, & ! sp energies
+                                                   eigen_H11    ! qp    "
 real(r64), dimension(:,:), allocatable, private :: transf_H11
+real(r64), dimension(:,:), allocatable, private :: U_trans, V_trans
 
 !! As for VStoHO_index, this arrays give the index of "right" array for the
 !! corresponding "left" element. i.e the HO index of the i-th VS state
@@ -43,9 +44,11 @@ integer, dimension(:), allocatable, private :: VSQPtoHOsp_index, &
                                                VStoVSQPsp_index
 integer, dimension(:), allocatable, private :: VStoQPsp_index, VSQPtoVSsp_index
 
-real(r64), dimension(:), allocatable, private :: qpsp_zz, qpsp_nn, qpsp_n, &
-                                                 qpsp_j, qpsp_jz, qpsp_l
+real(r64), dimension(:), allocatable, private  :: qpsp_zz, qpsp_nn, qpsp_n, &
+                                                  qpsp_j, qpsp_jz, qpsp_l
 
+real(r64), dimension(:,:,:,:), allocatable     :: uncoupled_H22_VS
+real(r64), dimension(:,:,:,:,:,:), allocatable :: reduced_H22_VS
 !! Methods
 
 CONTAINS
@@ -57,9 +60,10 @@ CONTAINS
 ! a reduced valence space in a shell model fashion or in the Quasiparticle     !
 ! spherical j_z-diagonal basis for a HFB calculation                           !
 !------------------------------------------------------------------------------!
-subroutine export_densityAndHamiltonian(dens_rhoRR, dens_kappaRR, ndim)
-
+subroutine export_densityAndHamiltonian(bogo_U0, bogo_V0, &
+                                        dens_rhoRR, dens_kappaRR, ndim)
 integer, intent(in) :: ndim
+real(r64),    dimension(ndim,ndim), intent(in) :: bogo_U0,bogo_V0
 real(r64),    dimension(ndim,ndim), intent(in) :: dens_rhoRR, dens_kappaRR
 complex(r64), dimension(ndim,ndim) :: dens_rhoRRc, dens_kappaRRc
 integer  :: i, j
@@ -102,7 +106,8 @@ if (exportValSpace) then !-----------------------------------------------------
   if (.NOT.evalQuasiParticleVSpace) then
     call print_DD_matrix_elements
   else
-    call print_quasipartile_DD_matrix_elements(dens_rhoRR,dens_kappaRR,HOsp_dim)
+    call print_quasipartile_DD_matrix_elements(bogo_U0,bogo_V0, &
+                                               dens_rhoRR,dens_kappaRR,ndim)
   endif
 endif
 
@@ -1067,6 +1072,13 @@ if (is_good_K) then
 
   call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,zero,field_H11,ndim)
 endif
+! copy the transformation matrix
+do i = 1, ndim
+  do j = 1,ndim
+    transf_H11(i,j) = field_H11(i,j)
+  end do
+end do
+
 
 end subroutine
 
@@ -1199,15 +1211,13 @@ do i = 1, ndim
   xn    = zero
   xl2   = zero
   do j = 1, ndim
-    transf_H11(j,i) = field_H11(j,i)
-
-    xprot = xprot + field_H11(j,i)**2 * (-HOsp_2mt(j) + 1)/2.0d0
-    xneut = xneut + field_H11(j,i)**2 * ( HOsp_2mt(j) + 1)/2.0d0
-    xpar  = xpar  + field_H11(j,i)**2 * (-1.d0)**HOsp_l(j)
-    xn    = xn    + field_H11(j,i)**2 * HOsp_n(j)
-    xjz   = xjz   + field_H11(j,i)**2 * HOsp_2mj(j)/2.0d0
-    xj2   = xj2   + field_H11(j,i)**2 * (HOsp_2j(j)*(HOsp_2j(j)+2))/4.0d0
-    xl2   = xl2   + field_H11(j,i)**2 * (HOsp_l(j)*(HOsp_l(j)+1))
+    xprot = xprot + transf_H11(j,i)**2 * (-HOsp_2mt(j) + 1)/2.0d0
+    xneut = xneut + transf_H11(j,i)**2 * ( HOsp_2mt(j) + 1)/2.0d0
+    xpar  = xpar  + transf_H11(j,i)**2 * (-1.d0)**HOsp_l(j)
+    xn    = xn    + transf_H11(j,i)**2 * HOsp_n(j)
+    xjz   = xjz   + transf_H11(j,i)**2 * HOsp_2mj(j)/2.0d0
+    xj2   = xj2   + transf_H11(j,i)**2 * (HOsp_2j(j)*(HOsp_2j(j)+2))/4.0d0
+    xl2   = xl2   + transf_H11(j,i)**2 * (HOsp_l(j)*(HOsp_l(j)+1))
   enddo
   xj = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xj2)))
   xl = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xl2)))
@@ -1355,7 +1365,7 @@ do i = 1, HOsp_dim
   HOtoQPsp_index(i) = kk
 
   write(ute,"(i4,7f9.3,1f12.6,A,2i6,2i5)") i, xprot,xneut,xn,xl,xpar,xj,xjz,&
-        eigen_H11(i),"   ho:", kk, HOsp_ant(kk), HOsp_2mt(kk)
+        eigen_H11(i),"   ho:", kk, HOsp_ant(kk), HOsp_2mj(kk),  HOsp_2mt(kk)
 enddo
 close(ute, status='keep')
 
@@ -1371,7 +1381,8 @@ allocate(VSQPtoQPsp_index(VSsp_dim), VStoQPsp_index(VSsp_dim),&
 !! TEST.
 print *, " Test of reading VS to HO. vs(i)=HOsp(vs(i)) :ant"
 do i = 1, VSsp_dim
-  print "(A,3i6)", "i:", i, VStoHOsp_index(i), HOsp_ant(VStoHOsp_index(i))
+  kk = VStoHOsp_index(i)
+  print "(A,3i6,2i4)", "i:", i, kk, HOsp_ant(kk), HOsp_2mj(kk), HOsp_2mt(kk)
 end do
 
 kk = 0
@@ -1390,9 +1401,9 @@ do i = 1, ndim ! QP loop
     found = .TRUE.
 
     kk = kk + 1
-    VSQPtoQPsp_index(kk) = i
+    VSQPtoQPsp_index(kk) =  i
     VStoVSQPsp_index (j) = kk
-    VSQPtoVSsp_index(kk) = j
+    VSQPtoVSsp_index(kk) =  j
     VSQPtoHOsp_index(kk) = k2
     EXIT
   end do
@@ -1412,16 +1423,170 @@ end subroutine sort_quasiparticle_basis
 
 
 !------------------------------------------------------------------------------!
+!  calculate_QuasiParticle_Hamiltonian_H22
+!
+!------------------------------------------------------------------------------!
+subroutine calculate_QuasiParticle_Hamiltonian_H22(bogo_U0, bogo_V0, ndim)
+
+integer, intent(in) :: ndim
+real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0,bogo_V0
+integer   :: i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq3,qq4, sn
+real(r64) :: aux, h2b
+
+sn = ndim / 2
+allocate(U_trans(ndim,ndim), V_trans(ndim,ndim))
+U_trans = zero
+V_trans = zero
+
+allocate(uncoupled_H22_VS(VSsp_dim,VSsp_dim,VSsp_dim,VSsp_dim))
+uncoupled_H22_VS = zero
+
+!! Apply the transformation on the U and V
+call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
+           zero, U_trans, ndim)
+call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
+           zero, V_trans, ndim)
+
+
+!! Re-import the matrix elements of the non-DD hamiltonian from the .red file
+!! TODO: It is necessary to import COM file (supuestamente no guardado)
+
+!! NOTE: hamil_H2 and com were not deallocated
+!hamil_read = 1 ! reduced hamilonian were exported
+!call set_hamiltonian_2body
+!! now we can access hamil_H2
+!! Warning, method to identify the Time Reversal matrix elements.
+
+
+!! Transformation for the QP valence space
+do qq1 = 1, VSsp_dim
+  q1 = VStoVSQPsp_index(qq1)
+
+  do qq2 = 1, VSsp_dim
+    q2 = VStoVSQPsp_index(qq2)
+
+    do qq3 = 1, VSsp_dim
+      q3 = VStoVSQPsp_index(qq3)
+
+      do qq4 = 1, VSsp_dim
+        q4 = VStoVSQPsp_index(qq4)
+
+!! Loop for the HO basis, getting the
+!!---------------------------------------------------------------------------
+!! Loop for the Hamiltonian, using tr and the permutations on the m.e.
+do kk = 1, hamil_H2
+  i1 = hamil_abcd(1+4*(kk-1))
+  i2 = hamil_abcd(2+4*(kk-1))
+  i3 = hamil_abcd(3+4*(kk-1))
+  i4 = hamil_abcd(4+4*(kk-1))
+  h2b = hamil_H2(kk)
+  perm = hamil_trperm(kk)
+
+  aux = zero
+  !!! Loop on time reversal
+  do it = 1, 2
+    if ( it == 2 ) then
+      if ( HOsp_2mj(i1) + HOsp_2mj(i2) == 0 ) cycle
+      call find_timerev(perm,i1,i2,i3,i4)
+      h2b = sign(one,perm*one) * h2b
+    endif
+
+     aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
+     aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i4,i3))
+     aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i3,i4))
+     aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i4,i3))
+
+     if ((kdelta(ia,ic) * kdelta(ib,id)) .EQ. 0) cycle
+
+     aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i1,i2))
+     aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1))
+     aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i1,i2))
+     aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i2,i1))
+  enddo
+
+  !! add the result to the uncoupled quasi particle matrix element
+  uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
+
+end do
+
+!! Loop for the Density Dependent term
+!! (does not use TR and perm. sort but explicit separation on the isospin)
+do kk = 1, hamil_DD_H2dim
+
+  i1 = hamil_DD_abcd(1+4*(kk-1))
+  i2 = hamil_DD_abcd(2+4*(kk-1))
+  i3 = hamil_DD_abcd(3+4*(kk-1))
+  i4 = hamil_DD_abcd(4+4*(kk-1))
+
+  aux = zero
+  aux = aux+ (hamil_DD_H2_byT(1,kk) * &
+              bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
+  aux = aux+ (hamil_DD_H2_byT(2,kk) * &
+              bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2+sn,i3,i4+sn))
+  aux = aux+ (hamil_DD_H2_byT(1,kk) * &
+              bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2+sn,i3+sn,i4))
+  aux = aux+ (hamil_DD_H2_byT(1,kk) * &
+              bogo_UV_operations_for_H22(q1,q2,q3,q4, i1+sn,i2+sn,i3+sn,i4+sn))
+
+  !! add the result to the uncoupled quasi particle matrix element
+  uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
+
+end do
+!!---------------------------------------------------------------------------
+
+      end do
+    end do
+  end do
+end do
+
+end subroutine calculate_QuasiParticle_Hamiltonian_H22
+
+
+!------------------------------------------------------------------------------!
+! function bogo_UV_operations_for_H22                                        !
+! Evaluates the U,V operations for the ho matrix i(1,2,3,4) and qp k(1,2,3,4)  !
+!------------------------------------------------------------------------------!
+real(r64) function bogo_UV_operations_for_H22(k1,k2,k3,k4, i1,i2,i3,i4) &
+                   result (aux)
+integer, intent(in) :: k1,k2,k3,k4, i1,i2,i3,i4, ndim
+
+aux = zero
+!! Without projection, the U and V are real
+
+aux = aux + (U_trans(i1,k1) * V_trans(i4,k2) * U_trans(i2,k3) * V_trans(i3,k4))
+aux = aux - (U_trans(i1,k2) * V_trans(i4,k1) * U_trans(i2,k3) * V_trans(i3,k4))
+aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * U_trans(i2,k4) * V_trans(i3,k3))
+aux = aux + (U_trans(i1,k2) * V_trans(i4,k1) * U_trans(i2,k4) * V_trans(i3,k3))
+
+aux = aux + (U_trans(i1,k1) * U_trans(i2,k2) * U_trans(i3,k3) * U_trans(i4,k4))
+aux = aux + (V_trans(i3,k1) * V_trans(i4,k2) * V_trans(i1,k3) * V_trans(i2,k4))
+
+end function
+
+
+subroutine recouple_QuasiParticle_Hamiltonian_H22(ndim)
+
+integer, intent(in) :: ndim
+integer :: J, M
+
+allocate(reduced_H22_VS(HO_2jmax, 0:5,VSsh_dim,VSsh_dim,VSsh_dim,VSsh_dim))
+
+
+
+
+end subroutine recouple_QuasiParticle_Hamiltonian_H22
+
+!------------------------------------------------------------------------------!
 ! subroutine print_quasipartile_DD_matrix_elements                             !
 !  Export of the DD + Hamil Hamiltonian in a reduced quasiparticle basis using !
 !  formulas of appendix E.2 in Ring-Schuck, modified to apply in the h_sp      !
 !  diagonal basis.                                                             !
 !------------------------------------------------------------------------------!
-subroutine print_quasipartile_DD_matrix_elements(dens_rhoRR, dens_kappaRR, ndim)
-
+subroutine print_quasipartile_DD_matrix_elements(bogo_U0, bogo_V0, &
+                                                 dens_rhoRR, dens_kappaRR, ndim)
 integer, intent(in) :: ndim
-!complex(r64), dimension(ndim,ndim), intent(in) :: bogo_zU0,bogo_zV0
-real(r64), dimension(ndim,ndim), intent(in)    :: dens_rhoRR, dens_kappaRR
+real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0, bogo_V0
+real(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR, dens_kappaRR
 real(r64), dimension(ndim,ndim) :: hspRR_eigenvect, U_trans, V_trans
 
 
@@ -1433,6 +1598,14 @@ print "(A)", "  1[OK] H11 is in diagonal with Jz."
 print "(A)", "  2[  ] Sorting the QP states for the Valence sp. identification"
 call sort_quasiparticle_basis(ndim)
 print "(A)", "  2[OK] Sorting the QP states for the Valence sp. identification"
+
+print "(A)", "  3[  ] Computing the Hamiltonian states in the QP basis"
+call calculate_QuasiParticle_Hamiltonian_H22(bogo_U0, bogo_V0,ndim)
+print "(A)", "  3[OK] Computing the Hamiltonian states in the QP basis"
+
+print "(A)", "  4[  ] Recouple the H22 hamilonian."
+call recouple_QuasiParticle_Hamiltonian_H22(ndim)
+print "(A)", "  4[OK] Recouple the H22 hamilonian."
 
 end subroutine print_quasipartile_DD_matrix_elements
 
