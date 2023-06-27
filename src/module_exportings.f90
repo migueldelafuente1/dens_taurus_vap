@@ -1580,12 +1580,134 @@ end function
 subroutine recouple_QuasiParticle_Hamiltonian_H22(ndim)
 
 integer, intent(in) :: ndim
-integer :: J, M
+integer :: q1,q2,q3,q4, qq1,qq2,qq3,qq4, i1,i2,i3,i4, sh1,sh2,sh3,sh4, &
+          J, M, Jmax, Jmin, tt1, tt2, tt
+real(r64) :: aux1, aux2, h2b
+logical :: all_zero
 
 allocate(reduced_H22_VS(HO_2jmax, 0:5,VSsh_dim,VSsh_dim,VSsh_dim,VSsh_dim))
 
+reduced_H22_VS = zero
 
+do qq1 = 1, VSsp_dim
+  i1  = VStoHOsp_index(qq1)
+  sh1 = HOsp_sh(i1)
 
+  do qq2 = 1, VSsp_dim
+    i2  = VStoHOsp_index(qq2)
+    sh2 = HOsp_sh(i2)
+    tt1 = 2*HOsp_2mt(i1) + HOsp_2mt(i2) !-3(pp), -1(pn), 1(np), 3(nn)
+
+    Jmax =    (HOsp_2j(i1) + HOsp_2j(i2))  / 2
+    Jmin = abs(HOsp_2j(i1) - HOsp_2j(i2))  / 2
+    M    =    HOsp_2mj(i1) + HOsp_2mj(i2) !divide after filter in ket
+    do qq3 = 1, VSsp_dim
+      i3  = VStoHOsp_index(qq3)
+      sh3 = HOsp_sh(i3)
+
+      do qq4 = 1, VSsp_dim
+        i4  = VStoHOsp_index(qq4)
+        sh4 = HOsp_sh(i4)
+        tt2 = 2*HOsp_2mt(i3) + HOsp_2mt(i4)
+
+        if (abs(tt1 + tt2) .NE. 0) cycle ! isospin is conserved
+
+        if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .LT. 1.0d-6) cycle
+        if (HOsp_2mj(i3) + HOsp_2mj(i4) .NE. M) cycle
+        M = M / 2
+
+        Jmax = min(Jmax,    (HOsp_2j(i1) + HOsp_2j(i2))  / 2)
+        Jmin = max(Jmin, abs(HOsp_2j(i1) - HOsp_2j(i2))  / 2)
+        h2b  = uncoupled_H22_VS(qq1,qq2,qq3,qq4)
+        ! select the isospin
+        if (tt1.EQ.-3) then
+          tt = 0
+        else if (tt1.EQ. 3) then
+          tt = 5
+        else
+          tt = 3 + ((2*tt1 + tt2 - 1) / 2) !pnpn=1, pnnp=2, nppn=3, npnp=4
+        end if
+
+        do J = Jmin, Jmax
+          call ClebschGordan(HOsp_2j (i1), HOsp_2j (i2), 2*J,&
+                             HOsp_2mj(i1), HOsp_2mj(i2), 2*M, aux1)
+          call ClebschGordan(HOsp_2j (i3), HOsp_2j (i4), 2*J,&
+                             HOsp_2mj(i3), HOsp_2mj(i4), 2*M, aux2)
+
+          reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4) = (aux1 * aux2 * h2b) &
+               + reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4)
+        end do
+
+      end do
+    end do
+    print "(A,2i5,A,i5)", "Recoupl. loop 2:", qq1,qq2," of ",VSsp_dim
+  end do
+end do
+
+!! export the reduced matrix element .2b, .01. and .sho
+OPEN(3300, file="hamilQPD1S.sho")
+!OPEN(3301, file="hamilQPD1S.01")
+OPEN(3302, file="hamilQPD1S.2b")
+do sh1 = 1, VSsh_dim
+  ! print here the sho QP energies
+  WRITE(3300, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
+  WRITE(3300, fmt="(A)") "4"
+  WRITE(3300, fmt="(i8)", advance='no') VSsh_dim
+  do sh1 = 1, VSsh_dim
+    WRITE(3300, fmt="(i6)", advance='no') VSsh_list(sh1)
+  end do
+  WRITE(3300, fmt="(A)") ""
+!  WRITE(3300, fmt="(i8)", advance='no') VSsh_dim
+!  do sh1 = 1, VSsh_dim
+!    WRITE(3300, fmt="(f7.4)", advance='no') eigen_H11(VStoVSQPsp_index(sh1))
+!  end do
+  WRITE(3300, fmt="(A,F11.9)") "2 ", HO_hw
+
+  !proceed with the
+  do sh2 = sh1, VSsh_dim
+    do sh3 = sh1, VSsh_dim
+      do sh4 = sh3, VSsh_dim
+
+        i1 = VStoHOsh_index(sh1)
+        i2 = VStoHOsh_index(sh2)
+        i3 = VStoHOsh_index(sh3)
+        i4 = VStoHOsh_index(sh4)
+
+        Jmax =    (HOsp_2j(i1) + HOsp_2j(i2))  / 2
+        Jmin = abs(HOsp_2j(i1) - HOsp_2j(i2))  / 2
+        Jmax = min(Jmax,    (HOsp_2j(i1) + HOsp_2j(i2))  / 2)
+        Jmin = max(Jmin, abs(HOsp_2j(i1) - HOsp_2j(i2))  / 2)
+
+        ! check if all are zero to avoid
+        all_zero = .TRUE.
+        do J = Jmin, Jmax
+          do tt = 0, 5
+            if (abs(reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4)).GT.1.0d-9) then
+              all_zero = .FALSE.
+              endif
+          end do
+        end do
+        if (all_zero) cycle
+
+        ! print first line, then each of the J values,
+        WRITE(3302,fmt="(A,4i7,2i3)") " 0 5", VSsh_list(sh1), VSsh_list(sh2), &
+                                    VSsh_list(sh3), VSsh_list(sh4), Jmin, Jmax
+        do J = Jmin, Jmax
+          do tt = 0, 5
+            WRITE(3302, fmt="(f14.9)", advance='no') &
+                reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4)
+          end do
+          WRITE(3302, fmt="(A)") ""
+        end do
+
+      end do
+    end do
+  end do
+end do
+
+CLOSE(3300)
+!CLOSE(3301)
+CLOSE(3302)
 
 end subroutine recouple_QuasiParticle_Hamiltonian_H22
 
