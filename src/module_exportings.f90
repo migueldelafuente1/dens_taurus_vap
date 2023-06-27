@@ -1430,7 +1430,8 @@ subroutine calculate_QuasiParticle_Hamiltonian_H22(bogo_U0, bogo_V0, ndim)
 
 integer, intent(in) :: ndim
 real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0,bogo_V0
-integer   :: i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq3,qq4, sn
+integer   :: i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it
+integer(i8) :: perm
 real(r64) :: aux, h2b
 
 sn = ndim / 2
@@ -1479,7 +1480,7 @@ do kk = 1, hamil_H2
   i2 = hamil_abcd(2+4*(kk-1))
   i3 = hamil_abcd(3+4*(kk-1))
   i4 = hamil_abcd(4+4*(kk-1))
-  h2b = hamil_H2(kk)
+  h2b  = hamil_H2(kk)
   perm = hamil_trperm(kk)
 
   aux = zero
