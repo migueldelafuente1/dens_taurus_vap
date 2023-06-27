@@ -1653,8 +1653,8 @@ do sh1 = 1, VSsh_dim
   WRITE(3300, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
   WRITE(3300, fmt="(A)") "4"
   WRITE(3300, fmt="(i8)", advance='no') VSsh_dim
-  do sh1 = 1, VSsh_dim
-    WRITE(3300, fmt="(i6)", advance='no') VSsh_list(sh1)
+  do sh2 = 1, VSsh_dim
+    WRITE(3300, fmt="(i6)", advance='no') VSsh_list(sh2)
   end do
   WRITE(3300, fmt="(A)") ""
 !  WRITE(3300, fmt="(i8)", advance='no') VSsh_dim
