@@ -1430,8 +1430,7 @@ subroutine calculate_QuasiParticle_Hamiltonian_H22(bogo_U0, bogo_V0, ndim)
 
 integer, intent(in) :: ndim
 real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0,bogo_V0
-integer   :: i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it
-integer(i8) :: perm
+integer   :: i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it, perm
 real(r64) :: aux, h2b
 
 sn = ndim / 2
@@ -1475,7 +1474,7 @@ do qq1 = 1, VSsp_dim
 !! Loop for the HO basis, getting the
 !!---------------------------------------------------------------------------
 !! Loop for the Hamiltonian, using tr and the permutations on the m.e.
-do kk = 1, hamil_H2
+do kk = 1, hamil_H2dim
   i1 = hamil_abcd(1+4*(kk-1))
   i2 = hamil_abcd(2+4*(kk-1))
   i3 = hamil_abcd(3+4*(kk-1))
@@ -1497,7 +1496,7 @@ do kk = 1, hamil_H2
      aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i3,i4))
      aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i4,i3))
 
-     if ((kdelta(ia,ic) * kdelta(ib,id)) .EQ. 0) cycle
+     if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 0) cycle
 
      aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i1,i2))
      aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1))
@@ -1549,7 +1548,7 @@ end subroutine calculate_QuasiParticle_Hamiltonian_H22
 !------------------------------------------------------------------------------!
 real(r64) function bogo_UV_operations_for_H22(k1,k2,k3,k4, i1,i2,i3,i4) &
                    result (aux)
-integer, intent(in) :: k1,k2,k3,k4, i1,i2,i3,i4, ndim
+integer, intent(in) :: k1,k2,k3,k4, i1,i2,i3,i4
 
 aux = zero
 !! Without projection, the U and V are real
@@ -1565,6 +1564,10 @@ aux = aux + (V_trans(i3,k1) * V_trans(i4,k2) * V_trans(i1,k3) * V_trans(i2,k4))
 end function
 
 
+!------------------------------------------------------------------------------!
+! subroutine recouple_QuasiParticle_Hamiltonian_H22                            !
+!   Subroutine to recouple to J of the quasiparticle states and export it.     !
+!------------------------------------------------------------------------------!
 subroutine recouple_QuasiParticle_Hamiltonian_H22(ndim)
 
 integer, intent(in) :: ndim
