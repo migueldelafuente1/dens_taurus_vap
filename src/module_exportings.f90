@@ -1704,7 +1704,7 @@ WRITE(3300, fmt="(A)") "4"
 WRITE(3301, fmt="(F15.9)") last_HFB_energy
 print "(A)", " [  ] Printing the shell states for 2b, "
 do sh1 = 1, VSsh_dim
-  WRITE(3301, fmt="(2i6,f9.4)") &
+  WRITE(3301, fmt="(2i6,2f9.4)") &
     HOsh_na(sh1), HOsh_na(sh1), H11_qp2print(1,sh1), H11_qp2print(2,sh1)
 
   do sh2 = sh1, VSsh_dim
