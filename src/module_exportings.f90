@@ -1591,7 +1591,7 @@ allocate(all_zeroReduced_sh(VSsh_dim,VSsh_dim,VSsh_dim,VSsh_dim))
 reduced_H22_VS = zero
 all_zeroReduced_sh = .TRUE.
 
-do qq1 = 1, VSsp_dim
+do qq1 = 1, 3!VSsp_dim
   i1  = VStoHOsp_index(qq1)
   sh1 = HOsp_sh(i1)
 
