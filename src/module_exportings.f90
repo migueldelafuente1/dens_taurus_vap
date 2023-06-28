@@ -1459,32 +1459,32 @@ call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
 !! Warning, method to identify the Time Reversal matrix elements.
 
 ! TEST: export the Transformed  U and V
-open(334, file='Utrans.gut')
-do i1 = 1, ndim
-  do i2 = 1, ndim
-    write(334,fmt="(f10.6)", advance='no') U_trans(i1,i2)
-  end do
-  write(334, fmt="(A)") ""
-end do
-close(334)
-open(334, file='Vtrans.gut')
-do i1 = 1, ndim
-  do i2 = 1, ndim
-    write(334,fmt="(f10.6)", advance='no') V_trans(i1,i2)
-  end do
-  write(334, fmt="(A)") ""
-end do
-close(334)
+!open(334, file='Utrans.gut')
+!do i1 = 1, ndim
+!  do i2 = 1, ndim
+!    write(334,fmt="(f10.6)", advance='no') U_trans(i1,i2)
+!  end do
+!  write(334, fmt="(A)") ""
+!end do
+!close(334)
+!open(334, file='Vtrans.gut')
+!do i1 = 1, ndim
+!  do i2 = 1, ndim
+!    write(334,fmt="(f10.6)", advance='no') V_trans(i1,i2)
+!  end do
+!  write(334, fmt="(A)") ""
+!end do
+!close(334)
 
 ! TEST: Use it to evaluate the result of the QP hamil
-open(334, file='uncoupled_hamil_qp.txt')
-do i1 = 1, 7157
-  read(334,"(4i5,1f12.6)") qq1, qq2, qq3, qq4, h2b
-  uncoupled_H22_VS(qq1,qq2,qq3,qq4) = h2b
-enddo
-close(334)
-
-return
+!open(334, file='uncoupled_hamil_qp.txt')
+!do i1 = 1, 7157
+!  read(334,"(4i5,1f12.6)") qq1, qq2, qq3, qq4, h2b
+!  uncoupled_H22_VS(qq1,qq2,qq3,qq4) = h2b
+!enddo
+!close(334)
+!
+!return
 
 
 !! Transformation for the QP valence space
