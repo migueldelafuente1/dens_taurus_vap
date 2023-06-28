@@ -2885,12 +2885,13 @@ enddo
 
 !! save the last EDF HFB of the DD term
 last_HFB_energy = zero
-call zgemm('n','n',ndim,ndim,ndim,zone,hamil_H1,ndim,rhoLR,ndim,zzero,A1,ndim)
-call zgemm('n','n',ndim,ndim,ndim,zone,gammaLR,ndim,rhoLR,ndim,zzero,A2,ndim)
+call zgemm('n','n',ndim,ndim,ndim,zone,hamil_H1,ndim,rhoLR,ndim,zzero, A1,ndim)
+call zgemm('n','n',ndim,ndim,ndim,zone,gammaLR ,ndim,rhoLR,ndim,zzero, A2,ndim)
 call zgemm('n','n',ndim,ndim,ndim,zone,deltaLR,ndim,kappaLR,ndim,zzero,A3,ndim)
 do a=1, ndim
-  last_HFB_energy = A1(a,a) + 0.5d0 * A2(a,a) - 0.5d0 * A3(a,a)
+  last_HFB_energy = A1(a,a) + 0.5d0 * (A2(a,a) - A3(a,a))
 end do
+print "(A,F12.9)", "last HFB energy"
 
 
 if (PRNT_) then

@@ -1628,7 +1628,7 @@ do qq1 = 1, VSsp_dim
 
   !! save the last energy of the QP eigenstate (will save the last mj)
   do kk = 1, VSsh_dim
-    if (VSsh_list(kk) .NE. HOsh_na(sh1)) cycle
+    if (VSsh_list(kk) .NE. (sh1)) cycle
     H11_qp2print( (3+HOsp_2mt(i1))/2, sh1) = eigen_H11(qq1)
   end do
 
@@ -1704,8 +1704,9 @@ WRITE(3300, fmt="(A)") "4"
 WRITE(3301, fmt="(F15.9)") last_HFB_energy
 print "(A)", " [  ] Printing the shell states for 2b, "
 do sh1 = 1, VSsh_dim
+  kk = VStoVSQPsp_index(sh1)
   WRITE(3301, fmt="(2i6,2f9.4)") &
-    HOsh_na(sh1), HOsh_na(sh1), H11_qp2print(1,sh1), H11_qp2print(2,sh1)
+    HOsh_na(kk), HOsh_na(kk), H11_qp2print(1,kk), H11_qp2print(2,kk)
 
   do sh2 = sh1, VSsh_dim
     do sh3 = sh1, VSsh_dim
