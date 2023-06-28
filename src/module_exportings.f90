@@ -1581,7 +1581,7 @@ subroutine recouple_QuasiParticle_Hamiltonian_H22(ndim)
 
 integer, intent(in) :: ndim
 integer :: q1,q2,q3,q4, qq1,qq2,qq3,qq4, i1,i2,i3,i4, sh1,sh2,sh3,sh4, &
-          J, M, Jmax, Jmin, tt1, tt2, tt
+          J, M, Jmax, Jmin, tt1, tt2, tt, kk
 real(r64) :: aux1, aux2, h2b, aux_val
 logical :: all_zero
 logical, dimension(:,:,:,:), allocatable :: all_zeroReduced_sh
@@ -1603,6 +1603,7 @@ do qq1 = 1, VSsp_dim
     Jmax =    (HOsp_2j(i1) + HOsp_2j(i2))  / 2
     Jmin = abs(HOsp_2j(i1) - HOsp_2j(i2))  / 2
     M    =    HOsp_2mj(i1) + HOsp_2mj(i2) !divide after filter in ket
+    kk = 0
     do qq3 = 1, VSsp_dim
       i3  = VStoHOsp_index(qq3)
       sh3 = HOsp_sh(i3)
@@ -1638,7 +1639,8 @@ do qq1 = 1, VSsp_dim
 
           aux_val = aux1 * aux2 * h2b
           if (abs(aux_val) .GT. 1.0e-9) then
-            all_zeroReduced_sh(sh1,sh2,sh3,sh4) = .TRUE.
+            kk = kk + 1
+            all_zeroReduced_sh(sh1,sh2,sh3,sh4) = .FALSE.
             reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4) = aux_val &
                                         + reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4)
           endif
@@ -1646,7 +1648,7 @@ do qq1 = 1, VSsp_dim
 
       end do
     end do
-    print "(A,2i5,A,i5)", "Recoupl. loop 2:", qq1,qq2," of ",VSsp_dim
+    print "(A,2i5,2(A,i5))", "Recoup.loop 2:",qq1,qq2," of",VSsp_dim, " nz=",kk
   end do
 end do
 
@@ -1659,6 +1661,7 @@ WRITE(3300, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
 WRITE(3302, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
 
 WRITE(3300, fmt="(A)") "4"
+print "(A)", " [  ] Printing the shell states for 2b, "
 do sh1 = 1, VSsh_dim
   !proceed with the
   do sh2 = sh1, VSsh_dim
@@ -1676,16 +1679,17 @@ do sh1 = 1, VSsh_dim
         Jmin = max(Jmin, abs(HOsp_2j(i1) - HOsp_2j(i2))  / 2)
 
         ! check if all are zero to avoid
-        all_zero = .TRUE.
-        do J = Jmin, Jmax
-          do tt = 0, 5
-            if (abs(reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4)).GT.1.0d-9) then
-              all_zero = .FALSE.
-              endif
-          end do
-        end do
-        if (all_zero) cycle
+!        all_zero = .TRUE.
+!        do J = Jmin, Jmax
+!          do tt = 0, 5
+!            if (abs(reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4)).GT.1.0d-9) then
+!              all_zero = .FALSE.
+!              endif
+!          end do
+!        end do
+!        if (all_zero) cycle
 
+        if ( all_zeroReduced_sh(sh1, sh2, sh3, sh4) ) cycle
         ! print first line, then each of the J values,
         WRITE(3302,fmt="(A,4i7,2i3)") " 0 5", VSsh_list(sh1), VSsh_list(sh2), &
                                     VSsh_list(sh3), VSsh_list(sh4), Jmin, Jmax
@@ -1701,6 +1705,7 @@ do sh1 = 1, VSsh_dim
     end do
   end do
 end do
+print "(A)", " [OK] Printing the shell states for 2b"
 
 WRITE(3300, fmt="(i8)", advance='no') VSsh_dim
 do sh1 = 1, VSsh_dim
@@ -1709,8 +1714,9 @@ end do
 WRITE(3300, fmt="(A)") ""
 WRITE(3300, fmt="(i8)", advance='no') VSsh_dim
 do sh1 = 1, VSsh_dim
-  WRITE(3300, fmt="(f7.4)", advance='no') eigen_H11(VStoVSQPsp_index(sh1))
+  WRITE(3300, fmt="(f9.4)", advance='no') eigen_H11(VStoVSQPsp_index(sh1))
 end do
+WRITE(3300, fmt="(A)") ""
 WRITE(3300, fmt="(A,F15.9)") "2 ", HO_hw
 
 CLOSE(3300)
