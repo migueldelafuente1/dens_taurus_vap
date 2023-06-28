@@ -1622,6 +1622,12 @@ reduced_H22_VS = zero
 all_zeroReduced_sh = .TRUE.
 H11_qp2print = zero
 
+print "(A)", " ** reading the VSsh and VSQPsh"
+do qq1 = 1, VSsh_dim
+  print "(3i3,2i5)", qq1, VSsh_list(qq1)
+end do
+
+print "(A)", " ** reading the VSsh and VSQPsh"
 do qq1 = 1, VSsp_dim
   i1  = VStoHOsp_index(qq1)
   sh1 = HOsp_sh(i1)
@@ -1633,6 +1639,7 @@ do qq1 = 1, VSsp_dim
       VSsh_list(kk) .NE. HOsp_ant(VSQPtoHOsp_index(qq1))
     if (VSsh_list(kk) .NE. HOsp_ant(VSQPtoHOsp_index(qq1)) ) cycle
     H11_qp2print( (3+HOsp_2mt(i1))/2, kk) = eigen_H11(VStoHOsp_index(qq1))
+    EXIT
   end do
   print "(A)", " ----------------  "
 
@@ -1707,9 +1714,9 @@ WRITE(3300, fmt="(A)") "4"
 WRITE(3301, fmt="(F15.9)") last_HFB_energy
 print "(A)", " [  ] Printing the shell states for 2b, "
 do sh1 = 1, VSsh_dim
-  kk = VStoVSQPsp_index(sh1)
+  kk = VStoHOsh_index(sh1)
   WRITE(3301, fmt="(2i6,2f9.4)") &
-    HOsh_na(kk), HOsh_na(kk), H11_qp2print(1,kk), H11_qp2print(2,kk)
+    HOsh_na(kk), HOsh_na(kk), H11_qp2print(1,sh1), H11_qp2print(2,sh1)
 
   do sh2 = sh1, VSsh_dim
     do sh3 = sh1, VSsh_dim
