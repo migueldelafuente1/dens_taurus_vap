@@ -1628,10 +1628,12 @@ do qq1 = 1, VSsp_dim
 
   !! save the last energy of the QP eigenstate (will save the last mj)
   do kk = 1, VSsh_dim
+    print "(4i4,A,2i6)", qq1, i1, sh1, kk, " -> ", &
+      VSsh_list(kk), HOsp_ant(VStoVSQPsp_index(qq1))
     if (VSsh_list(kk) .NE. (HOsp_ant(VStoVSQPsp_index(qq1))) ) cycle
     H11_qp2print( (3+HOsp_2mt(i1))/2, sh1) = eigen_H11(qq1)
   end do
-
+  print "(A)", " ----------------  "
 
   do qq2 = 1, VSsp_dim
     i2  = VStoHOsp_index(qq2)
@@ -1746,7 +1748,7 @@ do sh1 = 1, VSsh_dim
   WRITE(3300, fmt="(i6)", advance='no') VSsh_list(sh1)
 end do
 WRITE(3300, fmt="(A)") ""
-WRITE(3300, fmt="(i8)", advance='no') VSsh_dim
+WRITE(3300, fmt="(2i4)", advance='no') nint(nucleus_Z), nint(nucleus_N)
 WRITE(3300, fmt="(A)") ""
 WRITE(3300, fmt="(A,F15.9)") "2 ", HO_hw
 
