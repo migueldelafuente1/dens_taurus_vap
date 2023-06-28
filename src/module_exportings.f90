@@ -1463,7 +1463,7 @@ do i1 = 1, ndim
   do i2 = 1, ndim
     write(334,fmt="(f10.6)", advance='no') U_trans(i1,i2)
   end do
-  write(334, fmt="(A)"), ""
+  write(334, fmt="(A)") ""
 end do
 close(334)
 open(334, file='Vtrans.gut')
@@ -1471,7 +1471,7 @@ do i1 = 1, ndim
   do i2 = 1, ndim
     write(334,fmt="(f10.6)", advance='no') V_trans(i1,i2)
   end do
-  write(334, fmt="(A)"), ""
+  write(334, fmt="(A)") ""
 end do
 close(334)
 
@@ -1704,7 +1704,7 @@ WRITE(3300, fmt="(A)") "4"
 WRITE(3301, fmt="(F15.9)") last_HFB_energy
 print "(A)", " [  ] Printing the shell states for 2b, "
 do sh1 = 1, VSsh_dim
-  WRITE(3301, fmt="(f9.4)") &
+  WRITE(3301, fmt="(2i6,f9.4)") &
     HOsh_na(sh1), HOsh_na(sh1), H11_qp2print(1,sh1), H11_qp2print(2,sh1)
 
   do sh2 = sh1, VSsh_dim
