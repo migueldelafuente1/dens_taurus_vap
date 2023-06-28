@@ -1554,9 +1554,9 @@ do kk = 1, hamil_DD_H2dim
               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
   aux = aux+ (hamil_DD_H2_byT(2,kk) * &
               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2+sn,i3,i4+sn))
-  aux = aux+ (hamil_DD_H2_byT(1,kk) * &
+  aux = aux+ (hamil_DD_H2_byT(3,kk) * &
               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2+sn,i3+sn,i4))
-  aux = aux+ (hamil_DD_H2_byT(1,kk) * &
+  aux = aux+ (hamil_DD_H2_byT(4,kk) * &
               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1+sn,i2+sn,i3+sn,i4+sn))
 
   !! add the result to the uncoupled quasi particle matrix element
