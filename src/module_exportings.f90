@@ -1625,7 +1625,7 @@ H11_qp2print = zero
 
 print "(A)", " ** reading the VSsh and VSQPsh"
 do qq1 = 1, VSsh_dim
-  print "(3i3,2i5)", qq1, VSsh_list(qq1)
+  print "(3i6)", qq1, VSsh_list(qq1)
 end do
 
 print "(A)", " ** reading the VSsh and VSQPsh"
@@ -1636,9 +1636,8 @@ do qq1 = 1, VSsp_dim
   !! save the last energy of the QP eigenstate (will save the last mj)
   do kk = 1, VSsh_dim
     print "(5i4,A,2i6,L4)", qq1, i1, sh1, kk, (3+HOsp_2mt(i1))/2, " -> ", &
-      VSsh_list(kk), HOsp_ant(VStoVSQPsp_index(qq1)), &
-      VSsh_list(kk) .NE. HOsp_ant(VSQPtoHOsp_index(qq1))
-    if (VSsh_list(kk) .NE. HOsp_ant(VSQPtoHOsp_index(qq1)) ) cycle
+      VSsh_list(kk), HOsh_na(sh1), VSsh_list(kk) .NE. HOsh_na(sh1)
+    if (VSsh_list(kk) .NE. HOsh_na(sh1) ) cycle
     H11_qp2print( (3+HOsp_2mt(i1))/2, kk) = eigen_H11(VStoQPsp_index(qq1))
     EXIT
   end do
