@@ -1457,6 +1457,34 @@ call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
 !! now we can access hamil_H2
 !! Warning, method to identify the Time Reversal matrix elements.
 
+! TEST: export the Transformed  U and V
+open(334, file='Utrans.gut')
+do i1 = 1, ndim
+  do i2 = 1, ndim
+    write(334,fmt="(f10.6)", advance='no') U_trans(i1,i2)
+  end do
+  write(334, fmt="(A)"), ""
+end do
+close(334)
+open(334, file='Vtrans.gut')
+do i1 = 1, ndim
+  do i2 = 1, ndim
+    write(334,fmt="(f10.6)", advance='no') V_trans(i1,i2)
+  end do
+  write(334, fmt="(A)"), ""
+end do
+close(334)
+
+! TEST: Use it to evaluate the result of the QP hamil
+open(334, file='uncoupled_hamil_qp.txt')
+do i1 = 1, 7157
+  read(334,"(4i5,1f12.6)") qq1, qq2, qq3, qq4, h2b
+  uncoupled_H22_VS(qq1,qq2,qq3,qq4) = h2b
+enddo
+close(334)
+
+return
+
 
 !! Transformation for the QP valence space
 open(334, file='uncoupled_hamil_qp.txt')
@@ -1585,15 +1613,25 @@ integer :: q1,q2,q3,q4, qq1,qq2,qq3,qq4, i1,i2,i3,i4, sh1,sh2,sh3,sh4, &
 real(r64) :: aux1, aux2, h2b, aux_val
 logical :: all_zero
 logical, dimension(:,:,:,:), allocatable :: all_zeroReduced_sh
+real(r64), dimension(:,:), allocatable   :: H11_qp2print
 
 allocate(reduced_H22_VS(HO_2jmax, 0:5,VSsh_dim,VSsh_dim,VSsh_dim,VSsh_dim))
 allocate(all_zeroReduced_sh(VSsh_dim,VSsh_dim,VSsh_dim,VSsh_dim))
+allocate(H11_qp2print(2,VSsh_dim))
 reduced_H22_VS = zero
 all_zeroReduced_sh = .TRUE.
+H11_qp2print = zero
 
-do qq1 = 1, 3!VSsp_dim
+do qq1 = 1, VSsp_dim
   i1  = VStoHOsp_index(qq1)
   sh1 = HOsp_sh(i1)
+
+  !! save the last energy of the QP eigenstate (will save the last mj)
+  do kk = 1, VSsh_dim
+    if (VSsh_list(kk) .NE. HOsh_na(sh1)) cycle
+    H11_qp2print( (3+HOsp_2mt(i1))/2, sh1) = eigen_H11(qq1)
+  end do
+
 
   do qq2 = 1, VSsp_dim
     i2  = VStoHOsp_index(qq2)
@@ -1655,16 +1693,20 @@ end do
 
 !! export the reduced matrix element .2b, .01. and .sho
 OPEN(3300, file="hamilQPD1S.sho")
-!OPEN(3301, file="hamilQPD1S.01")
+OPEN(3301, file="hamilQPD1S.01")
 OPEN(3302, file="hamilQPD1S.2b")
 
 WRITE(3300, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
+WRITE(3301, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
 WRITE(3302, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
 
 WRITE(3300, fmt="(A)") "4"
+WRITE(3301, fmt="(F15.9)") last_HFB_energy
 print "(A)", " [  ] Printing the shell states for 2b, "
 do sh1 = 1, VSsh_dim
-  !proceed with the
+  WRITE(3301, fmt="(f9.4)") &
+    HOsh_na(sh1), HOsh_na(sh1), H11_qp2print(1,sh1), H11_qp2print(2,sh1)
+
   do sh2 = sh1, VSsh_dim
     do sh3 = sh1, VSsh_dim
       do sh4 = sh3, VSsh_dim
@@ -1700,18 +1742,15 @@ print "(A)", " [OK] Printing the shell states for 2b"
 
 WRITE(3300, fmt="(i8)", advance='no') VSsh_dim
 do sh1 = 1, VSsh_dim
-    WRITE(3300, fmt="(i6)", advance='no') VSsh_list(sh1)
+  WRITE(3300, fmt="(i6)", advance='no') VSsh_list(sh1)
 end do
 WRITE(3300, fmt="(A)") ""
 WRITE(3300, fmt="(i8)", advance='no') VSsh_dim
-do sh1 = 1, VSsh_dim
-  WRITE(3300, fmt="(f9.4)", advance='no') eigen_H11(VStoVSQPsp_index(sh1))
-end do
 WRITE(3300, fmt="(A)") ""
 WRITE(3300, fmt="(A,F15.9)") "2 ", HO_hw
 
 CLOSE(3300)
-!CLOSE(3301)
+CLOSE(3301)
 CLOSE(3302)
 
 end subroutine recouple_QuasiParticle_Hamiltonian_H22

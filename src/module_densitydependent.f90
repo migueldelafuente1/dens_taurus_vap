@@ -95,6 +95,7 @@ complex(r64), dimension(:,:), allocatable     :: rearrang_field    !(isp1, isp2)
 complex(r64), dimension(:,:,:,:), allocatable :: rea_common_RadAng !(isp1,isp2, ir,iang)
 complex(r64), dimension(:,:), allocatable     :: REACommonFields   !(ir, iang))
 complex(r64), dimension(:,:), allocatable     :: fixed_rearrang_field
+real(r64) :: last_HFB_energy
 
 integer, dimension(:), allocatable :: HOsh_ant, HOsp_ant
 
@@ -2401,80 +2402,6 @@ do kk = 1, hamil_DD_H2dim
       ")",HOsp_ant(ic),"(",HOsp_2mj(ic),")",HOsp_ant(id),"(",HOsp_2mj(id),")",&
       " perm= ", perm*(abs(1-it) + 10*(2-it))
 
-!    !!! Calculation of Delta^10 and Delta^01
-!    deltaLR_DD(ib,ia) = deltaLR_DD(ib,ia) + h2b * kappaLR(id,ic)
-!    deltaRL_DD(ib,ia) = deltaRL_DD(ib,ia) + h2b * kappaRL(id,ic)
-!
-!if ((ia==A_print).and.(ic==C_print)) then   !!!==========================
-!  aux = dreal(h2b*rhoLR(id,ib))
-!  print"(A,2I3,A,F18.15,2A)",g_str,it,BI," [  0]",aux," from <",mestr
-!end if    !!!============================================
-!    !!! Calculation of Gamma
-!    gammaLR_DD(ia,ic)   = gammaLR_DD(ia,ic) + h2b * rhoLR(id,ib)
-!    if (evalFullSPSpace) cycle
-!
-!    if ( ic /= id ) then
-!      gammaLR_DD(ia,id) = gammaLR_DD(ia,id) - h2b * rhoLR(ic,ib)
-!if ((ia==A_print).and.(id==C_print)) then   !!!===============================
-!  aux = dreal(-h2b*rhoLR(ic,ib))
-!  print "(A,2I3,A,F18.15,2A)",g_str,it,BI," [1cd]",aux," from <",mestr
-!endif   !!!============================================
-!    endif
-!
-!    if ( ib /= ia ) then
-!      gammaLR_DD(ib,ic) = gammaLR_DD(ib,ic) - h2b * rhoLR(id,ia)
-!if ((ib==A_print).and.(ic==C_print)) then   !!!===============================
-!  aux = dreal(-h2b*rhoLR(id,ia))
-!  print "(A,2I3,A,F18.15,2A)",g_str,it,BI," [2ba]",aux," from <",mestr
-!end if   !!!============================================
-!    endif
-!
-!    if ( (ib /= ia) .and. (ic /= id) ) then
-!      gammaLR_DD(ib,id) = gammaLR_DD(ib,id) + h2b * rhoLR(ic,ia)
-!if ((ib==A_print).and.(id==C_print)) then   !!!==============================
-!  aux = dreal(h2b*rhoLR(ic,ia))
-!  print "(A,2I3,A,F18.15,2A)",g_str,it,BI," [  3]",aux," from <",mestr
-!end if   !!!============================================
-!    endif
-!
-!    if ( (ia /= ic) .or. (ib /= id) ) then
-!      !! Complete the delta Field for <cd | ab>
-!      deltaLR_DD(id,ic) = deltaLR_DD(id,ic) + h2b * kappaLR(ib,ia)
-!      deltaRL_DD(id,ic) = deltaRL_DD(id,ic) + h2b * kappaRL(ib,ia)
-!
-!      !! Gamma field for bra-ket change <cd | ab>
-!      gammaLR_DD(ic,ia)   = gammaLR_DD(ic,ia) + h2b * rhoLR(ib,id)
-!if ((ic==A_print).and.(ia==C_print)) then   !!!===============================
-!  aux = dreal(h2b*rhoLR(ib,id))
-!  print "(A,2I3,A,F18.15,2A)",g_str,it,BI," [  4]",aux," from <", mestr
-!end if   !!!============================================
-!
-!      if ( ia /= ib ) then
-!        gammaLR_DD(ic,ib) = gammaLR_DD(ic,ib) - h2b * rhoLR(ia,id)
-!if ((ic==A_print).and.(ib==C_print)) then   !!!===============================
-!  aux = dreal(-h2b*rhoLR(ia,id))
-!  print "(A,2I3,A,F18.15,2A)",g_str,it,BI," [5ba]",aux," from <",mestr
-!end if   !!!============================================
-!      endif
-!
-!      if ( ic /= id ) then
-!        gammaLR_DD(id,ia) = gammaLR_DD(id,ia) - h2b * rhoLR(ib,ic)
-!if ((id==A_print).and.(ia==C_print)) then   !!!===============================
-!  aux = dreal(-h2b*rhoLR(ib,ic))
-!  print "(A,2I3,A,F18.15,2A)",g_str,it,BI," [6dc]",aux," from <",mestr
-!end if   !!!============================================
-!      endif
-!
-!      if ( (ib /= ia) .and. (ic /= id) ) then
-!        gammaLR_DD(id,ib) = gammaLR_DD(id,ib) + h2b * rhoLR(ia,ic)
-!if ((id==A_print).and.(ib==C_print)) then   !!!==============================
-!  aux = dreal(h2b*rhoLR(ia,ic))
-!  print "(A,2I3,A,F18.15,2A)",g_str,it,BI," [  7]",aux," from <",mestr
-!end if   !!!============================================
-!      endif
-!
-!    endif
-
     !!! Faster than using if ((a /= c).or.(b /= d))
     f2b = h2b * (1 - (kdelta(ia,ic) * kdelta(ib,id)))
 
@@ -2759,7 +2686,7 @@ complex(r64), dimension(ndim,ndim)             :: gammaLR, hspLR, deltaLR, &
 !! The density fields are added to the calculated with the standard hamiltonian
 !! This array variables are local
 complex(r64), dimension(ndim,ndim) :: gammaLR_DD, deltaLR_DD, deltaRL_DD
-complex(r64), dimension(ndim,ndim) :: gam1, dltLR1, dltRL1, hsp1
+complex(r64), dimension(ndim,ndim) :: gam1, dltLR1, dltRL1, hsp1,A1,A2,A3
 
 integer   :: a, b, c, d, i, j, spO2, i_r, i_ang, &
              K, M, ind_jm_a, ind_jm_c, ind_km, Tac, &
@@ -2955,6 +2882,15 @@ do a = 1, spO2
 
   enddo
 enddo
+
+!! save the last EDF HFB of the DD term
+last_HFB_energy = zero
+call zgemm('n','n',ndim,ndim,ndim,zone,hamil_H1,ndim,rhoLR,ndim,zzero,A1,ndim)
+call zgemm('n','n',ndim,ndim,ndim,zone,gammaLR,ndim,rhoLR,ndim,zzero,A2,ndim)
+call zgemm('n','n',ndim,ndim,ndim,zone,deltaLR,ndim,kappaLR,ndim,zzero,A3,ndim)
+do a=1, ndim
+  last_HFB_energy = A1(a,a) + 0.5d0 * A2(a,a) - 0.5d0 * A3(a,a)
+end do
 
 
 if (PRNT_) then
