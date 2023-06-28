@@ -1623,29 +1623,20 @@ reduced_H22_VS = zero
 all_zeroReduced_sh = .TRUE.
 H11_qp2print = zero
 
-print "(A)", " ** reading the VSsh and VSQPsh"
-do qq1 = 1, VSsh_dim
-  print "(3i6)", qq1, VSsh_list(qq1)
-end do
-
-print "(A)", " ** reading the VSsh and VSQPsh"
 do qq1 = 1, VSsp_dim
   i1  = VStoHOsp_index(qq1)
-  sh1 = HOsp_sh(i1)
+  sh1 = VSsp_VSsh(qq1)
 
   !! save the last energy of the QP eigenstate (will save the last mj)
   do kk = 1, VSsh_dim
-    print "(5i4,A,2i6,L4)", qq1, i1, sh1, kk, (3+HOsp_2mt(i1))/2, " -> ", &
-      VSsh_list(kk), HOsh_na(sh1), VSsh_list(kk) .NE. HOsh_na(sh1)
-    if (VSsh_list(kk) .NE. HOsh_na(sh1) ) cycle
+    if (VSsh_list(kk) .NE. HOsh_na(HOsp_sh(i1)) ) cycle
     H11_qp2print( (3+HOsp_2mt(i1))/2, kk) = eigen_H11(VStoQPsp_index(qq1))
     EXIT
   end do
-  print "(A)", " ----------------  "
 
   do qq2 = 1, VSsp_dim
     i2  = VStoHOsp_index(qq2)
-    sh2 = HOsp_sh(i2)
+    sh2 = VSsp_VSsh(qq1)
     tt1 = 2*HOsp_2mt(i1) + HOsp_2mt(i2) !-3(pp), -1(pn), 1(np), 3(nn)
 
     Jmax =    (HOsp_2j(i1) + HOsp_2j(i2))  / 2
@@ -1654,11 +1645,11 @@ do qq1 = 1, VSsp_dim
     kk = 0
     do qq3 = 1, VSsp_dim
       i3  = VStoHOsp_index(qq3)
-      sh3 = HOsp_sh(i3)
+      sh3 = VSsp_VSsh(qq1)
 
       do qq4 = 1, VSsp_dim
         i4  = VStoHOsp_index(qq4)
-        sh4 = HOsp_sh(i4)
+        sh4 = VSsp_VSsh(qq1)
         tt2 = 2*HOsp_2mt(i3) + HOsp_2mt(i4)
 
         if (abs(tt1 + tt2) .NE. 0) cycle ! isospin is conserved
@@ -1712,10 +1703,11 @@ WRITE(3302, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
 
 WRITE(3300, fmt="(A)") "4"
 WRITE(3301, fmt="(F15.9)") last_HFB_energy
-print "(A)", " [  ] Printing the shell states for 2b, "
+print "(A,2F15.4)", " [  ] Printing the shell states for 2b, ", &
+  minval(reduced_H22_VS), maxval(reduced_H22_VS)
 do sh1 = 1, VSsh_dim
   kk = VStoHOsh_index(sh1)
-  WRITE(3301, fmt="(2i6,2f9.4)") &
+  WRITE(3301, fmt="(2i6,2f15.6)") &
     HOsh_na(kk), HOsh_na(kk), H11_qp2print(1,sh1), H11_qp2print(2,sh1)
 
   do sh2 = sh1, VSsh_dim

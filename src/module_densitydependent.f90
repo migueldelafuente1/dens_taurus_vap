@@ -109,8 +109,8 @@ integer(i8) , dimension(:), allocatable :: hamil_DD_trperm ! time reversal permu
 integer   :: iteration = 0, global_iter_max = 0
 integer   :: VSsh_dim = 0, VSsp_dim = 0, VSsp_dim2 = 0
 integer   :: WBsh_dim = 0, WBsp_dim = 0
-integer, dimension(:), allocatable     :: VSsh_list, WBtoHOsp_index, &
-                                          VStoHOsp_index, VStoHOsh_index
+integer, dimension(:), allocatable  :: VSsh_list, WBtoHOsp_index, VSsp_VSsh,&
+                                       VStoHOsp_index, VStoHOsh_index
 
 integer   :: seed_type_sym  = 0        ! (UNDEFINED)
 logical   :: haveX0M1       = .FALSE.  ! |x0 - 1| > 1E-6
@@ -213,10 +213,11 @@ if (exportValSpace) then
     WBsh_dim  = HOsh_dim
     WBsp_dim  = HOsp_dim
     allocate(VSsh_list(VSsh_dim))
-    allocate(VStoHOsp_index(VSsp_dim))
+    allocate(VStoHOsp_index(VSsp_dim), VSsp_VSsh(VSsp_dim))
     allocate(WBtoHOsp_index(HOsp_dim))
     do i=1, VSsh_dim
       VSsh_list(i) = HOsh_na(i)
+      VSsp_VSsh(i) = i
     end do
     do i=1, VSsp_dim
       VStoHOsp_index(i) = i
@@ -343,7 +344,7 @@ end subroutine import_Rearrange_field_if_exist
 ! Subroutine to identify the index of the valence space from the basis        !
 !-----------------------------------------------------------------------------!
 subroutine set_valence_space_to_export
-integer :: i, j, i_ant
+integer :: i, j, k, i_ant
 integer, dimension(:), allocatable :: temp_list_index
 
 VSsp_dim  = 0
@@ -369,13 +370,21 @@ else
   WBsh_dim  = VSsh_dim
 end if
 allocate(WBtoHOsp_index(WBsp_dim))
-allocate(VStoHOsp_index(VSsp_dim))
+allocate(VStoHOsp_index(VSsp_dim), VSsp_VSsh(VSsp_dim))
 
 do i=1, VSsp_dim
   VStoHOsp_index(i) = temp_list_index(i)
   if (.NOT.evalQuasiParticleVSpace) then !! WB for VS eval are the reduced states
     WBtoHOsp_index(i) = temp_list_index(i)
   endif
+
+  k = VStoHOsp_index(i)
+  i_ant = 10000*HOsp_n(k) + 100*HOsp_l(k) + HOsp_2j(k)
+  do j = 1, VSsh_dim
+    if (VSsh_list(j) .NE. i_ant) cycle
+    VSsp_VSsh(i) = j
+    EXIT
+  end do
 end do
 
 !! in case the QP evaluation, Working basis for the hamiltonian reads all states
