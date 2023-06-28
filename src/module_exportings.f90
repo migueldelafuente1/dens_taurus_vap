@@ -1403,6 +1403,7 @@ do i = 1, ndim ! QP loop
     kk = kk + 1
     VSQPtoQPsp_index(kk) =  i
     VStoVSQPsp_index (j) = kk
+    VStoQPsp_index   (j) =  i
     VSQPtoVSsp_index(kk) =  j
     VSQPtoHOsp_index(kk) = k2
     EXIT
@@ -1638,7 +1639,7 @@ do qq1 = 1, VSsp_dim
       VSsh_list(kk), HOsp_ant(VStoVSQPsp_index(qq1)), &
       VSsh_list(kk) .NE. HOsp_ant(VSQPtoHOsp_index(qq1))
     if (VSsh_list(kk) .NE. HOsp_ant(VSQPtoHOsp_index(qq1)) ) cycle
-    H11_qp2print( (3+HOsp_2mt(i1))/2, kk) = eigen_H11(VStoQPsp_index(qq1))
+    H11_qp2print( (3+HOsp_2mt(i1))/2, kk) = eigen_H11(VStoQPsp_index())
     EXIT
   end do
   print "(A)", " ----------------  "
