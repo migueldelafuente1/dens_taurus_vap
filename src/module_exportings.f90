@@ -1630,7 +1630,7 @@ do qq1 = 1, VSsp_dim
   do kk = 1, VSsh_dim
     print "(4i4,A,2i6,L4)", qq1, i1, sh1, kk, " -> ", &
       VSsh_list(kk), HOsp_ant(VStoVSQPsp_index(qq1)), &
-      VSsh_list(kk) .NE. (HOsp_ant(VSQPtoHOsp_index(qq1))
+      VSsh_list(kk) .NE. HOsp_ant(VSQPtoHOsp_index(qq1))
     if (VSsh_list(kk) .NE. HOsp_ant(VSQPtoHOsp_index(qq1)) ) cycle
     H11_qp2print( (3+HOsp_2mt(i1))/2, kk) = eigen_H11(qq1)
   end do
