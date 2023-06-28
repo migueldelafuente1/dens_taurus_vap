@@ -2891,7 +2891,7 @@ call zgemm('n','n',ndim,ndim,ndim,zone,deltaLR,ndim,kappaLR,ndim,zzero,A3,ndim)
 do a=1, ndim
   last_HFB_energy = A1(a,a) + 0.5d0 * (A2(a,a) - A3(a,a))
 end do
-print "(A,F12.9)", "last HFB energy"
+print "(A,F12.9)", "last HFB energy", last_HFB_energy
 
 
 if (PRNT_) then
