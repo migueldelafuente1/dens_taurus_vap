@@ -1632,7 +1632,7 @@ do qq1 = 1, VSsp_dim
       VSsh_list(kk), HOsp_ant(VStoVSQPsp_index(qq1)), &
       VSsh_list(kk) .NE. HOsp_ant(VSQPtoHOsp_index(qq1))
     if (VSsh_list(kk) .NE. HOsp_ant(VSQPtoHOsp_index(qq1)) ) cycle
-    H11_qp2print( (3+HOsp_2mt(i1))/2, kk) = eigen_H11(qq1)
+    H11_qp2print( (3+HOsp_2mt(i1))/2, kk) = eigen_H11(VStoHOsp_index(qq1))
   end do
   print "(A)", " ----------------  "
 
@@ -1756,6 +1756,13 @@ WRITE(3300, fmt="(A,F15.9)") "2 ", HO_hw
 CLOSE(3300)
 CLOSE(3301)
 CLOSE(3302)
+
+! Free allocated for the module
+deallocate(reduced_H22_VS, all_zeroReduced_sh, H11_qp2print, uncoupled_H22_VS)
+deallocate(eigen_hsp, eigen_H11, transf_H11, U_trans, V_trans, QPtoHOsp_index,&
+           HOtoQPsp_index,VSQPtoQPsp_index,VSQPtoHOsp_index, VStoVSQPsp_index,&
+           VStoQPsp_index, VSQPtoVSsp_index, qpsp_zz, qpsp_nn, qpsp_n, &
+           qpsp_j, qpsp_jz, qpsp_l)
 
 end subroutine recouple_QuasiParticle_Hamiltonian_H22
 
