@@ -1628,7 +1628,7 @@ do qq1 = 1, VSsp_dim
 
   !! save the last energy of the QP eigenstate (will save the last mj)
   do kk = 1, VSsh_dim
-    if (VSsh_list(kk) .NE. (sh1)) cycle
+    if (VSsh_list(kk) .NE. (HOsp_na(VStoVSQPsp_index(qq1))) ) cycle
     H11_qp2print( (3+HOsp_2mt(i1))/2, sh1) = eigen_H11(qq1)
   end do
 
