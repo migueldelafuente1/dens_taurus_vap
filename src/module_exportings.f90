@@ -1648,7 +1648,7 @@ do qq1 = 1, VSsp_dim
 
       end do
     end do
-    print "(A,2i5,2(A,i5))", "Recoup.loop 2:",qq1,qq2," of",VSsp_dim, " nz=",kk
+    print "(A,2i5,A,i5,A,i5)","Recoup.loop 2:",qq1,qq2," of",VSsp_dim," nz=",kk
   end do
 end do
 
