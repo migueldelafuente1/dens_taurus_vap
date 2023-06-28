@@ -1628,7 +1628,7 @@ do qq1 = 1, VSsp_dim
 
   !! save the last energy of the QP eigenstate (will save the last mj)
   do kk = 1, VSsh_dim
-    if (VSsh_list(kk) .NE. (HOsp_na(VStoVSQPsp_index(qq1))) ) cycle
+    if (VSsh_list(kk) .NE. (HOsp_ant(VStoVSQPsp_index(qq1))) ) cycle
     H11_qp2print( (3+HOsp_2mt(i1))/2, sh1) = eigen_H11(qq1)
   end do
 
@@ -1693,7 +1693,7 @@ end do
 
 !! export the reduced matrix element .2b, .01. and .sho
 OPEN(3300, file="hamilQPD1S.sho")
-OPEN(3301, file="hamilQPD1S.01")
+OPEN(3301, file="hamilQPD1S.01b")
 OPEN(3302, file="hamilQPD1S.2b")
 
 WRITE(3300, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
