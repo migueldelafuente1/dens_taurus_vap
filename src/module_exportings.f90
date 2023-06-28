@@ -1638,7 +1638,7 @@ do qq1 = 1, VSsp_dim
       VSsh_list(kk), HOsp_ant(VStoVSQPsp_index(qq1)), &
       VSsh_list(kk) .NE. HOsp_ant(VSQPtoHOsp_index(qq1))
     if (VSsh_list(kk) .NE. HOsp_ant(VSQPtoHOsp_index(qq1)) ) cycle
-    H11_qp2print( (3+HOsp_2mt(i1))/2, kk) = eigen_H11(VSQPtoQPsp_index(qq1))
+    H11_qp2print( (3+HOsp_2mt(i1))/2, kk) = eigen_H11(VStoQPsp_index(qq1))
     EXIT
   end do
   print "(A)", " ----------------  "
