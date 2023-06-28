@@ -1648,7 +1648,8 @@ do qq1 = 1, VSsp_dim
 
       end do
     end do
-    print "(A,2i5,A,i5,A,i5)","Recoup.loop 2:",qq1,qq2," of",VSsp_dim," nz=",kk
+    print "(A,2i5,A,i5,A,i5)", "Recoup.loop 2:", qq1,qq2, &
+                               " of=", VSsp_dim, " non.zero=", kk
   end do
 end do
 
@@ -1678,18 +1679,8 @@ do sh1 = 1, VSsh_dim
         Jmax = min(Jmax,    (HOsp_2j(i1) + HOsp_2j(i2))  / 2)
         Jmin = max(Jmin, abs(HOsp_2j(i1) - HOsp_2j(i2))  / 2)
 
-        ! check if all are zero to avoid
-!        all_zero = .TRUE.
-!        do J = Jmin, Jmax
-!          do tt = 0, 5
-!            if (abs(reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4)).GT.1.0d-9) then
-!              all_zero = .FALSE.
-!              endif
-!          end do
-!        end do
-!        if (all_zero) cycle
-
         if ( all_zeroReduced_sh(sh1, sh2, sh3, sh4) ) cycle
+
         ! print first line, then each of the J values,
         WRITE(3302,fmt="(A,4i7,2i3)") " 0 5", VSsh_list(sh1), VSsh_list(sh2), &
                                     VSsh_list(sh3), VSsh_list(sh4), Jmin, Jmax
