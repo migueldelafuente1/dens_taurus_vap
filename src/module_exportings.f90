@@ -1682,15 +1682,15 @@ do qq1 = 1, VSsp_dim
           if (abs(aux_val) .GT. 1.0e-9) then
             kk = kk + 1
             all_zeroReduced_sh(sh1,sh2,sh3,sh4) = .FALSE.
-            reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4) = aux_val &
-                                        + reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4)
+            reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4) = &
+                reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4) + aux_val
           endif
         end do
 
       end do
     end do
-    print "(A,2i5,A,i5,A,i5)", "Recoup.loop 2:", qq1,qq2, &
-                               " of=", VSsp_dim, " non.zero=", kk
+!    print "(A,2i5,A,i5,A,i5)", "Recoup.loop 2:", qq1,qq2, &
+!                               " of=", VSsp_dim, " non.zero=", kk
   end do
 end do
 
