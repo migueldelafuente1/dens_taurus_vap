@@ -1582,12 +1582,14 @@ subroutine recouple_QuasiParticle_Hamiltonian_H22(ndim)
 integer, intent(in) :: ndim
 integer :: q1,q2,q3,q4, qq1,qq2,qq3,qq4, i1,i2,i3,i4, sh1,sh2,sh3,sh4, &
           J, M, Jmax, Jmin, tt1, tt2, tt
-real(r64) :: aux1, aux2, h2b
+real(r64) :: aux1, aux2, h2b, aux_val
 logical :: all_zero
+logical, dimension(:,:,:,:), allocatable :: all_zeroReduced_sh
 
 allocate(reduced_H22_VS(HO_2jmax, 0:5,VSsh_dim,VSsh_dim,VSsh_dim,VSsh_dim))
-
+allocate(all_zeroReduced_sh(VSsh_dim,VSsh_dim,VSsh_dim,VSsh_dim))
 reduced_H22_VS = zero
+all_zeroReduced_sh = .TRUE.
 
 do qq1 = 1, VSsp_dim
   i1  = VStoHOsp_index(qq1)
@@ -1634,8 +1636,12 @@ do qq1 = 1, VSsp_dim
           call ClebschGordan(HOsp_2j (i3), HOsp_2j (i4), 2*J,&
                              HOsp_2mj(i3), HOsp_2mj(i4), 2*M, aux2)
 
-          reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4) = (aux1 * aux2 * h2b) &
-               + reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4)
+          aux_val = aux1 * aux2 * h2b
+          if (abs(aux_val) .GT. 1.0e-9) then
+            all_zeroReduced_sh(sh1,sh2,sh3,sh4) = .TRUE.
+            reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4) = aux_val &
+                                        + reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4)
+          endif
         end do
 
       end do
@@ -1648,21 +1654,12 @@ end do
 OPEN(3300, file="hamilQPD1S.sho")
 !OPEN(3301, file="hamilQPD1S.01")
 OPEN(3302, file="hamilQPD1S.2b")
-do sh1 = 1, VSsh_dim
-  ! print here the sho QP energies
-  WRITE(3300, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
-  WRITE(3300, fmt="(A)") "4"
-  WRITE(3300, fmt="(i8)", advance='no') VSsh_dim
-  do sh2 = 1, VSsh_dim
-    WRITE(3300, fmt="(i6)", advance='no') VSsh_list(sh2)
-  end do
-  WRITE(3300, fmt="(A)") ""
-!  WRITE(3300, fmt="(i8)", advance='no') VSsh_dim
-!  do sh1 = 1, VSsh_dim
-!    WRITE(3300, fmt="(f7.4)", advance='no') eigen_H11(VStoVSQPsp_index(sh1))
-!  end do
-  WRITE(3300, fmt="(A,F11.9)") "2 ", HO_hw
 
+WRITE(3300, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
+WRITE(3302, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
+
+WRITE(3300, fmt="(A)") "4"
+do sh1 = 1, VSsh_dim
   !proceed with the
   do sh2 = sh1, VSsh_dim
     do sh3 = sh1, VSsh_dim
@@ -1704,6 +1701,17 @@ do sh1 = 1, VSsh_dim
     end do
   end do
 end do
+
+WRITE(3300, fmt="(i8)", advance='no') VSsh_dim
+do sh1 = 1, VSsh_dim
+    WRITE(3300, fmt="(i6)", advance='no') VSsh_list(sh1)
+end do
+WRITE(3300, fmt="(A)") ""
+WRITE(3300, fmt="(i8)", advance='no') VSsh_dim
+do sh1 = 1, VSsh_dim
+  WRITE(3300, fmt="(f7.4)", advance='no') eigen_H11(VStoVSQPsp_index(sh1))
+end do
+WRITE(3300, fmt="(A,F15.9)") "2 ", HO_hw
 
 CLOSE(3300)
 !CLOSE(3301)
