@@ -1661,7 +1661,7 @@ do qq1 = 1, VSsp_dim
 
         ! isospin_ is not conserved
         if (abs(tt1).NE.abs(tt2)) cycle
-        if ((abs(t11).EQ.3) .AND. (abs(tt1 - tt2).NE.0)) cycle
+        if ((abs(tt1).EQ.3) .AND. (abs(tt1 - tt2).NE.0)) cycle
 
         if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .LT. 1.0d-6) cycle
         if (HOsp_2mj(i3) + HOsp_2mj(i4) .NE. M) cycle
