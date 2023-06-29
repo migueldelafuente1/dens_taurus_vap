@@ -1527,7 +1527,7 @@ do kk = 1, hamil_H2dim
      aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i3,i4))
      aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i4,i3))
 
-     if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 0) cycle
+     if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
 
      aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i1,i2))
      aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1))
