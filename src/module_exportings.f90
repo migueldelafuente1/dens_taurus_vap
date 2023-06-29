@@ -1542,27 +1542,27 @@ end do
 
 !! Loop for the Density Dependent term
 !! (does not use TR and perm. sort but explicit separation on the isospin)
-do kk = 1, hamil_DD_H2dim
-
-  i1 = hamil_DD_abcd(1+4*(kk-1))
-  i2 = hamil_DD_abcd(2+4*(kk-1))
-  i3 = hamil_DD_abcd(3+4*(kk-1))
-  i4 = hamil_DD_abcd(4+4*(kk-1))
-
-  aux = zero
-  aux = aux+ (hamil_DD_H2_byT(1,kk) * &
-              bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
-  aux = aux+ (hamil_DD_H2_byT(2,kk) * &
-              bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2+sn,i3,i4+sn))
-  aux = aux+ (hamil_DD_H2_byT(3,kk) * &
-              bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2+sn,i3+sn,i4))
-  aux = aux+ (hamil_DD_H2_byT(4,kk) * &
-              bogo_UV_operations_for_H22(q1,q2,q3,q4, i1+sn,i2+sn,i3+sn,i4+sn))
-
-  !! add the result to the uncoupled quasi particle matrix element
-  uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
-
-end do
+!do kk = 1, hamil_DD_H2dim
+!
+!  i1 = hamil_DD_abcd(1+4*(kk-1))
+!  i2 = hamil_DD_abcd(2+4*(kk-1))
+!  i3 = hamil_DD_abcd(3+4*(kk-1))
+!  i4 = hamil_DD_abcd(4+4*(kk-1))
+!
+!  aux = zero
+!  aux = aux+ (hamil_DD_H2_byT(1,kk) * &
+!              bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
+!  aux = aux+ (hamil_DD_H2_byT(2,kk) * &
+!              bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2+sn,i3,i4+sn))
+!  aux = aux+ (hamil_DD_H2_byT(3,kk) * &
+!              bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2+sn,i3+sn,i4))
+!  aux = aux+ (hamil_DD_H2_byT(4,kk) * &
+!              bogo_UV_operations_for_H22(q1,q2,q3,q4, i1+sn,i2+sn,i3+sn,i4+sn))
+!
+!  !! add the result to the uncoupled quasi particle matrix element
+!  uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
+!
+!end do
 !!---------------------------------------------------------------------------
 
 
