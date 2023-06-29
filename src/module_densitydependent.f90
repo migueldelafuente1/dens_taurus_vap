@@ -2147,8 +2147,9 @@ endif
 open (123, file=filename)
 write(123, fmt='(A)') "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, 2mt,tr)"
 if (ALL_ISOS) then
-  do kk=1, VSsp_dim
-    i = VStoHOsp_index(kk)
+  do i=1, WBsp_dim
+!    i = VStoHOsp_index(kk)
+    kk=0
     write(123, fmt='(I4,8(A,I4))') kk,',',i,',', HOsp_sh(i), &
       ',', HOsp_n(i),',', HOsp_l(i),',', HOsp_2j(i),',', HOsp_2mj(i), &
       ',', HOsp_2mt(i),',', HOsp_tr(i)
