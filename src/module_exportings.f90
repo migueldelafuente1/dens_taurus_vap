@@ -1659,7 +1659,7 @@ do qq1 = 1, VSsp_dim
         sh4 = VSsp_VSsh(qq1)
         tt2 = 2*HOsp_2mt(i3) + HOsp_2mt(i4)
 
-        if (abs(tt1 + tt2) .NE. 0) cycle ! isospin_ is not conserved
+        if (abs(abs(tt1) - abs(tt2)) .NE. 0) cycle ! isospin_ is not conserved
 
         if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .LT. 1.0d-6) cycle
         if (HOsp_2mj(i3) + HOsp_2mj(i4) .NE. M) cycle
@@ -1717,9 +1717,9 @@ do sh1 = 1, VSsh_dim
   WRITE(3301, fmt="(2i6,2f15.6)") &
     HOsh_na(kk), HOsh_na(kk), H11_qp2print(1,sh1), H11_qp2print(2,sh1)
 
-  do sh2 = sh1, VSsh_dim
-    do sh3 = sh1, VSsh_dim
-      do sh4 = sh3, VSsh_dim
+  do sh2 = 1, VSsh_dim !sh1, VSsh_dim
+    do sh3 = 1, VSsh_dim !sh1, VSsh_dim
+      do sh4 = 1, VSsh_dim !sh3, VSsh_dim
 
         i1 = VStoHOsh_index(sh1)
         i2 = VStoHOsh_index(sh2)
@@ -1728,8 +1728,8 @@ do sh1 = 1, VSsh_dim
 
         Jmax =    (HOsp_2j(i1) + HOsp_2j(i2))  / 2
         Jmin = abs(HOsp_2j(i1) - HOsp_2j(i2))  / 2
-        Jmax = min(Jmax,    (HOsp_2j(i1) + HOsp_2j(i2))  / 2)
-        Jmin = max(Jmin, abs(HOsp_2j(i1) - HOsp_2j(i2))  / 2)
+        Jmax = min(Jmax,    (HOsp_2j(i3) + HOsp_2j(i4))  / 2)
+        Jmin = max(Jmin, abs(HOsp_2j(i3) - HOsp_2j(i4))  / 2)
 
         if ( all_zeroReduced_sh(sh1, sh2, sh3, sh4) ) cycle
 
