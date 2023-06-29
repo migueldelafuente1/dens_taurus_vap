@@ -1734,7 +1734,7 @@ do sh1 = 1, VSsh_dim
         Jmin = max(Jmin, abs(HOsp_2j(i3) - HOsp_2j(i4))  / 2)
 
         if ( all_zeroReduced_sh(sh1, sh2, sh3, sh4) ) cycle
-
+        print "(A,6i5)", "   naz:", sh1, sh2, sh3, sh4, Jmin,Jmax
         ! print first line, then each of the J values,
         WRITE(3302,fmt="(A,4i7,2i3)") " 0 5", VSsh_list(sh1), VSsh_list(sh2), &
                                     VSsh_list(sh3), VSsh_list(sh4), Jmin, Jmax
