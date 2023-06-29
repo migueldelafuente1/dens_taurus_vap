@@ -1643,7 +1643,7 @@ do qq1 = 1, VSsp_dim
 
   do qq2 = 1, VSsp_dim
     i2  = VStoHOsp_index(qq2)
-    sh2 = VSsp_VSsh(qq1)
+    sh2 = VSsp_VSsh(qq2)
     tt1 = 2*HOsp_2mt(i1) + HOsp_2mt(i2) !-3(pp), -1(pn), 1(np), 3(nn)
 
     Jmax =    (HOsp_2j(i1) + HOsp_2j(i2))  / 2
@@ -1652,11 +1652,11 @@ do qq1 = 1, VSsp_dim
     kk = 0
     do qq3 = 1, VSsp_dim
       i3  = VStoHOsp_index(qq3)
-      sh3 = VSsp_VSsh(qq1)
+      sh3 = VSsp_VSsh(qq3)
 
       do qq4 = 1, VSsp_dim
         i4  = VStoHOsp_index(qq4)
-        sh4 = VSsp_VSsh(qq1)
+        sh4 = VSsp_VSsh(qq4)
         tt2 = 2*HOsp_2mt(i3) + HOsp_2mt(i4)
 
         ! isospin_ is not conserved
