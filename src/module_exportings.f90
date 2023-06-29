@@ -1509,40 +1509,40 @@ do qq1 = 1, VSsp_dim
 !! Loop for the HO basis, getting the
 !!---------------------------------------------------------------------------
 !! Loop for the Hamiltonian, using tr and the permutations on the m.e.
-!do kk = 1, hamil_H2dim
-!  i1 = hamil_abcd(1+4*(kk-1))
-!  i2 = hamil_abcd(2+4*(kk-1))
-!  i3 = hamil_abcd(3+4*(kk-1))
-!  i4 = hamil_abcd(4+4*(kk-1))
-!  h2b  = hamil_H2(kk)
-!  perm = hamil_trperm(kk)
-!
-!  aux = zero
-!  !!! Loop on time reversal
-!  do it = 1, 2
-!    if ( it == 2 ) then
-!      if ( HOsp_2mj(i1) + HOsp_2mj(i2) == 0 ) cycle
-!      call find_timerev(perm,i1,i2,i3,i4)
-!      h2b = sign(one,perm*one) * h2b
-!    endif
-!
-!     aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
-!     aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i4,i3))
-!     aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i3,i4))
-!     aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i4,i3))
-!
-!     if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
-!
-!     aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i1,i2))
-!     aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1))
-!     aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i1,i2))
-!     aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i2,i1))
-!  enddo
-!
-!  !! add the result to the uncoupled quasi particle matrix element
-!  uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
-!
-!end do
+do kk = 1, hamil_H2dim
+  i1 = hamil_abcd(1+4*(kk-1))
+  i2 = hamil_abcd(2+4*(kk-1))
+  i3 = hamil_abcd(3+4*(kk-1))
+  i4 = hamil_abcd(4+4*(kk-1))
+  h2b  = hamil_H2(kk)
+  perm = hamil_trperm(kk)
+
+  aux = zero
+  !!! Loop on time reversal
+  do it = 1, 2
+    if ( it == 2 ) then
+      if ( HOsp_2mj(i1) + HOsp_2mj(i2) == 0 ) cycle
+      call find_timerev(perm,i1,i2,i3,i4)
+      h2b = sign(one,perm*one) * h2b
+    endif
+
+     aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
+     aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i4,i3))
+     aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i3,i4))
+     aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i4,i3))
+
+     if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
+
+     aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i1,i2))
+     aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1))
+     aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i1,i2))
+     aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i2,i1))
+  enddo
+
+  !! add the result to the uncoupled quasi particle matrix element
+  uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
+
+end do
 
 !! Loop for the Density Dependent term
 !! (does not use TR and perm. sort but explicit separation on the isospin)
@@ -1556,10 +1556,10 @@ do kk = 1, hamil_DD_H2dim
   aux = zero
   aux = aux + (hamil_DD_H2_byT(1,kk) * &
                bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
-  aux = aux + (hamil_DD_H2_byT(2,kk) * (&
+  aux = aux + (hamil_DD_H2_byT(2,kk) * ( &
                bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2+sn,i3,i4+sn) + &
                bogo_UV_operations_for_H22(q1,q2,q3,q4, i1+sn,i2,i3+sn,i4)) )
-  aux = aux + (hamil_DD_H2_byT(3,kk) * (&
+  aux = aux + (hamil_DD_H2_byT(3,kk) * ( &
                bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2+sn,i3+sn,i4) + &
                bogo_UV_operations_for_H22(q1,q2,q3,q4, i1+sn,i2,i3,i4+sn)) )
   aux = aux + (hamil_DD_H2_byT(4,kk) * &
@@ -1605,6 +1605,7 @@ aux = aux + (U_trans(i1,k2) * V_trans(i4,k1) * U_trans(i2,k4) * V_trans(i3,k3))
 aux = aux + (U_trans(i1,k1) * U_trans(i2,k2) * U_trans(i3,k3) * U_trans(i4,k4))
 aux = aux + (V_trans(i3,k1) * V_trans(i4,k2) * V_trans(i1,k3) * V_trans(i2,k4))
 
+return
 end function
 
 
@@ -1658,14 +1659,14 @@ do qq1 = 1, VSsp_dim
         sh4 = VSsp_VSsh(qq1)
         tt2 = 2*HOsp_2mt(i3) + HOsp_2mt(i4)
 
-        if (abs(tt1 + tt2) .NE. 0) cycle ! isospin is conserved
+        if (abs(tt1 + tt2) .NE. 0) cycle ! isospin_ is not conserved
 
         if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .LT. 1.0d-6) cycle
         if (HOsp_2mj(i3) + HOsp_2mj(i4) .NE. M) cycle
         M = M / 2
 
-        Jmax = min(Jmax,    (HOsp_2j(i1) + HOsp_2j(i2))  / 2)
-        Jmin = max(Jmin, abs(HOsp_2j(i1) - HOsp_2j(i2))  / 2)
+        Jmax = min(Jmax,    (HOsp_2j(i3) + HOsp_2j(i4))  / 2)
+        Jmin = max(Jmin, abs(HOsp_2j(i3) - HOsp_2j(i4))  / 2)
         h2b  = uncoupled_H22_VS(qq1,qq2,qq3,qq4)
         ! select the isospin
         if (tt1.EQ.-3) then
@@ -1682,7 +1683,7 @@ do qq1 = 1, VSsp_dim
           call ClebschGordan(HOsp_2j (i3), HOsp_2j (i4), 2*J,&
                              HOsp_2mj(i3), HOsp_2mj(i4), 2*M, aux2)
 
-          aux_val = aux1 * aux2 * h2b
+          aux_val = aux1 * aux2 * h2b / (2*J + 1)
           if (abs(aux_val) .GT. 1.0e-9) then
             kk = kk + 1
             all_zeroReduced_sh(sh1,sh2,sh3,sh4) = .FALSE.
