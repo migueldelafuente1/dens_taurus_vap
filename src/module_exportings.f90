@@ -1491,16 +1491,20 @@ call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
 open(334, file='uncoupled_hamil_qp.txt')
 
 do qq1 = 1, VSsp_dim
-  q1 = VStoVSQPsp_index(qq1)
+  q1 = VStoQPsp_index (qq1)
+!  q1 = VStoVSQPsp_index(qq1)
 
   do qq2 = 1, VSsp_dim
-    q2 = VStoVSQPsp_index(qq2)
+    q2 = VStoQPsp_index(qq2)
+!    q2 = VStoVSQPsp_index(qq2)
 
     do qq3 = 1, VSsp_dim
-      q3 = VStoVSQPsp_index(qq3)
+      q3 = VStoQPsp_index(qq3)
+!      q3 = VStoVSQPsp_index(qq3)
 
       do qq4 = 1, VSsp_dim
-        q4 = VStoVSQPsp_index(qq4)
+        q4 = VStoQPsp_index(qq4)
+!        q4 = VStoVSQPsp_index(qq4)
 
 !! Loop for the HO basis, getting the
 !!---------------------------------------------------------------------------
@@ -1544,7 +1548,7 @@ do qq1 = 1, VSsp_dim
 !! (does not use TR and perm. sort but explicit separation on the isospin)
 do kk = 1, hamil_DD_H2dim
 
-  i1 = hamil_DD_abcd(1+4*(kk-1))
+  i1 = hamil_DD_abcd(1+4*(kk-1)) !! NOTE: Hamil_DD_abcd is only up to ndim_/2
   i2 = hamil_DD_abcd(2+4*(kk-1))
   i3 = hamil_DD_abcd(3+4*(kk-1))
   i4 = hamil_DD_abcd(4+4*(kk-1))

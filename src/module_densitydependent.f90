@@ -102,7 +102,7 @@ integer, dimension(:), allocatable :: HOsh_ant, HOsp_ant
 
 !! Related to the hamiltonian and Fields
 real(r64), dimension(:),   allocatable :: hamil_DD_H2      ! 2-body part
-real(r64), dimension(:,:), allocatable :: hamil_DD_H2_byT  ! 2-body part
+real(r64), dimension(:,:), allocatable :: hamil_DD_H2_byT  ! 2-body part (pppp,pnpn,pnnp,nnnn)
 integer(i64) :: hamil_DD_H2dim, hamil_DD_H2dim_all         ! number of 2BME stored
 integer(i16), dimension(:), allocatable :: hamil_DD_abcd   ! indices of 2BME
 integer(i8) , dimension(:), allocatable :: hamil_DD_trperm ! time reversal permut.
@@ -2056,12 +2056,10 @@ if (ALL_ISOS) then
   if ( ialloc /= 0 ) stop 'Error during allocation of array of indices [DD]'
   rewind(uth6)
   rewind(uth7)
-
-  read(uth6) (hamil_DD_abcd(kk), kk=1, 4*hamil_DD_H2dim)
-  read(uth7) (hamil_temp(kk),    kk=1, 4*hamil_DD_H2dim)
-
-  close(uth6)
-  close(uth7)
+  read  (uth6) (hamil_DD_abcd(kk), kk=1, 4*hamil_DD_H2dim)
+  read  (uth7) (hamil_temp(kk),    kk=1, 4*hamil_DD_H2dim)
+  close (uth6)
+  close (uth7)
 
   do kk = 1, hamil_DD_H2dim
     hamil_DD_H2_byT(1, kk) =  hamil_temp(4*(kk-1) + 1)
