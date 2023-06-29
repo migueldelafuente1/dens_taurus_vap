@@ -1659,7 +1659,9 @@ do qq1 = 1, VSsp_dim
         sh4 = VSsp_VSsh(qq1)
         tt2 = 2*HOsp_2mt(i3) + HOsp_2mt(i4)
 
-        if (abs(abs(tt1) - abs(tt2)) .NE. 0) cycle ! isospin_ is not conserved
+        ! isospin_ is not conserved
+        if (abs(tt1).NE.abs(tt2)) cycle
+        if ((abs(t11).EQ.3) .AND. (abs(tt1 - tt2).NE.0)) cycle
 
         if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .LT. 1.0d-6) cycle
         if (HOsp_2mj(i3) + HOsp_2mj(i4) .NE. M) cycle
