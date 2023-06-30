@@ -1432,7 +1432,7 @@ subroutine calculate_QuasiParticle_Hamiltonian_H22(bogo_U0, bogo_V0, ndim)
 integer, intent(in) :: ndim
 real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0,bogo_V0
 integer   :: i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it, perm
-real(r64) :: aux, h2b
+real(r64) :: aux, h2b, temp_val
 
 sn = ndim / 2
 allocate(U_trans(ndim,ndim), V_trans(ndim,ndim))
@@ -1488,7 +1488,8 @@ call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
 
 
 !! Transformation for the QP valence space
-open(334, file='uncoupled_hamil_qp.txt')
+open(334, file='uncoupled_hamil_qp_DD.txt')
+open(335, file='uncoupled_hamil_qp_BB.txt')
 
 do qq1 = 1, VSsp_dim
   q1 = VStoQPsp_index (qq1)
@@ -1544,6 +1545,13 @@ do kk = 1, hamil_H2dim
 
 end do
 
+temp_val = zero
+if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
+  write(335,fmt='(4i5,1f12.6)') qq1, qq2, qq3, qq4, &
+                                uncoupled_H22_VS(qq1,qq2,qq3,qq4)
+  temp_val = uncoupled_H22_VS(qq1,qq2,qq3,qq4)
+endif
+
 !! Loop for the Density Dependent term
 !! (does not use TR and perm. sort but explicit separation on the isospin)
 do kk = 1, hamil_DD_H2dim
@@ -1570,12 +1578,12 @@ do kk = 1, hamil_DD_H2dim
 
 end do
 
+if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
+  write(334, fmt='(4i5,1f12.6)') qq1, qq2, qq3, qq4, &
+                                 uncoupled_H22_VS(qq1,qq2,qq3,qq4) - temp_val
+endif
 !!---------------------------------------------------------------------------
 
-        if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
-          write(334, fmt='(4i5,1f12.6)') qq1, qq2, qq3, qq4, &
-                                         uncoupled_H22_VS(qq1,qq2,qq3,qq4)
-        endif
       end do
     end do
     print "(A,2i5,A,i5)", "Progress to loop2:", qq1,qq2," of ",VSsp_dim
@@ -1591,12 +1599,12 @@ end subroutine calculate_QuasiParticle_Hamiltonian_H22
 ! Evaluates the U,V operations for the ho matrix i(1,2,3,4) and qp k(1,2,3,4)  !
 !------------------------------------------------------------------------------!
 real(r64) function bogo_UV_operations_for_H22(k1,k2,k3,k4, i1,i2,i3,i4) &
-                   result (aux)
+          result (aux)
+
 integer, intent(in) :: k1,k2,k3,k4, i1,i2,i3,i4
 
 aux = zero
-!! Without projection, the U and V are real
-
+!! Without projection, the U and V are real (Check Ring Shuck E.23c)
 aux = aux + (U_trans(i1,k1) * V_trans(i4,k2) * U_trans(i2,k3) * V_trans(i3,k4))
 aux = aux - (U_trans(i1,k2) * V_trans(i4,k1) * U_trans(i2,k3) * V_trans(i3,k4))
 aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * U_trans(i2,k4) * V_trans(i3,k3))
@@ -1604,7 +1612,6 @@ aux = aux + (U_trans(i1,k2) * V_trans(i4,k1) * U_trans(i2,k4) * V_trans(i3,k3))
 
 aux = aux + (U_trans(i1,k1) * U_trans(i2,k2) * U_trans(i3,k3) * U_trans(i4,k4))
 aux = aux + (V_trans(i3,k1) * V_trans(i4,k2) * V_trans(i1,k3) * V_trans(i2,k4))
-
 return
 end function
 
@@ -1660,7 +1667,7 @@ do qq1 = 1, VSsp_dim
         tt2 = 2*HOsp_2mt(i3) + HOsp_2mt(i4)
 
         ! isospin_ is not conserved
-        if (abs(tt1).NE.abs(tt2)) cycle
+        if  (abs(tt1).NE.abs(tt2)) cycle
         if ((abs(tt1).EQ.3) .AND. (abs(tt1 - tt2).NE.0)) cycle
 
         if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .LT. 1.0d-6) cycle
@@ -1719,9 +1726,9 @@ do sh1 = 1, VSsh_dim
   WRITE(3301, fmt="(2i6,2f15.6)") &
     HOsh_na(kk), HOsh_na(kk), H11_qp2print(1,sh1), H11_qp2print(2,sh1)
 
-  do sh2 = 1, VSsh_dim !sh1, VSsh_dim
-    do sh3 = 1, VSsh_dim !sh1, VSsh_dim
-      do sh4 = 1, VSsh_dim !sh3, VSsh_dim
+  do sh2 = sh1, VSsh_dim
+    do sh3 = sh1, VSsh_dim
+      do sh4 = sh3, VSsh_dim
 
         i1 = VStoHOsh_index(sh1)
         i2 = VStoHOsh_index(sh2)
@@ -1737,7 +1744,7 @@ do sh1 = 1, VSsh_dim
         print "(A,6i5)", "   naz:", sh1, sh2, sh3, sh4, Jmin,Jmax
         ! print first line, then each of the J values,
         WRITE(3302,fmt="(A,4i7,2i3)") " 0 5", VSsh_list(sh1), VSsh_list(sh2), &
-                                    VSsh_list(sh3), VSsh_list(sh4), Jmin, Jmax
+                                      VSsh_list(sh3), VSsh_list(sh4), Jmin, Jmax
         do J = Jmin, Jmax
           do tt = 0, 5
             WRITE(3302, fmt="(f14.9)", advance='no') &
