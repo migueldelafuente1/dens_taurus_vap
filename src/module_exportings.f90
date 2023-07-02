@@ -1448,7 +1448,6 @@ call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
 call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
            zero, V_trans, ndim)
 
-
 !! Re-import the matrix elements of the non-DD hamiltonian from the .red file
 !! TODO: It is necessary to import COM file (supuestamente no guardado)
 
@@ -1527,17 +1526,17 @@ do kk = 1, hamil_H2dim
       h2b = sign(one,perm*one) * h2b
     endif
 
-     aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
-     aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i4,i3))
-     aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i3,i4))
-     aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i4,i3))
+    aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
+    aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i4,i3))
+    aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i3,i4))
+    aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i4,i3))
 
-     if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
+    if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
 
-     aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i1,i2))
-     aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1))
-     aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i1,i2))
-     aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i2,i1))
+    aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i1,i2))
+    aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1))
+    aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i1,i2))
+    aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i2,i1))
   enddo
 
   !! add the result to the uncoupled quasi particle matrix element
@@ -1547,7 +1546,7 @@ end do
 
 temp_val = zero
 if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
-  write(335,fmt='(4i5,1f12.6)') qq1, qq2, qq3, qq4, &
+  write(335,fmt='(4i5,1f15.9)') qq1, qq2, qq3, qq4, &
                                 uncoupled_H22_VS(qq1,qq2,qq3,qq4)
   temp_val = uncoupled_H22_VS(qq1,qq2,qq3,qq4)
 endif
@@ -1579,7 +1578,7 @@ do kk = 1, hamil_DD_H2dim
 end do
 
 if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
-  write(334, fmt='(4i5,1f12.6)') qq1, qq2, qq3, qq4, &
+  write(334, fmt='(4i5,1f15.9)') qq1, qq2, qq3, qq4, &
                                  uncoupled_H22_VS(qq1,qq2,qq3,qq4) - temp_val
 endif
 !!---------------------------------------------------------------------------

@@ -125,7 +125,7 @@ logical   :: DOING_PROJECTION = .FALSE.
 logical   :: usingFixedRearrangement = .FALSE.
 
 !! [END] DENSITY DEPENDENT MODIFICATIONS =====================================
-
+!
 
 CONTAINS
 
@@ -1910,7 +1910,7 @@ complex(r64), dimension(ndim,ndim), intent(in) :: dens_rhoLR
 complex(r64), dimension(ndim,ndim), intent(in) :: dens_kappaLR, dens_kappaRL
 
 integer(i16) :: ared, bred, cred, dred
-integer(i32) :: ht, j, t, tmax, uth6=uth+8, uth7=uth+9, fac_ht, ialloc=0, &
+integer(i32) :: ht, j, t, tmax, uth6=uth+8, uth7=uth+9, ialloc=0, &
                 a, ma, la, ta, b, mb, lb, tb, dmax, bmax,  bmin, cmin, dmin,&
                 c, mc, lc, tc, d, md, ld, td, aa, bb, cc, dd
 integer(i64) :: kk, i, kkk
@@ -1927,13 +1927,13 @@ ALL_ISOS = (.NOT.eval_explicit_fieldsDD)
 !! if ALL_ISOS = .TRUE., this subroutine can only be called once !!
 
 if (iteration < CONVERG_ITER) then
-    rewind(uth6)
-    rewind(uth7)
-    !!! Computes the two-body matrix elements in m-scheme
-    open  (uth6, status='scratch', action='readwrite', access='stream', &
-                 form='unformatted')
-    open  (uth7, status='scratch', action='readwrite', access='stream', &
-                 form='unformatted')
+  rewind(uth6)
+  rewind(uth7)
+  !!! Computes the two-body matrix elements in m-scheme
+  open  (uth6, status='scratch', action='readwrite', access='stream', &
+               form='unformatted')
+  open  (uth7, status='scratch', action='readwrite', access='stream', &
+               form='unformatted')
 endif
 
 Vcut = 5.0d-14
@@ -2070,6 +2070,7 @@ if (ALL_ISOS) then
   deallocate(hamil_temp)
 
   call print_uncoupled_hamiltonian_DD(ALL_ISOS)
+  call print_uncoupled_hamiltonian_H2
 
 else if (iteration < CONVERG_ITER) then !!! Normal Gradient DD dep. process ****
 
@@ -2189,6 +2190,208 @@ print "(3A,3I12)", &
 
 end subroutine print_uncoupled_hamiltonian_DD
 
+subroutine print_uncoupled_hamiltonian_H2
+
+integer   :: kk, i1, i2, i3, i4, it, perm, uth6=uth+8, uth7=uth+9, ialloc=0, &
+             ared, bred, cred, dred, ndim, ndim2, k1, k2, PW10, spo2, point_,&
+             j1, j2, j3, j4, tt, red_dim
+integer(i64) :: indx_, ind_r
+integer(i64), dimension(:), allocatable :: sort_indx, red_indx
+integer,      dimension(:), allocatable :: temp_abcd, sort_pointer, sort_isos,&
+                                           sort_red_pointer
+real(r64) :: h2b, aux, i1_t, i2_t, i3_t, i4_t
+real(r64), dimension(:),   allocatable :: temp_hamil
+real(r64), dimension(:,:), allocatable :: temp_hamil_byT
+logical :: found
+
+print "(A)", "[  ] EXPORT Hamiltonian (uncoupled) for current interaction."
+! read and export all the possible matrix elements (non sorted)
+ndim = 0
+do kk = 1, hamil_H2dim
+  i1 = hamil_abcd(1+4*(kk-1))
+  i2 = hamil_abcd(2+4*(kk-1))
+  i3 = hamil_abcd(3+4*(kk-1))
+  i4 = hamil_abcd(4+4*(kk-1))
+  h2b  = hamil_H2(kk)
+  perm = hamil_trperm(kk)
+
+  !!! Loop on time reversal
+  do it = 1, 2
+    if ( it == 2 ) then
+      if ( HOsp_2mj(i1) + HOsp_2mj(i2) == 0 ) cycle
+      call find_timerev(perm,i1,i2,i3,i4)
+      h2b = sign(one,perm*one) * h2b
+    endif
+
+    ared = int(i1,i16)
+    bred = int(i2,i16)
+    cred = int(i3,i16)
+    dred = int(i4,i16)
+    write(uth6) ared, bred, cred, dred
+    write(uth6) bred, ared, dred, cred
+    write(uth6) ared, bred, cred, dred
+    write(uth6) bred, ared, dred, cred
+    write(uth7)  h2b, -h2b, -h2b,  h2b
+    ndim = ndim + 4
+
+    if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
+
+    write(uth6) cred, dred, ared, bred
+    write(uth6) dred, cred, bred, ared
+    write(uth6) cred, dred, ared, bred
+    write(uth6) dred, cred, bred, ared
+    write(uth7)  h2b, -h2b, -h2b,  h2b
+    ndim = ndim + 4
+  enddo
+end do
+!! Allocate in a temporal hamiltonian
+allocate( sort_indx(ndim), sort_pointer(ndim)&
+          sort_isos(ndim), temp_hamil(ndim), temp_abcd(4*ndim),&
+          red_indx (ndim), sort_red_pointer(ndim), stat=ialloc )
+if ( ialloc /= 0 ) stop 'Error during allocation of array of indices [BB]'
+rewind(uth6)
+rewind(uth7)
+read  (uth6) (temp_abcd (kk), kk=1, 4*ndim)
+read  (uth7) (temp_hamil(kk), kk=1,   ndim)
+close (uth6)
+close (uth7)
+
+!! Sort the indexes in order of the (a,b,c,d) by sorting a number on base HO dim
+sort_indx = 0
+sort_pointer = 0
+sort_isos = 0
+red_indx  = 0
+red_dim   = 0
+sort_red_pointer = 0
+PW10 = floor(log10(HOsp_dim)) + 1
+do kk = 1, ndim
+  i1 = temp_abcd(4*(kk-1) + 1)
+  i2 = temp_abcd(4*(kk-1) + 2)
+  i3 = temp_abcd(4*(kk-1) + 3)
+  i4 = temp_abcd(4*(kk-1) + 4)
+
+  if(i1 .GT. spo2) j1 = i1 - spo2
+  if(i2 .GT. spo2) j2 = i2 - spo2
+  if(i3 .GT. spo2) j3 = i3 - spo2
+  if(i4 .GT. spo2) j4 = i4 - spo2
+
+  indx_ = nint(i1*(10**(3*POW10)) + i2*(10**(2*POW10)) + i3*(10**(POW10)) + i4)
+  ind_r = nint(j1*(10**(3*POW10)) + j2*(10**(2*POW10)) + j3*(10**(POW10)) + j4)
+
+  if     ((i1 .GT. spo2).AND.(i1 .GT. spo2)) then
+    tt = 4
+  elseif ((i1 .LE. spo2).AND.(i1 .LE. spo2)) then
+    tt = 1
+  else
+    tt = 3 + ((4*HOsp_2mt(i1) + 2*(HOsp_2mt(i2) + HOsp_2mt(i3)) + &
+                 HOsp_2mt(i4) - 1) / 2)
+    if ((tt.EQ.1) .OR. (tt.EQ.4)) then
+      tt = 2
+    else
+      tt = 3
+    end if
+  endif
+
+  sort_indx(kk)     = indx_
+  sort_pointer(kk)  = kk
+  sort_isos(kk)     = tt
+
+  if (red_dim .EQ.0) then
+    red_indx(1) = ind_r
+    red_dim = 1
+    sort_red_pointer(kk) = 1
+  else
+    found = .FALSE.
+    do k1 = 1, red_dim
+      if (red_indx(k1).EQ.ind_r) then
+        found = .TRUE.
+        sort_red_pointer(kk) = k1
+        EXIT
+      endif
+    end do
+    if (.NOT.found) then
+      red_dim = red_dim + 1
+      red_indx(red_dim) = ind_r
+      sort_red_pointer(kk) = red_dim
+    end if
+  endif
+enddo
+
+allocate(temp_hamil_byT(4, red_dim))
+temp_hamil_byT = zero
+
+! bubble sorting
+do k1 = 1, ndim
+  do k2 = k1+1, ndim
+    if (sort_indx(k1) .GT. sort_indx(k2)) then
+      indx_ = sort_indx(k2)
+      sort_indx(k2) = sort_indx(k1)
+      sort_indx(k1) = indx_
+
+      point_ = sort_pointer(k2)
+      sort_pointer(k2) = sort_pointer(k1)
+      sort_pointer(k1) = point_
+
+      tt = sort_isos(k2)
+      sort_isos(k2) = sort_isos(k1)
+      sort_isos(k1) = tt
+
+      point_ = sort_red_pointer(k2)
+      sort_red_pointer(k2) = sort_red_pointer(k1)
+      sort_red_pointer(k1) = point_
+    end if
+  enddo
+  if (k1 .GT. red_dim) cycle
+  do k2 = k1+1, red_dim
+    if (red_indx(k1) .GT. red_indx(k2)) then
+      ind_r = red_indx(k2)
+      red_indx(k2) = red_indx(k1)
+      red_indx(k1) = ind_r
+    end if
+  enddo
+end do
+
+!! Assign in the temp_hamil_byT the element by T
+spo2 = HOsp_dim / 2
+do k1 = 1, ndim
+  kk = sort_pointer(k1)
+  i1 = temp_abcd(4*(kk-1) + 1)
+  i2 = temp_abcd(4*(kk-1) + 2)
+  i3 = temp_abcd(4*(kk-1) + 3)
+  i4 = temp_abcd(4*(kk-1) + 4)
+
+  k2 = sort_red_pointer(kk) ! extract the index of the reduced space
+  tt = sort_isos(kk)
+  !NOTE: the sort_red_pointer still points in the reduced non zero list,
+  ! here, we are not assigning k2 in order, the order will appear while reading
+  temp_hamil_byT(tt, k2) = temp_hamil(kk)
+end do
+
+!! print the matrix elements in a file
+open(336, file="uncoupled_BB.2b")
+write(336, fmt="(a)") " // Hamiltonian uncoupled for the m.e. given (all perm)"
+write(336, fmt="(a)") "//    a    b    c    d              pppp              &
+                      &pnpn              pnnp              nnnn"
+
+do kk = 1, red_dim
+  ! red_index is sorted, so we extract the HOsp index from it,
+  ind_r = red_indx(kk)
+
+  j1    = int(ind_r /nint((10**(3*POW10)), i32)
+  ind_r = MOD(ind_r, nint((10**(3*POW10)))
+  j2    = int(ind_r /nint((10**(2*POW10)), i32)
+  ind_r = MOD(ind_r, nint((10**(2*POW10)))
+  j3    = int(ind_r /nint((10**(POW10)), i32)
+  ind_r = MOD(ind_r, nint((10**(POW10)))
+  j4    = int(ind_r, i32)
+
+  write(123, fmt='(I7,3I5,4F18.12)') j1, j2, j3, j4, temp_hamil_byT(1,kk), &
+    temp_hamil_byT(2,kk), temp_hamil_byT(3,kk), temp_hamil_byT(4,kk)
+enddo
+
+close(336)
+print "(A)", "[OK] EXPORT Hamiltonian (uncoupled) for current interaction."
+end subroutine print_uncoupled_hamiltonian_H2
 !------------------------------------------------------------------------------!
 ! subroutine calculate_rearrang_field_explicit                                 !
 !                                                                              !
