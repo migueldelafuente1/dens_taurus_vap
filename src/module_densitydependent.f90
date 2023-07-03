@@ -2217,6 +2217,7 @@ open  (uth7, status='scratch', action='readwrite', access='stream', &
              form='unformatted')
 ! read and export all the possible matrix elements (non sorted)
 ndim = 0
+spo2 = WBsp_dim / 2
 do kk = 1, hamil_H2dim
   i1 = hamil_abcd(1+4*(kk-1))
   i2 = hamil_abcd(2+4*(kk-1))
