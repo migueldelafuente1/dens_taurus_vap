@@ -2299,7 +2299,7 @@ do kk = 1, ndim
   elseif ((i1 .LE. spo2).AND.(i2 .LE. spo2)) then
     tt = 1    ! pp_ pp_
   else
-    tt = 4*HOsp_2mt(i1) + 2*(HOsp_2mt(i2) + HOsp_2mt(i3)) + HOsp_2mt(i4) - 1)
+    tt = 4*HOsp_2mt(i1) + 2*(HOsp_2mt(i2) + HOsp_2mt(i3)) + HOsp_2mt(i4) - 1
     tt = 3 + (tt / 2)
     if ((tt.EQ.1) .OR. (tt.EQ.4)) then
       tt = 2  ! pn_ pn_
