@@ -2211,6 +2211,10 @@ real(r64), dimension(:,:), allocatable :: temp_hamil_byT
 logical :: found
 
 print "(A)", "[  ] EXPORT Hamiltonian (uncoupled) for current interaction."
+open  (uth6, status='scratch', action='readwrite', access='stream', &
+             form='unformatted')
+open  (uth7, status='scratch', action='readwrite', access='stream', &
+             form='unformatted')
 ! read and export all the possible matrix elements (non sorted)
 ndim = 0
 do kk = 1, hamil_H2dim
