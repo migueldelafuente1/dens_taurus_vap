@@ -2204,7 +2204,7 @@ integer   :: kk, i1, i2, i3, i4, it, perm, uth6=uth+8, uth7=uth+9, ialloc=0, &
 integer(i64) :: indx_, ind_r
 integer(i64), dimension(:), allocatable :: sort_indx, red_indx
 integer,      dimension(:), allocatable :: temp_abcd, sort_pointer, sort_isos,&
-                                           sort_red_pointer
+                                           sort_red_pointer, red_abcd
 real(r64) :: h2b, aux, i1_t, i2_t, i3_t, i4_t
 real(r64), dimension(:),   allocatable :: temp_hamil
 real(r64), dimension(:,:), allocatable :: temp_hamil_byT
@@ -2333,9 +2333,9 @@ do kk = 1, ndim
   endif
 enddo
 
-allocate(temp_hamil_byT(4, red_dim))
+allocate(temp_hamil_byT(4, red_dim), red_abcd(4, red_dim))
 temp_hamil_byT = zero
-
+red_abcd       = zero
 ! bubble sorting
 do k1 = 1, ndim
   do k2 = k1+1, ndim
@@ -2382,6 +2382,16 @@ do k1 = 1, ndim
   !NOTE: the sort_red_pointer still points in the reduced non zero list,
   ! here, we are not assigning k2 in order, the order will appear while reading
   temp_hamil_byT(tt, k2) = temp_hamil(kk)
+
+  if(i1 .GT. spo2) i1 = i1 - spo2
+  if(i2 .GT. spo2) i2 = i2 - spo2
+  if(i3 .GT. spo2) i3 = i3 - spo2
+  if(i4 .GT. spo2) i4 = i4 - spo2
+
+  red_abcd(1, k2) = i1
+  red_abcd(2, k2) = i2
+  red_abcd(3, k2) = i3
+  red_abcd(4, k2) = i4
 end do
 
 !! print the matrix elements in a file
@@ -2394,13 +2404,24 @@ do kk = 1, red_dim
   ! red_index is sorted, so we extract the HOsp index from it,
   ind_r = red_indx(kk)
 
-  j1    = int(ind_r /nint((10.0d0**(3*POW10)), i32))
-  ind_r = MOD(ind_r, nint((10.0d0**(3*POW10))))
-  j2    = int(ind_r /nint((10.0d0**(2*POW10)), i32))
-  ind_r = MOD(ind_r, nint((10.0d0**(2*POW10))))
-  j3    = int(ind_r /nint((10.0d0**(POW10)), i32))
-  ind_r = MOD(ind_r, nint((10.0d0**(POW10))))
-  j4    = int(ind_r, i32)
+  j1    = int(ind_r / nint((10.0d0**(3*POW10)), i32))
+  ind_r = MOD(ind_r,  nint((10.0d0**(3*POW10))))
+  j2    = int(ind_r / nint((10.0d0**(2*POW10)), i32))
+  ind_r = MOD(ind_r,  nint((10.0d0**(2*POW10))))
+  j3    = int(ind_r / nint((10.0d0**(POW10)), i32))
+  ind_r = MOD(ind_r,  nint((10.0d0**(POW10))))
+  j4    = int(ind_r,  i32)
+
+  if ((red_abcd(1,kk).NE.j1).OR.(red_abcd(2,kk).NE.j2).OR. &
+      (red_abcd(3,kk).NE.j3).OR.(red_abcd(4,kk).NE.j4)) then
+    print "(A,4i4,A,4i4)", " [ERR:] js/=abcd_red: " j1,j2,j3,j4, " /= ", &
+          red_abcd(1,kk), red_abcd(2,kk),red_abcd(3,kk), red_abcd(4,kk)
+  end if
+
+  j1 = red_abcd(1, kk)
+  j2 = red_abcd(2, kk)
+  j3 = red_abcd(3, kk)
+  j4 = red_abcd(4, kk)
 
   write(336, fmt='(I7,3I5,4F18.12)') j1, j2, j3, j4, temp_hamil_byT(1,kk), &
     temp_hamil_byT(2,kk), temp_hamil_byT(3,kk), temp_hamil_byT(4,kk)
