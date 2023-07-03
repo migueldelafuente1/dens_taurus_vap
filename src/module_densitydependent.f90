@@ -2239,8 +2239,8 @@ do kk = 1, hamil_H2dim
     cred = int(i3,i16)
     dred = int(i4,i16)
     write(uth6) ared, bred, cred, dred
-    write(uth6) bred, ared, dred, cred
-    write(uth6) ared, bred, cred, dred
+    write(uth6) ared, bred, dred, cred
+    write(uth6) bred, ared, cred, dred
     write(uth6) bred, ared, dred, cred
     write(uth7)  h2b, -h2b, -h2b,  h2b
     ndim = ndim + 4
@@ -2248,8 +2248,8 @@ do kk = 1, hamil_H2dim
     if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
 
     write(uth6) cred, dred, ared, bred
-    write(uth6) dred, cred, bred, ared
-    write(uth6) cred, dred, ared, bred
+    write(uth6) dred, cred, ared, bred
+    write(uth6) cred, dred, bred, ared
     write(uth6) dred, cred, bred, ared
     write(uth7)  h2b, -h2b, -h2b,  h2b
     ndim = ndim + 4
@@ -2281,6 +2281,11 @@ do kk = 1, ndim
   i3 = temp_abcd(4*(kk-1) + 3)
   i4 = temp_abcd(4*(kk-1) + 4)
 
+  j1 = i1
+  j2 = i2
+  j3 = i3
+  j4 = i4
+
   if(i1 .GT. spo2) j1 = i1 - spo2
   if(i2 .GT. spo2) j2 = i2 - spo2
   if(i3 .GT. spo2) j3 = i3 - spo2
@@ -2289,17 +2294,17 @@ do kk = 1, ndim
   indx_ = nint(i1*(10**(3*POW10))+i2*(10**(2*POW10))+i3*(10.0d0**(POW10)) + i4)
   ind_r = nint(j1*(10**(3*POW10))+j2*(10**(2*POW10))+j3*(10.0d0**(POW10)) + j4)
 
-  if     ((i1 .GT. spo2).AND.(i1 .GT. spo2)) then
-    tt = 4
-  elseif ((i1 .LE. spo2).AND.(i1 .LE. spo2)) then
-    tt = 1
+  if     ((i1 .GT. spo2).AND.(i2 .GT. spo2)) then
+    tt = 4    ! nn_ nn_
+  elseif ((i1 .LE. spo2).AND.(i2 .LE. spo2)) then
+    tt = 1    ! pp_ pp_
   else
-    tt = 3 + ((4*HOsp_2mt(i1) + 2*(HOsp_2mt(i2) + HOsp_2mt(i3)) + &
-                 HOsp_2mt(i4) - 1) / 2)
+    tt = 4*HOsp_2mt(i1) + 2*(HOsp_2mt(i2) + HOsp_2mt(i3)) + HOsp_2mt(i4) - 1)
+    tt = 3 + (tt / 2)
     if ((tt.EQ.1) .OR. (tt.EQ.4)) then
-      tt = 2
+      tt = 2  ! pn_ pn_
     else
-      tt = 3
+      tt = 3  ! pn_ np_
     end if
   endif
 
@@ -2307,7 +2312,7 @@ do kk = 1, ndim
   sort_pointer(kk)  = kk
   sort_isos(kk)     = tt
 
-  if (red_dim .EQ.0) then
+  if (red_dim .EQ.0) then ! 1st
     red_indx(1) = ind_r
     red_dim = 1
     sort_red_pointer(kk) = 1
@@ -2352,6 +2357,7 @@ do k1 = 1, ndim
       sort_red_pointer(k1) = point_
     end if
   enddo
+  ! sort also the reduced one
   if (k1 .GT. red_dim) cycle
   do k2 = k1+1, red_dim
     if (red_indx(k1) .GT. red_indx(k2)) then
@@ -2363,9 +2369,9 @@ do k1 = 1, ndim
 end do
 
 !! Assign in the temp_hamil_byT the element by T
-spo2 = HOsp_dim / 2
 do k1 = 1, ndim
   kk = sort_pointer(k1)
+
   i1 = temp_abcd(4*(kk-1) + 1)
   i2 = temp_abcd(4*(kk-1) + 2)
   i3 = temp_abcd(4*(kk-1) + 3)
@@ -2401,6 +2407,8 @@ do kk = 1, red_dim
 enddo
 
 close(336)
+deallocate(sort_indx, sort_pointer,sort_isos, temp_hamil, &
+           temp_abcd, red_indx , sort_red_pointer)
 print "(A)", "[OK] EXPORT Hamiltonian (uncoupled) for current interaction."
 end subroutine print_uncoupled_hamiltonian_H2
 !------------------------------------------------------------------------------!
