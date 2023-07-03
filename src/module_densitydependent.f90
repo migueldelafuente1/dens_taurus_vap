@@ -2336,7 +2336,7 @@ enddo
 
 allocate(temp_hamil_byT(4, red_dim), red_abcd(4, red_dim))
 temp_hamil_byT = zero
-red_abcd       = zero
+red_abcd       = 0
 ! bubble sorting
 do k1 = 1, ndim
   do k2 = k1+1, ndim
@@ -2389,22 +2389,37 @@ do k1 = 1, ndim
   if(i3 .GT. spo2) i3 = i3 - spo2
   if(i4 .GT. spo2) i4 = i4 - spo2
 
+  if ((red_abcd(1,k2) .NE. 0).AND.(red_abcd(1, k2) .EQ. i1)) then
+    print "(A,2i5)", "[WARN] 1 NE prev assinged: ", red_abcd(1, k2) , i1
+  end if
+  if ((red_abcd(2,k2) .NE. 0).AND.(red_abcd(2, k2) .EQ. i2)) then
+    print "(A,2i5)", "[WARN] 1 NE prev assinged: ", red_abcd(2, k2) , i2
+  end if
+  if ((red_abcd(3,k2) .NE. 0).AND.(red_abcd(3, k2) .EQ. i3)) then
+    print "(A,2i5)", "[WARN] 3 NE prev assinged: ", red_abcd(3, k2) , i3
+  end if
+  if ((red_abcd(4,k2) .NE. 0).AND.(red_abcd(4, k2) .EQ. i4)) then
+    print "(A,2i5)", "[WARN] 4 NE prev assinged: ", red_abcd(4, k2) , i4
+  end if
+  print "(A)", "-----------------------"
+
   red_abcd(1, k2) = i1
   red_abcd(2, k2) = i2
   red_abcd(3, k2) = i3
   red_abcd(4, k2) = i4
 end do
 
+i1 = red_abcd(6515, 31321323203)
 !! print the matrix elements in a file
 open (336, file="uncoupled_BB.2b")
 write(336, fmt="(a)") "// Hamiltonian uncoupled for the m.e. given (all perm)"
 write(336, fmt="(a)") "//    a    b    c    d              pppp              &
                       &pnpn              pnnp              nnnn"
 
-do kk = 1, red_dim
+do k2 = 1, red_dim
   ! red_index is sorted, so we extract the HOsp index from it,
-  ind_r = red_indx(kk)
-
+  ind_r = red_indx(k2)
+  print "(A,i20,i3)", ind_r, POW10
   j1    = int(ind_r / nint((10.0d0**(3*POW10)), i32))
   ind_r = MOD(ind_r,  nint((10.0d0**(3*POW10))))
   j2    = int(ind_r / nint((10.0d0**(2*POW10)), i32))
@@ -2412,20 +2427,21 @@ do kk = 1, red_dim
   j3    = int(ind_r / nint((10.0d0**(POW10)), i32))
   ind_r = MOD(ind_r,  nint((10.0d0**(POW10))))
   j4    = int(ind_r,  i32)
+  print "(a,4i4)", "       ...", j1,j2,j3,j4
 
-  if ((red_abcd(1,kk).NE.j1).OR.(red_abcd(2,kk).NE.j2).OR. &
-      (red_abcd(3,kk).NE.j3).OR.(red_abcd(4,kk).NE.j4)) then
+  if ((red_abcd(1,k2).NE.j1).OR.(red_abcd(2,k2).NE.j2).OR. &
+      (red_abcd(3,k2).NE.j3).OR.(red_abcd(4,k2).NE.j4)) then
     print "(A,4i4,A,4i4)", " [ERR:] js/=abcd_red: ", j1,j2,j3,j4, " /= ", &
-          red_abcd(1,kk), red_abcd(2,kk),red_abcd(3,kk), red_abcd(4,kk)
+          red_abcd(1,k2), red_abcd(2,k2),red_abcd(3,k2), red_abcd(4,k2)
   end if
 
-  j1 = red_abcd(1, kk)
-  j2 = red_abcd(2, kk)
-  j3 = red_abcd(3, kk)
-  j4 = red_abcd(4, kk)
+  j1 = red_abcd(1, k2)
+  j2 = red_abcd(2, k2)
+  j3 = red_abcd(3, k2)
+  j4 = red_abcd(4, k2)
 
-  write(336, fmt='(I7,3I5,4F18.12)') j1, j2, j3, j4, temp_hamil_byT(1,kk), &
-    temp_hamil_byT(2,kk), temp_hamil_byT(3,kk), temp_hamil_byT(4,kk)
+  write(336, fmt='(I7,3I5,4F18.12)') j1, j2, j3, j4, temp_hamil_byT(1,k2), &
+    temp_hamil_byT(2,k2), temp_hamil_byT(3,k2), temp_hamil_byT(4,k2)
 enddo
 
 close(336)
