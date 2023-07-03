@@ -2193,7 +2193,7 @@ end subroutine print_uncoupled_hamiltonian_DD
 subroutine print_uncoupled_hamiltonian_H2
 
 integer   :: kk, i1, i2, i3, i4, it, perm, uth6=uth+8, uth7=uth+9, ialloc=0, &
-             ared, bred, cred, dred, ndim, ndim2, k1, k2, PW10, spo2, point_,&
+             ared, bred, cred, dred, ndim, ndim2, k1, k2, POW10, spo2, point_,&
              j1, j2, j3, j4, tt, red_dim
 integer(i64) :: indx_, ind_r
 integer(i64), dimension(:), allocatable :: sort_indx, red_indx
@@ -2245,7 +2245,7 @@ do kk = 1, hamil_H2dim
   enddo
 end do
 !! Allocate in a temporal hamiltonian
-allocate( sort_indx(ndim), sort_pointer(ndim)&
+allocate( sort_indx(ndim), sort_pointer(ndim),&
           sort_isos(ndim), temp_hamil(ndim), temp_abcd(4*ndim),&
           red_indx (ndim), sort_red_pointer(ndim), stat=ialloc )
 if ( ialloc /= 0 ) stop 'Error during allocation of array of indices [BB]'
@@ -2263,7 +2263,7 @@ sort_isos = 0
 red_indx  = 0
 red_dim   = 0
 sort_red_pointer = 0
-PW10 = floor(log10(HOsp_dim)) + 1
+POW10 = floor(log10(HOsp_dim)) + 1
 do kk = 1, ndim
   i1 = temp_abcd(4*(kk-1) + 1)
   i2 = temp_abcd(4*(kk-1) + 2)
@@ -2377,12 +2377,12 @@ do kk = 1, red_dim
   ! red_index is sorted, so we extract the HOsp index from it,
   ind_r = red_indx(kk)
 
-  j1    = int(ind_r /nint((10**(3*POW10)), i32)
-  ind_r = MOD(ind_r, nint((10**(3*POW10)))
-  j2    = int(ind_r /nint((10**(2*POW10)), i32)
-  ind_r = MOD(ind_r, nint((10**(2*POW10)))
-  j3    = int(ind_r /nint((10**(POW10)), i32)
-  ind_r = MOD(ind_r, nint((10**(POW10)))
+  j1    = int(ind_r /nint((10**(3*POW10)), i32))
+  ind_r = MOD(ind_r, nint((10**(3*POW10))))
+  j2    = int(ind_r /nint((10**(2*POW10)), i32))
+  ind_r = MOD(ind_r, nint((10**(2*POW10))))
+  j3    = int(ind_r /nint((10**(POW10)), i32))
+  ind_r = MOD(ind_r, nint((10**(POW10))))
   j4    = int(ind_r, i32)
 
   write(123, fmt='(I7,3I5,4F18.12)') j1, j2, j3, j4, temp_hamil_byT(1,kk), &
