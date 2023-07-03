@@ -2389,16 +2389,16 @@ do k1 = 1, ndim
   if(i3 .GT. spo2) i3 = i3 - spo2
   if(i4 .GT. spo2) i4 = i4 - spo2
 
-  if ((red_abcd(1,k2) .NE. 0).AND.(red_abcd(1, k2) .EQ. i1)) then
+  if ((red_abcd(1,k2) .NE. 0).AND.(red_abcd(1, k2) .NE. i1)) then
     print "(A,2i5)", "[WARN] 1 NE prev assinged: ", red_abcd(1, k2) , i1
   end if
-  if ((red_abcd(2,k2) .NE. 0).AND.(red_abcd(2, k2) .EQ. i2)) then
+  if ((red_abcd(2,k2) .NE. 0).AND.(red_abcd(2, k2) .NE. i2)) then
     print "(A,2i5)", "[WARN] 1 NE prev assinged: ", red_abcd(2, k2) , i2
   end if
-  if ((red_abcd(3,k2) .NE. 0).AND.(red_abcd(3, k2) .EQ. i3)) then
+  if ((red_abcd(3,k2) .NE. 0).AND.(red_abcd(3, k2) .NE. i3)) then
     print "(A,2i5)", "[WARN] 3 NE prev assinged: ", red_abcd(3, k2) , i3
   end if
-  if ((red_abcd(4,k2) .NE. 0).AND.(red_abcd(4, k2) .EQ. i4)) then
+  if ((red_abcd(4,k2) .NE. 0).AND.(red_abcd(4, k2) .NE. i4)) then
     print "(A,2i5)", "[WARN] 4 NE prev assinged: ", red_abcd(4, k2) , i4
   end if
   print "(A)", "-----------------------"
