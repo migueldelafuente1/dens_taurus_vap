@@ -1585,8 +1585,8 @@ endif
 
       end do
     end do
-    print "(A,2i5,A,i5)", "Progress to loop2:", qq1,qq2," of ",VSsp_dim
   end do
+  print "(A,1i5,A,i5)", "Progress to loop1:", qq1," of ",VSsp_dim
 end do
 CLOSE(334)
 CLOSE(335)
