@@ -2378,8 +2378,8 @@ do k1 = 1, ndim
 end do
 
 !! print the matrix elements in a file
-open(336, file="uncoupled_BB.2b")
-write(336, fmt="(a)") " // Hamiltonian uncoupled for the m.e. given (all perm)"
+open (336, file="uncoupled_BB.2b")
+write(336, fmt="(a)") "// Hamiltonian uncoupled for the m.e. given (all perm)"
 write(336, fmt="(a)") "//    a    b    c    d              pppp              &
                       &pnpn              pnnp              nnnn"
 
@@ -2395,7 +2395,7 @@ do kk = 1, red_dim
   ind_r = MOD(ind_r, nint((10.0d0**(POW10))))
   j4    = int(ind_r, i32)
 
-  write(123, fmt='(I7,3I5,4F18.12)') j1, j2, j3, j4, temp_hamil_byT(1,kk), &
+  write(336, fmt='(I7,3I5,4F18.12)') j1, j2, j3, j4, temp_hamil_byT(1,kk), &
     temp_hamil_byT(2,kk), temp_hamil_byT(3,kk), temp_hamil_byT(4,kk)
 enddo
 
