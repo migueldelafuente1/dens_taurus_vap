@@ -2409,7 +2409,7 @@ do k1 = 1, ndim
   red_abcd(4, k2) = i4
 end do
 
-i1 = red_abcd(6515, 31321323203)
+i1 = red_abcd(6515, 313212203)
 !! print the matrix elements in a file
 open (336, file="uncoupled_BB.2b")
 write(336, fmt="(a)") "// Hamiltonian uncoupled for the m.e. given (all perm)"
