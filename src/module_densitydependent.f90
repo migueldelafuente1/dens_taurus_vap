@@ -2414,7 +2414,7 @@ do kk = 1, red_dim
 
   if ((red_abcd(1,kk).NE.j1).OR.(red_abcd(2,kk).NE.j2).OR. &
       (red_abcd(3,kk).NE.j3).OR.(red_abcd(4,kk).NE.j4)) then
-    print "(A,4i4,A,4i4)", " [ERR:] js/=abcd_red: " j1,j2,j3,j4, " /= ", &
+    print "(A,4i4,A,4i4)", " [ERR:] js/=abcd_red: ", j1,j2,j3,j4, " /= ", &
           red_abcd(1,kk), red_abcd(2,kk),red_abcd(3,kk), red_abcd(4,kk)
   end if
 
@@ -2429,7 +2429,7 @@ enddo
 
 close(336)
 deallocate(sort_indx, sort_pointer,sort_isos, temp_hamil, &
-           temp_abcd, red_indx , sort_red_pointer)
+           temp_abcd, red_indx , sort_red_pointer, red_abcd)
 print "(A)", "[OK] EXPORT Hamiltonian (uncoupled) for current interaction."
 end subroutine print_uncoupled_hamiltonian_H2
 !------------------------------------------------------------------------------!
