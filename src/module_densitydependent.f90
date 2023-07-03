@@ -2204,10 +2204,10 @@ integer   :: kk, i1, i2, i3, i4, it, perm, uth6=uth+8, uth7=uth+9, ialloc=0, &
 integer(i64) :: indx_, ind_r
 integer(i64), dimension(:), allocatable :: sort_indx, red_indx
 integer,      dimension(:), allocatable :: temp_abcd, sort_pointer, sort_isos,&
-                                           sort_red_pointer, red_abcd
+                                           sort_red_pointer
 real(r64) :: h2b, aux, i1_t, i2_t, i3_t, i4_t
 real(r64), dimension(:),   allocatable :: temp_hamil
-real(r64), dimension(:,:), allocatable :: temp_hamil_byT
+real(r64), dimension(:,:), allocatable :: temp_hamil_byT, red_abcd
 logical :: found
 
 print "(A)", "[  ] EXPORT Hamiltonian (uncoupled) for current interaction."
