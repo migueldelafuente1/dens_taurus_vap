@@ -2190,6 +2190,12 @@ print "(3A,3I12)", &
 
 end subroutine print_uncoupled_hamiltonian_DD
 
+!------------------------------------------------------------------------------!
+! subroutine print_uncoupled_hamiltonian_DD                                    !
+!                                                                              !
+! Auxiliary method to print an uncoupled list of matrix elements from the H2   !
+! read from the .2b file, permute and reconstruct the TR matrix elements.      !
+!------------------------------------------------------------------------------!
 subroutine print_uncoupled_hamiltonian_H2
 
 integer   :: kk, i1, i2, i3, i4, it, perm, uth6=uth+8, uth7=uth+9, ialloc=0, &
@@ -2263,7 +2269,7 @@ sort_isos = 0
 red_indx  = 0
 red_dim   = 0
 sort_red_pointer = 0
-POW10 = floor(log10(HOsp_dim)) + 1
+POW10 = floor(log10(HOsp_dim + 0.0d0)) + 1
 do kk = 1, ndim
   i1 = temp_abcd(4*(kk-1) + 1)
   i2 = temp_abcd(4*(kk-1) + 2)
@@ -2275,8 +2281,8 @@ do kk = 1, ndim
   if(i3 .GT. spo2) j3 = i3 - spo2
   if(i4 .GT. spo2) j4 = i4 - spo2
 
-  indx_ = nint(i1*(10**(3*POW10)) + i2*(10**(2*POW10)) + i3*(10**(POW10)) + i4)
-  ind_r = nint(j1*(10**(3*POW10)) + j2*(10**(2*POW10)) + j3*(10**(POW10)) + j4)
+  indx_ = nint(i1*(10**(3*POW10))+i2*(10**(2*POW10))+i3*(10.0d0**(POW10)) + i4)
+  ind_r = nint(j1*(10**(3*POW10))+j2*(10**(2*POW10))+j3*(10.0d0**(POW10)) + j4)
 
   if     ((i1 .GT. spo2).AND.(i1 .GT. spo2)) then
     tt = 4
@@ -2377,12 +2383,12 @@ do kk = 1, red_dim
   ! red_index is sorted, so we extract the HOsp index from it,
   ind_r = red_indx(kk)
 
-  j1    = int(ind_r /nint((10**(3*POW10)), i32))
-  ind_r = MOD(ind_r, nint((10**(3*POW10))))
-  j2    = int(ind_r /nint((10**(2*POW10)), i32))
-  ind_r = MOD(ind_r, nint((10**(2*POW10))))
-  j3    = int(ind_r /nint((10**(POW10)), i32))
-  ind_r = MOD(ind_r, nint((10**(POW10))))
+  j1    = int(ind_r /nint((10.0d0**(3*POW10)), i32))
+  ind_r = MOD(ind_r, nint((10.0d0**(3*POW10))))
+  j2    = int(ind_r /nint((10.0d0**(2*POW10)), i32))
+  ind_r = MOD(ind_r, nint((10.0d0**(2*POW10))))
+  j3    = int(ind_r /nint((10.0d0**(POW10)), i32))
+  ind_r = MOD(ind_r, nint((10.0d0**(POW10))))
   j4    = int(ind_r, i32)
 
   write(123, fmt='(I7,3I5,4F18.12)') j1, j2, j3, j4, temp_hamil_byT(1,kk), &
