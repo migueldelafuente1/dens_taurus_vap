@@ -2207,7 +2207,8 @@ integer,      dimension(:), allocatable :: temp_abcd, sort_pointer, sort_isos,&
                                            sort_red_pointer
 real(r64) :: h2b, aux, i1_t, i2_t, i3_t, i4_t
 real(r64), dimension(:),   allocatable :: temp_hamil
-real(r64), dimension(:,:), allocatable :: temp_hamil_byT, red_abcd
+real(r64), dimension(:,:), allocatable :: temp_hamil_byT
+integer,   dimension(:,:), allocatable :: red_abcd
 logical :: found
 
 print "(A)", "[  ] EXPORT Hamiltonian (uncoupled) for current interaction."
