@@ -2436,7 +2436,7 @@ write(336, fmt="(a)") "//    a    b    c    d              pppp              &
 do k2 = 1, red_dim
   ! red_index is sorted, so we extract the HOsp index from it,
   ind_r = red_indx(k2)
-  print "(A,i20,2i4)", "     ind_r,PW10,spo2:", ind_r, POW10,spo2
+  print "(A,i10,2i4)", "     ind_r,PW10,spo2:", ind_r, POW10,spo2
   j1    = int(ind_r / nint((10.0d0**(3*POW10)), i32))
   ind_r = MOD(ind_r,  nint((10.0d0**(3*POW10))))
   j2    = int(ind_r / nint((10.0d0**(2*POW10)), i32))
@@ -2444,7 +2444,7 @@ do k2 = 1, red_dim
   j3    = int(ind_r / nint((10.0d0**(POW10)), i32))
   ind_r = MOD(ind_r,  nint((10.0d0**(POW10))))
   j4    = int(ind_r,  i32)
-  print "(a,4i4)", "       ...", j1,j2,j3,j4
+  print "(a,4i4)", "                 ...", j1,j2,j3,j4
 
   if ((red_abcd(1,k2).NE.j1).OR.(red_abcd(2,k2).NE.j2).OR. &
       (red_abcd(3,k2).NE.j3).OR.(red_abcd(4,k2).NE.j4)) then
@@ -2452,10 +2452,10 @@ do k2 = 1, red_dim
           red_abcd(1,k2), red_abcd(2,k2),red_abcd(3,k2), red_abcd(4,k2)
   end if
 
-  j1 = red_abcd(1, k2)
-  j2 = red_abcd(2, k2)
-  j3 = red_abcd(3, k2)
-  j4 = red_abcd(4, k2)
+!  j1 = red_abcd(1, k2)
+!  j2 = red_abcd(2, k2)
+!  j3 = red_abcd(3, k2)
+!  j4 = red_abcd(4, k2)
 
   write(336, fmt='(4I5,4F18.12)') j1, j2, j3, j4, temp_hamil_byT(1,k2), &
     temp_hamil_byT(2,k2), temp_hamil_byT(3,k2), temp_hamil_byT(4,k2)
