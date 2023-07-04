@@ -1509,6 +1509,7 @@ do qq1 = 1, VSsp_dim
 !! Loop for the HO basis, getting the
 !!---------------------------------------------------------------------------
 !! Loop for the Hamiltonian, using tr and the permutations on the m.e.
+
 !do kk = 1, hamil_H2dim
 !  i1 = hamil_abcd(1+4*(kk-1))
 !  i2 = hamil_abcd(2+4*(kk-1))
@@ -1726,9 +1727,9 @@ do sh1 = 1, VSsh_dim
   WRITE(3301, fmt="(2i6,2f15.6)") &
     HOsh_na(kk), HOsh_na(kk), H11_qp2print(1,sh1), H11_qp2print(2,sh1)
 
-  do sh2 = sh1, VSsh_dim
-    do sh3 = sh1, VSsh_dim
-      do sh4 = sh3, VSsh_dim
+  do sh2 = 1, VSsh_dim !sh1, VSsh_dim
+    do sh3 = 1, VSsh_dim !sh1, VSsh_dim
+      do sh4 = 1, VSsh_dim!sh3, VSsh_dim
 
         i1 = VStoHOsh_index(sh1)
         i2 = VStoHOsh_index(sh2)

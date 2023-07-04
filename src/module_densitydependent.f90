@@ -2433,7 +2433,7 @@ do i = 1, WBsp_dim / 2
       ',', HOsp_l(i),',', HOsp_2j(i),',', HOsp_2mj(i),',', HOsp_tr(i)
 enddo
 write(336, fmt="(a)") "// Hamiltonian uncoupled for the m.e. given (all perm)"
-write(336, fmt="(a)") "//    a    b    c    d              pppp              &
+write(336, fmt="(a)") "//  a    b    c    d              pppp              &
                       &pnpn              pnnp              nnnn"
 do k1 = 1, red_dim
   ! red_index is sorted, so we extract the HOsp index from it,
