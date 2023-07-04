@@ -2346,7 +2346,7 @@ enddo
 close(3333)
 
 
-allocate(temp_hamil_byT(4, red_dim),
+allocate(temp_hamil_byT(4, red_dim), &
          red_abcd(WBsp_dim, WBsp_dim, WBsp_dim, WBsp_dim))
 temp_hamil_byT = zero
 red_abcd       = 0
