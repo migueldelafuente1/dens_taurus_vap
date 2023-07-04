@@ -2228,7 +2228,7 @@ do kk = 1, hamil_H2dim
   h2b  = hamil_H2(kk)
   perm = hamil_trperm(kk)
 
-  write(3333,fmt="(i7,A,5i4,A,F13.6)")kk," indx:",i1,i2,i3,i4,"(",perm,") =",h2b
+  write(3333,fmt="(2i7,A,4i4,A,F13.6)")kk,perm," indx:",i1,i2,i3,i4," =",h2b
 
   !!! Loop on time reversal
   do it = 1, 2
