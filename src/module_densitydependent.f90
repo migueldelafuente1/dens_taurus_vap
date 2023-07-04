@@ -2280,6 +2280,8 @@ red_indx  = 0
 red_dim   = 0
 sort_red_pointer = 0
 POW10 = floor(log10(HOsp_dim + 0.0d0)) + 1
+open (3333, file="temp_abcd_init")
+write(3333, fmt ="(A,3i6)") "POW10,spo2,ndim(total)=", POW10,spo2,ndim
 do kk = 1, ndim
   i1 = temp_abcd(4*(kk-1) + 1)
   i2 = temp_abcd(4*(kk-1) + 2)
@@ -2336,7 +2338,13 @@ do kk = 1, ndim
       sort_red_pointer(kk) = red_dim
     end if
   endif
+
+  write(3333,fmt="(i6,2(A,4i3),A,2i5,A,2i10,A,F15.6)") kk," indx:",i1,i2,i3,i4,&
+        " r(",j1,j2,j3,j4,") tt,red:", tt,red_dim, " hash(t/r):", indx_,ind_r,&
+        " =",temp_hamil(kk)
 enddo
+close(3333)
+
 
 allocate(temp_hamil_byT(4, red_dim), red_abcd(4, red_dim))
 temp_hamil_byT = zero
@@ -2390,7 +2398,7 @@ do k1 = 1, ndim
   temp_hamil_byT(tt, k2) = temp_hamil(kk)
 
   write(3333, fmt="(3i8,A,4i4,A,i2,A,F15.6)")k1,kk,k2," indx:", i1,i2,i3,i4, &
-                                             "(t",tt,") =",temp_hamil(kk)
+                                             "  (t:",tt,") =",temp_hamil(kk)
 
   if(i1 .GT. spo2) i1 = i1 - spo2
   if(i2 .GT. spo2) i2 = i2 - spo2
