@@ -2391,8 +2391,8 @@ do k1 = 1, ndim
   i3 = temp_abcd(4*(kk-1) + 3)
   i4 = temp_abcd(4*(kk-1) + 4)
 
-  k2 = sort_red_pointer(kk) ! extract the index of the reduced space
-  tt = sort_isos(kk)
+  k2 = sort_red_pointer(k1) ! extract the index of the reduced space
+  tt = sort_isos(k1)
   !NOTE: the sort_red_pointer still points in the reduced non zero list,
   ! here, we are not assigning k2 in order, the order will appear while reading
   temp_hamil_byT(tt, k2) = temp_hamil(kk)
