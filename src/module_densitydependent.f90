@@ -2389,7 +2389,8 @@ do k1 = 1, ndim
   ! here, we are not assigning k2 in order, the order will appear while reading
   temp_hamil_byT(tt, k2) = temp_hamil(kk)
 
-  write(3333, fmt="(3i8,5i4,F15.6)")k1,kk,k2, i1,i2,i3,i4,tt, temp_hamil(kk)
+  write(3333, fmt="(3i8,A,4i4,A,i2,A,F15.6)")k1,kk,k2," indx:", i1,i2,i3,i4, &
+                                             "(t",tt,") =",temp_hamil(kk)
 
   if(i1 .GT. spo2) i1 = i1 - spo2
   if(i2 .GT. spo2) i2 = i2 - spo2
@@ -2427,7 +2428,7 @@ write(336, fmt="(a)") "//    a    b    c    d              pppp              &
 do k2 = 1, red_dim
   ! red_index is sorted, so we extract the HOsp index from it,
   ind_r = red_indx(k2)
-  print "(A,i20,i3)", "     ind_r,PW10:", ind_r, POW10
+  print "(A,i20,2i4)", "     ind_r,PW10,spo2:", ind_r, POW10,spo2
   j1    = int(ind_r / nint((10.0d0**(3*POW10)), i32))
   ind_r = MOD(ind_r,  nint((10.0d0**(3*POW10))))
   j2    = int(ind_r / nint((10.0d0**(2*POW10)), i32))
