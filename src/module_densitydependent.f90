@@ -2146,19 +2146,19 @@ print '(A,F10.6,A,F10.6)'," *Top H2",MINVAL(hamil_DD_H2),' ',MAXVAL(hamil_DD_H2)
 endif
 
 open (123, file=filename)
-write(123, fmt='(A)') "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, 2mt,tr)"
 if (ALL_ISOS) then
-  do i=1, WBsp_dim
+  write(123,fmt='(A)')"//SING PART INDEX (i_sp, i_sh, n,l,2j,2m,tr)"
+  do i=1, WBsp_dim / 2
 !    i = VStoHOsp_index(kk)
     kk=0
-    write(123, fmt='(I4,8(A,I4))') kk,',',i,',', HOsp_sh(i), &
-      ',', HOsp_n(i),',', HOsp_l(i),',', HOsp_2j(i),',', HOsp_2mj(i), &
-      ',', HOsp_2mt(i),',', HOsp_tr(i)
+    write(123, fmt='(I4,6(A,I4))') i,',', HOsp_sh(i), ',', HOsp_n(i),&
+      ',', HOsp_l(i),',', HOsp_2j(i),',', HOsp_2mj(i),',', HOsp_tr(i)
   enddo
   write(123, fmt='(3A,3I12)')"//(vs)a    b    c    d              pppp", &
     "              pnpn              pnnp              nnnn    ", &
     "* VS array DD/noDD DIM/ALL=", hamil_DD_H2dim, hamil_H2dim, (VSsp_dim/2)**4
 else
+  write(123,fmt='(A)')"//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, 2mt,tr)"
   do i=1, HOsp_dim
     write(123, fmt='(I3,7(A,I4))') i,',', HOsp_sh(i), &
       ',', HOsp_n(i),',', HOsp_l(i),',', HOsp_2j(i),',', HOsp_2mj(i), &
@@ -2198,7 +2198,7 @@ end subroutine print_uncoupled_hamiltonian_DD
 !------------------------------------------------------------------------------!
 subroutine print_uncoupled_hamiltonian_H2
 
-integer   :: kk, i1, i2, i3, i4, it, perm, uth6=uth+8, uth7=uth+9, ialloc=0, &
+integer   :: i, kk, i1, i2, i3, i4, it, perm, uth6=uth+8,uth7=uth+9, ialloc=0,&
              ared, bred, cred, dred, ndim, ndim2, k1, k2, POW10, spo2, point_,&
              j1, j2, j3, j4, tt, red_dim
 integer(i64) :: indx_, ind_r
@@ -2427,14 +2427,17 @@ close(3333)
 
 !! print the matrix elements in a file
 open (336, file="uncoupled_BB.2b")
+write(336, fmt="(A)") "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, 2mt,tr)"
+do i = 1, WBsp_dim / 2
+  write(123, fmt='(I4,6(A,I4))') i,',', HOsp_sh(i), ',', HOsp_n(i),&
+      ',', HOsp_l(i),',', HOsp_2j(i),',', HOsp_2mj(i),',', HOsp_tr(i)
+enddo
 write(336, fmt="(a)") "// Hamiltonian uncoupled for the m.e. given (all perm)"
 write(336, fmt="(a)") "//    a    b    c    d              pppp              &
                       &pnpn              pnnp              nnnn"
-
 do k1 = 1, red_dim
   ! red_index is sorted, so we extract the HOsp index from it,
   ind_r = red_indx(k1)
-  print "(A,i10,2i4)", "     ind_r,PW10,spo2:", ind_r, POW10,spo2
   j1    = int(ind_r / nint((10.0d0**(3*POW10)), i32))
   ind_r = MOD(ind_r,  nint((10.0d0**(3*POW10))))
   j2    = int(ind_r / nint((10.0d0**(2*POW10)), i32))
@@ -2442,7 +2445,6 @@ do k1 = 1, red_dim
   j3    = int(ind_r / nint((10.0d0**(POW10)), i32))
   ind_r = MOD(ind_r,  nint((10.0d0**(POW10))))
   j4    = int(ind_r,  i32)
-  print "(a,4i4)", "                 ...", j1,j2,j3,j4
 
 !  j1 = red_abcd(1, k2)
 !  j2 = red_abcd(2, k2)
