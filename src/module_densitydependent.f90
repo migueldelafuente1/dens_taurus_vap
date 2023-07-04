@@ -2208,7 +2208,7 @@ integer,      dimension(:), allocatable :: temp_abcd, sort_pointer, sort_isos,&
 real(r64) :: h2b, aux, i1_t, i2_t, i3_t, i4_t
 real(r64), dimension(:),   allocatable :: temp_hamil
 real(r64), dimension(:,:), allocatable :: temp_hamil_byT
-integer,   dimension(:,:), allocatable :: red_abcd
+integer,   dimension(:,:,:,:), allocatable :: red_abcd
 logical :: found
 
 print "(A)", "[  ] EXPORT Hamiltonian (uncoupled) for current interaction."
@@ -2346,7 +2346,8 @@ enddo
 close(3333)
 
 
-allocate(temp_hamil_byT(4, red_dim), red_abcd(4, red_dim))
+allocate(temp_hamil_byT(4, red_dim),
+         red_abcd(WBsp_dim, WBsp_dim, WBsp_dim, WBsp_dim))
 temp_hamil_byT = zero
 red_abcd       = 0
 ! bubble sorting
@@ -2405,37 +2406,34 @@ do k1 = 1, ndim
   if(i3 .GT. spo2) i3 = i3 - spo2
   if(i4 .GT. spo2) i4 = i4 - spo2
 
-  if ((red_abcd(1,k2) .NE. 0).AND.(red_abcd(1, k2) .NE. i1)) then
-    print "(A,2i5)", "[WARN] 1 NE prev assinged: ", red_abcd(1, k2) , i1
-  end if
-  if ((red_abcd(2,k2) .NE. 0).AND.(red_abcd(2, k2) .NE. i2)) then
-    print "(A,2i5)", "[WARN] 2 NE prev assinged: ", red_abcd(2, k2) , i2
-  end if
-  if ((red_abcd(3,k2) .NE. 0).AND.(red_abcd(3, k2) .NE. i3)) then
-    print "(A,2i5)", "[WARN] 3 NE prev assinged: ", red_abcd(3, k2) , i3
-  end if
-  if ((red_abcd(4,k2) .NE. 0).AND.(red_abcd(4, k2) .NE. i4)) then
-    print "(A,2i5)", "[WARN] 4 NE prev assinged: ", red_abcd(4, k2) , i4
-  end if
-  print "(A)", "-----------------------"
+!  if ((red_abcd(1,k2) .NE. 0).AND.(red_abcd(1, k2) .NE. i1)) then
+!    print "(A,2i5)", "[WARN] 1 NE prev assinged: ", red_abcd(1, k2) , i1
+!  end if
+!  if ((red_abcd(2,k2) .NE. 0).AND.(red_abcd(2, k2) .NE. i2)) then
+!    print "(A,2i5)", "[WARN] 2 NE prev assinged: ", red_abcd(2, k2) , i2
+!  end if
+!  if ((red_abcd(3,k2) .NE. 0).AND.(red_abcd(3, k2) .NE. i3)) then
+!    print "(A,2i5)", "[WARN] 3 NE prev assinged: ", red_abcd(3, k2) , i3
+!  end if
+!  if ((red_abcd(4,k2) .NE. 0).AND.(red_abcd(4, k2) .NE. i4)) then
+!    print "(A,2i5)", "[WARN] 4 NE prev assinged: ", red_abcd(4, k2) , i4
+!  end if
+!  print "(A)", "-----------------------"
 
-  red_abcd(1, k2) = i1
-  red_abcd(2, k2) = i2
-  red_abcd(3, k2) = i3
-  red_abcd(4, k2) = i4
+  red_abcd(i1,i2,i3,i4) = k2
+
 end do
 close(3333)
 
-!i1 = red_abcd(6515, 313212203)
 !! print the matrix elements in a file
 open (336, file="uncoupled_BB.2b")
 write(336, fmt="(a)") "// Hamiltonian uncoupled for the m.e. given (all perm)"
 write(336, fmt="(a)") "//    a    b    c    d              pppp              &
                       &pnpn              pnnp              nnnn"
 
-do k2 = 1, red_dim
+do k1 = 1, red_dim
   ! red_index is sorted, so we extract the HOsp index from it,
-  ind_r = red_indx(k2)
+  ind_r = red_indx(k1)
   print "(A,i10,2i4)", "     ind_r,PW10,spo2:", ind_r, POW10,spo2
   j1    = int(ind_r / nint((10.0d0**(3*POW10)), i32))
   ind_r = MOD(ind_r,  nint((10.0d0**(3*POW10))))
@@ -2446,16 +2444,11 @@ do k2 = 1, red_dim
   j4    = int(ind_r,  i32)
   print "(a,4i4)", "                 ...", j1,j2,j3,j4
 
-  if ((red_abcd(1,k2).NE.j1).OR.(red_abcd(2,k2).NE.j2).OR. &
-      (red_abcd(3,k2).NE.j3).OR.(red_abcd(4,k2).NE.j4)) then
-    print "(A,4i4,A,4i4)", " [ERR:] js/=abcd_red: ", j1,j2,j3,j4, " /= ", &
-          red_abcd(1,k2), red_abcd(2,k2),red_abcd(3,k2), red_abcd(4,k2)
-  end if
-
 !  j1 = red_abcd(1, k2)
 !  j2 = red_abcd(2, k2)
 !  j3 = red_abcd(3, k2)
 !  j4 = red_abcd(4, k2)
+  k2 = red_abcd(j1,j2,j3,j4)
 
   write(336, fmt='(4I5,4F18.12)') j1, j2, j3, j4, temp_hamil_byT(1,k2), &
     temp_hamil_byT(2,k2), temp_hamil_byT(3,k2), temp_hamil_byT(4,k2)
