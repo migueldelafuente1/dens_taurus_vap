@@ -2339,8 +2339,8 @@ do kk = 1, ndim
     end if
   endif
 
-  write(3333,fmt="(i6,2(A,4i3),A,2i5,A,2i10,A,F15.6)") kk," indx:",i1,i2,i3,i4,&
-        " r(",j1,j2,j3,j4,") tt,red:", tt,red_dim, " hash(t/r):", indx_,ind_r,&
+  write(3333,fmt="(i6,2(A,4i4),A,2i5,A,2i10,A,F15.6)")kk,"  indx:",i1,i2,i3,i4,&
+        "  r(",j1,j2,j3,j4,") tt,red:", tt,red_dim,"  hash(t/r):", indx_,ind_r,&
         " =",temp_hamil(kk)
 enddo
 close(3333)
