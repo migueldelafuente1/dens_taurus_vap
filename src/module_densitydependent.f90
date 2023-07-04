@@ -2347,7 +2347,7 @@ close(3333)
 
 
 allocate(temp_hamil_byT(4, red_dim), &
-         red_abcd(WBsp_dim, WBsp_dim, WBsp_dim, WBsp_dim))
+         red_abcd(WBsp_dim/2, WBsp_dim/2, WBsp_dim/2, WBsp_dim/2))
 temp_hamil_byT = zero
 red_abcd       = 0
 ! bubble sorting
@@ -2446,11 +2446,8 @@ do k1 = 1, red_dim
   ind_r = MOD(ind_r,  nint((10.0d0**(POW10))))
   j4    = int(ind_r,  i32)
 
-!  j1 = red_abcd(1, k2)
-!  j2 = red_abcd(2, k2)
-!  j3 = red_abcd(3, k2)
-!  j4 = red_abcd(4, k2)
   k2 = red_abcd(j1,j2,j3,j4)
+  if (k2.EQ.0) print "(A,4i3)", "[ERR] Invalid Access 0= red_abcd",j1,j2,j3,j4
 
   write(336, fmt='(4I5,4F18.12)') j1, j2, j3, j4, temp_hamil_byT(1,k2), &
     temp_hamil_byT(2,k2), temp_hamil_byT(3,k2), temp_hamil_byT(4,k2)
