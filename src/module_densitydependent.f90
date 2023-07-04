@@ -2219,6 +2219,7 @@ open  (uth7, status='scratch', action='readwrite', access='stream', &
 ! read and export all the possible matrix elements (non sorted)
 ndim = 0
 spo2 = WBsp_dim / 2
+open (3333, file="temp_abcd")
 do kk = 1, hamil_H2dim
   i1 = hamil_abcd(1+4*(kk-1))
   i2 = hamil_abcd(2+4*(kk-1))
@@ -2226,6 +2227,8 @@ do kk = 1, hamil_H2dim
   i4 = hamil_abcd(4+4*(kk-1))
   h2b  = hamil_H2(kk)
   perm = hamil_trperm(kk)
+
+  write(3333,fmt="(i7,A,5i4,A,F13.6)")kk," indx:",i1,i2,i3,i4,"(",perm,") =",h2b
 
   !!! Loop on time reversal
   do it = 1, 2
@@ -2256,6 +2259,7 @@ do kk = 1, hamil_H2dim
     ndim = ndim + 4
   enddo
 end do
+close(3333)
 !! Allocate in a temporal hamiltonian
 allocate( sort_indx(ndim), sort_pointer(ndim),&
           sort_isos(ndim), temp_hamil(ndim), temp_abcd(4*ndim),&
