@@ -2219,7 +2219,7 @@ open  (uth7, status='scratch', action='readwrite', access='stream', &
 ! read and export all the possible matrix elements (non sorted)
 ndim = 0
 spo2 = WBsp_dim / 2
-open (3333, file="temp_abcd")
+open (3333, file="hamil_abcd")
 do kk = 1, hamil_H2dim
   i1 = hamil_abcd(1+4*(kk-1))
   i2 = hamil_abcd(2+4*(kk-1))
@@ -2374,6 +2374,7 @@ do k1 = 1, ndim
 end do
 
 !! Assign in the temp_hamil_byT the element by T
+open (3333, file="temp_abcd_sorted")
 do k1 = 1, ndim
   kk = sort_pointer(k1)
 
@@ -2387,6 +2388,8 @@ do k1 = 1, ndim
   !NOTE: the sort_red_pointer still points in the reduced non zero list,
   ! here, we are not assigning k2 in order, the order will appear while reading
   temp_hamil_byT(tt, k2) = temp_hamil(kk)
+
+  write(3333, fmt="(3i8,5i4,F15.6)")k1,kk,k2, i1,i2,i3,i4,tt, temp_hamil(kk)
 
   if(i1 .GT. spo2) i1 = i1 - spo2
   if(i2 .GT. spo2) i2 = i2 - spo2
@@ -2412,6 +2415,7 @@ do k1 = 1, ndim
   red_abcd(3, k2) = i3
   red_abcd(4, k2) = i4
 end do
+close(3333)
 
 !i1 = red_abcd(6515, 313212203)
 !! print the matrix elements in a file
