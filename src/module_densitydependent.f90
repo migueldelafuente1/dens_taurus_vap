@@ -2287,10 +2287,10 @@ do kk = 1, ndim
   j3 = i3
   j4 = i4
 
-  if(i1 .GT. spo2) j1 = i1 - spo2
-  if(i2 .GT. spo2) j2 = i2 - spo2
-  if(i3 .GT. spo2) j3 = i3 - spo2
-  if(i4 .GT. spo2) j4 = i4 - spo2
+  if (i1 .GT. spo2) j1 = i1 - spo2
+  if (i2 .GT. spo2) j2 = i2 - spo2
+  if (i3 .GT. spo2) j3 = i3 - spo2
+  if (i4 .GT. spo2) j4 = i4 - spo2
 
   indx_ = nint(i1*(10**(3*POW10))+i2*(10**(2*POW10))+i3*(10.0d0**(POW10)) + i4)
   ind_r = nint(j1*(10**(3*POW10))+j2*(10**(2*POW10))+j3*(10.0d0**(POW10)) + j4)
@@ -2393,7 +2393,7 @@ do k1 = 1, ndim
     print "(A,2i5)", "[WARN] 1 NE prev assinged: ", red_abcd(1, k2) , i1
   end if
   if ((red_abcd(2,k2) .NE. 0).AND.(red_abcd(2, k2) .NE. i2)) then
-    print "(A,2i5)", "[WARN] 1 NE prev assinged: ", red_abcd(2, k2) , i2
+    print "(A,2i5)", "[WARN] 2 NE prev assinged: ", red_abcd(2, k2) , i2
   end if
   if ((red_abcd(3,k2) .NE. 0).AND.(red_abcd(3, k2) .NE. i3)) then
     print "(A,2i5)", "[WARN] 3 NE prev assinged: ", red_abcd(3, k2) , i3
