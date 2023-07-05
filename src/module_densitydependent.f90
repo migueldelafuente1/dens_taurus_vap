@@ -2429,7 +2429,7 @@ close(3333)
 open (336, file="uncoupled_BB.2b")
 write(336, fmt="(A)") "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, 2mt,tr)"
 do i = 1, WBsp_dim / 2
-  write(123, fmt='(I4,6(A,I4))') i,',', HOsp_sh(i), ',', HOsp_n(i),&
+  write(336, fmt='(I4,6(A,I4))') i,',', HOsp_sh(i), ',', HOsp_n(i),&
       ',', HOsp_l(i),',', HOsp_2j(i),',', HOsp_2mj(i),',', HOsp_tr(i)
 enddo
 write(336, fmt="(a)") "// Hamiltonian uncoupled for the m.e. given (all perm)"
