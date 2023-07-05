@@ -1491,7 +1491,8 @@ do qq1 = 1, VSsp_dim
   WRITE(334, fmt='(I4,7(A,I4))') qq1, ',', i,',', HOsp_sh(i), ',', HOsp_n(i),&
     ',', HOsp_l(i),',', HOsp_2j(i),'/2,', HOsp_2mj(i),'/2,', HOsp_2mt(i)
 enddo
-WRITE(334, fmt="(A)") "//  a    b    c    d         h_bb_abcd         h_DD_abcd"
+WRITE(334, fmt="(A)") "//  a    b    c    d         hamilR_H2         &
+                      &h_bb_abcd         h_DD_abcd"
 do qq1 = 1, VSsp_dim
   q1 = VStoQPsp_index (qq1)
 !  q1 = VStoVSQPsp_index(qq1)
@@ -1578,8 +1579,9 @@ end do
 
 if ((abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) .OR. &
     (abs(temp_val) .GE. 1.0d-6)) then
-  WRITE(334,fmt='(4i5,2F18.9)') qq1, qq2, qq3, qq4, temp_val,&
-                                 uncoupled_H22_VS(qq1,qq2,qq3,qq4) - temp_val
+  WRITE(334,fmt='(4i5,2F18.9)') qq1, qq2, qq3, qq4, &
+                                uncoupled_H22_VS(qq1,qq2,qq3,qq4), temp_val, &
+                                uncoupled_H22_VS(qq1,qq2,qq3,qq4) - temp_val
 endif
 !!---------------------------------------------------------------------------
 
