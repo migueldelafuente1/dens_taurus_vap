@@ -1714,7 +1714,7 @@ PRINT "(A,3i4)", "  + Accepted: Jmin,max,tt =", Jmin,Jmax,tt
 PRINT "(A,i3,3F11.6,A,i6)", "  + . . values J,cgc1, cgc2, add:", &
                             J, aux1, aux2, aux_val, " count=", kk
         end do
-PRINT *, ""
+PRINT "(A,4i3)", "  + . . ... saving in sh(vs)=", sh1, sh2, sh3, sh4
 
       end do
     end do
@@ -1749,15 +1749,15 @@ do sh1 = 1, VSsh_dim
         i3 = VStoHOsh_index(sh3)
         i4 = VStoHOsh_index(sh4)
 
-        Jmax =    (HOsp_2j(i1) + HOsp_2j(i2))  / 2
-        Jmin = abs(HOsp_2j(i1) - HOsp_2j(i2))  / 2
-        Jmax = min(Jmax,    (HOsp_2j(i3) + HOsp_2j(i4))  / 2)
-        Jmin = max(Jmin, abs(HOsp_2j(i3) - HOsp_2j(i4))  / 2)
+        Jmax =    (HOsh_2j(i1) + HOsh_2j(i2)) / 2
+        Jmin = abs(HOsh_2j(i1) - HOsh_2j(i2)) / 2
+        Jmax = min(Jmax,    (HOsh_2j(i3) + HOsh_2j(i4)) / 2)
+        Jmin = max(Jmin, abs(HOsh_2j(i3) - HOsh_2j(i4)) / 2)
 
         if ( all_zeroReduced_sh(sh1, sh2, sh3, sh4) ) cycle
 
         print "(2(A,4i3),A,2i3)", " EXP >> sh:(", sh1, sh2, sh3, sh4, &
-                                  ") vs:(", i1,i2,i3,i4, " Js:", Jmin,Jmax
+                                  ") vs:(", i1,i2,i3,i4, ") Js:", Jmin,Jmax
 
         ! print first line, then each of the J values,
         WRITE(3302,fmt="(A,4i7,2i3)") " 0 5", VSsh_list(sh1), VSsh_list(sh2), &
