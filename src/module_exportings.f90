@@ -1579,7 +1579,7 @@ end do
 
 if ((abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) .OR. &
     (abs(temp_val) .GE. 1.0d-6)) then
-  WRITE(334,fmt='(4i5,2F18.9)') qq1, qq2, qq3, qq4, &
+  WRITE(334,fmt='(4i5,3F18.9)') qq1, qq2, qq3, qq4, &
                                 uncoupled_H22_VS(qq1,qq2,qq3,qq4), temp_val, &
                                 uncoupled_H22_VS(qq1,qq2,qq3,qq4) - temp_val
 endif
@@ -1714,6 +1714,7 @@ PRINT "(A,3i4)", "  + Accepted: Jmin,max,tt =", Jmin,Jmax,tt
 PRINT "(A,i3,3F11.6,A,i6)", "  + . . values J,cgc1, cgc2, add:", &
                             J, aux1, aux2, aux_val, " count=", kk
         end do
+PRINT *, ""
 
       end do
     end do
