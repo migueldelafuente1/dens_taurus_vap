@@ -1729,7 +1729,7 @@ WRITE(3302, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
 WRITE(3300, fmt="(A)") "4"
 WRITE(3301, fmt="(F15.9)") last_HFB_energy
 print "(A,2F15.4)", " [  ] Printing the shell states for 2b, ", &
-  minval(reduced_H22_VS), maxval(reduced_H22_VS)
+  minval(reduced_H22_VS, 6), maxval(reduced_H22_VS, 6)
 do sh1 = 1, VSsh_dim
   kk = VStoHOsh_index(sh1)
   WRITE(3301, fmt="(2i6,2f15.6)") &
