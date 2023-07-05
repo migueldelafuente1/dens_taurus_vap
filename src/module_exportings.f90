@@ -1665,19 +1665,21 @@ do qq1 = 1, VSsp_dim
         tt2 = 2*HOsp_2mt(i3) + HOsp_2mt(i4)
         kk = 0
 
+        ! isospin_ is not conserved
+        if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .LT. 1.0d-6) then
+          cycle
+        else
+          if  (abs(tt1).NE.abs(tt2)) cycle
+          if ((abs(tt1).EQ.3) .AND. (abs(tt1 - tt2).NE.0)) cycle
+          if (HOsp_2mj(i3) + HOsp_2mj(i4) .NE. M1) cycle
+
 PRINT "(2(A,4i3),A,4i6,A,4i4,F15.6)", &
   " vssp(", qq1,qq2,qq3,qq4, ") sp(", i1,  i2, i3, i4, ") sh(", &
   VSsh_list(sh1), VSsh_list(sh2), VSsh_list(sh3), VSsh_list(sh4), &
   ") tt12,2M1,2M2,h2b_qp=", tt1, tt2, M1, HOsp_2mj(i3) + HOsp_2mj(i4), &
   uncoupled_H22_VS(qq1,qq2,qq3,qq4)
+        end if
 
-
-        ! isospin_ is not conserved
-        if  (abs(tt1).NE.abs(tt2)) cycle
-        if ((abs(tt1).EQ.3) .AND. (abs(tt1 - tt2).NE.0)) cycle
-
-        if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .LT. 1.0d-6) cycle
-        if (HOsp_2mj(i3) + HOsp_2mj(i4) .NE. M1) cycle
         M = M1 / 2
 
         Jmax = min(Jmax,    (HOsp_2j(i3) + HOsp_2j(i4))  / 2)
@@ -1730,7 +1732,7 @@ WRITE(3302, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
 WRITE(3300, fmt="(A)") "4"
 WRITE(3301, fmt="(F15.9)") last_HFB_energy
 print "(A,2F15.4)", " [  ] Printing the shell states for 2b, ", &
-  minval(reduced_H22_VS, 6), maxval(reduced_H22_VS, 6)
+  minval(reduced_H22_VS), maxval(reduced_H22_VS)
 do sh1 = 1, VSsh_dim
   kk = VStoHOsh_index(sh1)
   WRITE(3301, fmt="(2i6,2f15.6)") &
