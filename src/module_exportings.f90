@@ -1623,7 +1623,7 @@ subroutine recouple_QuasiParticle_Hamiltonian_H22(ndim)
 
 integer, intent(in) :: ndim
 integer :: q1,q2,q3,q4, qq1,qq2,qq3,qq4, i1,i2,i3,i4, sh1,sh2,sh3,sh4, &
-          J, M, Jmax, Jmin, tt1, tt2, tt, kk
+          J, M, M1, Jmax, Jmin, tt1, tt2, tt, kk
 real(r64) :: aux1, aux2, h2b, aux_val
 logical :: all_zero
 logical, dimension(:,:,:,:), allocatable :: all_zeroReduced_sh
@@ -1652,9 +1652,9 @@ do qq1 = 1, VSsp_dim
     sh2 = VSsp_VSsh(qq2)
     tt1 = 2*HOsp_2mt(i1) + HOsp_2mt(i2) !-3(pp), -1(pn), 1(np), 3(nn)
 
-    Jmax =    (HOsp_2j(i1) + HOsp_2j(i2))  / 2
-    Jmin = abs(HOsp_2j(i1) - HOsp_2j(i2))  / 2
-    M    =    HOsp_2mj(i1) + HOsp_2mj(i2) !divide after filter in ket
+    Jmax =    (HOsp_2j (i1) + HOsp_2j (i2))  / 2
+    Jmin = abs(HOsp_2j (i1) - HOsp_2j (i2))  / 2
+    M1   =     HOsp_2mj(i1) + HOsp_2mj(i2) !divide after filter in ket
     do qq3 = 1, VSsp_dim
       i3  = VStoHOsp_index(qq3)
       sh3 = VSsp_VSsh(qq3)
@@ -1668,7 +1668,7 @@ do qq1 = 1, VSsp_dim
 PRINT "(2(A,4i3),A,4i6,A,4i4,F15.6)", &
   " vssp(", qq1,qq2,qq3,qq4, ") sp(", i1,  i2, i3, i4, ") sh(", &
   VSsh_list(sh1), VSsh_list(sh2), VSsh_list(sh3), VSsh_list(sh4), &
-  ") tt12,2M1,2M2,h2b_qp=", tt1, tt2, M, HOsp_2mj(i3) + HOsp_2mj(i4), &
+  ") tt12,2M1,2M2,h2b_qp=", tt1, tt2, M1, HOsp_2mj(i3) + HOsp_2mj(i4), &
   uncoupled_H22_VS(qq1,qq2,qq3,qq4)
 
 
@@ -1677,8 +1677,8 @@ PRINT "(2(A,4i3),A,4i6,A,4i4,F15.6)", &
         if ((abs(tt1).EQ.3) .AND. (abs(tt1 - tt2).NE.0)) cycle
 
         if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .LT. 1.0d-6) cycle
-        if (HOsp_2mj(i3) + HOsp_2mj(i4) .NE. M) cycle
-        M = M / 2
+        if (HOsp_2mj(i3) + HOsp_2mj(i4) .NE. M1) cycle
+        M = M1 / 2
 
         Jmax = min(Jmax,    (HOsp_2j(i3) + HOsp_2j(i4))  / 2)
         Jmin = max(Jmin, abs(HOsp_2j(i3) - HOsp_2j(i4))  / 2)
