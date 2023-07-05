@@ -1631,7 +1631,7 @@ logical :: all_zero
 logical, dimension(:,:,:,:), allocatable :: all_zeroReduced_sh
 real(r64), dimension(:,:), allocatable   :: H11_qp2print
 
-allocate(reduced_H22_VS(HO_2jmax, 0:5,VSsh_dim,VSsh_dim,VSsh_dim,VSsh_dim))
+allocate(reduced_H22_VS(0:HO_2jmax, 0:5,VSsh_dim,VSsh_dim,VSsh_dim,VSsh_dim))
 allocate(all_zeroReduced_sh(VSsh_dim,VSsh_dim,VSsh_dim,VSsh_dim))
 allocate(H11_qp2print(2,VSsh_dim))
 reduced_H22_VS = zero
