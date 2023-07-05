@@ -1740,7 +1740,6 @@ do sh1 = 1, VSsh_dim
   kk = VStoHOsh_index(sh1)
   WRITE(3301, fmt="(2i6,2f15.6)") &
     HOsh_na(kk), HOsh_na(kk), H11_qp2print(1,sh1), H11_qp2print(2,sh1)
-
   do sh2 = 1, VSsh_dim !sh1, VSsh_dim
     do sh3 = 1, VSsh_dim !sh1, VSsh_dim
       do sh4 = 1, VSsh_dim!sh3, VSsh_dim
@@ -1756,10 +1755,13 @@ do sh1 = 1, VSsh_dim
         Jmin = max(Jmin, abs(HOsp_2j(i3) - HOsp_2j(i4))  / 2)
 
         if ( all_zeroReduced_sh(sh1, sh2, sh3, sh4) ) cycle
-        print "(A,6i5)", "   naz:", sh1, sh2, sh3, sh4, Jmin,Jmax
+
+        print "(2(A,4i3),A,2i3)", " EXP >> sh:(", sh1, sh2, sh3, sh4, &
+                                  ") vs:(", i1,i2,i3,i4, " Js:", Jmin,Jmax
+
         ! print first line, then each of the J values,
         WRITE(3302,fmt="(A,4i7,2i3)") " 0 5", VSsh_list(sh1), VSsh_list(sh2), &
-                                      VSsh_list(sh3), VSsh_list(sh4), Jmin, Jmax
+                                      VSsh_list(sh3), VSsh_list(sh4), Jmin,Jmax
         do J = Jmin, Jmax
           do tt = 0, 5
             WRITE(3302, fmt="(f14.9)", advance='no') &
