@@ -2147,12 +2147,12 @@ endif
 
 open (123, file=filename)
 if (ALL_ISOS) then
-  write(123,fmt='(A)')"//SING PART INDEX (i_sp, i_sh, n,l,2j,2m,tr)"
+  write(123,fmt='(A)')"//SING PART INDEX (i_sp, i_sh, n,l,2j,2mj,tr)"
   do i=1, WBsp_dim / 2
 !    i = VStoHOsp_index(kk)
     kk=0
     write(123, fmt='(I4,6(A,I4))') i,',', HOsp_sh(i), ',', HOsp_n(i),&
-      ',', HOsp_l(i),',', HOsp_2j(i),',', HOsp_2mj(i),',', HOsp_tr(i)
+      ',', HOsp_l(i),',', HOsp_2j(i),'/2,', HOsp_2mj(i),'/2,', HOsp_tr(i)
   enddo
   write(123, fmt='(3A,3I12)')"//(vs)a    b    c    d              pppp", &
     "              pnpn              pnnp              nnnn    ", &
@@ -2427,10 +2427,10 @@ close(3333)
 
 !! print the matrix elements in a file
 open (336, file="uncoupled_BB.2b")
-write(336, fmt="(A)") "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, 2mt,tr)"
+write(336, fmt="(A)") "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, tr)"
 do i = 1, WBsp_dim / 2
   write(336, fmt='(I4,6(A,I4))') i,',', HOsp_sh(i), ',', HOsp_n(i),&
-      ',', HOsp_l(i),',', HOsp_2j(i),',', HOsp_2mj(i),',', HOsp_tr(i)
+      ',', HOsp_l(i),',', HOsp_2j(i),'/2,', HOsp_2mj(i),'/2,', HOsp_tr(i)
 enddo
 write(336, fmt="(a)") "// Hamiltonian uncoupled for the m.e. given (all perm)"
 write(336, fmt="(a)") "//  a    b    c    d              pppp              &
