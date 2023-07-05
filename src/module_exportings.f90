@@ -1487,9 +1487,19 @@ call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
 
 
 !! Transformation for the QP valence space
-open(334, file='uncoupled_hamil_qp_DD.txt')
-open(335, file='uncoupled_hamil_qp_BB.txt')
-
+OPEN(334, file='uncoupled_hamil_qp_DD.txt')
+OPEN(335, file='uncoupled_hamil_qp_BB.txt')
+WRITE(334, fmt="(A)") "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, 2mt,tr)"
+WRITE(335, fmt="(A)") "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, 2mt,tr)"
+do qq1 = 1, VSsp_dim
+  i = VStoHOsp_index(qq1)
+  WRITE(334, fmt='(I4,6(A,I4))') i,',', HOsp_sh(i), ',', HOsp_n(i),&
+    ',', HOsp_l(i),',', HOsp_2j(i),'/2,', HOsp_2mj(i),'/2,', HOsp_tr(i)
+  WRITE(335, fmt='(I4,6(A,I4))') i,',', HOsp_sh(i), ',', HOsp_n(i),&
+    ',', HOsp_l(i),',', HOsp_2j(i),'/2,', HOsp_2mj(i),'/2,', HOsp_tr(i)
+end do
+WRITE(334, fmt="(A)") "//  a    b    c    d      h_dd_abcd"
+WRITE(335, fmt="(A)") "//  a    b    c    d      h_bb_abcd"
 do qq1 = 1, VSsp_dim
   q1 = VStoQPsp_index (qq1)
 !  q1 = VStoVSQPsp_index(qq1)
@@ -1547,8 +1557,7 @@ do qq1 = 1, VSsp_dim
 
 temp_val = zero
 if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
-  write(335,fmt='(4i5,1f15.9)') qq1, qq2, qq3, qq4, &
-                                uncoupled_H22_VS(qq1,qq2,qq3,qq4)
+  WRITE(335,fmt='(4i5,F15.9)')qq1,qq2,qq3,qq4,uncoupled_H22_VS(qq1,qq2,qq3,qq4)
   temp_val = uncoupled_H22_VS(qq1,qq2,qq3,qq4)
 endif
 
@@ -1579,16 +1588,16 @@ do kk = 1, hamil_DD_H2dim
 end do
 
 if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
-  write(334, fmt='(4i5,1f15.9)') qq1, qq2, qq3, qq4, &
+  WRITE(334,fmt='(4i5,f15.9)') qq1, qq2, qq3, qq4, &
                                  uncoupled_H22_VS(qq1,qq2,qq3,qq4) - temp_val
 endif
 !!---------------------------------------------------------------------------
 
-      end do
-    end do
-  end do
-  print "(A,1i5,A,i5)", "Progress to loop1:", qq1," of ",VSsp_dim
-end do
+      enddo
+    enddo
+  enddo
+  print "(A,1i5,A,i5)", "Progress to loop 1:", qq1," of ",VSsp_dim
+enddo
 CLOSE(334)
 CLOSE(335)
 
