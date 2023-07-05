@@ -1665,7 +1665,8 @@ do qq1 = 1, VSsp_dim
         tt2 = 2*HOsp_2mt(i3) + HOsp_2mt(i4)
         kk = 0
 
-PRINT "(2(A,4i6),A,4i4,F15.6)", " vssp(", qq1,qq2,qq3,qq4, ") sh(", &
+PRINT "(2(A,4i3),A,4i6,A,4i4,F15.6)", &
+  " vssp(", qq1,qq2,qq3,qq4, ") sp(", i1,  i2, i3, i4, ") sh(", &
   VSsh_list(sh1), VSsh_list(sh2), VSsh_list(sh3), VSsh_list(sh4), &
   ") tt12,2M1,2M2,h2b_qp=", tt1, tt2, M, HOsp_2mj(i3) + HOsp_2mj(i4), &
   uncoupled_H22_VS(qq1,qq2,qq3,qq4)
