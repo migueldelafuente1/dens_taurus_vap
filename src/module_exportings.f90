@@ -1452,10 +1452,7 @@ call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
 !! TODO: It is necessary to import COM file (supuestamente no guardado)
 
 !! NOTE: hamil_H2 and com were not deallocated
-!hamil_read = 1 ! reduced hamilonian were exported
-!call set_hamiltonian_2body
-!! now we can access hamil_H2
-!! Warning, method to identify the Time Reversal matrix elements.
+
 
 ! TEST: export the Transformed  U and V
 !open(334, file='Utrans.gut')
@@ -1487,31 +1484,23 @@ call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
 
 
 !! Transformation for the QP valence space
-OPEN(334, file='uncoupled_hamil_qp_DD.txt')
-OPEN(335, file='uncoupled_hamil_qp_BB.txt')
+OPEN(334, file='uncoupled_hamil_qp.txt')
 WRITE(334, fmt="(A)") "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, 2mt)"
-WRITE(335, fmt="(A)") "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, 2mt)"
 do qq1 = 1, VSsp_dim
   i = VStoHOsp_index(qq1)
   WRITE(334, fmt='(I4,6(A,I4))') i,',', HOsp_sh(i), ',', HOsp_n(i),&
     ',', HOsp_l(i),',', HOsp_2j(i),'/2,', HOsp_2mj(i),'/2,', HOsp_2mt(i)
-  WRITE(335, fmt='(I4,6(A,I4))') i,',', HOsp_sh(i), ',', HOsp_n(i),&
-    ',', HOsp_l(i),',', HOsp_2j(i),'/2,', HOsp_2mj(i),'/2,', HOsp_2mt(i)
-end do
-WRITE(334, fmt="(A)") "//  a    b    c    d      h_dd_abcd"
-WRITE(335, fmt="(A)") "//  a    b    c    d      h_bb_abcd"
+enddo
+WRITE(334, fmt="(A)") "//  a    b    c    d         h_bb_abcd         h_DD_abcd"
 do qq1 = 1, VSsp_dim
   q1 = VStoQPsp_index (qq1)
 !  q1 = VStoVSQPsp_index(qq1)
-
   do qq2 = 1, VSsp_dim
     q2 = VStoQPsp_index(qq2)
 !    q2 = VStoVSQPsp_index(qq2)
-
     do qq3 = 1, VSsp_dim
       q3 = VStoQPsp_index(qq3)
 !      q3 = VStoVSQPsp_index(qq3)
-
       do qq4 = 1, VSsp_dim
         q4 = VStoQPsp_index(qq4)
 !        q4 = VStoVSQPsp_index(qq4)
@@ -1520,44 +1509,44 @@ do qq1 = 1, VSsp_dim
 !!---------------------------------------------------------------------------
 !! Loop for the Hamiltonian, using tr and the permutations on the m.e.
 
-!do kk = 1, hamil_H2dim
-!  i1 = hamil_abcd(1+4*(kk-1))
-!  i2 = hamil_abcd(2+4*(kk-1))
-!  i3 = hamil_abcd(3+4*(kk-1))
-!  i4 = hamil_abcd(4+4*(kk-1))
-!  h2b  = hamil_H2(kk)
-!  perm = hamil_trperm(kk)
-!
-!  aux = zero
-!  !!! Loop on time reversal
-!  do it = 1, 2
-!    if ( it == 2 ) then
-!      if ( HOsp_2mj(i1) + HOsp_2mj(i2) == 0 ) cycle
-!      call find_timerev(perm,i1,i2,i3,i4)
-!      h2b = sign(one,perm*one) * h2b
-!    endif
-!
-!    aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
-!    aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i4,i3))
-!    aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i3,i4))
-!    aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i4,i3))
-!
-!    if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
-!
-!    aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i1,i2))
-!    aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1))
-!    aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i1,i2))
-!    aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i2,i1))
-!  enddo
-!
-!  !! add the result to the uncoupled quasi particle matrix element
-!  uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
-!
-!end do
+do kk = 1, hamil_H2dim
+  i1 = hamil_abcd(1+4*(kk-1))
+  i2 = hamil_abcd(2+4*(kk-1))
+  i3 = hamil_abcd(3+4*(kk-1))
+  i4 = hamil_abcd(4+4*(kk-1))
+  h2b  = hamil_H2(kk)
+  perm = hamil_trperm(kk)
+
+  aux = zero
+  !!! Loop on time reversal
+  do it = 1, 2
+    if ( it == 2 ) then
+      if ( HOsp_2mj(i1) + HOsp_2mj(i2) == 0 ) cycle
+      call find_timerev(perm,i1,i2,i3,i4)
+      h2b = sign(one,perm*one) * h2b
+    endif
+
+    aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
+    aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i4,i3))
+    aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i3,i4))
+    aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i4,i3))
+
+    if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
+
+    aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i1,i2))
+    aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1))
+    aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i1,i2))
+    aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i2,i1))
+  enddo
+
+  !! add the result to the uncoupled quasi particle matrix element
+  uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
+
+end do
 
 temp_val = zero
 if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
-  WRITE(335,fmt='(4i5,F15.9)')qq1,qq2,qq3,qq4,uncoupled_H22_VS(qq1,qq2,qq3,qq4)
+!  WRITE(335,fmt='(4i5,F15.9)')qq1,qq2,qq3,qq4,uncoupled_H22_VS(qq1,qq2,qq3,qq4)
   temp_val = uncoupled_H22_VS(qq1,qq2,qq3,qq4)
 endif
 
@@ -1587,8 +1576,9 @@ do kk = 1, hamil_DD_H2dim
 
 end do
 
-if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
-  WRITE(334,fmt='(4i5,f15.9)') qq1, qq2, qq3, qq4, &
+if ((abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) .OR. &
+    (abs(temp_val) .GE. 1.0d-6)) then
+  WRITE(334,fmt='(4i5,2F18.9)') qq1, qq2, qq3, qq4, temp_val,&
                                  uncoupled_H22_VS(qq1,qq2,qq3,qq4) - temp_val
 endif
 !!---------------------------------------------------------------------------
@@ -1599,7 +1589,6 @@ endif
   print "(A,1i5,A,i5)", "Progress to loop 1:", qq1," of ",VSsp_dim
 enddo
 CLOSE(334)
-CLOSE(335)
 
 end subroutine calculate_QuasiParticle_Hamiltonian_H22
 
@@ -1666,7 +1655,6 @@ do qq1 = 1, VSsp_dim
     Jmax =    (HOsp_2j(i1) + HOsp_2j(i2))  / 2
     Jmin = abs(HOsp_2j(i1) - HOsp_2j(i2))  / 2
     M    =    HOsp_2mj(i1) + HOsp_2mj(i2) !divide after filter in ket
-    kk = 0
     do qq3 = 1, VSsp_dim
       i3  = VStoHOsp_index(qq3)
       sh3 = VSsp_VSsh(qq3)
@@ -1675,6 +1663,13 @@ do qq1 = 1, VSsp_dim
         i4  = VStoHOsp_index(qq4)
         sh4 = VSsp_VSsh(qq4)
         tt2 = 2*HOsp_2mt(i3) + HOsp_2mt(i4)
+        kk = 0
+
+PRINT "(2(A,4i6),A,4i4,F15.6)", " vssp(", qq1,qq2,qq3,qq4, ") sh(", &
+  VSsh_list(sh1), VSsh_list(sh2), VSsh_list(sh3), VSsh_list(sh4), &
+  ") tt12,2M1,2M2,h2b_qp=", tt1, tt2, M, HOsp_2mj(i3) + HOsp_2mj(i4), &
+  uncoupled_H22_VS(qq1,qq2,qq3,qq4)
+
 
         ! isospin_ is not conserved
         if  (abs(tt1).NE.abs(tt2)) cycle
@@ -1696,6 +1691,8 @@ do qq1 = 1, VSsp_dim
           tt = 3 + ((2*tt1 + tt2 - 1) / 2) !pnpn=1, pnnp=2, nppn=3, npnp=4
         end if
 
+PRINT "(A)", "  + Accepted:", Jmin,Jmax,tt
+
         do J = Jmin, Jmax
           call ClebschGordan(HOsp_2j (i1), HOsp_2j (i2), 2*J,&
                              HOsp_2mj(i1), HOsp_2mj(i2), 2*M, aux1)
@@ -1709,6 +1706,8 @@ do qq1 = 1, VSsp_dim
             reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4) = &
                 reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4) + aux_val
           endif
+PRINT "(A,i3,3F10.6,A,i6)", "  + . . values J,cgc1, cgc2, add:", &
+                            J, aux1, aux2, aux_val, " count=", kk
         end do
 
       end do
