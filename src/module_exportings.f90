@@ -1691,7 +1691,7 @@ PRINT "(2(A,4i6),A,4i4,F15.6)", " vssp(", qq1,qq2,qq3,qq4, ") sh(", &
           tt = 3 + ((2*tt1 + tt2 - 1) / 2) !pnpn=1, pnnp=2, nppn=3, npnp=4
         end if
 
-PRINT "(A)", "  + Accepted:", Jmin,Jmax,tt
+PRINT "(A,3i4)", "  + Accepted: Jmin,max,tt =", Jmin,Jmax,tt
 
         do J = Jmin, Jmax
           call ClebschGordan(HOsp_2j (i1), HOsp_2j (i2), 2*J,&
@@ -1706,7 +1706,7 @@ PRINT "(A)", "  + Accepted:", Jmin,Jmax,tt
             reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4) = &
                 reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4) + aux_val
           endif
-PRINT "(A,i3,3F10.6,A,i6)", "  + . . values J,cgc1, cgc2, add:", &
+PRINT "(A,i3,3F11.6,A,i6)", "  + . . values J,cgc1, cgc2, add:", &
                             J, aux1, aux2, aux_val, " count=", kk
         end do
 
