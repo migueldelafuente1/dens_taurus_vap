@@ -1713,7 +1713,7 @@ PRINT "(A,3i4,A,4i3)", "  + Accepted: Jmin,max,tt =", Jmin,Jmax,tt, &
                 reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4) + aux_val
           endif
 PRINT "(A,i3,3F11.6,A,i6)", "  + . . values J,cgc1, cgc2, add=", &
-                            J, aux1, aux2, aux_val, " count=", kk
+                            J, aux1, aux2, aux_val, "= count=", kk
         end do
 PRINT "(A)", ""
 
