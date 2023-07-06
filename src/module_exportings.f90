@@ -1625,7 +1625,7 @@ subroutine recouple_QuasiParticle_Hamiltonian_H22(ndim)
 
 integer, intent(in) :: ndim
 integer :: q1,q2,q3,q4, qq1,qq2,qq3,qq4, i1,i2,i3,i4, sh1,sh2,sh3,sh4, &
-          J, M, M1, Jmax, Jmin, tt1, tt2, tt, kk
+          J, M, M1, Jmax, Jmin, Jmax_1, Jmin_1, tt1, tt2, tt, kk
 real(r64) :: aux1, aux2, h2b, aux_val
 logical :: all_zero
 logical, dimension(:,:,:,:), allocatable :: all_zeroReduced_sh
@@ -1654,8 +1654,8 @@ do qq1 = 1, VSsp_dim
     sh2 = VSsp_VSsh(qq2)
     tt1 = 2*HOsp_2mt(i1) + HOsp_2mt(i2) !-3(pp), -1(pn), 1(np), 3(nn)
 
-    Jmax =    (HOsp_2j (i1) + HOsp_2j (i2))  / 2
-    Jmin = abs(HOsp_2j (i1) - HOsp_2j (i2))  / 2
+    Jmax_1 =    (HOsp_2j (i1) + HOsp_2j (i2)) / 2
+    Jmin_1 = abs(HOsp_2j (i1) - HOsp_2j (i2)) / 2
     M1   =     HOsp_2mj(i1) + HOsp_2mj(i2) !divide after filter in ket
     do qq3 = 1, VSsp_dim
       i3  = VStoHOsp_index(qq3)
@@ -1684,8 +1684,8 @@ PRINT "(2(A,4i3),A,4i6,A,4i4,F15.6)", &
 
         M = M1 / 2
 
-        Jmax = min(Jmax,    (HOsp_2j(i3) + HOsp_2j(i4))  / 2)
-        Jmin = max(Jmin, abs(HOsp_2j(i3) - HOsp_2j(i4))  / 2)
+        Jmax = min(Jmax_1,    (HOsp_2j(i3) + HOsp_2j(i4)) / 2)
+        Jmin = max(Jmin_1, abs(HOsp_2j(i3) - HOsp_2j(i4)) / 2)
         h2b  = uncoupled_H22_VS(qq1,qq2,qq3,qq4)
         ! select the isospin
         if (tt1.EQ.-3) then
