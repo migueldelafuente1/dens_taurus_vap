@@ -1606,10 +1606,10 @@ integer, intent(in) :: k1,k2,k3,k4, i1,i2,i3,i4
 
 aux = zero
 !! Without projection, the U and V are real (Check Ring Shuck E.23c)
-aux = aux + (U_trans(i1,k1) * V_trans(i4,k2) * U_trans(i2,k3) * V_trans(i3,k4))
-aux = aux - (U_trans(i1,k2) * V_trans(i4,k1) * U_trans(i2,k3) * V_trans(i3,k4))
-aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * U_trans(i2,k4) * V_trans(i3,k3))
-aux = aux + (U_trans(i1,k2) * V_trans(i4,k1) * U_trans(i2,k4) * V_trans(i3,k3))
+aux = aux + (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k3) * U_trans(i3,k4))
+aux = aux - (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k3) * U_trans(i3,k4))
+aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k4) * U_trans(i3,k3))
+aux = aux + (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k4) * U_trans(i3,k3))
 
 aux = aux + (U_trans(i1,k1) * U_trans(i2,k2) * U_trans(i3,k3) * U_trans(i4,k4))
 aux = aux + (V_trans(i3,k1) * V_trans(i4,k2) * V_trans(i1,k3) * V_trans(i2,k4))
@@ -1700,6 +1700,7 @@ PRINT "(A,3i4,A,4i3)", "  + Accepted: Jmin,max,tt =", Jmin,Jmax,tt, &
                        "= + . . ... saving in sh(vs)=", sh1, sh2, sh3, sh4
 
         do J = Jmin, Jmax
+          if (J .LT. abs(M)) cycle
           call ClebschGordan(HOsp_2j (i1), HOsp_2j (i2), 2*J,&
                              HOsp_2mj(i1), HOsp_2mj(i2), 2*M, aux1)
           call ClebschGordan(HOsp_2j (i3), HOsp_2j (i4), 2*J,&
