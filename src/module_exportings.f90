@@ -1697,7 +1697,7 @@ PRINT "(2(A,4i3),A,4i6,A,4i4,F15.6)", &
         end if
 
 PRINT "(A,3i4,A,4i3)", "  + Accepted: Jmin,max,tt =", Jmin,Jmax,tt, &
-                       "  + . . ... saving in sh(vs)=", sh1, sh2, sh3, sh4
+                       "= + . . ... saving in sh(vs)=", sh1, sh2, sh3, sh4
 
         do J = Jmin, Jmax
           call ClebschGordan(HOsp_2j (i1), HOsp_2j (i2), 2*J,&
