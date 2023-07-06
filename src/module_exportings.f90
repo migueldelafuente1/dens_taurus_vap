@@ -1676,9 +1676,9 @@ do qq1 = 1, VSsp_dim
           if (HOsp_2mj(i3) + HOsp_2mj(i4) .NE. M1) cycle
 
 PRINT "(2(A,4i3),A,4i6,A,4i4,F15.6)", &
-  " vssp(", qq1,qq2,qq3,qq4, ") sp(", i1,  i2, i3, i4, ") sh(", &
+  " vssp=", qq1,qq2,qq3,qq4, "= sp=", i1,  i2, i3, i4, "= sh=", &
   VSsh_list(sh1), VSsh_list(sh2), VSsh_list(sh3), VSsh_list(sh4), &
-  ") tt12,2M1,2M2,h2b_qp=", tt1, tt2, M1, HOsp_2mj(i3) + HOsp_2mj(i4), &
+  "= tt12,2M1,2M2,h2b_qp=", tt1, tt2, M1, HOsp_2mj(i3) + HOsp_2mj(i4), &
   uncoupled_H22_VS(qq1,qq2,qq3,qq4)
         end if
 
@@ -1696,7 +1696,8 @@ PRINT "(2(A,4i3),A,4i6,A,4i4,F15.6)", &
           tt = 3 + ((2*tt1 + tt2 - 1) / 2) !pnpn=1, pnnp=2, nppn=3, npnp=4
         end if
 
-PRINT "(A,3i4)", "  + Accepted: Jmin,max,tt =", Jmin,Jmax,tt
+PRINT "(A,3i4,A,4i3)", "  + Accepted: Jmin,max,tt =", Jmin,Jmax,tt, &
+                       "  + . . ... saving in sh(vs)=", sh1, sh2, sh3, sh4
 
         do J = Jmin, Jmax
           call ClebschGordan(HOsp_2j (i1), HOsp_2j (i2), 2*J,&
@@ -1714,7 +1715,7 @@ PRINT "(A,3i4)", "  + Accepted: Jmin,max,tt =", Jmin,Jmax,tt
 PRINT "(A,i3,3F11.6,A,i6)", "  + . . values J,cgc1, cgc2, add:", &
                             J, aux1, aux2, aux_val, " count=", kk
         end do
-PRINT "(A,4i3)", "  + . . ... saving in sh(vs)=", sh1, sh2, sh3, sh4
+PRINT "(A)", ""
 
       end do
     end do
@@ -1755,9 +1756,6 @@ do sh1 = 1, VSsh_dim
         Jmin = max(Jmin, abs(HOsh_2j(i3) - HOsh_2j(i4)) / 2)
 
         if ( all_zeroReduced_sh(sh1, sh2, sh3, sh4) ) cycle
-
-        print "(2(A,4i3),A,2i3)", " EXP >> sh:(", sh1, sh2, sh3, sh4, &
-                                  ") vs:(", i1,i2,i3,i4, ") Js:", Jmin,Jmax
 
         ! print first line, then each of the J values,
         WRITE(3302,fmt="(A,4i7,2i3)") " 0 5", VSsh_list(sh1), VSsh_list(sh2), &
