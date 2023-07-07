@@ -1466,7 +1466,7 @@ do i1 = 1, ndim
     write(334,fmt="(f10.6)", advance='no') bogo_U0(i1,i2) !U_trans(i1,i2)
   end do
   write(334, fmt="(A)") ""
-end do
+enddo
 close(334)
 open(334, file='bogo_V0.gut')
 do i1 = 1, ndim
@@ -1474,7 +1474,7 @@ do i1 = 1, ndim
     write(334,fmt="(f10.6)", advance='no') bogo_V0(i1,i2) !V_trans(i1,i2)
   end do
   write(334, fmt="(A)") ""
-end do
+enddo
 close(334)
 open(334, file='transf_H11.gut')
 do i1 = 1, ndim
@@ -1482,7 +1482,7 @@ do i1 = 1, ndim
     write(334,fmt="(f10.6)", advance='no') transf_H11(i1,i2) !V_trans(i1,i2)
   end do
   write(334, fmt="(A)") ""
-end do
+enddo
 close(334)
 
 
