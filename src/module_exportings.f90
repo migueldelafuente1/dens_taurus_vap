@@ -1460,23 +1460,30 @@ call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
 
 
 ! TEST: export the Transformed  U and V
-open(334, file='Utrans.gut')
+open(334, file='bogo_U0.gut')
 do i1 = 1, ndim
   do i2 = 1, ndim
-    write(334,fmt="(f10.6)", advance='no') U_trans(i1,i2)
+    write(334,fmt="(f10.6)", advance='no') bogo_U0(i1,i2) !U_trans(i1,i2)
   end do
   write(334, fmt="(A)") ""
 end do
 close(334)
-open(334, file='Vtrans.gut')
+open(334, file='bogo_V0.gut')
 do i1 = 1, ndim
   do i2 = 1, ndim
-    write(334,fmt="(f10.6)", advance='no') V_trans(i1,i2)
+    write(334,fmt="(f10.6)", advance='no') bogo_V0(i1,i2) !V_trans(i1,i2)
   end do
   write(334, fmt="(A)") ""
 end do
 close(334)
-
+open(334, file='transf_H11.gut')
+do i1 = 1, ndim
+  do i2 = 1, ndim
+    write(334,fmt="(f10.6)", advance='no') transf_H11(i1,i2) !V_trans(i1,i2)
+  end do
+  write(334, fmt="(A)") ""
+end do
+close(334)
 
 
 !! Transformation for the QP valence space
