@@ -106,8 +106,8 @@ if (exportValSpace) then !-----------------------------------------------------
   if (.NOT.evalQuasiParticleVSpace) then
     call print_DD_matrix_elements
   else
-    call print_quasipartile_DD_matrix_elements(bogo_U0,bogo_V0, &
-                                               dens_rhoRR,dens_kappaRR,ndim)
+    call print_quasipartile_DD_matrix_elements(bogo_U0, bogo_V0, &
+                                               dens_rhoRR, dens_kappaRR, ndim)
   endif
 endif
 
@@ -1392,9 +1392,9 @@ do i = 1, ndim ! QP loop
   found = .FALSE.
   do j = 1, VSsp_dim
     k2 = VStoHOsp_index(j)
-    if (HOsp_n(k1) .NE. HOsp_n(k2)) cycle
-    if (HOsp_l(k1) .NE. HOsp_l(k2)) cycle
-    if (HOsp_2j(k1) .NE. HOsp_2j(k2)) cycle
+    if (  HOsp_n(k1) .NE.   HOsp_n(k2)) cycle
+    if (  HOsp_l(k1) .NE.   HOsp_l(k2)) cycle
+    if ( HOsp_2j(k1) .NE.  HOsp_2j(k2)) cycle
     if (HOsp_2mj(k1) .NE. HOsp_2mj(k2)) cycle
     if (HOsp_2mt(k1) .NE. HOsp_2mt(k2)) cycle
 
@@ -1409,9 +1409,9 @@ do i = 1, ndim ! QP loop
     EXIT
   end do
   if (found) then
-    print "(3(A,2i3),2i4)", " FND(QP,HO):",i,k1, "  (VS,VSHO):", j,k2, &
-          "   (VSQP/VSQP.HO)",kk, VSQPtoHOsp_index(kk), &
-          VSQPtoQPsp_index(kk),VSQPtoVSsp_index(kk)
+    print "(3(A,2i3),2i4)", " FND(QP,HO):", i, k1, "  (VS,VSHO):", j, k2, &
+                            "   (VSQP/VSQP.HO)",  kk, VSQPtoHOsp_index(kk), &
+                            VSQPtoQPsp_index(kk), VSQPtoVSsp_index(kk)
   endif
 
 enddo
@@ -1447,6 +1447,7 @@ call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
            zero, U_trans, ndim)
 call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
            zero, V_trans, ndim)
+
 !call dgemm('n','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_U0, ndim,&
 !           zero, U_trans, ndim)
 !call dgemm('n','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_V0, ndim,&
@@ -1459,32 +1460,23 @@ call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
 
 
 ! TEST: export the Transformed  U and V
-!open(334, file='Utrans.gut')
-!do i1 = 1, ndim
-!  do i2 = 1, ndim
-!    write(334,fmt="(f10.6)", advance='no') U_trans(i1,i2)
-!  end do
-!  write(334, fmt="(A)") ""
-!end do
-!close(334)
-!open(334, file='Vtrans.gut')
-!do i1 = 1, ndim
-!  do i2 = 1, ndim
-!    write(334,fmt="(f10.6)", advance='no') V_trans(i1,i2)
-!  end do
-!  write(334, fmt="(A)") ""
-!end do
-!close(334)
+open(334, file='Utrans.gut')
+do i1 = 1, ndim
+  do i2 = 1, ndim
+    write(334,fmt="(f10.6)", advance='no') U_trans(i1,i2)
+  end do
+  write(334, fmt="(A)") ""
+end do
+close(334)
+open(334, file='Vtrans.gut')
+do i1 = 1, ndim
+  do i2 = 1, ndim
+    write(334,fmt="(f10.6)", advance='no') V_trans(i1,i2)
+  end do
+  write(334, fmt="(A)") ""
+end do
+close(334)
 
-! TEST: Use it to evaluate the result of the QP hamil
-!open(334, file='uncoupled_hamil_qp.txt')
-!do i1 = 1, 7157
-!  read(334,"(4i5,1f12.6)") qq1, qq2, qq3, qq4, h2b
-!  uncoupled_H22_VS(qq1,qq2,qq3,qq4) = h2b
-!enddo
-!close(334)
-!
-!return
 
 
 !! Transformation for the QP valence space
@@ -1495,6 +1487,7 @@ do qq1 = 1, VSsp_dim
   WRITE(334, fmt='(I4,7(A,I4))') qq1, ',', i,',', HOsp_sh(i), ',', HOsp_n(i),&
     ',', HOsp_l(i),',', HOsp_2j(i),'/2,', HOsp_2mj(i),'/2,', HOsp_2mt(i)
 enddo
+
 WRITE(334, fmt="(A)") "//  a    b    c    d         hamilR_H2         &
                       &h_bb_abcd         h_DD_abcd"
 do qq1 = 1, VSsp_dim
