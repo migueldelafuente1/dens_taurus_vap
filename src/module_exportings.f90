@@ -1033,6 +1033,7 @@ enddo
 !!! Diagonalizes hsp
 call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
 
+
     !! TEST
     do i = 1, ndim
       do j = 1, ndim
@@ -1052,8 +1053,9 @@ call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
     CLOSE(1111)
     !! TEST
 
+
 ! In the case of axial symmetry, further diagonalizes Jz in this basis
-!if (is_good_K) then
+!if (is_good_K) then  *****************************************************
 
 ! counts the number of eigenspaces and their degeneracy
 evnum = 1
@@ -1090,7 +1092,7 @@ do i = 1, evnum
 enddo
 
 call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,zero,field_H11,ndim)
-!endif
+!endif  ***********************************************************
 
 ! copy the transformation matrix
 do i = 1, ndim
