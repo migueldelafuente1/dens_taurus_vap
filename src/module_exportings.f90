@@ -1033,45 +1033,57 @@ enddo
 !!! Diagonalizes hsp
 call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
 
+!! TEST
+  OPEN(1111, file="field_hspRR_2.gut")
+  do i= 1, ndim
+    do j= 1, ndim
+      WRITE(1111, fmt="(F15.6)", advance='no') field_H11(i,j)
+    end do
+    WRITE(1111, fmt='(A)') ""
+  end do
+  CLOSE(1111)
+  !! TEST
+
 ! In the case of axial symmetry, further diagonalizes Jz in this basis
-if (is_good_K) then
+!if (is_good_K) then
 
-  ! counts the number of eigenspaces and their degeneracy
-  evnum = 1
-  evdeg = 0
-  evdeg(1) = 1
+! counts the number of eigenspaces and their degeneracy
+evnum = 1
+evdeg = 0
+evdeg(1) = 1
 
-  do i = 2, ndim
-    if ( abs(eigen_H11(i-1) - eigen_H11(i)) < 1.0d-6 ) then
-      evdeg(evnum) = evdeg(evnum) + 1
-    else
-      evnum = evnum + 1
-      evdeg(evnum) = evdeg(evnum) + 1
-    endif
-  enddo
+do i = 2, ndim
+  if ( abs(eigen_H11(i-1) - eigen_H11(i)) < 1.0d-6 ) then
+    evdeg(evnum) = evdeg(evnum) + 1
+  else
+    evnum = evnum + 1
+    evdeg(evnum) = evdeg(evnum) + 1
+  endif
+enddo
 
-  ! Jz in the matrix that diagonalizes h
-  D0 = field_H11
-  call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,angumome_Jz(1:ndim**2),ndim, &
-             zero,A1,ndim)
-  call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,A2,ndim)
+! Jz in the matrix that diagonalizes h
+D0 = field_H11
+call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,angumome_Jz(1:ndim**2),ndim, &
+           zero,A1,ndim)
+call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,A2,ndim)
 
-  ! block diagonalization
-  j = 0
-  A1 = zero
+! block diagonalization
+j = 0
+A1 = zero
 
-  do i = 1, evnum
-    k = evdeg(i)
-    allocate( hspr(k,k), eigenr(k), workr(3*k-1) )
-    hspr(:,:) = A2(1+j:j+k,1+j:j+k)
-    call dsyev('v','u',k,hspr,k,eigenr,workr,3*k-1,info_H11)
-    A1(1+j:j+k,1+j:j+k) = hspr(1:k,1:k)
-    j = j + k
-    deallocate( hspr, eigenr, workr )
-  enddo
+do i = 1, evnum
+  k = evdeg(i)
+  allocate( hspr(k,k), eigenr(k), workr(3*k-1) )
+  hspr(:,:) = A2(1+j:j+k,1+j:j+k)
+  call dsyev('v','u',k,hspr,k,eigenr,workr,3*k-1,info_H11)
+  A1(1+j:j+k,1+j:j+k) = hspr(1:k,1:k)
+  j = j + k
+  deallocate( hspr, eigenr, workr )
+enddo
 
-  call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,zero,field_H11,ndim)
-endif
+call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,zero,field_H11,ndim)
+!endif
+
 ! copy the transformation matrix
 do i = 1, ndim
   do j = 1,ndim
