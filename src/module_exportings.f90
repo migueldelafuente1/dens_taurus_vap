@@ -967,12 +967,17 @@ call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,field_H11,ndim,zero,A1,ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
 
 !! TEST
-call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
+  do i = 1, ndim
+    do j = 1, ndim
+      A1(i,j) = field_H11(i,j)
+    end do
+  end do
+  call dsyev('v','u',ndim,A1,ndim,eigen_H11,work,3*ndim-1,info_H11)
 
   OPEN(1111, file="field_hspRR_2.gut")
   do i= 1, ndim
     do j= 1, ndim
-      WRITE(1111, fmt="(F15.6)", advance='no') field_H11(i,j)
+      WRITE(1111, fmt="(F15.6)", advance='no') A1(i,j)
     end do
     WRITE(1111, fmt='(A)') ""
   end do
