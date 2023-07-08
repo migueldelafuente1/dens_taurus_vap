@@ -343,6 +343,24 @@ if ( (opt == 1) .and. (is_good_K) ) then
   enddo
 
   call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,zero,field_hspRR,ndim)
+
+  !!! TEST is fields field_ transformation Unitary
+  allocate (hspr(ndim,ndim))
+  call dgemm('t','n',ndim,ndim,ndim,one,field_hspRR,ndim,field_hspRR,ndim, &
+             zero,hspr,ndim)
+  call dgemm('n','t',ndim,ndim,ndim,one,field_hspRR,ndim,field_hspRR,ndim, &
+             -one,hspr,ndim)
+  print "(A)", " [Test] Is the transformation on Gradient hhT - hTh = 0"
+  do i = 1, ndim
+    do j = 1, ndim
+      if (abs(hspr(i,j)) .GT. 1.0d-6) then
+        print "(A,2i5,A,F15.6)", "  [Error] i,j=", i, j, " NE.0: ", hspr(i,j)
+      end if
+    end do
+    print "(A)", ""
+  end do
+  print "(A)", " [Test] Is the transformation on Gradient hhT - hTh = 0"
+  !!! TEST
 endif
 
 !!! Writes the properties of the single-particle states in a file

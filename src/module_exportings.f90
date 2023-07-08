@@ -1033,15 +1033,6 @@ enddo
 !!! Diagonalizes hsp
 call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
 
-    open(334, file='transf_H11_init.gut')
-    do i = 1, ndim
-      do j = 1, ndim
-        write(334,fmt="(f10.6)", advance='no') field_H11(i,j)
-      end do
-      write(334, fmt="(A)") ""
-    enddo
-    close(334)
-
 ! In the case of axial symmetry, further diagonalizes Jz in this basis
 !if (is_good_K) then  *****************************************************
 
@@ -1081,6 +1072,16 @@ enddo
 
 call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,zero,field_H11,ndim)
 !endif  ***********************************************************
+
+    open(334, file='transf_H11_init.gut')
+    do i = 1, ndim
+      do j = 1, ndim
+        write(334,fmt="(f10.6)", advance='no') field_H11(i,j)
+      end do
+      write(334, fmt="(A)") ""
+    enddo
+    close(334)
+
 
 ! copy the transformation matrix
 do i = 1, ndim
