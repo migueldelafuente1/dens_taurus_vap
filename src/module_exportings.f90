@@ -1080,14 +1080,14 @@ do i = 1, ndim
   end do
 end do
 
-!open(334, file='transf_hspRR_3.gut')
-!do i = 1, ndim
-!  do j = 1, ndim
-!    write(334,fmt="(f10.6)", advance='no') transf_H11(i,j) !V_trans(i1,i2)
-!  end do
-!  write(334, fmt="(A)") ""
-!enddo
-!close(334)
+open(334, file='transf_H11_init.gut')
+do i = 1, ndim
+  do j = 1, ndim
+    write(334,fmt="(f10.6)", advance='no') transf_H11(i,j)
+  end do
+  write(334, fmt="(A)") ""
+enddo
+close(334)
 
 end subroutine
 
