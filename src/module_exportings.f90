@@ -1083,6 +1083,34 @@ call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,zero,field_H11,ndim)
     close(334)
 
 
+
+!!! TEST is fields field_ transformation Unitary  ***************************
+  allocate (hspr(ndim,ndim))
+  call dgemm('t','n',ndim,ndim,ndim,one,field_H11,ndim,field_H11,ndim, &
+             zero,hspr,ndim)
+!  call dgemm('n','t',ndim,ndim,ndim,one,field_H11,ndim,field_H11,ndim, &
+!             -one,hspr,ndim)
+  print "(A)", " [Test] Is the transformation on Gradient H11t H11 = 0"
+  do i = 1, ndim
+    do j = 1, ndim
+      if (i .EQ. j) then
+        if (abs(hspr(i,j) - 1.0d0) .GT. 1.0d-6) then
+          print "(A,2i5,A,F15.6)", "  [Error] i,i=", i, j, " NE.1: ", hspr(i,j)
+        endif
+      else
+        if (abs(hspr(i,j)) .GT. 1.0d-6) then
+          print "(A,2i5,A,F15.6)", "  [Error] i,j=", i, j, " NE.0: ", hspr(i,j)
+        endif
+      endif
+    end do
+    print "(A)", ""
+  end do
+  deallocate(hspr)
+  print "(A)", " [Test] Is the transformation on Gradient hhT - hTh = 0"
+  !!! TEST
+
+
+
 ! copy the transformation matrix
 do i = 1, ndim
   do j = 1, ndim

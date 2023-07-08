@@ -344,9 +344,9 @@ if ( (opt == 1) .and. (is_good_K) ) then
 
   call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,zero,field_hspRR,ndim)
 
-  !!! TEST is fields field_ transformation Unitary
+  !!! TEST is fields field_ transformation Unitary  ***************************
   allocate (hspr(ndim,ndim))
-  call dgemm('t','n',ndim,ndim,ndim,one,field_hspRR,ndim,field_hspRR,ndim, &
+  call dgemm('n','t',ndim,ndim,ndim,one,field_hspRR,ndim,field_hspRR,ndim, &
              zero,hspr,ndim)
 !  call dgemm('n','t',ndim,ndim,ndim,one,field_hspRR,ndim,field_hspRR,ndim, &
 !             -one,hspr,ndim)
@@ -365,6 +365,7 @@ if ( (opt == 1) .and. (is_good_K) ) then
     end do
     print "(A)", ""
   end do
+  deallocate(hspr)
   print "(A)", " [Test] Is the transformation on Gradient hhT - hTh = 0"
   !!! TEST
 endif
