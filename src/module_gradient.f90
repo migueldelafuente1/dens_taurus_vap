@@ -343,17 +343,6 @@ if ( (opt == 1) .and. (is_good_K) ) then
   enddo
 
   call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,zero,field_hspRR,ndim)
-
-  !! TEST
-  OPEN(1111, file="field_hspRR.gut")
-  do i= 1, ndim
-    do j= 1, ndim
-      WRITE(1111, fmt="(F15.6)", advance='no') field_hspRR(i,j)
-    end do
-    WRITE(1111, fmt='(A)'), ""
-  end do
-  CLOSE(1111)
-  !! TEST
 endif
 
 !!! Writes the properties of the single-particle states in a file

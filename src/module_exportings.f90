@@ -981,6 +981,7 @@ call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
     end do
     WRITE(1111, fmt='(A)') ""
   end do
+  WRITE(1111, fmt='(A,i6)') "info_H11=", info_H11
   CLOSE(1111)
   !! TEST
 
