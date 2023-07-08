@@ -1082,7 +1082,7 @@ call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,zero,field_H11,ndim)
     end do
 !    call dsyev('v','u',ndim,A1,ndim,eigen_H11,work,3*ndim-1,info_H11)
 
-    OPEN(1111, file="field_hspRR_2.gut")
+    OPEN(1111, file="field_hspRR_3.gut")
     do i= 1, ndim
       do j= 1, ndim
         WRITE(1111, fmt="(F15.6)", advance='no') A1(i,j)
