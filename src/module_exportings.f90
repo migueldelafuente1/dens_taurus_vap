@@ -1073,44 +1073,6 @@ enddo
 call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,zero,field_H11,ndim)
 !endif  ***********************************************************
 
-    open(334, file='transf_H11_init.gut')
-    do i = 1, ndim
-      do j = 1, ndim
-        write(334,fmt="(f10.6)", advance='no') field_H11(i,j)
-      end do
-      write(334, fmt="(A)") ""
-    enddo
-    close(334)
-
-
-
-!!! TEST is fields field_ transformation Unitary  ***************************
-  allocate (hspr(ndim,ndim))
-  call dgemm('t','n',ndim,ndim,ndim,one,field_H11,ndim,field_H11,ndim, &
-             zero,hspr,ndim)
-!  call dgemm('n','t',ndim,ndim,ndim,one,field_H11,ndim,field_H11,ndim, &
-!             -one,hspr,ndim)
-  print "(A)", " [Test] Is the transformation on Gradient H11t H11 = 0"
-  do i = 1, ndim
-    do j = 1, ndim
-      if (i .EQ. j) then
-        if (abs(hspr(i,j) - 1.0d0) .GT. 1.0d-6) then
-          print "(A,2i5,A,F15.6)", "  [Error] i,i=", i, j, " NE.1: ", hspr(i,j)
-        endif
-      else
-        if (abs(hspr(i,j)) .GT. 1.0d-6) then
-          print "(A,2i5,A,F15.6)", "  [Error] i,j=", i, j, " NE.0: ", hspr(i,j)
-        endif
-      endif
-    end do
-    print "(A)", ""
-  end do
-  deallocate(hspr)
-  print "(A)", " [Test] Is the transformation on Gradient hhT - hTh = 0"
-  !!! TEST
-
-
-
 ! copy the transformation matrix
 do i = 1, ndim
   do j = 1, ndim
@@ -1472,18 +1434,6 @@ real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0,bogo_V0
 integer   :: i, i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it, perm
 real(r64) :: aux, h2b, temp_val
 
-if (ndim .NE. HOsp_dim) then
-  print "(A,2i3)", "[CRITICAL] ndim .NE. HOsp_dim=", ndim, HOsp_dim
-end if
-open(334, file='transf_H11.gut')
-do i1 = 1, ndim
-  do i2 = 1, ndim
-    write(334,fmt="(f10.6)", advance='no') transf_H11(i1,i2) !V_trans(i1,i2)
-  end do
-  write(334, fmt="(A)") ""
-enddo
-close(334)
-
 sn = ndim / 2
 allocate(U_trans(ndim,ndim), V_trans(ndim,ndim))
 U_trans = zero
@@ -1493,15 +1443,15 @@ allocate(uncoupled_H22_VS(VSsp_dim,VSsp_dim,VSsp_dim,VSsp_dim))
 uncoupled_H22_VS = zero
 
 !! Apply the transformation on the U and V
-call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
-           zero, U_trans, ndim)
-call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
-           zero, V_trans, ndim)
-
-!call dgemm('n','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_U0, ndim,&
+!call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
 !           zero, U_trans, ndim)
-!call dgemm('n','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_V0, ndim,&
+!call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
 !           zero, V_trans, ndim)
+
+call dgemm('t','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_U0, ndim,&
+           zero, U_trans, ndim)
+call dgemm('t','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_V0, ndim,&
+           zero, V_trans, ndim)
 
 !! Re-import the matrix elements of the non-DD hamiltonian from the .red file
 !! TODO: It is necessary to import COM file (supuestamente no guardado)
@@ -1526,7 +1476,14 @@ do i1 = 1, ndim
   write(334, fmt="(A)") ""
 enddo
 close(334)
-
+open(334, file='transf_H11.gut')
+do i1 = 1, ndim
+  do i2 = 1, ndim
+    write(334,fmt="(f10.6)", advance='no') transf_H11(i1,i2) !V_trans(i1,i2)
+  end do
+  write(334, fmt="(A)") ""
+enddo
+close(334)
 
 !! Transformation for the QP valence space
 OPEN(334, file='uncoupled_hamil_qp.txt')
