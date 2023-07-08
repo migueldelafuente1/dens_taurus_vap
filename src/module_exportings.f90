@@ -966,25 +966,6 @@ call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,rhoc,ndim)
 call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,field_H11,ndim,zero,A1,ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
 
-!! TEST
-  do i = 1, ndim
-    do j = 1, ndim
-      A1(i,j) = field_H11(i,j)
-    end do
-  end do
-  call dsyev('v','u',ndim,A1,ndim,eigen_H11,work,3*ndim-1,info_H11)
-
-  OPEN(1111, file="field_hspRR_2.gut")
-  do i= 1, ndim
-    do j= 1, ndim
-      WRITE(1111, fmt="(F15.6)", advance='no') A1(i,j)
-    end do
-    WRITE(1111, fmt='(A)') ""
-  end do
-  WRITE(1111, fmt='(A,i6)') "info_H11=", info_H11
-  CLOSE(1111)
-  !! TEST
-
 !!! Further reduces h in case of fully empty/occupides states
 if ( nemp0 > 0 ) then
   allocate (hspr(nemp0,nemp0), eigenr(nemp0),workr(3*nemp0-1))
@@ -1051,6 +1032,25 @@ enddo
 
 !!! Diagonalizes hsp
 call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
+
+    !! TEST
+    do i = 1, ndim
+      do j = 1, ndim
+        A1(i,j) = field_H11(i,j)
+      end do
+    end do
+!    call dsyev('v','u',ndim,A1,ndim,eigen_H11,work,3*ndim-1,info_H11)
+
+    OPEN(1111, file="field_hspRR_2.gut")
+    do i= 1, ndim
+      do j= 1, ndim
+        WRITE(1111, fmt="(F15.6)", advance='no') A1(i,j)
+      end do
+      WRITE(1111, fmt='(A)') ""
+    end do
+    WRITE(1111, fmt='(A,i6)') "info_H11=", info_H11
+    CLOSE(1111)
+    !! TEST
 
 ! In the case of axial symmetry, further diagonalizes Jz in this basis
 !if (is_good_K) then
