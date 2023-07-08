@@ -1083,7 +1083,7 @@ end do
 open(334, file='transf_H11_init.gut')
 do i = 1, ndim
   do j = 1, ndim
-    write(334,fmt="(f10.6)", advance='no') transf_H11(i,j)
+    write(334,fmt="(f10.6)", advance='no') field_H11(i,j)
   end do
   write(334, fmt="(A)") ""
 enddo
