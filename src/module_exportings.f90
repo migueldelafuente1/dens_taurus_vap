@@ -1073,35 +1073,21 @@ enddo
 call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,zero,field_H11,ndim)
 !endif  ***********************************************************
 
-
-    !! TEST
-    do i = 1, ndim
-      do j = 1, ndim
-        A1(i,j) = field_H11(i,j)
-      end do
-    end do
-!    call dsyev('v','u',ndim,A1,ndim,eigen_H11,work,3*ndim-1,info_H11)
-
-    OPEN(1111, file="field_hspRR_3.gut")
-    do i= 1, ndim
-      do j= 1, ndim
-        WRITE(1111, fmt="(F15.6)", advance='no') A1(i,j)
-      end do
-      WRITE(1111, fmt='(A)') ""
-    end do
-    WRITE(1111, fmt='(A,i6)') "info_H11=", info_H11
-    CLOSE(1111)
-    !! TEST
-
-
-
 ! copy the transformation matrix
 do i = 1, ndim
-  do j = 1,ndim
+  do j = 1, ndim
     transf_H11(i,j) = field_H11(i,j)
   end do
 end do
 
+open(334, file='transf_hspRR_3.gut')
+do i1 = 1, ndim
+  do i2 = 1, ndim
+    write(334,fmt="(f10.6)", advance='no') transf_H11(i1,i2) !V_trans(i1,i2)
+  end do
+  write(334, fmt="(A)") ""
+enddo
+close(334)
 
 end subroutine
 
@@ -1240,7 +1226,7 @@ do i = 1, ndim
     xn    = xn    + transf_H11(j,i)**2 * HOsp_n(j)
     xjz   = xjz   + transf_H11(j,i)**2 * HOsp_2mj(j)/2.0d0
     xj2   = xj2   + transf_H11(j,i)**2 * (HOsp_2j(j)*(HOsp_2j(j)+2))/4.0d0
-    xl2   = xl2   + transf_H11(j,i)**2 * (HOsp_l(j)*(HOsp_l(j)+1))
+    xl2   = xl2   + transf_H11(j,i)**2 * (HOsp_l(j) *(HOsp_l(j)+1))
   enddo
   xj = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xj2)))
   xl = 0.5d0 * (-1.d0 + sqrt(1+4*abs(xl2)))
@@ -1457,6 +1443,15 @@ real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0,bogo_V0
 integer   :: i, i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it, perm
 real(r64) :: aux, h2b, temp_val
 
+open(334, file='transf_H11.gut')
+do i1 = 1, ndim
+  do i2 = 1, ndim
+    write(334,fmt="(f10.6)", advance='no') transf_H11(i1,i2) !V_trans(i1,i2)
+  end do
+  write(334, fmt="(A)") ""
+enddo
+close(334)
+
 sn = ndim / 2
 allocate(U_trans(ndim,ndim), V_trans(ndim,ndim))
 U_trans = zero
@@ -1466,9 +1461,9 @@ allocate(uncoupled_H22_VS(VSsp_dim,VSsp_dim,VSsp_dim,VSsp_dim))
 uncoupled_H22_VS = zero
 
 !! Apply the transformation on the U and V
-call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
+call dgemm('n','t', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
            zero, U_trans, ndim)
-call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
+call dgemm('n','t', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
            zero, V_trans, ndim)
 
 !call dgemm('n','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_U0, ndim,&
@@ -1495,14 +1490,6 @@ open(334, file='bogo_V0.gut')
 do i1 = 1, ndim
   do i2 = 1, ndim
     write(334,fmt="(f10.6)", advance='no') bogo_V0(i1,i2) !V_trans(i1,i2)
-  end do
-  write(334, fmt="(A)") ""
-enddo
-close(334)
-open(334, file='transf_H11.gut')
-do i1 = 1, ndim
-  do i2 = 1, ndim
-    write(334,fmt="(f10.6)", advance='no') transf_H11(i1,i2) !V_trans(i1,i2)
   end do
   write(334, fmt="(A)") ""
 enddo
