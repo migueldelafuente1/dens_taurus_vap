@@ -1081,9 +1081,9 @@ do i = 1, ndim
 end do
 
 open(334, file='transf_hspRR_3.gut')
-do i1 = 1, ndim
-  do i2 = 1, ndim
-    write(334,fmt="(f10.6)", advance='no') transf_H11(i1,i2) !V_trans(i1,i2)
+do i = 1, ndim
+  do j = 1, ndim
+    write(334,fmt="(f10.6)", advance='no') field_H11(i,j) !V_trans(i1,i2)
   end do
   write(334, fmt="(A)") ""
 enddo
