@@ -1080,14 +1080,14 @@ do i = 1, ndim
   end do
 end do
 
-open(334, file='transf_hspRR_3.gut')
-do i = 1, ndim
-  do j = 1, ndim
-    write(334,fmt="(f10.6)", advance='no') transf_H11(i,j) !V_trans(i1,i2)
-  end do
-  write(334, fmt="(A)") ""
-enddo
-close(334)
+!open(334, file='transf_hspRR_3.gut')
+!do i = 1, ndim
+!  do j = 1, ndim
+!    write(334,fmt="(f10.6)", advance='no') transf_H11(i,j) !V_trans(i1,i2)
+!  end do
+!  write(334, fmt="(A)") ""
+!enddo
+!close(334)
 
 end subroutine
 
@@ -1443,6 +1443,9 @@ real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0,bogo_V0
 integer   :: i, i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it, perm
 real(r64) :: aux, h2b, temp_val
 
+if (ndim .NE. HOsp_dim) then
+  print "(A,2i3)", "[CRITICAL] ndim .NE. HOsp_dim=", ndim, HOsp_dim
+end if
 open(334, file='transf_H11.gut')
 do i1 = 1, ndim
   do i2 = 1, ndim
