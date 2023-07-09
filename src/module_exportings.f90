@@ -1409,9 +1409,12 @@ do i = 1, ndim ! QP loop
     EXIT
   end do
   if (found) then
-    print "(3(A,2i3),2i4)", " FND(QP,HO):", i, k1, "  (VS,VSHO):", j, k2, &
-                            "   (VSQP/VSQP.HO)",  kk, VSQPtoHOsp_index(kk), &
-                            VSQPtoQPsp_index(kk), VSQPtoVSsp_index(kk)
+!    print "(3(A,2i3),2i4)", " FND(QP,HO):", i, k1, "  (VS,VSHO):", j, k2, &
+!                            "   (VSQP/VSQP.HO)",  kk, VSQPtoHOsp_index(kk), &
+!                            VSQPtoQPsp_index(kk), VSQPtoVSsp_index(kk)
+  print "(A,i3,3F10.3,A,2i3,3i5)", "FND(QP,VS):", &
+    i, qpsp_j(i),qpsp_jz(i),2*qpsp_nn(i) - qpsp_zz(i), " =(vs) ",&
+    j, k2, HOsp_2j(k2), HOsp_2mj(k2), HOsp_2mt(k2)
   endif
 
 enddo
