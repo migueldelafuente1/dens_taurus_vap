@@ -1704,6 +1704,7 @@ PRINT "(A,3i4,A,4i3)", "  + Accepted: Jmin,max,tt =", Jmin,Jmax,tt, &
 
         do J = Jmin, Jmax
           if (J .LT. abs(M)) cycle
+
           call ClebschGordan(HOsp_2j (i1), HOsp_2j (i2), 2*J,&
                              HOsp_2mj(i1), HOsp_2mj(i2), 2*M, aux1)
           call ClebschGordan(HOsp_2j (i3), HOsp_2j (i4), 2*J,&
@@ -1766,8 +1767,25 @@ do sh1 = 1, VSsh_dim
                                       VSsh_list(sh3), VSsh_list(sh4), Jmin,Jmax
         do J = Jmin, Jmax
           do tt = 0, 5
+
+            !! Norm of the Reduced M.E:
+            aux_val = 1.0d0
+            if ((tt.EQ.0) .OR. (tt.EQ.5)) then
+              if ((sh1.EQ.sh2) .AND. (MOD(J,2).EQ.1)) then
+                aux_val = 0.0d0
+              else if (sh1.EQ.sh2) then
+                aux_val = aux_val * 0.70710678118d0
+              endif
+
+              if ((sh3.EQ.sh4) .AND. (MOD(J,2).EQ.1)) then
+                aux_val = 0.0d0
+              else if (sh3.EQ.sh4) then
+                aux_val = aux_val * 0.70710678118d0
+              endif
+            end if
+
             WRITE(3302, fmt="(f14.9)", advance='no') &
-                reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4)
+                  aux_val * reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4)
           end do
           WRITE(3302, fmt="(A)") ""
         end do
