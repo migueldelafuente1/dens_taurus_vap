@@ -1501,17 +1501,17 @@ enddo
 WRITE(334, fmt="(A)") "//  a    b    c    d         hamilR_H2         &
                       &h_bb_abcd         h_DD_abcd"
 do qq1 = 1, VSsp_dim
-!  q1 = VStoQPsp_index (qq1)
-  q1 = VStoVSQPsp_index(qq1)
+  q1 = VStoQPsp_index (qq1)
+!  q1 = VStoVSQPsp_index(qq1)
   do qq2 = 1, VSsp_dim
-!    q2 = VStoQPsp_index(qq2)
-    q2 = VStoVSQPsp_index(qq2)
+    q2 = VStoQPsp_index(qq2)
+!    q2 = VStoVSQPsp_index(qq2)
     do qq3 = 1, VSsp_dim
-!      q3 = VStoQPsp_index(qq3)
-      q3 = VStoVSQPsp_index(qq3)
+      q3 = VStoQPsp_index(qq3)
+!      q3 = VStoVSQPsp_index(qq3)
       do qq4 = 1, VSsp_dim
-!        q4 = VStoQPsp_index(qq4)
-        q4 = VStoVSQPsp_index(qq4)
+        q4 = VStoQPsp_index(qq4)
+!        q4 = VStoVSQPsp_index(qq4)
 
 !! Loop for the HO basis, getting the
 !!---------------------------------------------------------------------------
