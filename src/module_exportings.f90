@@ -1675,8 +1675,10 @@ do qq1 = 1, VSsp_dim
 !!---------------------------------------------------------------------------
 !! Loop for the Hamiltonian, using tr and the permutations on the m.e.
 
-WRITE(333, fmt="(A,4i5,A,4i4)") "VSsp_index=", qq1, qq2, qq3, qq4, &
-                                "=qp=", q1, q2, q3, q4
+WRITE(333, fmt="(A,4i5,A,4i4,A,4i6)") &
+      "VSsp_index=", qq1, qq2, qq3, qq4,"=qp=", q1, q2, q3, q4, &
+      "= sh=", VSsh_list(VSsp_VSsh(qq1)), VSsh_list(VSsp_VSsh(qq2)), &
+               VSsh_list(VSsp_VSsh(qq3)), VSsh_list(VSsp_VSsh(qq4))
 
 do kk = 1, hamil_H2dim
   i1 = hamil_abcd(1+4*(kk-1))
