@@ -1420,7 +1420,7 @@ do i = 1, ndim ! QP loop
 enddo
 
 deallocate(QP_index_found)
-if (METHOD_SORT .EQ. ) deallocate(HOshells, VSshells, sortedShells)
+if (METHOD_SORT .EQ. 1) deallocate(HOshells, VSshells, sortedShells)
 print "(A)", " [OK] Valence Space extracted results for the sorted QP. "
 print *, ""
 
