@@ -1606,20 +1606,29 @@ end subroutine calculate_QuasiParticle_Hamiltonian_H22
 ! function bogo_UV_operations_for_H22                                        !
 ! Evaluates the U,V operations for the ho matrix i(1,2,3,4) and qp k(1,2,3,4)  !
 !------------------------------------------------------------------------------!
-real(r64) function bogo_UV_operations_for_H22(k1,k2,k3,k4, i1,i2,i3,i4) &
-          result (aux)
+function bogo_UV_operations_for_H22(k1,k2,k3,k4, i1,i2,i3,i4) result (aux)
 
 integer, intent(in) :: k1,k2,k3,k4, i1,i2,i3,i4
+real(r64) :: aux
 
 aux = zero
 !! Without projection, the U and V are real (Check Ring Shuck E.23c)
-aux = aux + (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k3) * U_trans(i3,k4))
-aux = aux - (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k3) * U_trans(i3,k4))
-aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k4) * U_trans(i3,k3))
-aux = aux + (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k4) * U_trans(i3,k3))
+!aux = aux + (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k3) * U_trans(i3,k4))
+!aux = aux - (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k3) * U_trans(i3,k4))
+!aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k4) * U_trans(i3,k3))
+!aux = aux + (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k4) * U_trans(i3,k3))
+!
+!aux = aux + (U_trans(i1,k1) * U_trans(i2,k2) * U_trans(i3,k3) * U_trans(i4,k4))
+!aux = aux + (V_trans(i3,k1) * V_trans(i4,k2) * V_trans(i1,k3) * V_trans(i2,k4))
 
-aux = aux + (U_trans(i1,k1) * U_trans(i2,k2) * U_trans(i3,k3) * U_trans(i4,k4))
-aux = aux + (V_trans(i3,k1) * V_trans(i4,k2) * V_trans(i1,k3) * V_trans(i2,k4))
+aux = aux + (U_trans(k1,i1) * V_trans(k2,i4) * V_trans(k3,i2) * U_trans(k4,i3))
+aux = aux - (U_trans(k2,i1) * V_trans(k1,i4) * V_trans(k3,i2) * U_trans(k4,i3))
+aux = aux - (U_trans(k1,i1) * V_trans(k2,i4) * V_trans(k4,i2) * U_trans(k3,i3))
+aux = aux + (U_trans(k2,i1) * V_trans(k1,i4) * V_trans(k4,i2) * U_trans(k3,i3))
+
+aux = aux + (U_trans(k1,i1) * U_trans(k2,i2) * U_trans(k3,i3) * U_trans(k4,i4))
+aux = aux + (V_trans(k1,i3) * V_trans(k2,i4) * V_trans(k3,i1) * V_trans(k4,i2))
+
 return
 end function
 
@@ -1645,6 +1654,8 @@ reduced_H22_VS = zero
 all_zeroReduced_sh = .TRUE.
 H11_qp2print = zero
 
+
+OPEN(2999, file="print_recouplingH22.txt")
 do qq1 = 1, VSsp_dim
   i1  = VStoHOsp_index(qq1)
   sh1 = VSsp_VSsh(qq1)
@@ -1682,7 +1693,7 @@ do qq1 = 1, VSsp_dim
           if ((abs(tt1).EQ.3) .AND. (abs(tt1 - tt2).NE.0)) cycle
           if (HOsp_2mj(i3) + HOsp_2mj(i4) .NE. M1) cycle
 
-PRINT "(2(A,4i3),A,4i6,A,4i4,F15.6)", &
+WRITE(2999, fmt="(2(A,4i3),A,4i6,A,4i4,F15.6)") &
   " vssp=", qq1,qq2,qq3,qq4, "= sp=", i1,  i2, i3, i4, "= sh=", &
   VSsh_list(sh1), VSsh_list(sh2), VSsh_list(sh3), VSsh_list(sh4), &
   "= tt12,2M1,2M2,h2b_qp=", tt1, tt2, M1, HOsp_2mj(i3) + HOsp_2mj(i4), &
@@ -1703,7 +1714,7 @@ PRINT "(2(A,4i3),A,4i6,A,4i4,F15.6)", &
           tt = 3 + ((2*tt1 + tt2 - 1) / 2) !pnpn=1, pnnp=2, nppn=3, npnp=4
         end if
 
-PRINT "(A,3i4,A,4i3)", "  + Accepted: Jmin,max,tt =", Jmin,Jmax,tt, &
+WRITE(2999, fmt="(A,3i4,A,4i3)") "  + Accepted: Jmin,max,tt =", Jmin,Jmax,tt,&
                        "= + . . ... saving in sh(vs)=", sh1, sh2, sh3, sh4
 
         do J = Jmin, Jmax
@@ -1721,10 +1732,10 @@ PRINT "(A,3i4,A,4i3)", "  + Accepted: Jmin,max,tt =", Jmin,Jmax,tt, &
             reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4) = &
                 reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4) + aux_val
           endif
-PRINT "(A,i3,3F11.6,A,i6)", "  + . . values J,cgc1, cgc2, add=", &
+WRITE(2999, fmt= "(A,i3,3F11.6,A,i6)") "  + . . values J,cgc1, cgc2, add=", &
                             J, aux1, aux2, aux_val, "= count=", kk
         end do
-PRINT "(A)", ""
+WRITE(2999, fmt= "(A)") ""
 
       end do
     end do
@@ -1732,6 +1743,8 @@ PRINT "(A)", ""
 !                               " of=", VSsp_dim, " non.zero=", kk
   end do
 end do
+CLOSE(2999)
+
 
 !! export the reduced matrix element .2b, .01. and .sho
 OPEN(3300, file="hamilQPD1S.sho")
