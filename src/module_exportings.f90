@@ -1489,6 +1489,9 @@ do i1 = 1, ndim
 enddo
 close(334)
 
+call test_register_QPhamiltonianH22(ndim)
+RETURN
+
 !! Transformation for the QP valence space
 OPEN(334, file='uncoupled_hamil_qp.txt')
 WRITE(334, fmt="(A)") "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, 2mt)"
@@ -1502,16 +1505,12 @@ WRITE(334, fmt="(A)") "//  a    b    c    d         hamilR_H2         &
                       &h_bb_abcd         h_DD_abcd"
 do qq1 = 1, VSsp_dim
   q1 = VStoQPsp_index (qq1)
-!  q1 = VStoVSQPsp_index(qq1)
   do qq2 = 1, VSsp_dim
     q2 = VStoQPsp_index(qq2)
-!    q2 = VStoVSQPsp_index(qq2)
     do qq3 = 1, VSsp_dim
       q3 = VStoQPsp_index(qq3)
-!      q3 = VStoVSQPsp_index(qq3)
       do qq4 = 1, VSsp_dim
         q4 = VStoQPsp_index(qq4)
-!        q4 = VStoVSQPsp_index(qq4)
 
 !! Loop for the HO basis, getting the
 !!---------------------------------------------------------------------------
@@ -1522,7 +1521,7 @@ do kk = 1, hamil_H2dim
   i2 = hamil_abcd(2+4*(kk-1))
   i3 = hamil_abcd(3+4*(kk-1))
   i4 = hamil_abcd(4+4*(kk-1))
-  h2b  = hamil_H2(kk)
+  h2b  = hamil_H2(kk)          !! all are > TOL.
   perm = hamil_trperm(kk)
 
   aux = zero
@@ -1549,12 +1548,10 @@ do kk = 1, hamil_H2dim
 
   !! add the result to the uncoupled quasi particle matrix element
   uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
-
 end do
 
 temp_val = zero
 if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
-!  WRITE(335,fmt='(4i5,F15.9)')qq1,qq2,qq3,qq4,uncoupled_H22_VS(qq1,qq2,qq3,qq4)
   temp_val = uncoupled_H22_VS(qq1,qq2,qq3,qq4)
 endif
 
@@ -1599,6 +1596,7 @@ endif
 enddo
 CLOSE(334)
 
+
 end subroutine calculate_QuasiParticle_Hamiltonian_H22
 
 
@@ -1613,24 +1611,231 @@ real(r64) :: aux
 
 aux = zero
 !! Without projection, the U and V are real (Check Ring Shuck E.23c)
-!aux = aux + (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k3) * U_trans(i3,k4))
-!aux = aux - (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k3) * U_trans(i3,k4))
-!aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k4) * U_trans(i3,k3))
-!aux = aux + (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k4) * U_trans(i3,k3))
+aux = aux + (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k3) * U_trans(i3,k4))
+aux = aux - (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k3) * U_trans(i3,k4))
+aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k4) * U_trans(i3,k3))
+aux = aux + (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k4) * U_trans(i3,k3))
+
+aux = aux + (U_trans(i1,k1) * U_trans(i2,k2) * U_trans(i3,k3) * U_trans(i4,k4))
+aux = aux + (V_trans(i3,k1) * V_trans(i4,k2) * V_trans(i1,k3) * V_trans(i2,k4))
+
+!aux = aux + (U_trans(k1,i1) * V_trans(k2,i4) * V_trans(k3,i2) * U_trans(k4,i3))
+!aux = aux - (U_trans(k2,i1) * V_trans(k1,i4) * V_trans(k3,i2) * U_trans(k4,i3))
+!aux = aux - (U_trans(k1,i1) * V_trans(k2,i4) * V_trans(k4,i2) * U_trans(k3,i3))
+!aux = aux + (U_trans(k2,i1) * V_trans(k1,i4) * V_trans(k4,i2) * U_trans(k3,i3))
 !
-!aux = aux + (U_trans(i1,k1) * U_trans(i2,k2) * U_trans(i3,k3) * U_trans(i4,k4))
-!aux = aux + (V_trans(i3,k1) * V_trans(i4,k2) * V_trans(i1,k3) * V_trans(i2,k4))
-
-aux = aux + (U_trans(k1,i1) * V_trans(k2,i4) * V_trans(k3,i2) * U_trans(k4,i3))
-aux = aux - (U_trans(k2,i1) * V_trans(k1,i4) * V_trans(k3,i2) * U_trans(k4,i3))
-aux = aux - (U_trans(k1,i1) * V_trans(k2,i4) * V_trans(k4,i2) * U_trans(k3,i3))
-aux = aux + (U_trans(k2,i1) * V_trans(k1,i4) * V_trans(k4,i2) * U_trans(k3,i3))
-
-aux = aux + (U_trans(k1,i1) * U_trans(k2,i2) * U_trans(k3,i3) * U_trans(k4,i4))
-aux = aux + (V_trans(k1,i3) * V_trans(k2,i4) * V_trans(k3,i1) * V_trans(k4,i2))
+!aux = aux + (U_trans(k1,i1) * U_trans(k2,i2) * U_trans(k3,i3) * U_trans(k4,i4))
+!aux = aux + (V_trans(k1,i3) * V_trans(k2,i4) * V_trans(k3,i1) * V_trans(k4,i2))
 
 return
 end function
+
+
+
+
+
+
+subroutine test_register_QPhamiltonianH22(ndim)
+
+integer, intent(in) :: ndim
+integer   :: i, i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it, perm
+real(r64) :: aux, h2b, temp_val
+real(r64), dimension(:,:,:,:), allocatable :: temp_unc
+real(r64), dimension(2,8,2) :: aux_step_h2, aux_step_dd ! [it][abcd, abdc, ...][h2b,bogoOps, add]
+integer,   dimension(2,4) :: temp_indx_perm
+real(r64), dimension(2)   :: temp_h2b_perm
+
+sn = ndim / 2
+
+allocate(temp_unc(VSsp_dim,VSsp_dim,VSsp_dim,VSsp_dim))
+temp_unc = zero
+
+OPEN(333, file="h22_reconstr.txt")
+
+OPEN(334, file='uncoupled_hamil_qp.txt')
+WRITE(334, fmt="(A)") "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, 2mt)"
+do qq1 = 1, VSsp_dim
+  i = VStoHOsp_index(qq1)
+  WRITE(334, fmt='(I4,7(A,I4))') qq1, ',', i,',', HOsp_sh(i), ',', HOsp_n(i),&
+    ',', HOsp_l(i),',', HOsp_2j(i),'/2,', HOsp_2mj(i),'/2,', HOsp_2mt(i)
+enddo
+
+WRITE(334, fmt="(A)") "//  a    b    c    d         hamilR_H2         &
+                      &h_bb_abcd         h_DD_abcd"
+do qq1 = 1, VSsp_dim
+  q1 = VStoQPsp_index (qq1)
+  do qq2 = 1, VSsp_dim
+    q2 = VStoQPsp_index(qq2)
+    do qq3 = 1, VSsp_dim
+      q3 = VStoQPsp_index(qq3)
+      do qq4 = 1, VSsp_dim
+        q4 = VStoQPsp_index(qq4)
+
+!! Loop for the HO basis, getting the
+!!---------------------------------------------------------------------------
+!! Loop for the Hamiltonian, using tr and the permutations on the m.e.
+
+WRITE(333, fmt="(A,4i5,A,4i4)") "VSsp_index=", qq1, qq2, qq3, qq4, &
+                                "=qp=", q1, q2, q3, q4
+
+do kk = 1, hamil_H2dim
+  i1 = hamil_abcd(1+4*(kk-1))
+  i2 = hamil_abcd(2+4*(kk-1))
+  i3 = hamil_abcd(3+4*(kk-1))
+  i4 = hamil_abcd(4+4*(kk-1))
+  h2b  = hamil_H2(kk)          !! all are > TOL.
+  perm = hamil_trperm(kk)
+
+  aux_step_h2 = zero
+  aux = zero
+  !!! Loop on time reversal
+  do it = 1, 2
+    if ( it == 2 ) then
+      if ( HOsp_2mj(i1) + HOsp_2mj(i2) == 0 ) cycle
+      call find_timerev(perm,i1,i2,i3,i4)
+      h2b = sign(one,perm*one) * h2b
+    endif
+    temp_indx_perm(it,1) = i1
+    temp_indx_perm(it,2) = i2
+    temp_indx_perm(it,3) = i3
+    temp_indx_perm(it,4) = i4
+    temp_h2b_perm (it)   = h2b
+
+    aux_step_h2(it,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
+    aux_step_h2(it,2,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i4,i3)
+    aux_step_h2(it,3,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i3,i4)
+    aux_step_h2(it,4,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i4,i3)
+    aux_step_h2(it,1,2) =      aux_step_h2(it,1,1) * h2b
+    aux_step_h2(it,2,2) = -1 * aux_step_h2(it,2,1) * h2b
+    aux_step_h2(it,3,2) = -1 * aux_step_h2(it,3,1) * h2b
+    aux_step_h2(it,4,2) =      aux_step_h2(it,4,1) * h2b
+
+    aux = aux + aux_step_h2(it,1,2)
+    aux = aux + aux_step_h2(it,2,2)
+    aux = aux + aux_step_h2(it,3,2)
+    aux = aux + aux_step_h2(it,4,2)
+
+    if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
+
+    aux_step_h2(it,5,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i1,i2)
+    aux_step_h2(it,6,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1)
+    aux_step_h2(it,7,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i1,i2)
+    aux_step_h2(it,8,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i2,i1)
+    aux_step_h2(it,5,2) =      aux_step_h2(it,5,1) * h2b
+    aux_step_h2(it,6,2) = -1 * aux_step_h2(it,6,1) * h2b
+    aux_step_h2(it,7,2) = -1 * aux_step_h2(it,7,1) * h2b
+    aux_step_h2(it,8,2) =      aux_step_h2(it,8,1) * h2b
+
+    aux = aux + aux_step_h2(it,5,2)
+    aux = aux + aux_step_h2(it,6,2)
+    aux = aux + aux_step_h2(it,7,2)
+    aux = aux + aux_step_h2(it,8,2)
+  enddo
+
+  !! add the result to the uncoupled quasi particle matrix element
+  temp_unc(qq1,qq2,qq3,qq4) = temp_unc(qq1,qq2,qq3,qq4) + aux
+
+  if (abs(aux) .GT. 1.0d-6 ) then
+  WRITE(333, fmt="(A,i6,4i3,F12.6,A,4i3,F12.6)")" kk1=",kk,temp_indx_perm(1,1),&
+    temp_indx_perm(1,2),temp_indx_perm(1,3),temp_indx_perm(1,4), &
+    temp_h2b_perm(1),"=TR=", temp_indx_perm(2,1), temp_indx_perm(2,2), &
+    temp_indx_perm(2,3),temp_indx_perm(2,4), temp_h2b_perm(2)
+
+  do it = 1,2
+    WRITE(333, fmt="(A,i2,A)",advance='no')"  h2 tr=", it,"=perms="
+    do i = 1,8
+      WRITE(333, fmt="(F15.6)",advance='no') aux_step_h2(it,i,1)
+    end do
+    WRITE(333, *) ""
+  end do
+  endif
+
+end do !! kk
+
+temp_val = zero
+if (abs(temp_unc(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
+  temp_val = temp_unc(qq1,qq2,qq3,qq4)
+endif
+
+!! Loop for the Density Dependent term
+!! (does not use TR and perm. sort but explicit separation on the isospin)
+do kk = 1, hamil_DD_H2dim
+
+  i1 = hamil_DD_abcd(1+4*(kk-1)) !! NOTE: Hamil_DD_abcd is only up to ndim_/2
+  i2 = hamil_DD_abcd(2+4*(kk-1))
+  i3 = hamil_DD_abcd(3+4*(kk-1))
+  i4 = hamil_DD_abcd(4+4*(kk-1))
+
+  aux_step_dd = zero
+  aux_step_dd(1,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1,i2,i3,i4)
+  aux_step_dd(1,2,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1,i2+sn,i3,i4+sn)
+  aux_step_dd(1,3,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1,i2+sn,i3+sn,i4)
+  aux_step_dd(1,4,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1+sn,i2,i3,i4+sn)
+  aux_step_dd(1,5,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1+sn,i2,i3+sn,i4)
+  aux_step_dd(1,6,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,&
+                                                  i1+sn,i2+sn,i3+sn,i4+sn)
+
+  aux_step_dd(1,1,2) = aux_step_dd(1,1,1) * hamil_DD_H2_byT(1,kk)
+  aux_step_dd(1,2,2) = aux_step_dd(1,2,1) * hamil_DD_H2_byT(2,kk)
+  aux_step_dd(1,3,2) = aux_step_dd(1,3,1) * hamil_DD_H2_byT(3,kk)
+  aux_step_dd(1,4,2) = aux_step_dd(1,4,1) * hamil_DD_H2_byT(3,kk)
+  aux_step_dd(1,5,2) = aux_step_dd(1,5,1) * hamil_DD_H2_byT(2,kk)
+  aux_step_dd(1,6,2) = aux_step_dd(1,6,1) * hamil_DD_H2_byT(4,kk)
+
+  aux = zero
+  aux = aux + aux_step_dd(1,1,2)
+  aux = aux + aux_step_dd(1,2,2) + aux_step_dd(1,5,2)
+  aux = aux + aux_step_dd(1,3,2) + aux_step_dd(1,4,2)
+  aux = aux + aux_step_dd(1,6,2)
+
+  ! add the result to the uncoupled quasi particle matrix element
+  temp_unc(qq1,qq2,qq3,qq4) = temp_unc(qq1,qq2,qq3,qq4) + aux
+
+  if (abs(aux) .GT. 1.0d-6 ) then
+  WRITE(333, fmt="(A,i6,4i3,4F12.6)")" kk2=",kk, i1,i2,i3,i4, &
+    hamil_DD_H2_byT(1,kk), hamil_DD_H2_byT(2,kk), hamil_DD_H2_byT(3,kk), &
+    hamil_DD_H2_byT(4,kk)
+
+  WRITE(333, fmt="(A)",advance='no')"  h2dd UV="
+  do i = 1,6
+    WRITE(333, fmt="(F15.6)",advance='no') aux_step_dd(1,i,1)
+  end do
+  WRITE(333, *) ""
+  endif
+
+end do
+
+if ((abs(temp_unc(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) .OR. &
+    (abs(temp_val) .GE. 1.0d-6)) then
+  WRITE(334,fmt='(4i5,3F18.9)') qq1, qq2, qq3, qq4, &
+                                temp_unc(qq1,qq2,qq3,qq4), temp_val, &
+                                temp_unc(qq1,qq2,qq3,qq4) - temp_val
+endif
+!!---------------------------------------------------------------------------
+
+      enddo
+    enddo
+  enddo
+  print "(A,1i5,A,i5)", "Progress to loop 1:", qq1," of ",VSsp_dim
+enddo
+CLOSE(333)
+CLOSE(334)
+
+
+!! Copy the values and continue
+do qq1 = 1, VSsp_dim
+  do qq2 = 1, VSsp_dim
+    do qq3 = 1, VSsp_dim
+      do qq4 = 1, VSsp_dim
+        uncoupled_H22_VS(qq1,qq2,qq3,qq4) = temp_unc(qq1,qq2,qq3,qq4)
+end do
+end do
+end do
+end do
+
+
+end subroutine test_register_QPhamiltonianH22
+
 
 
 !------------------------------------------------------------------------------!
