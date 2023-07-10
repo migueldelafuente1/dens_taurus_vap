@@ -1420,6 +1420,7 @@ do i = 1, ndim ! QP loop
 enddo
 
 deallocate(QP_index_found)
+if (METHOD_SORT .EQ. ) deallocate(HOshells, VSshells, sortedShells)
 print "(A)", " [OK] Valence Space extracted results for the sorted QP. "
 print *, ""
 
@@ -1500,17 +1501,17 @@ enddo
 WRITE(334, fmt="(A)") "//  a    b    c    d         hamilR_H2         &
                       &h_bb_abcd         h_DD_abcd"
 do qq1 = 1, VSsp_dim
-  q1 = VStoQPsp_index (qq1)
-!  q1 = VStoVSQPsp_index(qq1)
+!  q1 = VStoQPsp_index (qq1)
+  q1 = VStoVSQPsp_index(qq1)
   do qq2 = 1, VSsp_dim
-    q2 = VStoQPsp_index(qq2)
-!    q2 = VStoVSQPsp_index(qq2)
+!    q2 = VStoQPsp_index(qq2)
+    q2 = VStoVSQPsp_index(qq2)
     do qq3 = 1, VSsp_dim
-      q3 = VStoQPsp_index(qq3)
-!      q3 = VStoVSQPsp_index(qq3)
+!      q3 = VStoQPsp_index(qq3)
+      q3 = VStoVSQPsp_index(qq3)
       do qq4 = 1, VSsp_dim
-        q4 = VStoQPsp_index(qq4)
-!        q4 = VStoVSQPsp_index(qq4)
+!        q4 = VStoQPsp_index(qq4)
+        q4 = VStoVSQPsp_index(qq4)
 
 !! Loop for the HO basis, getting the
 !!---------------------------------------------------------------------------
@@ -1713,7 +1714,7 @@ PRINT "(A,3i4,A,4i3)", "  + Accepted: Jmin,max,tt =", Jmin,Jmax,tt, &
           call ClebschGordan(HOsp_2j (i3), HOsp_2j (i4), 2*J,&
                              HOsp_2mj(i3), HOsp_2mj(i4), 2*M, aux2)
 
-          aux_val = aux1 * aux2 * h2b !/ (2*J + 1)
+          aux_val = aux1 * aux2 * h2b
           if (abs(aux_val) .GT. 1.0e-9) then
             kk = kk + 1
             all_zeroReduced_sh(sh1,sh2,sh3,sh4) = .FALSE.
@@ -1772,7 +1773,7 @@ do sh1 = 1, VSsh_dim
           do tt = 0, 5
 
             !! Norm of the Reduced M.E:
-            aux_val = 1.0d0
+            aux_val = 1.0d0  !/ (2*J + 1)
             if ((tt.EQ.0) .OR. (tt.EQ.5)) then
               if ((sh1.EQ.sh2) .AND. (MOD(J,2).EQ.1)) then
                 aux_val = 0.0d0
