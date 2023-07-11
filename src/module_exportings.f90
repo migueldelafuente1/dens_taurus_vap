@@ -1749,9 +1749,16 @@ do kk = 1, hamil_H2dim
 
   do it = 1,2
     WRITE(333, fmt="(A,i2,A)",advance='no')"  h2 tr=", it,"=perms="
-    do i = 1,8
+    do i = 1,4
       WRITE(333, fmt="(F15.6)",advance='no') aux_step_h2(it,i,1)
     end do
+    if ((temp_indx_perm(it,1).NE.temp_indx_perm(it,3)) .OR. &
+        (temp_indx_perm(it,2).NE.temp_indx_perm(it,4)) ) then
+      do i = 5,8
+        WRITE(333, fmt="(F15.6)",advance='no') aux_step_h2(it,i,1)
+      end do
+    end if
+
     WRITE(333, *) ""
   end do
   endif
