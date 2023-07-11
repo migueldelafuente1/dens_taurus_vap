@@ -1512,6 +1512,8 @@ do qq1 = 1, VSsp_dim
       do qq4 = 1, VSsp_dim
         q4 = VStoQPsp_index(qq4)
 
+!! TODO: Insert here something to skip elements such as nnpp or mJ1 != Mj2
+
 !! Loop for the HO basis, getting the
 !!---------------------------------------------------------------------------
 !! Loop for the Hamiltonian, using tr and the permutations on the m.e.
@@ -1688,7 +1690,9 @@ do kk = 1, hamil_H2dim
   h2b  = hamil_H2(kk)          !! all are > TOL.
   perm = hamil_trperm(kk)
 
-  aux_step_h2 = zero
+  temp_indx_perm = 0
+  temp_h2b_perm  = zero
+  aux_step_h2    = zero
   aux = zero
   !!! Loop on time reversal
   do it = 1, 2
