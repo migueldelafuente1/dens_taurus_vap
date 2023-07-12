@@ -1644,8 +1644,10 @@ integer   :: i, i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it, perm
 real(r64) :: aux, h2b, temp_val
 real(r64), dimension(:,:,:,:), allocatable :: temp_unc
 real(r64), dimension(2,8,2) :: aux_step_h2, aux_step_dd ! [it][abcd, abdc, ...][h2b,bogoOps, add]
-integer,   dimension(2,4) :: temp_indx_perm
-real(r64), dimension(2)   :: temp_h2b_perm
+integer,   dimension(2,4)   :: temp_indx_perm
+real(r64), dimension(2)     :: temp_h2b_perm
+logical   :: is_t_eq_1
+integer   :: tt1, tt2, tt
 
 sn = ndim / 2
 
@@ -1668,11 +1670,27 @@ do qq1 = 1, VSsp_dim
   q1 = VStoQPsp_index (qq1)
   do qq2 = 1, VSsp_dim
     q2 = VStoQPsp_index(qq2)
+
+    tt1 = 2*HOsp_2mt(QPtoHOsp_index(q1)) + HOsp_2mt(QPtoHOsp_index(q2))
     do qq3 = 1, VSsp_dim
       q3 = VStoQPsp_index(qq3)
       do qq4 = 1, VSsp_dim
         q4 = VStoQPsp_index(qq4)
 
+        is_t_eq_1 = abs(HOsp_2mt(QPtoHOsp_index(q1)) + &
+                        HOsp_2mt(QPtoHOsp_index(q2))).EQ.2
+        if (HOsp_2mt(QPtoHOsp_index(q1))+HOsp_2mt(QPtoHOsp_index(q2)) .NE. &
+            HOsp_2mt(QPtoHOsp_index(q3))+HOsp_2mt(QPtoHOsp_index(q4)) ) cycle
+
+        tt2 = 2*HOsp_2mt(QPtoHOsp_index(q3)) + HOsp_2mt(QPtoHOsp_index(q4))
+        ! select the isospin
+        if (tt1.EQ.-3) then
+          tt = 0
+        else if (tt1.EQ. 3) then
+          tt = 5
+        else
+          tt = 3 + ((2*tt1 + tt2 - 1) / 2) !pnpn=1, pnnp=2, nppn=3, npnp=4
+        end if
 !! Loop for the HO basis, getting the
 !!---------------------------------------------------------------------------
 !! Loop for the Hamiltonian, using tr and the permutations on the m.e.
@@ -1708,13 +1726,15 @@ do kk = 1, hamil_H2dim
     temp_h2b_perm (it)   = h2b
 
     aux_step_h2(it,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
-    aux_step_h2(it,2,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i4,i3)
-    aux_step_h2(it,3,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i3,i4)
-    aux_step_h2(it,4,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i4,i3)
-    aux_step_h2(it,1,2) =      aux_step_h2(it,1,1) * h2b
-    aux_step_h2(it,2,2) = -1 * aux_step_h2(it,2,1) * h2b
-    aux_step_h2(it,3,2) = -1 * aux_step_h2(it,3,1) * h2b
-    aux_step_h2(it,4,2) =      aux_step_h2(it,4,1) * h2b
+    if (is_t_eq_1) then
+      aux_step_h2(it,2,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i4,i3)
+      aux_step_h2(it,3,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i3,i4)
+      aux_step_h2(it,4,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i4,i3)
+      aux_step_h2(it,1,2) =      aux_step_h2(it,1,1) * h2b
+      aux_step_h2(it,2,2) = -1 * aux_step_h2(it,2,1) * h2b
+      aux_step_h2(it,3,2) = -1 * aux_step_h2(it,3,1) * h2b
+      aux_step_h2(it,4,2) =      aux_step_h2(it,4,1) * h2b
+    endif
 
     aux = aux + aux_step_h2(it,1,2)
     aux = aux + aux_step_h2(it,2,2)
@@ -1724,13 +1744,15 @@ do kk = 1, hamil_H2dim
     if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
 
     aux_step_h2(it,5,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i1,i2)
-    aux_step_h2(it,6,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1)
-    aux_step_h2(it,7,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i1,i2)
-    aux_step_h2(it,8,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i2,i1)
-    aux_step_h2(it,5,2) =      aux_step_h2(it,5,1) * h2b
-    aux_step_h2(it,6,2) = -1 * aux_step_h2(it,6,1) * h2b
-    aux_step_h2(it,7,2) = -1 * aux_step_h2(it,7,1) * h2b
-    aux_step_h2(it,8,2) =      aux_step_h2(it,8,1) * h2b
+    if (is_t_eq_1) then
+      aux_step_h2(it,6,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1)
+      aux_step_h2(it,7,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i1,i2)
+      aux_step_h2(it,8,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i2,i1)
+      aux_step_h2(it,5,2) =      aux_step_h2(it,5,1) * h2b
+      aux_step_h2(it,6,2) = -1 * aux_step_h2(it,6,1) * h2b
+      aux_step_h2(it,7,2) = -1 * aux_step_h2(it,7,1) * h2b
+      aux_step_h2(it,8,2) =      aux_step_h2(it,8,1) * h2b
+    endif
 
     aux = aux + aux_step_h2(it,5,2)
     aux = aux + aux_step_h2(it,6,2)
@@ -1780,13 +1802,21 @@ do kk = 1, hamil_DD_H2dim
   i4 = hamil_DD_abcd(4+4*(kk-1))
 
   aux_step_dd = zero
+  select case (tt)
+  case (0)
   aux_step_dd(1,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1,i2,i3,i4)
+  case (1)
   aux_step_dd(1,2,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1,i2+sn,i3,i4+sn)
+  case (2)
   aux_step_dd(1,3,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1,i2+sn,i3+sn,i4)
+  case (3)
   aux_step_dd(1,4,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1+sn,i2,i3,i4+sn)
+  case (4)
   aux_step_dd(1,5,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1+sn,i2,i3+sn,i4)
+  case (5)
   aux_step_dd(1,6,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,&
                                                   i1+sn,i2+sn,i3+sn,i4+sn)
+  end select
 
   aux_step_dd(1,1,2) = aux_step_dd(1,1,1) * hamil_DD_H2_byT(1,kk)
   aux_step_dd(1,2,2) = aux_step_dd(1,2,1) * hamil_DD_H2_byT(2,kk)
@@ -1795,20 +1825,20 @@ do kk = 1, hamil_DD_H2dim
   aux_step_dd(1,5,2) = aux_step_dd(1,5,1) * hamil_DD_H2_byT(2,kk)
   aux_step_dd(1,6,2) = aux_step_dd(1,6,1) * hamil_DD_H2_byT(4,kk)
 
-  aux = zero
-  aux = aux + aux_step_dd(1,1,2)
-  aux = aux + aux_step_dd(1,2,2) + aux_step_dd(1,5,2)
-  aux = aux + aux_step_dd(1,3,2) + aux_step_dd(1,4,2)
-  aux = aux + aux_step_dd(1,6,2)
+  aux = aux_step_dd(1,tt+1,2)
+!  aux = zero
+!  aux = aux + aux_step_dd(1,1,2)
+!  aux = aux + aux_step_dd(1,2,2) + aux_step_dd(1,5,2)
+!  aux = aux + aux_step_dd(1,3,2) + aux_step_dd(1,4,2)
+!  aux = aux + aux_step_dd(1,6,2)
 
   ! add the result to the uncoupled quasi particle matrix element
   temp_unc(qq1,qq2,qq3,qq4) = temp_unc(qq1,qq2,qq3,qq4) + aux
 
   if (abs(aux) .GT. 1.0d-6 ) then
   WRITE(333, fmt="(A,i6,4i3,4F12.6)")" kk2=",kk, i1,i2,i3,i4, &
-    hamil_DD_H2_byT(1,kk), hamil_DD_H2_byT(2,kk), hamil_DD_H2_byT(3,kk), &
-    hamil_DD_H2_byT(4,kk)
-
+    hamil_DD_H2_byT(1,kk), hamil_DD_H2_byT(2,kk), &
+    hamil_DD_H2_byT(3,kk), hamil_DD_H2_byT(4,kk)
   WRITE(333, fmt="(A)",advance='no')"  h2dd UV="
   do i = 1,6
     WRITE(333, fmt="(F15.6)",advance='no') aux_step_dd(1,i,1)
