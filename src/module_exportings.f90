@@ -1679,8 +1679,8 @@ do qq1 = 1, VSsp_dim
 
         is_t_eq_1 = abs(HOsp_2mt(QPtoHOsp_index(q1)) + &
                         HOsp_2mt(QPtoHOsp_index(q2))).EQ.2
-        if (HOsp_2mt(QPtoHOsp_index(q1))+HOsp_2mt(QPtoHOsp_index(q2)) .NE. &
-            HOsp_2mt(QPtoHOsp_index(q3))+HOsp_2mt(QPtoHOsp_index(q4)) ) cycle
+!        if (HOsp_2mt(QPtoHOsp_index(q1))+HOsp_2mt(QPtoHOsp_index(q2)) .NE. &
+!            HOsp_2mt(QPtoHOsp_index(q3))+HOsp_2mt(QPtoHOsp_index(q4)) ) cycle
 
         tt2 = 2*HOsp_2mt(QPtoHOsp_index(q3)) + HOsp_2mt(QPtoHOsp_index(q4))
         ! select the isospin
