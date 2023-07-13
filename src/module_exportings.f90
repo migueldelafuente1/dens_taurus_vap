@@ -1447,16 +1447,16 @@ allocate(uncoupled_H22_VS(VSsp_dim,VSsp_dim,VSsp_dim,VSsp_dim))
 uncoupled_H22_VS = zero
 
 !! Apply the transformation on the U and V
-!call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
-!           zero, U_trans, ndim)
-!call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
-!           zero, V_trans, ndim)
-do i1 = 1, ndim
-  do i2 = 1, ndim
-    U_trans(i1,i2) = bogo_U0(i1,i2)
-    V_trans(i1,i2) = bogo_V0(i1,i2)
-  end do
-enddo
+call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
+           zero, U_trans, ndim)
+call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
+           zero, V_trans, ndim)
+!do i1 = 1, ndim
+!  do i2 = 1, ndim
+!    U_trans(i1,i2) = bogo_U0(i1,i2)
+!    V_trans(i1,i2) = bogo_V0(i1,i2)
+!  end do
+!enddo
 
 !call dgemm('n','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_U0, ndim,&
 !           zero, U_trans, ndim)
@@ -1613,11 +1613,12 @@ end subroutine calculate_QuasiParticle_Hamiltonian_H22
 
 subroutine test_check_antisymmetry_H22VS(ndim)
 integer, intent(in) :: ndim
-integer   :: qq1,qq2,qq3,qq4, failures = 0, i
+integer   :: qq1,qq2,qq3,qq4, failures = 0, correct = 0, i
 real(r64) :: TOL = 1.0d-6
 real(r64), dimension(8) :: test
 logical,   dimension(8) :: status_
 
+print "(A)", "   [test] H22 VS is antisymmetric, test passed.:"
 do qq1 = 1, VSsp_dim
   do qq2 = 1, VSsp_dim
     do qq3 = 1, VSsp_dim
@@ -1636,7 +1637,7 @@ do qq1 = 1, VSsp_dim
         status_ = .FALSE.
         do i = 1, 8
           if ((i.EQ.1) .OR. (i.EQ.4) .OR. (i.EQ.5) .OR. (i.EQ.8)) then
-            if (abs(test(i) - test(1)).LT.TOL) then
+            if (abs(test(i) + test(1)).LT.TOL) then
               status_(i) = .TRUE.
               endif
           else
@@ -1660,6 +1661,8 @@ do qq1 = 1, VSsp_dim
               print "(A,4i4,A,3F12.6)", "  * failure AS_H22(",qq1,qq2,qq3,qq4,&
                     ") case 4 abcd=badc ::", test(1), test(6), test(7)
             end if
+          else
+            correct = correct + 1
           end if
         end do
 
@@ -1669,9 +1672,9 @@ do qq1 = 1, VSsp_dim
 end do
 
 if (failures .GT. 0) then
-  print "(A,i6)", "   [FAIL] H22 VS is not antisymmetric, failures=", failures
+  print "(A,i6)", "   t[FAIL] H22 VS is not antisymmetric, failures=", failures
 else
-  print "(A)",    "   [PASS] H22 VS is antisymmetric, test passed."
+  print "(A,i6)", "   t[PASS] H22 VS is antisymmetric, test passed.:", correct
 end if
 
 end subroutine test_check_antisymmetry_H22VS
