@@ -1633,17 +1633,17 @@ do qq1 = 1, VSsp_dim
         test(8) = uncoupled_H22_VS(qq4, qq3, qq2, qq1)
 
         status_ = .FALSE.
-        if (abs(test(1) - test(1)).LT.TOL) status_(1) = .TRUE
-        if (abs(test(2) + test(1)).LT.TOL) status_(2) = .TRUE
-        if (abs(test(3) + test(1)).LT.TOL) status_(3) = .TRUE
-        if (abs(test(4) - test(1)).LT.TOL) status_(4) = .TRUE
-
-        if (abs(test(5) - test(1)).LT.TOL) status_(5) = .TRUE
-        if (abs(test(6) + test(1)).LT.TOL) status_(6) = .TRUE
-        if (abs(test(7) + test(1)).LT.TOL) status_(7) = .TRUE
-        if (abs(test(8) - test(1)).LT.TOL) status_(8) = .TRUE
-
         do i = 1, 8
+          if ((i.EQ.1) .OR. (i.EQ.4) .OR. (i.EQ.5) .OR. (i.EQ.8)) then
+            if (abs(test(i) - test(1)).LT.TOL) then
+              status_(i) = .TRUE
+              endif
+          else
+            if (abs(test(i) + test(1)).LT.TOL) then
+              status_(i) = .TRUE
+              endif
+          end if
+
           if (.NOT. status_(i)) then
             failures = failures + 1
             if     ((i.EQ.1) .OR. (i.EQ.4)) then
