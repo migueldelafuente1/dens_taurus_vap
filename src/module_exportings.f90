@@ -1636,11 +1636,11 @@ do qq1 = 1, VSsp_dim
         do i = 1, 8
           if ((i.EQ.1) .OR. (i.EQ.4) .OR. (i.EQ.5) .OR. (i.EQ.8)) then
             if (abs(test(i) - test(1)).LT.TOL) then
-              status_(i) = .TRUE
+              status_(i) = .TRUE.
               endif
           else
             if (abs(test(i) + test(1)).LT.TOL) then
-              status_(i) = .TRUE
+              status_(i) = .TRUE.
               endif
           end if
 
