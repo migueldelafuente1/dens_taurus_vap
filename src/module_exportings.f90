@@ -1457,17 +1457,17 @@ call dgemm('n','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_U0, ndim,&
 call dgemm('n','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_V0, ndim,&
            zero, V_trans, ndim)
 
-do i1 = 1, ndim !transpose
-  do i2 = 1, ndim
-    temp_val = U_trans(i1,i2)
-    U_trans(i1,i2) = U_trans(i2,i1)
-    U_trans(i2,i1) = temp_val
-
-    temp_val = V_trans(i1,i2)
-    V_trans(i1,i2) = V_trans(i2,i1)
-    V_trans(i2,i1) = temp_val
-  end do
-enddo
+!do i1 = 1, ndim !transpose
+!  do i2 = 1, ndim
+!    temp_val = U_trans(i1,i2)
+!    U_trans(i1,i2) = U_trans(i2,i1)
+!    U_trans(i2,i1) = temp_val
+!
+!    temp_val = V_trans(i1,i2)
+!    V_trans(i1,i2) = V_trans(i2,i1)
+!    V_trans(i2,i1) = temp_val
+!  end do
+!enddo
 
 
 !do i1 = 1, ndim
