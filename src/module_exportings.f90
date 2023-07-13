@@ -1604,8 +1604,76 @@ endif
 enddo
 CLOSE(334)
 
+call test_check_antisymmetry_H22VS(ndim)
 
 end subroutine calculate_QuasiParticle_Hamiltonian_H22
+
+
+
+subroutine test_check_antisymmetry_H22VS(ndim)
+integer, intent(in) :: ndim
+integer   :: qq1,qq2,qq3,qq4, failures = 0, i
+real(r64) :: TOL = 1.0d-6
+real(r64), dimension(8) :: test
+logical,   dimension(8) :: status_
+
+do qq1 = 1, VSsp_dim
+  do qq2 = 1, VSsp_dim
+    do qq3 = 1, VSsp_dim
+      do qq4 = 1, VSsp_dim
+
+        test(1) = uncoupled_H22_VS(qq1, qq2, qq3, qq4)
+        test(2) = uncoupled_H22_VS(qq1, qq2, qq4, qq3)
+        test(3) = uncoupled_H22_VS(qq2, qq1, qq3, qq4)
+        test(4) = uncoupled_H22_VS(qq2, qq1, qq3, qq4)
+
+        test(5) = uncoupled_H22_VS(qq3, qq4, qq1, qq2)
+        test(6) = uncoupled_H22_VS(qq3, qq4, qq2, qq1)
+        test(7) = uncoupled_H22_VS(qq4, qq3, qq1, qq2)
+        test(8) = uncoupled_H22_VS(qq4, qq3, qq2, qq1)
+
+        status_ = .FALSE.
+        if (abs(test(1) - test(1)).LT.TOL) status_(1) = .TRUE
+        if (abs(test(2) + test(1)).LT.TOL) status_(2) = .TRUE
+        if (abs(test(3) + test(1)).LT.TOL) status_(3) = .TRUE
+        if (abs(test(4) - test(1)).LT.TOL) status_(4) = .TRUE
+
+        if (abs(test(5) - test(1)).LT.TOL) status_(5) = .TRUE
+        if (abs(test(6) + test(1)).LT.TOL) status_(6) = .TRUE
+        if (abs(test(7) + test(1)).LT.TOL) status_(7) = .TRUE
+        if (abs(test(8) - test(1)).LT.TOL) status_(8) = .TRUE
+
+        do i = 1, 8
+          if (.NOT. status_(i)) then
+            failures = failures + 1
+            if     ((i.EQ.1) .OR. (i.EQ.4)) then
+              print "(A,4i4,A,2F12.6)", "  * failure AS_H22(",qq1,qq2,qq3,qq4,&
+                    ") case 1 abcd=badc ::", test(1), test(4)
+            elseif ((i.EQ.5) .OR. (i.EQ.8)) then
+              print "(A,4i4,A,3F12.6)", "  * failure AS_H22(",qq1,qq2,qq3,qq4,&
+                    ") case 2 cdab=dcba ::", test(1), test(5), test(8)
+            elseif ((i.EQ.2) .OR. (i.EQ.3)) then
+              print "(A,4i4,A,3F12.6)", "  * failure AS_H22(",qq1,qq2,qq3,qq4,&
+                    ") case 3 abcd=badc ::", test(1), test(2), test(3)
+            elseif ((i.EQ.6) .OR. (i.EQ.7)) then
+              print "(A,4i4,A,3F12.6)", "  * failure AS_H22(",qq1,qq2,qq3,qq4,&
+                    ") case 4 abcd=badc ::", test(1), test(6), test(7)
+            end if
+          end if
+        end do
+
+      end do
+    end do
+  end do
+end do
+
+if (failures .GT. 0) then
+  print "(A,i6)", "   [FAIL] H22 VS is not antisymmetric, failures=", failures
+else
+  print "(A)",    "   [PASS] H22 VS is antisymmetric, test passed."
+end if
+
+end subroutine test_check_antisymmetry_H22VS
 
 
 !------------------------------------------------------------------------------!
