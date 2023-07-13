@@ -1447,10 +1447,16 @@ allocate(uncoupled_H22_VS(VSsp_dim,VSsp_dim,VSsp_dim,VSsp_dim))
 uncoupled_H22_VS = zero
 
 !! Apply the transformation on the U and V
-call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
-           zero, U_trans, ndim)
-call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
-           zero, V_trans, ndim)
+!call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
+!           zero, U_trans, ndim)
+!call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
+!           zero, V_trans, ndim)
+do i1 = 1, ndim
+  do i2 = 1, ndim
+    U_trans(i1,i2) = bogo_U0(i1,i2)
+    V_trans(i1,i2) = bogo_V0(i1,i2)
+  end do
+enddo
 
 !call dgemm('n','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_U0, ndim,&
 !           zero, U_trans, ndim)
