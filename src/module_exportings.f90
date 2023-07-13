@@ -1625,7 +1625,7 @@ do qq1 = 1, VSsp_dim
         test(1) = uncoupled_H22_VS(qq1, qq2, qq3, qq4)
         test(2) = uncoupled_H22_VS(qq1, qq2, qq4, qq3)
         test(3) = uncoupled_H22_VS(qq2, qq1, qq3, qq4)
-        test(4) = uncoupled_H22_VS(qq2, qq1, qq3, qq4)
+        test(4) = uncoupled_H22_VS(qq2, qq1, qq4, qq3)
 
         test(5) = uncoupled_H22_VS(qq3, qq4, qq1, qq2)
         test(6) = uncoupled_H22_VS(qq3, qq4, qq2, qq1)
