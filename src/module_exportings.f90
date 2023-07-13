@@ -1447,9 +1447,9 @@ allocate(uncoupled_H22_VS(VSsp_dim,VSsp_dim,VSsp_dim,VSsp_dim))
 uncoupled_H22_VS = zero
 
 !! Apply the transformation on the U and V
-call dgemm('t','t', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
+call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
            zero, U_trans, ndim)
-call dgemm('t','t', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
+call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
            zero, V_trans, ndim)
 
 !call dgemm('n','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_U0, ndim,&
@@ -1823,7 +1823,6 @@ do kk = 1, hamil_H2dim
     temp_h2b_perm (it)   = h2b
 
     aux_step_h2(it,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
-!    if (is_t_eq_1) then
     aux_step_h2(it,2,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i4,i3)
     aux_step_h2(it,3,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i3,i4)
     aux_step_h2(it,4,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i4,i3)
@@ -1831,7 +1830,6 @@ do kk = 1, hamil_H2dim
     aux_step_h2(it,2,2) = -1 * aux_step_h2(it,2,1) * h2b
     aux_step_h2(it,3,2) = -1 * aux_step_h2(it,3,1) * h2b
     aux_step_h2(it,4,2) =      aux_step_h2(it,4,1) * h2b
-!    endif
 
     aux = aux + aux_step_h2(it,1,2)
     aux = aux + aux_step_h2(it,2,2)
@@ -1841,7 +1839,6 @@ do kk = 1, hamil_H2dim
     if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
 
     aux_step_h2(it,5,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i1,i2)
-!    if (is_t_eq_1) then
     aux_step_h2(it,6,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1)
     aux_step_h2(it,7,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i1,i2)
     aux_step_h2(it,8,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i2,i1)
@@ -1849,7 +1846,6 @@ do kk = 1, hamil_H2dim
     aux_step_h2(it,6,2) = -1 * aux_step_h2(it,6,1) * h2b
     aux_step_h2(it,7,2) = -1 * aux_step_h2(it,7,1) * h2b
     aux_step_h2(it,8,2) =      aux_step_h2(it,8,1) * h2b
-!    endif
 
     aux = aux + aux_step_h2(it,5,2)
     aux = aux + aux_step_h2(it,6,2)
@@ -1899,21 +1895,13 @@ do kk = 1, hamil_DD_H2dim
   i4 = hamil_DD_abcd(4+4*(kk-1))
 
   aux_step_dd = zero
-!  select case (tt)
-!  case (0)
   aux_step_dd(1,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1,i2,i3,i4)
-!  case (1)
   aux_step_dd(1,2,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1,i2+sn,i3,i4+sn)
-!  case (2)
   aux_step_dd(1,3,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1,i2+sn,i3+sn,i4)
-!  case (3)
   aux_step_dd(1,4,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1+sn,i2,i3,i4+sn)
-!  case (4)
   aux_step_dd(1,5,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1+sn,i2,i3+sn,i4)
-!  case (5)
   aux_step_dd(1,6,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,&
                                                   i1+sn,i2+sn,i3+sn,i4+sn)
-!  end select
 
   aux_step_dd(1,1,2) = aux_step_dd(1,1,1) * hamil_DD_H2_byT(1,kk)
   aux_step_dd(1,2,2) = aux_step_dd(1,2,1) * hamil_DD_H2_byT(2,kk)
@@ -1922,7 +1910,6 @@ do kk = 1, hamil_DD_H2dim
   aux_step_dd(1,5,2) = aux_step_dd(1,5,1) * hamil_DD_H2_byT(2,kk)
   aux_step_dd(1,6,2) = aux_step_dd(1,6,1) * hamil_DD_H2_byT(4,kk)
 
-!  aux = aux_step_dd(1,tt+1,2)
   aux = zero
   aux = aux + aux_step_dd(1,1,2)
   aux = aux + aux_step_dd(1,2,2) + aux_step_dd(1,5,2)
