@@ -957,7 +957,7 @@ call calculate_H11_real(ndim)
       OPEN(333,file="H11_init.txt")
       do i=1, ndim
         do j=1, ndim
-          WRITE(333,fmt="(16.6F)",advance='no') field_H11(i,j)
+          WRITE(333,fmt="(F16.6)",advance='no') field_H11(i,j)
         enddo
         WRITE(333, *) ""
       enddo
@@ -1045,7 +1045,7 @@ call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
   OPEN(333,file="H11_eigenv1.txt")
       do i=1, ndim
         do j=1, ndim
-          WRITE(333,fmt="(16.6F)",advance='no') field_H11(i,j)
+          WRITE(333,fmt="(F16.6)",advance='no') field_H11(i,j)
         enddo
         WRITE(333, *) ""
       enddo
