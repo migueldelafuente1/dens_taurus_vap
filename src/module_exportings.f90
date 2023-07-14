@@ -946,93 +946,110 @@ eigen_H11  = zero
 transf_H11 = zero
 
 !!! Computes the fields
-call calculate_fields_diag(zone*dens_rhoRR,zone*dens_kappaRR,gammaRR,hspRR, &
+call calculate_fields_diag(zone*dens_rhoRR, zone*dens_kappaRR, gammaRR,hspRR, &
                            deltaRR,ndim=ndim)
 field_hspRR   = real(hspRR)
 field_deltaRR = real(deltaRR)
 
-!cmpi if ( paral_myrank /= 0 ) return
-
 call calculate_H11_real(ndim)
+
+
+      OPEN(333,file="H11_init.txt")
+      do i=1, ndim
+        do j=1, ndim
+          WRITE(333,fmt="(16.6F)",advance='no') field_H11(i,j)
+        enddo
+        WRITE(333, *) ""
+      enddo
+      CLOSE(333)
+
 
 !!! hsp in canonical basis
 call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
                                ovac0,nocc0,nemp0,ndim)
 D0 = real(bogo_zD0)
 
-call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_rhoRR,ndim,zero,A1,ndim)
-call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,rhoc,ndim)
-
-call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,field_H11,ndim,zero,A1,ndim)
-call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
+!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_rhoRR,ndim,zero,A1,ndim)
+!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,rhoc,ndim)
+!
+!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,field_H11,ndim,zero,A1,ndim)
+!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
 
 !!! Further reduces h in case of fully empty/occupides states
-if ( nemp0 > 0 ) then
-  allocate (hspr(nemp0,nemp0), eigenr(nemp0),workr(3*nemp0-1))
-  hspr(1:nemp0,1:nemp0) = hspc(1:nemp0,1:nemp0)
-  call dsyev('v','u',nemp0,hspr,nemp0,eigenr,workr,3*nemp0-1,info_H11)
-  A1 = zero
-  A2 = D0
-  do i = 1, ndim
-    A1(i,i) = one
-  enddo
-  A1(1:nemp0,1:nemp0) = hspr(1:nemp0,1:nemp0)
-  call dgemm('n','n',ndim,ndim,ndim,one,A2,ndim,A1,ndim,zero,D0,ndim)
-  deallocate(hspr, eigenr, workr)
-endif
-
-if ( nocc0 > 0 ) then
-  allocate (hspr(nocc0,nocc0), eigenr(nocc0),workr(3*nocc0-1))
-  hspr(1:nocc0,1:nocc0) = hspc(ndim-nocc0+1:ndim,ndim-nocc0+1:ndim)
-  call dsyev('v','u',nocc0,hspr,nocc0,eigenr,workr,3*nocc0-1,info_H11)
-  A1 = zero
-  A2 = D0
-  do i = 1, ndim
-    A1(i,i) = one
-  enddo
-  A1(ndim-nocc0+1:ndim,ndim-nocc0+1:ndim) = hspr(1:nocc0,1:nocc0)
-  call dgemm('n','n',ndim,ndim,ndim,one,A2,ndim,A1,ndim,zero,D0,ndim)
-  deallocate(hspr, eigenr, workr)
-endif
-
-call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,field_H11,ndim,zero,A1,ndim)
-call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
+!if ( nemp0 > 0 ) then
+!  allocate (hspr(nemp0,nemp0), eigenr(nemp0),workr(3*nemp0-1))
+!  hspr(1:nemp0,1:nemp0) = hspc(1:nemp0,1:nemp0)
+!  call dsyev('v','u',nemp0,hspr,nemp0,eigenr,workr,3*nemp0-1,info_H11)
+!  A1 = zero
+!  A2 = D0
+!  do i = 1, ndim
+!    A1(i,i) = one
+!  enddo
+!  A1(1:nemp0,1:nemp0) = hspr(1:nemp0,1:nemp0)
+!  call dgemm('n','n',ndim,ndim,ndim,one,A2,ndim,A1,ndim,zero,D0,ndim)
+!  deallocate(hspr, eigenr, workr)
+!endif
+!
+!if ( nocc0 > 0 ) then
+!  allocate (hspr(nocc0,nocc0), eigenr(nocc0),workr(3*nocc0-1))
+!  hspr(1:nocc0,1:nocc0) = hspc(ndim-nocc0+1:ndim,ndim-nocc0+1:ndim)
+!  call dsyev('v','u',nocc0,hspr,nocc0,eigenr,workr,3*nocc0-1,info_H11)
+!  A1 = zero
+!  A2 = D0
+!  do i = 1, ndim
+!    A1(i,i) = one
+!  enddo
+!  A1(ndim-nocc0+1:ndim,ndim-nocc0+1:ndim) = hspr(1:nocc0,1:nocc0)
+!  call dgemm('n','n',ndim,ndim,ndim,one,A2,ndim,A1,ndim,zero,D0,ndim)
+!  deallocate(hspr, eigenr, workr)
+!endif
+!
+!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,field_H11,ndim,zero,A1,ndim)
+!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
 
 !!! Ordering of energies
-l = 0
-eigenh_order = 0
-eigenh_tmp = 999
-
-do i = 1, ndim
-  if ( abs(rhoc(i,i)) > 1.d-7 ) then
-    l = l + 1
-    eigenh_tmp(i) = hspc(i,i)
-  endif
-enddo
-
-do i = 1, l
-  tabmin = minloc(eigenh_tmp)
-  eigenh_order(i) = tabmin(1)
-  eigenh_tmp(tabmin(1)) = 1000
-enddo
-
-eigenh_tmp = 999
-
-do i = 1, ndim
-  if ( abs(rhoc(i,i)) <= 1.d-7 ) then
-    eigenh_tmp(i) = hspc(i,i)
-  endif
-enddo
-
-do i = l+1, ndim
-  tabmin = minloc(eigenh_tmp)
-  eigenh_order(i) = tabmin(1)
-  eigenh_tmp(tabmin(1)) = 1000
-enddo
+!l = 0
+!eigenh_order = 0
+!eigenh_tmp = 999
+!
+!do i = 1, ndim
+!  if ( abs(rhoc(i,i)) > 1.d-7 ) then
+!    l = l + 1
+!    eigenh_tmp(i) = hspc(i,i)
+!  endif
+!enddo
+!
+!do i = 1, l
+!  tabmin = minloc(eigenh_tmp)
+!  eigenh_order(i) = tabmin(1)
+!  eigenh_tmp(tabmin(1)) = 1000
+!enddo
+!
+!eigenh_tmp = 999
+!
+!do i = 1, ndim
+!  if ( abs(rhoc(i,i)) <= 1.d-7 ) then
+!    eigenh_tmp(i) = hspc(i,i)
+!  endif
+!enddo
+!
+!do i = l+1, ndim
+!  tabmin = minloc(eigenh_tmp)
+!  eigenh_order(i) = tabmin(1)
+!  eigenh_tmp(tabmin(1)) = 1000
+!enddo
 
 !!! Diagonalizes hsp
 call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
 
+  OPEN(333,file="H11_eigenv1.txt")
+      do i=1, ndim
+        do j=1, ndim
+          WRITE(333,fmt="(16.6F)",advance='no') field_H11(i,j)
+        enddo
+        WRITE(333, *) ""
+      enddo
+      CLOSE(333)
 ! In the case of axial symmetry, further diagonalizes Jz in this basis
 !if (is_good_K) then  *****************************************************
 
@@ -1042,7 +1059,7 @@ evdeg = 0
 evdeg(1) = 1
 
 do i = 2, ndim
-  if ( abs(eigen_H11(i-1) - eigen_H11(i)) < 1.0d-6 ) then
+  if ( abs(eigen_H11(i-1) - eigen_H11(i)) < 1.0d-5 ) then
     evdeg(evnum) = evdeg(evnum) + 1
   else
     evnum = evnum + 1
@@ -1637,7 +1654,8 @@ real(r64) :: TOL = 1.0d-6
 real(r64), dimension(8) :: test
 logical,   dimension(8) :: status_
 
-print "(A)", "   [test] H22 VS is antisymmetric, test passed.:"
+print *, ""
+print "(A)", "   t[    ] H22 VS is antisymmetric, test passed.:"
 do qq1 = 1, VSsp_dim
   do qq2 = 1, VSsp_dim
     do qq3 = 1, VSsp_dim
@@ -1695,6 +1713,7 @@ if (failures .GT. 0) then
 else
   print "(A,i6)", "   t[PASS] H22 VS is antisymmetric, test passed.:", correct
 end if
+print *, ""
 
 end subroutine test_check_antisymmetry_H22VS
 
@@ -1856,7 +1875,7 @@ do kk = 1, hamil_H2dim
   !! add the result to the uncoupled quasi particle matrix element
   temp_unc(qq1,qq2,qq3,qq4) = temp_unc(qq1,qq2,qq3,qq4) + aux
 
-  if (abs(aux) .GT. 1.0d-6 ) then
+  if (abs(aux) .GT. 1.0d-8 ) then
   WRITE(333, fmt="(A,i6,4i3,F12.6,A,4i3,F12.6)")" kk1=",kk,temp_indx_perm(1,1),&
     temp_indx_perm(1,2),temp_indx_perm(1,3),temp_indx_perm(1,4), &
     temp_h2b_perm(1),"=TR=", temp_indx_perm(2,1), temp_indx_perm(2,2), &
