@@ -1091,7 +1091,7 @@ do i = 1, evnum
 !  A1(1+j:j+k,1+j:j+k) = hspr(1:k,1:k)
   do l = 1,k
     do m = 1,k
-      A1(l,m) = hspr(j+l,j+m)
+      A1(j+l,j+m) = hspr(l,m)
     end do
   end do
   j = j + k
