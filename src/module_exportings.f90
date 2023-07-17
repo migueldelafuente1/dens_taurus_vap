@@ -1080,20 +1080,20 @@ A1 = zero
 do i = 1, evnum
   k = evdeg(i)
   allocate( hspr(k,k), eigenr(k), workr(3*k-1) )
-  hspr(:,:) = A2(1+j:j+k,1+j:j+k)
-!  do l = j+1, k
-!    do m = j+1, k
-!      hspr(l,m) = A2(l,m)
-!    end do
-!  end do
+!  hspr(:,:) = A2(1+j:j+k,1+j:j+k)
+  do l = 1,k
+    do m = 1,k
+      hspr(l,m) = A2(j+l,j+m)
+    end do
+  end do
 
   call dsyev('v','u',k,hspr,k,eigenr,workr,3*k-1,info_H11)
-  A1(1+j:j+k,1+j:j+k) = hspr(1:k,1:k)
-!  do l = j+1, k
-!    do m = j+1, k
-!      A1(l,m) = hspr(l,m)
-!    end do
-!  end do
+!  A1(1+j:j+k,1+j:j+k) = hspr(1:k,1:k)
+  do l = 1,k
+    do m = 1,k
+      A1(l,m) = hspr(j+l,j+m)
+    end do
+  end do
   j = j + k
   deallocate( hspr, eigenr, workr )
 enddo
