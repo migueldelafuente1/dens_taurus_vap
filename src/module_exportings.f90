@@ -931,7 +931,7 @@ integer, dimension(1) :: tabmin
 integer, dimension(ndim) :: eigenh_order, evdeg
 real(r64), dimension(ndim) :: eigenh_tmp
 real(r64), dimension(3*ndim-1) :: work
-real(r64), dimension(ndim,ndim) :: D0, rhoc, hspc, A1, A2
+real(r64), dimension(ndim,ndim) :: D0, rhoc, hspc, A1, A2, Jz_aux
 
 real(r64), dimension(:,:), allocatable :: hspr
 real(r64), dimension(:), allocatable :: workr, eigenr
@@ -954,7 +954,7 @@ field_deltaRR = real(deltaRR)
 call calculate_H11_real(ndim)
 
 
-      OPEN(333,file="H11_init.txt")
+      OPEN(333,file="H11_init.gut")
       do i=1, ndim
         do j=1, ndim
           WRITE(333,fmt="(F16.6)",advance='no') field_H11(i,j)
@@ -1042,7 +1042,7 @@ D0 = real(bogo_zD0)
 !!! Diagonalizes hsp
 call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
 
-  OPEN(333,file="H11_eigenv1.txt")
+  OPEN(333,file="H11_eigenv1.gut")
       do i=1, ndim
         do j=1, ndim
           WRITE(333,fmt="(F16.6)",advance='no') field_H11(i,j)
@@ -1068,9 +1068,20 @@ do i = 2, ndim
 enddo
 
 ! Jz in the matrix that diagonalizes h
+Jz_aux = zero
+k=0
+OPEN(333, file="jz_operator.gut")
+do i=1, ndim
+  do j=1, ndim
+    k = k + 1
+    Jz_aux(i,j) = angumome_Jz(k)
+  enddo
+enddo
+
 D0 = field_H11
-call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,angumome_Jz(1:ndim**2),ndim, &
-           zero,A1,ndim)
+call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,Jz_aux,ndim, zero,A1,ndim)
+!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,angumome_Jz(1:ndim**2),ndim, &
+!           zero,A1,ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,A2,ndim)
 
 ! block diagonalization
