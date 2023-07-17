@@ -1075,8 +1075,11 @@ do i=1, ndim
   do j=1, ndim
     k = k + 1
     Jz_aux(i,j) = angumome_Jz(k)
+    WRITE(333,fmt="(F16.6)",advance='no') angumome_Jz(k)
   enddo
+  WRITE(333,fmt="(A)") ""
 enddo
+CLOSE(333)
 
 D0 = field_H11
 call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,Jz_aux,ndim, zero,A1,ndim)
