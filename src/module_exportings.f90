@@ -1901,7 +1901,7 @@ real(r64), dimension(:,:,:,:), allocatable :: temp_unc
 real(r64), dimension(2,8,2) :: aux_step_h2, aux_step_dd ! [it][abcd, abdc, ...][h2b,bogoOps, add]
 integer,   dimension(2,4)   :: temp_indx_perm
 real(r64), dimension(2)     :: temp_h2b_perm
-logical   :: is_t_eq_1
+logical   :: is_t_eq_1, TEST_FULL_HAMILTONIAN = .TRUE.
 integer   :: tt1, tt2, tt
 
 sn = ndim / 2
