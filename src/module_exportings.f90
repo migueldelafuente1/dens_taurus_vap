@@ -967,9 +967,9 @@ call calculate_H11_real(ndim)
 
 
 !!! hsp in canonical basis
-call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
-                               ovac0,nocc0,nemp0,ndim)
-D0 = real(bogo_zD0)
+!call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
+!                               ovac0,nocc0,nemp0,ndim)
+!D0 = real(bogo_zD0)
 
 !call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_rhoRR,ndim,zero,A1,ndim)
 !call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,rhoc,ndim)
@@ -1044,7 +1044,7 @@ D0 = real(bogo_zD0)
 !!! Diagonalizes hsp
 call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
 
-        OPEN(333,file="H11_eigenv_transf.gut")
+        OPEN(333,file="H11_diag_transf.gut")
         do i=1, ndim
           do j=1, ndim
             WRITE(333,fmt="(F16.6)",advance='no') field_H11(i,j)
@@ -1103,24 +1103,23 @@ call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,field_H11,ndim,zero,A2,ndim)
 ! block diagonalization
 j = 0
 A1 = zero
-
 do i = 1, evnum
   k = evdeg(i)
   allocate( hspr(k,k), eigenr(k), workr(3*k-1) )
-!  hspr(:,:) = A2(1+j:j+k,1+j:j+k)
-  do l = 1,k
-    do m = 1,k
-      hspr(l,m) = A2(j+l,j+m)
-    end do
-  end do
+  hspr(:,:) = A2(1+j:j+k,1+j:j+k)
+!  do l = 1,k
+!    do m = 1,k
+!      hspr(l,m) = A2(j+l,j+m)
+!    end do
+!  end do
 
   call dsyev('v','u',k,hspr,k,eigenr,workr,3*k-1,info_H11)
-!  A1(1+j:j+k,1+j:j+k) = hspr(1:k,1:k)
-  do l = 1,k
-    do m = 1,k
-      A1(j+l,j+m) = hspr(l,m)
-    end do
-  end do
+  A1(1+j:j+k,1+j:j+k) = hspr(1:k,1:k)
+!  do l = 1,k
+!    do m = 1,k
+!      A1(j+l,j+m) = hspr(l,m)
+!    end do
+!  end do
   j = j + k
   deallocate( hspr, eigenr, workr )
 enddo
@@ -1134,7 +1133,8 @@ enddo
         enddo
         CLOSE(333)
 
-call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,zero,field_H11,ndim)
+call dgemm('n','n',ndim,ndim,ndim,one,field_H11,ndim,A1,ndim,&
+           zero,field_H11,ndim)
 !endif  ***********************************************************
 
 ! copy the transformation matrix
