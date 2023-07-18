@@ -1623,9 +1623,9 @@ close(334)
 
 
 if (TEST_FULL_HAMILTONIAN) call test_complete_hamiltonians(ndim)
-!call test_register_QPhamiltonianH22(ndim)
-!call test_check_antisymmetry_H22VS(ndim)
-!RETURN
+call test_register_QPhamiltonianH22(ndim)
+call test_check_antisymmetry_H22VS(ndim)
+RETURN
 
 
 !! Transformation for the QP valence space
