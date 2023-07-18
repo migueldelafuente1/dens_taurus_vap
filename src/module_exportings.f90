@@ -49,6 +49,8 @@ real(r64), dimension(:), allocatable, private  :: qpsp_zz, qpsp_nn, qpsp_n, &
 
 real(r64), dimension(:,:,:,:), allocatable     :: uncoupled_H22_VS
 real(r64), dimension(:,:,:,:,:,:), allocatable :: reduced_H22_VS
+
+real(r64), dimension(:,:,:,:), allocatable     :: test_hamil_bb, test_hamil_dd
 !! Methods
 
 CONTAINS
@@ -1042,7 +1044,7 @@ D0 = real(bogo_zD0)
 !!! Diagonalizes hsp
 call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
 
-  OPEN(333,file="H11_eigenv1.gut")
+    OPEN(333,file="H11_eigenv1.gut")
       do i=1, ndim
         do j=1, ndim
           WRITE(333,fmt="(F16.6)",advance='no') field_H11(i,j)
@@ -1469,6 +1471,70 @@ print *, ""
 end subroutine sort_quasiparticle_basis
 
 
+
+subroutine test_complete_hamiltonians(ndim)
+integer, intent(in) :: ndim
+integer :: kk, tt, i1,i2,i3,i4, perm, sn
+real(r64) :: h2b
+
+sn = ndim / 2
+allocate( test_hamil_bb(ndim, ndim, ndim, ndim), &
+          test_hamil_dd(ndim, ndim, ndim, ndim) )
+
+test_hamil_bb = zero
+test_hamil_dd = zero
+
+do kk = 1, hamil_H2dim
+  i1 = hamil_abcd(1+4*(kk-1))
+  i2 = hamil_abcd(2+4*(kk-1))
+  i3 = hamil_abcd(3+4*(kk-1))
+  i4 = hamil_abcd(4+4*(kk-1))
+  h2b  = hamil_H2(kk)          !! all are > TOL.
+  perm = hamil_trperm(kk)
+
+  !!! Loop on time reversal
+  do it = 1, 2
+    if ( it == 2 ) then
+      if ( HOsp_2mj(i1) + HOsp_2mj(i2) == 0 ) cycle
+      call find_timerev(perm,i1,i2,i3,i4)
+      h2b = sign(one,perm*one) * h2b
+    endif
+
+    test_hamil_bb(i1,i2,i3,i4) =          h2b
+    test_hamil_bb(i1,i2,i4,i3) = -1.0d0 * h2b
+    test_hamil_bb(i2,i1,i3,i4) = -1.0d0 * h2b
+    test_hamil_bb(i2,i1,i4,i3) =          h2b
+
+    if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
+
+    test_hamil_bb(i3,i4,i1,i2) =          h2b
+    test_hamil_bb(i3,i4,i2,i1) = -1.0d0 * h2b
+    test_hamil_bb(i4,i3,i1,i2) = -1.0d0 * h2b
+    test_hamil_bb(i4,i3,i2,i1) =          h2b
+
+  enddo
+enddo
+
+do kk = 1, hamil_DD_H2dim
+
+  i1 = hamil_DD_abcd(1+4*(kk-1)) !! NOTE: Hamil_DD_abcd is only up to ndim_/2
+  i2 = hamil_DD_abcd(2+4*(kk-1))
+  i3 = hamil_DD_abcd(3+4*(kk-1))
+  i4 = hamil_DD_abcd(4+4*(kk-1))
+
+  test_hamil_dd(i1,i2,i3,i4)       = hamil_DD_H2_byT(1,kk)
+  test_hamil_dd(i1,i2+sn,i3,i4+sn) = hamil_DD_H2_byT(2,kk)
+  test_hamil_dd(i1+sn,i2,i3+sn,i4) = hamil_DD_H2_byT(2,kk)
+  test_hamil_dd(i1,i2+sn,i3+sn,i4) = hamil_DD_H2_byT(3,kk)
+  test_hamil_dd(i1+sn,i2,i3,i4+sn) = hamil_DD_H2_byT(3,kk)
+  test_hamil_dd(i1+sn,i2+sn,i3+sn,i4+sn) = hamil_DD_H2_byT(4,kk)
+
+  ! add the result to the uncoupled quasi particle matrix element
+end do
+
+end subroutine test_complete_hamiltonians
+
+
 !------------------------------------------------------------------------------!
 !  calculate_QuasiParticle_Hamiltonian_H22
 !
@@ -1478,6 +1544,7 @@ subroutine calculate_QuasiParticle_Hamiltonian_H22(bogo_U0, bogo_V0, ndim)
 integer, intent(in) :: ndim
 real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0,bogo_V0
 integer   :: i, i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it, perm
+integer :: TEST_FULL_HAMILTONIAN = .TRUE.
 real(r64) :: aux, h2b, temp_val
 
 sn = ndim / 2
@@ -1556,9 +1623,12 @@ do i1 = 1, ndim
 enddo
 close(334)
 
-call test_register_QPhamiltonianH22(ndim)
-call test_check_antisymmetry_H22VS(ndim)
-RETURN
+
+if (TEST_FULL_HAMILTONIAN) call test_complete_hamiltonians
+!call test_register_QPhamiltonianH22(ndim)
+!call test_check_antisymmetry_H22VS(ndim)
+!RETURN
+
 
 !! Transformation for the QP valence space
 OPEN(334, file='uncoupled_hamil_qp.txt')
@@ -1585,6 +1655,50 @@ do qq1 = 1, VSsp_dim
 !! Loop for the HO basis, getting the
 !!---------------------------------------------------------------------------
 !! Loop for the Hamiltonian, using tr and the permutations on the m.e.
+
+!!! ********************************************************************* !!!
+!!! ********************************************************************* !!!
+
+if (TEST_FULL_HAMILTONIAN) then
+do i1 = 1, ndim
+  do i2 = 1, ndim
+    do i3 = 1, ndim
+      do i4 = 1, ndim
+
+aux = test_hamil_bb(i1,i2, i3,i4)
+uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
+
+      end do
+    end do
+  end do
+end do
+temp_val = zero
+if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
+  temp_val = uncoupled_H22_VS(qq1,qq2,qq3,qq4)
+endif
+do i1 = 1, ndim
+  do i2 = 1, ndim
+    do i3 = 1, ndim
+      do i4 = 1, ndim
+
+aux = test_hamil_dd(i1,i2, i3,i4)
+uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
+
+      end do
+    end do
+  end do
+end do
+if ((abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) .OR. &
+    (abs(temp_val) .GE. 1.0d-6)) then
+  WRITE(334,fmt='(4i5,3F18.9)') qq1, qq2, qq3, qq4, &
+                                uncoupled_H22_VS(qq1,qq2,qq3,qq4), temp_val, &
+                                uncoupled_H22_VS(qq1,qq2,qq3,qq4) - temp_val
+endif
+
+cycle
+endif
+!!! ********************************************************************* !!!
+!!! ********************************************************************* !!!
 
 do kk = 1, hamil_H2dim
   i1 = hamil_abcd(1+4*(kk-1))
@@ -1840,6 +1954,50 @@ WRITE(333, fmt="(A,4i5,A,4i4,A,4i6)") &
       "VSsp_index=", qq1, qq2, qq3, qq4,"=qp=", q1, q2, q3, q4, &
       "= sh=", VSsh_list(VSsp_VSsh(qq1)), VSsh_list(VSsp_VSsh(qq2)), &
                VSsh_list(VSsp_VSsh(qq3)), VSsh_list(VSsp_VSsh(qq4))
+
+!!! ********************************************************************* !!!
+!!! ********************************************************************* !!!
+
+if (TEST_FULL_HAMILTONIAN) then
+do i1 = 1, ndim
+  do i2 = 1, ndim
+    do i3 = 1, ndim
+      do i4 = 1, ndim
+
+aux = test_hamil_bb(i1,i2, i3,i4)
+uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
+
+      end do
+    end do
+  end do
+end do
+temp_val = zero
+if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
+  temp_val = uncoupled_H22_VS(qq1,qq2,qq3,qq4)
+endif
+do i1 = 1, ndim
+  do i2 = 1, ndim
+    do i3 = 1, ndim
+      do i4 = 1, ndim
+
+aux = test_hamil_dd(i1,i2, i3,i4)
+uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
+
+      end do
+    end do
+  end do
+end do
+if ((abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) .OR. &
+    (abs(temp_val) .GE. 1.0d-6)) then
+  WRITE(334,fmt='(4i5,3F18.9)') qq1, qq2, qq3, qq4, &
+                                uncoupled_H22_VS(qq1,qq2,qq3,qq4), temp_val, &
+                                uncoupled_H22_VS(qq1,qq2,qq3,qq4) - temp_val
+endif
+
+cycle
+endif
+!!! ********************************************************************* !!!
+!!! ********************************************************************* !!!
 
 do kk = 1, hamil_H2dim
   i1 = hamil_abcd(1+4*(kk-1))
