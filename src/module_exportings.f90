@@ -1474,7 +1474,7 @@ end subroutine sort_quasiparticle_basis
 
 subroutine test_complete_hamiltonians(ndim)
 integer, intent(in) :: ndim
-integer :: kk, tt, i1,i2,i3,i4, perm, sn
+integer :: kk, tt, i1,i2,i3,i4, perm, sn, it
 real(r64) :: h2b
 
 sn = ndim / 2
@@ -1544,7 +1544,7 @@ subroutine calculate_QuasiParticle_Hamiltonian_H22(bogo_U0, bogo_V0, ndim)
 integer, intent(in) :: ndim
 real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0,bogo_V0
 integer   :: i, i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it, perm
-integer :: TEST_FULL_HAMILTONIAN = .TRUE.
+logical :: TEST_FULL_HAMILTONIAN = .TRUE.
 real(r64) :: aux, h2b, temp_val
 
 sn = ndim / 2
