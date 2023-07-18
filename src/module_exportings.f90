@@ -1478,9 +1478,7 @@ integer :: kk, tt, i1,i2,i3,i4, perm, sn, it
 real(r64) :: h2b
 
 sn = ndim / 2
-allocate( test_hamil_bb(ndim, ndim, ndim, ndim), &
-          test_hamil_dd(ndim, ndim, ndim, ndim) )
-
+allocate(test_hamil_bb(ndim,ndim,ndim,ndim), test_hamil_dd(ndim,ndim,ndim,ndim))
 test_hamil_bb = zero
 test_hamil_dd = zero
 
@@ -1959,43 +1957,103 @@ WRITE(333, fmt="(A,4i5,A,4i4,A,4i6)") &
 !!! ********************************************************************* !!!
 
 if (TEST_FULL_HAMILTONIAN) then
+it = 1
 do i1 = 1, ndim
   do i2 = 1, ndim
     do i3 = 1, ndim
       do i4 = 1, ndim
 
-aux = test_hamil_bb(i1,i2, i3,i4)
-uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
+  temp_indx_perm = 0
+  temp_h2b_perm  = zero
+  aux_step_h2    = zero
+  aux = zero
+
+temp_indx_perm(it,1) = i1
+temp_indx_perm(it,2) = i2
+temp_indx_perm(it,3) = i3
+temp_indx_perm(it,4) = i4
+temp_h2b_perm (it)   = test_hamil_bb(i1,i2, i3,i4)
+
+aux_step_h2(it,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
+aux_step_h2(it,1,2) = aux_step_h2(it,1,1) * h2b
+
+aux = aux + aux_step_h2(it,1,2)
+
+  !! add the result to the uncoupled quasi particle matrix element
+  temp_unc(qq1,qq2,qq3,qq4) = temp_unc(qq1,qq2,qq3,qq4) + aux
+
+if (abs(aux) .GT. 1.0d-8 ) then
+  WRITE(333, fmt="(A,i6,4i3,F12.6,A,4i3,F12.6)")" kk1=",kk,temp_indx_perm(1,1),&
+    temp_indx_perm(1,2),temp_indx_perm(1,3),temp_indx_perm(1,4), &
+    temp_h2b_perm(1),"=TR=", temp_indx_perm(2,1), temp_indx_perm(2,2), &
+    temp_indx_perm(2,3),temp_indx_perm(2,4), temp_h2b_perm(2)
+  do it = 1,2
+    WRITE(333, fmt="(A,i2,A)",advance='no')"  h2 tr=", it,"=perms="
+    do i = 1,4
+      WRITE(333, fmt="(F15.6)",advance='no') aux_step_h2(it,i,1)
+    end do
+    if ((temp_indx_perm(it,1).NE.temp_indx_perm(it,3)) .OR. &
+        (temp_indx_perm(it,2).NE.temp_indx_perm(it,4)) ) then
+      do i = 5,8
+        WRITE(333, fmt="(F15.6)",advance='no') aux_step_h2(it,i,1)
+      end do
+    end if
+
+    WRITE(333, *) ""
+  end do
+  endif
 
       end do
     end do
   end do
 end do
 temp_val = zero
-if (abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
-  temp_val = uncoupled_H22_VS(qq1,qq2,qq3,qq4)
+if (abs(temp_unc(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
+  temp_val = temp_unc(qq1,qq2,qq3,qq4)
 endif
+
+
 do i1 = 1, ndim
   do i2 = 1, ndim
     do i3 = 1, ndim
       do i4 = 1, ndim
 
-aux = test_hamil_dd(i1,i2, i3,i4)
-uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
+  aux_step_dd = zero
+  aux_step_dd(1,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1,i2,i3,i4)
+
+  aux_step_dd(1,1,2) = aux_step_dd(1,1,1) * test_hamil_dd(i1,i2, i3,i4)
+
+  aux = zero
+  aux = aux + aux_step_dd(1,1,2)
+
+  ! add the result to the uncoupled quasi particle matrix element
+  temp_unc(qq1,qq2,qq3,qq4) = temp_unc(qq1,qq2,qq3,qq4) + aux
+
+  if (abs(aux) .GT. 1.0d-6 ) then
+  WRITE(333, fmt="(A,i6,4i3,4F12.6)")" kk2=",kk, i1,i2,i3,i4, &
+    hamil_DD_H2_byT(1,kk), hamil_DD_H2_byT(2,kk), &
+    hamil_DD_H2_byT(3,kk), hamil_DD_H2_byT(4,kk)
+  WRITE(333, fmt="(A)",advance='no')"  h2dd UV="
+  do i = 1,6
+    WRITE(333, fmt="(F15.6)",advance='no') aux_step_dd(1,i,1)
+  end do
+  WRITE(333, *) ""
+  endif
 
       end do
     end do
   end do
 end do
-if ((abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) .OR. &
+
+if ((abs(temp_unc(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) .OR. &
     (abs(temp_val) .GE. 1.0d-6)) then
   WRITE(334,fmt='(4i5,3F18.9)') qq1, qq2, qq3, qq4, &
-                                uncoupled_H22_VS(qq1,qq2,qq3,qq4), temp_val, &
-                                uncoupled_H22_VS(qq1,qq2,qq3,qq4) - temp_val
+                                temp_unc(qq1,qq2,qq3,qq4), temp_val, &
+                                temp_unc(qq1,qq2,qq3,qq4) - temp_val
 endif
 
-cycle
-endif
+
+else
 !!! ********************************************************************* !!!
 !!! ********************************************************************* !!!
 
@@ -2140,6 +2198,8 @@ if ((abs(temp_unc(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) .OR. &
                                 temp_unc(qq1,qq2,qq3,qq4), temp_val, &
                                 temp_unc(qq1,qq2,qq3,qq4) - temp_val
 endif
+
+endif !! IF of the Explicit sum
 !!---------------------------------------------------------------------------
 
       enddo
