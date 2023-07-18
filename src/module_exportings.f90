@@ -80,8 +80,10 @@ if (export_density) then
 endif
 
 !! deallocate HF arrays from D1S to increase memory
-deallocate(sphharmDUAL_memo, AngFunctDUAL_HF, AngFunctDUAL_P1, &
-           AngFunctDUAL_P2, BulkHF, BulkP1, BulkP2)
+if (.NOT. evalQuasiParticleVSpace) then
+  deallocate(sphharmDUAL_memo, AngFunctDUAL_HF, AngFunctDUAL_P1, &
+             AngFunctDUAL_P2, BulkHF, BulkP1, BulkP2)
+endif
 
 if (exportValSpace) then !-----------------------------------------------------
 
@@ -2481,6 +2483,9 @@ real(r64), dimension(ndim,ndim) :: hspRR_eigenvect, U_trans, V_trans
 print "(A)", "  1[  ] print_quasipartile_DD_matrix_elements"
 
 call diagonalize_H11_with_jz(dens_rhoRR, dens_kappaRR, ndim)
+
+deallocate(sphharmDUAL_memo, AngFunctDUAL_HF, AngFunctDUAL_P1, &
+           AngFunctDUAL_P2, BulkHF, BulkP1, BulkP2)
 
 print "(A)", "  1[OK] H11 is in diagonal with Jz."
 print "(A)", "  2[  ] Sorting the QP states for the Valence sp. identification"
