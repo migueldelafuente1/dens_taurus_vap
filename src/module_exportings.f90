@@ -956,20 +956,20 @@ field_deltaRR = real(deltaRR)
 call calculate_H11_real(ndim)
 
 
-      OPEN(333,file="H11_init.gut")
-      do i=1, ndim
-        do j=1, ndim
-          WRITE(333,fmt="(F16.6)",advance='no') field_H11(i,j)
-        enddo
-        WRITE(333, *) ""
-      enddo
-      CLOSE(333)
+          OPEN(333,file="H11_init.gut")
+          do i=1, ndim
+            do j=1, ndim
+              WRITE(333,fmt="(F16.6)",advance='no') field_H11(i,j)
+            enddo
+            WRITE(333, *) ""
+          enddo
+          CLOSE(333)
 
 
 !!! hsp in canonical basis
-!call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
-!                               ovac0,nocc0,nemp0,ndim)
-!D0 = real(bogo_zD0)
+call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
+                               ovac0,nocc0,nemp0,ndim)
+D0 = real(bogo_zD0)
 
 !call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_rhoRR,ndim,zero,A1,ndim)
 !call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,rhoc,ndim)
@@ -1008,7 +1008,7 @@ call calculate_H11_real(ndim)
 !
 !call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,field_H11,ndim,zero,A1,ndim)
 !call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
-
+!
 !!! Ordering of energies
 !l = 0
 !eigenh_order = 0
@@ -1044,14 +1044,15 @@ call calculate_H11_real(ndim)
 !!! Diagonalizes hsp
 call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
 
-      OPEN(333,file="H11_eigenv_transf.gut")
-      do i=1, ndim
-        do j=1, ndim
-          WRITE(333,fmt="(F16.6)",advance='no') field_H11(i,j)
+        OPEN(333,file="H11_eigenv_transf.gut")
+        do i=1, ndim
+          do j=1, ndim
+            WRITE(333,fmt="(F16.6)",advance='no') field_H11(i,j)
+          enddo
+          WRITE(333, *) ""
         enddo
-        WRITE(333, *) ""
-      enddo
-      CLOSE(333)
+        CLOSE(333)
+
 ! In the case of axial symmetry, further diagonalizes Jz in this basis
 !if (is_good_K) then  *****************************************************
 
