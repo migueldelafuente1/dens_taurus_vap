@@ -967,9 +967,9 @@ call calculate_H11_real(ndim)
 
 
 !!! hsp in canonical basis
-call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
-                               ovac0,nocc0,nemp0,ndim)
-D0 = real(bogo_zD0)
+!call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
+!                               ovac0,nocc0,nemp0,ndim)
+!D0 = real(bogo_zD0)
 
 !call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_rhoRR,ndim,zero,A1,ndim)
 !call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,rhoc,ndim)
@@ -1044,7 +1044,7 @@ D0 = real(bogo_zD0)
 !!! Diagonalizes hsp
 call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
 
-    OPEN(333,file="H11_eigenv1.gut")
+      OPEN(333,file="H11_eigenv_transf.gut")
       do i=1, ndim
         do j=1, ndim
           WRITE(333,fmt="(F16.6)",advance='no') field_H11(i,j)
@@ -1071,23 +1071,33 @@ enddo
 
 ! Jz in the matrix that diagonalizes h
 Jz_aux = zero
-k=0
-OPEN(333, file="jz_operator.gut")
-do i=1, ndim
-  do j=1, ndim
-    k = k + 1
-    Jz_aux(i,j) = angumome_Jz(k)
-    WRITE(333,fmt="(F16.6)",advance='no') angumome_Jz(k)
-  enddo
-  WRITE(333,fmt="(A)") ""
-enddo
-CLOSE(333)
+k = 0
+            OPEN(333, file="jz_operator.gut")
+            do i=1, ndim
+              do j=1, ndim
+                k = k + 1
+                Jz_aux(i,j) = angumome_Jz(k)
+                WRITE(333,fmt="(F16.6)",advance='no') angumome_Jz(k)
+              enddo
+              WRITE(333,fmt="(A)") ""
+            enddo
+            CLOSE(333)
 
-D0 = field_H11
-call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,Jz_aux,ndim, zero,A1,ndim)
+!D0 = field_H11
+call dgemm('t','n',ndim,ndim,ndim,one,field_H11,ndim,Jz_aux,ndim, zero,A1,ndim)
 !call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,angumome_Jz(1:ndim**2),ndim, &
 !           zero,A1,ndim)
-call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,A2,ndim)
+call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,field_H11,ndim,zero,A2,ndim)
+
+
+        OPEN(333, file="jz_inH11_basis.gut")
+        do i = 1, ndim
+          do j = 1, ndim
+            WRITE(333,fmt="(F16.6)",advance='no') A2(i, j)
+          enddo
+          WRITE(333,fmt="(A)") ""
+        enddo
+        CLOSE(333)
 
 ! block diagonalization
 j = 0
@@ -1113,6 +1123,15 @@ do i = 1, evnum
   j = j + k
   deallocate( hspr, eigenr, workr )
 enddo
+
+        OPEN(333, file="jz_finalTransf.gut")
+        do i = 1, ndim
+          do j = 1, ndim
+            WRITE(333,fmt="(F16.6)",advance='no') A1(i, j)
+          enddo
+          WRITE(333,fmt="(A)") ""
+        enddo
+        CLOSE(333)
 
 call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,zero,field_H11,ndim)
 !endif  ***********************************************************
@@ -1542,7 +1561,7 @@ subroutine calculate_QuasiParticle_Hamiltonian_H22(bogo_U0, bogo_V0, ndim)
 integer, intent(in) :: ndim
 real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0,bogo_V0
 integer   :: i, i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it, perm
-logical :: TEST_FULL_HAMILTONIAN = .TRUE.
+logical :: TEST_FULL_HAMILTONIAN = .FALSE.
 real(r64) :: aux, h2b, temp_val
 
 sn = ndim / 2
@@ -1623,7 +1642,7 @@ close(334)
 
 
 if (TEST_FULL_HAMILTONIAN) call test_complete_hamiltonians(ndim)
-call test_register_QPhamiltonianH22(ndim)
+call test_register_QPhamiltonianH22(ndim, TEST_FULL_HAMILTONIAN)
 call test_check_antisymmetry_H22VS(ndim)
 RETURN
 
@@ -1890,16 +1909,18 @@ end function
 
 
 
-subroutine test_register_QPhamiltonianH22(ndim)
+subroutine test_register_QPhamiltonianH22(ndim, TEST_FULL_HAMILTONIAN)
 
 integer, intent(in) :: ndim
+logical, intent(in) :: TEST_FULL_HAMILTONIAN
+
 integer   :: i, i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it, perm
 real(r64) :: aux, h2b, temp_val
 real(r64), dimension(:,:,:,:), allocatable :: temp_unc
 real(r64), dimension(2,8,2) :: aux_step_h2, aux_step_dd ! [it][abcd, abdc, ...][h2b,bogoOps, add]
 integer,   dimension(2,4)   :: temp_indx_perm
 real(r64), dimension(2)     :: temp_h2b_perm
-logical   :: is_t_eq_1, TEST_FULL_HAMILTONIAN = .TRUE.
+logical   :: is_t_eq_1
 integer   :: tt1, tt2, tt
 
 sn = ndim / 2
