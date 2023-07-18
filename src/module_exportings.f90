@@ -949,9 +949,10 @@ transf_H11 = zero
 
 !!! Computes the fields
 call calculate_fields_diag(zone*dens_rhoRR, zone*dens_kappaRR, gammaRR,hspRR, &
-                           deltaRR,ndim)
+                           deltaRR,ndim=ndim)
 call calculate_fields_DD(zone*dens_rhoRR, zone*dens_kappaRR,zone*dens_kappaRR,&
-                         zone*gammaRR, zone*hspRR, zone*deltaRR, ndim)
+                         zone*gammaRR, zone*hspRR, zone*deltaRR, zone*deltaRR,&
+                         ndim)
 field_hspRR   = real(hspRR)
 field_deltaRR = real(deltaRR)
 
