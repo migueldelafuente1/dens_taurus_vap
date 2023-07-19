@@ -150,6 +150,9 @@ print '(A,i4,5(a,i2.2),A,i0.3,A,I4)', &
 !!! Computes the densities to store the final SP/QP basis
 !cmpi if ( paral_myrank == 0 ) then
 call calculate_densities_real(bogo_U0,bogo_V0,dens_rhoRR,dens_kappaRR,HOsp_dim)
+field_hspRR = field_hspRR + field_gammaRR_DD
+field_deltaRR = field_deltaRR + field_deltaRR_DD
+
 !cmpi endif
 !cmpi call broadcast_densities
 call diagonalize_hsp_and_H11(1,HOsp_dim)
