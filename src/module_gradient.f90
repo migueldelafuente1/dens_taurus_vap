@@ -187,7 +187,7 @@ if ( (opt == 0) .and. (max(proj_Mphip,proj_Mphip) == 1) ) then
 else
   call calculate_fields_diag(zone*dens_rhoRR,zone*dens_kappaRR,gammaRR,hspRR, &
                              deltaRR,ndim=ndim)
-  field_hspRR   = real(hspRR)   + field_gammaRR_DD
+  field_hspRR   = real(hspRR)   + field_gammaRR_DD + field_rearrRR_DD
   field_deltaRR = real(deltaRR) + field_deltaRR_DD
 endif
 
