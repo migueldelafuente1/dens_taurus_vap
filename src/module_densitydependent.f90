@@ -3252,6 +3252,8 @@ call calculate_fields_DD(dens_rhoRR, dens_kappaRR, dens_kappaRR, &
                          gammaRR,hspRR,deltaRR,deltaRR, ndim)
 
 end subroutine calculate_fields_DD_diag
+
+
 !-----------------------------------------------------------------------------!
 ! subroutine to print the progress of iter/iter_max as a progress bar         !
 !-----------------------------------------------------------------------------!

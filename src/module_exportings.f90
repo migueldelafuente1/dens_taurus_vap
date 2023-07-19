@@ -1160,7 +1160,7 @@ enddo
 !call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,&
 !           zero,field_H11,ndim)
 call dgemm('t','n',ndim,ndim,ndim,one, D0,ndim,A1,ndim,zero, A2,ndim)
-call dgemm('n','n',ndim,ndim,ndim,one, A2,ndim,D0,ndim,zero, fields_H11,ndim)
+call dgemm('n','n',ndim,ndim,ndim,one, A2,ndim,D0,ndim,zero, field_H11,ndim)
 !endif  ***********************************************************
 
 OPEN(335, file="H11_transform_py.txt")
