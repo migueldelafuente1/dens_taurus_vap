@@ -90,6 +90,10 @@ complex(r64), dimension(:,:,:,:), allocatable, save :: BulkHF ! (tt,msms',r,ang)
 complex(r64), dimension(:,:,:,:), allocatable, save :: BulkP1 ! (tt,msms',r,ang) DEF:Sum AngFunctDUAL_P1(msms') - AngFunctDUAL_P1(ms'ms) * kappaLR
 complex(r64), dimension(:,:,:,:), allocatable, save :: BulkP2 ! (tt,msms',r,ang) DEF:Sum AngFunctDUAL_P2 * kappaRL
 
+!! For DD term, arrays to store only the DD part to export the quasi particles
+real(r64), dimension(:,:), allocatable :: field_gammaRR_DD, & !
+                                          field_deltaRR_DD    !
+
 complex(r64), dimension(:,:), allocatable     :: rearrangement_me  !(isp1, isp2)
 complex(r64), dimension(:,:), allocatable     :: rearrang_field    !(isp1, isp2)
 complex(r64), dimension(:,:,:,:), allocatable :: rea_common_RadAng !(isp1,isp2, ir,iang)
@@ -610,6 +614,11 @@ subroutine set_allocate_density_arrays
   allocate(rearrang_field(HOsp_dim, HOsp_dim))
   allocate(rea_common_RadAng(HOsp_dim /2, HOsp_dim /2, r_dim, angular_dim))
   allocate(REACommonFields(r_dim, angular_dim))
+
+  allocate(field_gammaRR_DD(HOsp_dim,HOsp_dim), &
+           field_deltaRR_DD(HOsp_dim,HOsp_dim) )
+  field_gammaRR_DD = zero
+  field_deltaRR_DD = zero
 
 end subroutine set_allocate_density_arrays
 
@@ -2915,6 +2924,9 @@ do Tac = 1, 4
   gammaLR_DD(aa, cc) = int_hf(Tac)
   deltaLR_DD(aa, cc) = int_pa(Tac)
   deltaRL_DD(aa, cc) = int_pa(Tac)
+
+  field_gammaRR_DD(aa,cc) = dreal(gammaLR_DD(aa, cc))
+  field_deltaRR_DD(aa,cc) = dreal(deltaLR_DD(aa, cc))
   !! sum to the main fields
   gammaLR(aa,cc) = gammaLR(aa,cc) + gammaLR_DD(aa,cc)
   deltaLR(aa,cc) = deltaLR(aa,cc) + deltaLR_DD(aa,cc)
@@ -2926,6 +2938,9 @@ do Tac = 1, 4
     gammaLR_DD(cc,aa) =  gammaLR_DD(aa,cc)
     deltaLR_DD(cc,aa) = -deltaLR_DD(aa,cc)
     deltaRL_DD(cc,aa) = -deltaRL_DD(aa,cc)
+
+    field_gammaRR_DD(cc,aa) = dreal(gammaLR_DD(cc,aa))
+    field_deltaRR_DD(cc,aa) = dreal(deltaLR_DD(cc,aa))
 
     ! adding to the program fields
     gammaLR(cc,aa) = gammaLR(cc,aa) + gammaLR_DD(cc,aa)
@@ -3005,6 +3020,9 @@ gammaLR_DD = zzero
 deltaLR_DD = zzero
 deltaRL_DD = zzero
 rearrang_field = zzero
+
+field_gammaRR_DD = zero
+field_deltaRR_DD = zero
 
 !! Note :: Remember that radial functions already have the factor 1/b**3
 integral_factor = 0.5d0 * (HO_b**3) / ((2.0d0 + alpha_DD)**1.5d0)

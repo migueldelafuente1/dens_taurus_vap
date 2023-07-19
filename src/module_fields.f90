@@ -12,31 +12,31 @@
 ! - subroutine calculate_H20                                                   !
 ! - subroutine calculate_H20_real                                              !
 !==============================================================================!
-MODULE Fields           
+MODULE Fields
 
-use Wavefunctions  
-use Hamiltonian    
+use Wavefunctions
+use Hamiltonian
 
 implicit none
 public
 
 !!! Fields in the single-particle basis
-real(r64), dimension(:,:), allocatable :: field_hspRR,   & ! h^RR 
+real(r64), dimension(:,:), allocatable :: field_hspRR,   & ! h^RR
                                           field_gammaRR, & ! Gamma^RR
-                                          field_deltaRR    ! Delta^RR 
+                                          field_deltaRR    ! Delta^RR
 
-complex(r64), dimension(:,:), allocatable :: field_hspLR,   & ! h^LR         
+complex(r64), dimension(:,:), allocatable :: field_hspLR,   & ! h^LR
                                              field_gammaLR, & ! Gamma^LR
-                                             field_deltaLR, & ! Delta^LR 
+                                             field_deltaLR, & ! Delta^LR
                                              field_deltaRL    ! Delta^RL
 
 !!! Matrix elements of H in QP basis
 real(r64), dimension(:,:), allocatable :: field_H11, & ! 11 part
-                                          field_H20    ! 20 part 
+                                          field_H20    ! 20 part
 real(r64), dimension(:), allocatable :: field_H20v     ! 20 part (vector)
 
-!!! Additional quantities                                                        
-real(r64) :: factor_delta = one ! factor to constraint delta  
+!!! Additional quantities
+real(r64) :: factor_delta = one ! factor to constraint delta
 
 CONTAINS
 
@@ -54,7 +54,7 @@ allocate( field_hspRR(HOsp_dim,HOsp_dim), field_gammaRR(HOsp_dim,HOsp_dim),   &
           field_gammaLR(HOsp_dim,HOsp_dim), field_deltaLR(HOsp_dim,HOsp_dim), &
           field_deltaRL(HOsp_dim,HOsp_dim), field_H11(HOsp_dim,HOsp_dim), &
           field_H20v(HOsp_dim*HOsp_dim), field_H20(HOsp_dim,HOsp_dim), &
-          stat=ialloc ) 
+          stat=ialloc )
 if ( ialloc /= 0 ) stop 'Error during allocation of fields'
 
 field_hspRR   = zero
@@ -67,7 +67,7 @@ field_deltaRL = zzero
 field_H11 = zero
 field_H20 = zero
 field_H20v= zero
-   
+
 end subroutine set_fields
 
 !------------------------------------------------------------------------------!
@@ -101,13 +101,13 @@ subroutine calculate_fields(rhoLR,kappaLR,kappaRL,gammaLR,hspLR,deltaLR, &
 
 integer, intent(in) :: ndim
 complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
-complex(r64), dimension(ndim,ndim), intent(out) :: gammaLR, hspLR, deltaLR, & 
+complex(r64), dimension(ndim,ndim), intent(out) :: gammaLR, hspLR, deltaLR, &
                                                    deltaRL
 integer :: i, j, ia, ib, ic, id, it, perm
 integer(i64) :: kk
 real(r64) :: h2b, f2b
 !cmpi integer :: ierr=0
-!cmpi complex(r64), dimension(ndim,ndim) :: gammaLR_red, deltaLR_red, & 
+!cmpi complex(r64), dimension(ndim,ndim) :: gammaLR_red, deltaLR_red, &
 !cmpi                                       deltaRL_red
 
 gammaLR = zzero
@@ -117,7 +117,7 @@ deltaRL = zzero
 !$OMP PARALLEL DO FIRSTPRIVATE(rhoLR,kappaLR,kappaRL) &
 !$OMP             PRIVATE(ia,ib,ic,id,h2b,f2b,perm,it) &
 !$OMP             REDUCTION(+:gammaLR,deltaLR,deltaRL)
-do kk = 1, hamil_H2dim  
+do kk = 1, hamil_H2dim
   ia = hamil_abcd(1+4*(kk-1))
   ib = hamil_abcd(2+4*(kk-1))
   ic = hamil_abcd(3+4*(kk-1))
@@ -126,7 +126,7 @@ do kk = 1, hamil_H2dim
   perm = hamil_trperm(kk)
 
   !!! Loop on time reversal
-  do it = 1, 2 
+  do it = 1, 2
     if ( it == 2 ) then
       if ( HOsp_2mj(ia) + HOsp_2mj(ib) == 0 ) cycle
       call find_timerev(perm,ia,ib,ic,id)
@@ -146,20 +146,20 @@ do kk = 1, hamil_H2dim
     gammaLR(ic,ib) = gammaLR(ic,ib) - f2b * rhoLR(ia,id)
     gammaLR(id,ia) = gammaLR(id,ia) - f2b * rhoLR(ib,ic)
     gammaLR(id,ib) = gammaLR(id,ib) + f2b * rhoLR(ia,ic)
-  
-    !!! Calculation of Delta^10 and Delta^01  
+
+    !!! Calculation of Delta^10 and Delta^01
     deltaLR(ib,ia) = deltaLR(ib,ia) + h2b * kappaLR(id,ic)
     deltaRL(ib,ia) = deltaRL(ib,ia) + h2b * kappaRL(id,ic)
-  
+
     deltaLR(id,ic) = deltaLR(id,ic) + f2b * kappaLR(ib,ia)
     deltaRL(id,ic) = deltaRL(id,ic) + f2b * kappaRL(ib,ia)
 
   enddo
 enddo
 !$OMP END PARALLEL DO
-       
+
 !!! Reduces the values for the processes in the same team
-!cmpi if ( paral_myteamsize > 1 ) then 
+!cmpi if ( paral_myteamsize > 1 ) then
 !cmpi   call mpi_reduce(gammaLR,gammaLR_red,ndim**2,mpi_double_complex, &
 !cmpi                   mpi_sum,0,mpi_comm_team,ierr)
 !cmpi   call mpi_reduce(deltaLR,deltaLR_red,ndim**2,mpi_double_complex, &
@@ -170,7 +170,7 @@ enddo
 !cmpi   deltaLR = deltaLR_red
 !cmpi   deltaRL = deltaRL_red
 !cmpi endif
-       
+
 !!! h = Gamma + 1body
 do j = 1, HOsp_dim
   do i = 1, HOsp_dim
@@ -178,11 +178,11 @@ do j = 1, HOsp_dim
   enddo
 enddo
 
-!!! Skew symmetry 
+!!! Skew symmetry
 do j = 1, HOsp_dim
-  do i = 1, j-1      
-    deltaLR(i,j) = -1.0d0 * deltaLR(j,i) 
-    deltaRL(i,j) = -1.0d0 * deltaRL(j,i) 
+  do i = 1, j-1
+    deltaLR(i,j) = -1.0d0 * deltaLR(j,i)
+    deltaRL(i,j) = -1.0d0 * deltaRL(j,i)
   enddo
 enddo
 
@@ -221,16 +221,16 @@ deltaLR = zzero
 !$OMP PARALLEL DO FIRSTPRIVATE(rhoLR,kappaLR) &
 !$OMP             PRIVATE(ia,ib,ic,id,h2b,perm,it) &
 !$OMP             REDUCTION(+:gammaLR,deltaLR)
-do kk = 1, hamil_H2dim  
+do kk = 1, hamil_H2dim
   ia = hamil_abcd(1+4*(kk-1))
   ib = hamil_abcd(2+4*(kk-1))
   ic = hamil_abcd(3+4*(kk-1))
   id = hamil_abcd(4+4*(kk-1))
   h2b = hamil_H2(kk)
   perm = hamil_trperm(kk)
- 
+
   !!! Loop on time reversal
-  do it = 1, 2 
+  do it = 1, 2
     if ( it == 2 ) then
       if ( HOsp_2mj(ia) + HOsp_2mj(ib) == 0 ) cycle
       call find_timerev(perm,ia,ib,ic,id)
@@ -240,39 +240,39 @@ do kk = 1, hamil_H2dim
     !!! Calculation of Gamma
     gammaLR(ia,ic) = gammaLR(ia,ic) + h2b * rhoLR(id,ib)
     gammaLR(ia,id) = gammaLR(ia,id) - h2b * rhoLR(ic,ib)
- 
-    if ( (ic == ia) .and. (ib /= id) ) then 
+
+    if ( (ic == ia) .and. (ib /= id) ) then
       gammaLR(ic,ia) = gammaLR(ic,ia) + h2b * rhoLR(ib,id)
-    endif                
-    if ( ib <= id ) then 
+    endif
+    if ( ib <= id ) then
       gammaLR(ib,id) = gammaLR(ib,id) + h2b * rhoLR(ic,ia)
-    endif                
-    if ( ib <= ic ) then 
+    endif
+    if ( ib <= ic ) then
       gammaLR(ib,ic) = gammaLR(ib,ic) - h2b * rhoLR(id,ia)
-    endif                
- 
-    if ( (ia /= ic) .or. (ib /= id) ) then 
-      if ( id <= ib ) then 
+    endif
+
+    if ( (ia /= ic) .or. (ib /= id) ) then
+      if ( id <= ib ) then
         gammaLR(id,ib) = gammaLR(id,ib) + h2b * rhoLR(ia,ic)
-      endif                
-      if ( ic <= ib ) then 
+      endif
+      if ( ic <= ib ) then
         gammaLR(ic,ib) = gammaLR(ic,ib) - h2b * rhoLR(ia,id)
-      endif                
-    endif                
- 
-    !!! Calculation of Delta^10 and Delta^01  
+      endif
+    endif
+
+    !!! Calculation of Delta^10 and Delta^01
     deltaLR(ib,ia) = deltaLR(ib,ia) + h2b * kappaLR(id,ic)
- 
-    if ( (ia /= ic) .or. (ib /= id) ) then 
+
+    if ( (ia /= ic) .or. (ib /= id) ) then
       deltaLR(id,ic) = deltaLR(id,ic) + h2b * kappaLR(ib,ia)
-    endif                
+    endif
 
   enddo
 enddo
 !$OMP END PARALLEL DO
 
 !!! Reduces the values for the processes in the same team
-!cmpi if ( paral_myteamsize > 1 ) then 
+!cmpi if ( paral_myteamsize > 1 ) then
 !cmpi   call mpi_reduce(gammaLR,gammaLR_red,ndim**2,mpi_double_complex, &
 !cmpi                   mpi_sum,0,mpi_comm_team,ierr)
 !cmpi   call mpi_reduce(deltaLR,deltaLR_red,ndim**2,mpi_double_complex, &
@@ -281,10 +281,10 @@ enddo
 !cmpi   deltaLR = deltaLR_red
 !cmpi endif
 
-!!! Hermicity 
+!!! Hermicity
 do j = 1, ndim
-  do i = j+1, ndim  
-    gammaLR(i,j) = conjg(gammaLR(j,i)) 
+  do i = j+1, ndim
+    gammaLR(i,j) = conjg(gammaLR(j,i))
   enddo
 enddo
 
@@ -295,17 +295,17 @@ do j = 1, ndim
   enddo
 enddo
 
-!!! Skew symmetry 
+!!! Skew symmetry
 do j = 1, ndim
-  do i = 1, j-1      
-    deltaLR(i,j) = -1.d0 * deltaLR(j,i) 
+  do i = 1, j-1
+    deltaLR(i,j) = -1.d0 * deltaLR(j,i)
   enddo
 enddo
 
-!!! Complex conjuate. Although this looks complicated, I do it this way to 
+!!! Complex conjuate. Although this looks complicated, I do it this way to
 !!! avoid a bug when compiling with option -O3.
 do j = 1, ndim
-  do i = 1, ndim     
+  do i = 1, ndim
     delta_tmp(i,j) = conjg(deltaLR(i,j))
   enddo
 enddo
@@ -334,7 +334,7 @@ call dgemm('t','n',ndim,ndim,ndim,one,bogo_U0,ndim,field_hspRR,ndim,zero,A1, &
            ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,bogo_U0,ndim,zero,A2,ndim)
 
-!!! V^t h^t V 
+!!! V^t h^t V
 call dgemm('t','t',ndim,ndim,ndim,one,bogo_V0,ndim,field_hspRR,ndim,zero,A1, &
            ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,bogo_V0,ndim,zero,A3,ndim)
@@ -374,7 +374,7 @@ complex(r64), dimension(ndim,ndim) :: A1, A2, A3, A4, A5
 call zgemm('t','n',ndim,ndim,ndim,zone,U,ndim,field_hspLR,ndim,zzero,A1,ndim)
 call zgemm('n','n',ndim,ndim,ndim,zone,A1,ndim,V,ndim,zzero,A2,ndim)
 
-!!! V^t * hLR^t * U 
+!!! V^t * hLR^t * U
 A3 = transpose(A2)
 
 !!! U^t * deltaLR * U
@@ -388,7 +388,7 @@ call zgemm('n','n',ndim,ndim,ndim,zone,A1,ndim,V,ndim,zzero,A5,ndim)
 !!! H20
 H20 = A2 - A3 + (A4 - A5) * factor_delta
 
-end subroutine calculate_H20 
+end subroutine calculate_H20
 
 !------------------------------------------------------------------------------!
 ! subroutine calculate_H20_real                                                !
@@ -409,7 +409,7 @@ call dgemm('t','n',ndim,ndim,ndim,one,bogo_U0,ndim,field_hspRR,ndim,zero,A1, &
            ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,bogo_V0,ndim,zero,A2,ndim)
 
-!!! V^t hRR^t U   
+!!! V^t hRR^t U
 A3 = transpose(A2)
 
 !!! U^t deltaRR U
@@ -418,7 +418,7 @@ call dgemm('t','n',ndim,ndim,ndim,one,bogo_U0,ndim,field_deltaRR,ndim,zero,A1, &
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,bogo_U0,ndim,zero,A4,ndim)
 
 !!! V^t deltaRR V
-call dgemm('t','n',ndim,ndim,ndim,one,bogo_V0,ndim,field_deltaRR,ndim,zero,A1, & 
+call dgemm('t','n',ndim,ndim,ndim,one,bogo_V0,ndim,field_deltaRR,ndim,zero,A1, &
            ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,bogo_V0,ndim,zero,A5,ndim)
 
@@ -431,7 +431,7 @@ do j = 1, ndim
     k = k + 1
     field_H20v(k) = field_H20(i,j)
   enddo
-enddo 
+enddo
 
 end subroutine calculate_H20_real
 
@@ -455,7 +455,7 @@ end subroutine calculate_H20_real
 
 !cmpi end subroutine broadcast_densities
 
-END MODULE Fields        
+END MODULE Fields
 !==============================================================================!
 ! End of file                                                                  !
 !==============================================================================!
