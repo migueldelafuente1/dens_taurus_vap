@@ -1100,10 +1100,10 @@ k = 0
             CLOSE(333)
 
 D0 = field_H11
-call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,Jz_aux,ndim, zero,A1,ndim)
+call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,Jz_aux,ndim, zero,A1,ndim)
 !call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,angumome_Jz(1:ndim**2),ndim,&
 !                   zero,A1,ndim)
-call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,A2,ndim)
+!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,A2,ndim)
 
 
         OPEN(333, file="jz_inH11_basis.gut")
@@ -1585,7 +1585,7 @@ subroutine calculate_QuasiParticle_Hamiltonian_H22(bogo_U0, bogo_V0, ndim)
 integer, intent(in) :: ndim
 real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0,bogo_V0
 integer   :: i, i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it, perm
-logical :: TEST_FULL_HAMILTONIAN = .TRUE.
+logical :: TEST_FULL_HAMILTONIAN = .FALSE.
 real(r64) :: aux, h2b, temp_val
 
 sn = ndim / 2
