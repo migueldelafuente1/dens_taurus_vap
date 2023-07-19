@@ -30,6 +30,10 @@ complex(r64), dimension(:,:), allocatable :: field_hspLR,   & ! h^LR
                                              field_deltaLR, & ! Delta^LR
                                              field_deltaRL    ! Delta^RL
 
+!! For DD term, arrays to store only the DD part to export the quasi particles
+real(r64), dimension(:,:), allocatable :: field_gammaRR_DD, & !
+                                          field_deltaRR_DD    !
+
 !!! Matrix elements of H in QP basis
 real(r64), dimension(:,:), allocatable :: field_H11, & ! 11 part
                                           field_H20    ! 20 part
@@ -54,6 +58,8 @@ allocate( field_hspRR(HOsp_dim,HOsp_dim), field_gammaRR(HOsp_dim,HOsp_dim),   &
           field_gammaLR(HOsp_dim,HOsp_dim), field_deltaLR(HOsp_dim,HOsp_dim), &
           field_deltaRL(HOsp_dim,HOsp_dim), field_H11(HOsp_dim,HOsp_dim), &
           field_H20v(HOsp_dim*HOsp_dim), field_H20(HOsp_dim,HOsp_dim), &
+          field_gammaRR_DD(HOsp_dim,HOsp_dim), &
+          field_deltaRR_DD(HOsp_dim,HOsp_dim), &
           stat=ialloc )
 if ( ialloc /= 0 ) stop 'Error during allocation of fields'
 
@@ -67,6 +73,8 @@ field_deltaRL = zzero
 field_H11 = zero
 field_H20 = zero
 field_H20v= zero
+field_gammaRR_DD = zero
+field_deltaRR_DD = zero
 
 end subroutine set_fields
 

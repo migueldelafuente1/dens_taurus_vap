@@ -90,10 +90,6 @@ complex(r64), dimension(:,:,:,:), allocatable, save :: BulkHF ! (tt,msms',r,ang)
 complex(r64), dimension(:,:,:,:), allocatable, save :: BulkP1 ! (tt,msms',r,ang) DEF:Sum AngFunctDUAL_P1(msms') - AngFunctDUAL_P1(ms'ms) * kappaLR
 complex(r64), dimension(:,:,:,:), allocatable, save :: BulkP2 ! (tt,msms',r,ang) DEF:Sum AngFunctDUAL_P2 * kappaRL
 
-!! For DD term, arrays to store only the DD part to export the quasi particles
-real(r64), dimension(:,:), allocatable :: field_gammaRR_DD, & !
-                                          field_deltaRR_DD    !
-
 complex(r64), dimension(:,:), allocatable     :: rearrangement_me  !(isp1, isp2)
 complex(r64), dimension(:,:), allocatable     :: rearrang_field    !(isp1, isp2)
 complex(r64), dimension(:,:,:,:), allocatable :: rea_common_RadAng !(isp1,isp2, ir,iang)
@@ -614,11 +610,6 @@ subroutine set_allocate_density_arrays
   allocate(rearrang_field(HOsp_dim, HOsp_dim))
   allocate(rea_common_RadAng(HOsp_dim /2, HOsp_dim /2, r_dim, angular_dim))
   allocate(REACommonFields(r_dim, angular_dim))
-
-  allocate(field_gammaRR_DD(HOsp_dim,HOsp_dim), &
-           field_deltaRR_DD(HOsp_dim,HOsp_dim) )
-  field_gammaRR_DD = zero
-  field_deltaRR_DD = zero
 
 end subroutine set_allocate_density_arrays
 
