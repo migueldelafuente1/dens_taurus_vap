@@ -964,6 +964,8 @@ call calculate_fields_DD_diag(zone*dens_rhoRR, zone*dens_kappaRR, &
                               gammaRR, hspRR, deltaRR, ndim)
 !field_hspRR   = real(hspRR)   + field_gammaRR_DD
 !field_deltaRR = real(deltaRR) + field_deltaRR_DD
+field_hspRR = real(hspRR)
+field_deltaRR = real(deltaRR)
 
 call calculate_H11_real(ndim)
 

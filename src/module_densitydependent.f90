@@ -3246,20 +3246,10 @@ subroutine calculate_fields_DD_diag(dens_rhoRR, dens_kappaRR, &
 
 integer, intent(in) :: ndim
 complex(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR, dens_kappaRR
-real(r64), dimension(ndim,ndim)    :: gammaRR, hspRR, deltaRR
-complex(r64), dimension(ndim,ndim) :: gammaLR, deltaLR, deltaRL, hspLR
-
-gammaLR = zone * gammaRR
-hspLR   = zone * hspRR
-deltaLR = zone * deltaRR
-deltaRL = zone * deltaRR
+complex(r64), dimension(ndim,ndim) :: gammaRR, hspRR, deltaRR
 
 call calculate_fields_DD(dens_rhoRR, dens_kappaRR, dens_kappaRR, &
-                         gammaLR,hspLR,deltaLR,deltaRL, ndim)
-
-gammaRR = real(gammaLR)
-hspRR   = real(hspLR)
-deltaRR = real(deltaLR)
+                         gammaRR,hspRR,deltaRR,deltaRR, ndim)
 
 end subroutine calculate_fields_DD_diag
 !-----------------------------------------------------------------------------!
