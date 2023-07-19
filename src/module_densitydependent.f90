@@ -3245,7 +3245,7 @@ subroutine calculate_fields_DD_diag(dens_rhoRR, dens_kappaRR, &
                                     gammaRR, hspRR, deltaRR, ndim)
 
 integer, intent(in) :: ndim
-complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR
+complex(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR, dens_kappaRR
 real(r64), dimension(ndim,ndim)    :: gammaRR, hspRR, deltaRR
 complex(r64), dimension(ndim,ndim) :: gammaLR, deltaLR, deltaRL, hspLR
 
