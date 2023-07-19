@@ -1075,7 +1075,7 @@ evdeg = 0
 evdeg(1) = 1
 
 do i = 2, ndim
-  if ( abs(eigen_H11(i-1) - eigen_H11(i)) < 1.0d-6 ) then
+  if ( abs(eigen_H11(i-1) - eigen_H11(i)) < 5.0d-6 ) then
     evdeg(evnum) = evdeg(evnum) + 1
   else
     evnum = evnum + 1
