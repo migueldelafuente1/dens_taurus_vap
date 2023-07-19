@@ -2904,12 +2904,14 @@ do Tac = 1, 4
       cc = c + spO2
       !rearrange values are non zero for pp and nn
       rearrang_field(aa, cc) = int_rea
+      field_rearrRR_DD(aa,cc) = dreal(rearrang_field(aa,cc))
     case (3)        ! pn
       cc = c + spO2
     case (4)        ! np
       aa = a + spO2
     case default    ! pp
       rearrang_field(aa, cc) = int_rea
+      field_rearrRR_DD(aa,cc) = dreal(rearrang_field(aa,cc))
   end select
 
   gammaLR_DD(aa, cc) = int_hf(Tac)
@@ -2943,10 +2945,12 @@ do Tac = 1, 4
   ! do rearrangement for pp, nn if proceeds
   if((eval_rearrangement).AND.(Tac.LT.3)) then
     hspLR(aa,cc) = hspLR(aa,cc) + rearrang_field(aa,cc)
+    field_rearrRR_DD(aa,cc) = dreal(rearrang_field(aa,cc))
     ! this step is just to complete the matrix, the rearrangement is aa,cc as well
     if (a.NE.c) then
       rearrang_field(cc, aa) =  rearrang_field(aa, cc)
       hspLR(cc,aa) = hspLR(cc,aa) + rearrang_field(cc,aa)
+      field_rearrRR_DD(cc,aa) = dreal(rearrang_field(cc,aa))
     endif
   endif
 
@@ -3014,6 +3018,7 @@ rearrang_field = zzero
 
 field_gammaRR_DD = zero
 field_deltaRR_DD = zero
+field_rearrRR_DD = zero
 
 !! Note :: Remember that radial functions already have the factor 1/b**3
 integral_factor = 0.5d0 * (HO_b**3) / ((2.0d0 + alpha_DD)**1.5d0)
