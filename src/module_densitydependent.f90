@@ -3239,6 +3239,29 @@ endif
 end subroutine calculate_fields_DD
 
 
+
+
+subroutine calculate_fields_DD_diag(dens_rhoRR, dens_kappaRR, &
+                                    gammaRR, hspRR, deltaRR, ndim)
+
+integer, intent(in) :: ndim
+complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR
+real(r64), dimension(ndim,ndim)    :: gammaRR, hspRR, deltaRR
+complex(r64), dimension(ndim,ndim) :: gammaLR, deltaLR, deltaRL, hspLR
+
+gammaLR = zone * gammaRR
+hspLR   = zone * hspRR
+deltaLR = zone * deltaRR
+deltaRL = zone * deltaRR
+
+call calculate_fields_DD(dens_rhoRR, dens_kappaRR, dens_kappaRR, &
+                         gammaLR,hspLR,deltaLR,deltaRL, ndim)
+
+gammaRR = real(gammaLR)
+hspRR   = real(hspLR)
+deltaRR = real(deltaLR)
+
+end subroutine calculate_fields_DD_diag
 !-----------------------------------------------------------------------------!
 ! subroutine to print the progress of iter/iter_max as a progress bar         !
 !-----------------------------------------------------------------------------!

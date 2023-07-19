@@ -958,12 +958,12 @@ call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
 !!! Computes the fields
 call calculate_fields_diag(zone*dens_rhoRR, zone*dens_kappaRR, gammaRR,hspRR, &
                            deltaRR,ndim=ndim)
-!call calculate_expectval_density(zone*dens_rhoRR, &
-!                                 zone*dens_kappaRR, zone*dens_kappaRR, ndim, 0)
-!call calculate_fields_DD_diag(zone*dens_rhoRR, zone*dens_kappaRR, &
-!                              zone*dens_kappaRR, gammaRR, hspRR, deltaRR, ndim)
-field_hspRR   = real(hspRR)   + field_gammaRR_DD
-field_deltaRR = real(deltaRR) + field_deltaRR_DD
+call calculate_expectval_density(zone*dens_rhoRR, &
+                                 zone*dens_kappaRR, zone*dens_kappaRR, ndim, 0)
+call calculate_fields_DD_diag(zone*dens_rhoRR, zone*dens_kappaRR, &
+                              gammaRR, hspRR, deltaRR, ndim)
+!field_hspRR   = real(hspRR)   + field_gammaRR_DD
+!field_deltaRR = real(deltaRR) + field_deltaRR_DD
 
 call calculate_H11_real(ndim)
 
@@ -1101,8 +1101,10 @@ k = 0
 
 D0 = field_H11
 call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,Jz_aux,ndim, zero,A2,ndim)
-!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,angumome_Jz(1:ndim**2),ndim,&
-!                   zero,A1,ndim)
+
+!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,Jz_aux,ndim, zero,A1,ndim)
+!!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,angumome_Jz(1:ndim**2),ndim,&
+!!                   zero,A1,ndim)
 !call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,A2,ndim)
 
 
