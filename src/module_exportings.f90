@@ -958,11 +958,11 @@ call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
 !!! Computes the fields
 call calculate_fields_diag(zone*dens_rhoRR, zone*dens_kappaRR, gammaRR,hspRR, &
                            deltaRR,ndim=ndim)
-call calculate_expectval_density(zone*dens_rhoRR, &
-                                 zone*dens_kappaRR, zone*dens_kappaRR, ndim, 0)
-call calculate_fields_DD(zone*dens_rhoRR, zone*dens_kappaRR,zone*dens_kappaRR,&
-                         zone*gammaRR, zone*hspRR, zone*deltaRR, zone*deltaRR,&
-                         ndim)
+!call calculate_expectval_density(zone*dens_rhoRR, &
+!                                 zone*dens_kappaRR, zone*dens_kappaRR, ndim, 0)
+!call calculate_fields_DD(zone*dens_rhoRR, zone*dens_kappaRR,zone*dens_kappaRR,&
+!                         zone*gammaRR, zone*hspRR, zone*deltaRR, zone*deltaRR,&
+!                         ndim)
 field_hspRR   = real(hspRR)
 field_deltaRR = real(deltaRR)
 
@@ -979,9 +979,11 @@ call calculate_H11_real(ndim)
           CLOSE(333)
 
 
-
+!!! hsp in canonical basis
+!call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
+!                               ovac0,nocc0,nemp0,ndim)
 !D0 = real(bogo_zD0)
-
+!
 !call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_rhoRR,ndim,zero,A1,ndim)
 !call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,rhoc,ndim)
 !
@@ -1052,14 +1054,11 @@ call calculate_H11_real(ndim)
 !  eigenh_tmp(tabmin(1)) = 1000
 !enddo
 
-
-
-
-
-
-
 !!! Diagonalizes hsp
 call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
+if (info_H11 .NE. 0) then
+  print "(A,I5)", "  invalid info at Diag. H11 info_H11=", info_H11
+end if
 
         OPEN(333,file="H11_diag_transf.gut")
         do i=1, ndim
@@ -1132,6 +1131,9 @@ do i = 1, evnum
 !  end do
 
   call dsyev('v','u',k,hspr,k,eigenr,workr,3*k-1,info_H11)
+  if (info_H11 .NE. 0) then
+    print "(A,2I5)", "  invalid info at Diag. Jztrasn, i,info_H11=", i,info_H11
+  end if
   A1(1+j:j+k,1+j:j+k) = hspr(1:k,1:k)
 !  do l = 1,k
 !    do m = 1,k
@@ -1160,7 +1162,7 @@ OPEN(335, file="H11_transform_py.txt")
 ! copy the transformation matrix
 do i = 1, ndim
   do j = 1, ndim
-    READ(335, fmt="(F12.9)") field_H11(i,j)
+!    READ(335, fmt="(F12.9)") field_H11(i,j)
     transf_H11(i,j) = field_H11(i,j)
   end do
 end do
