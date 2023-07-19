@@ -951,6 +951,10 @@ eigen_hsp  = zero
 eigen_H11  = zero
 transf_H11 = zero
 
+!! hsp in canonical basis
+call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
+                               ovac0,nocc0,nemp0,ndim)
+
 !!! Computes the fields
 call calculate_fields_diag(zone*dens_rhoRR, zone*dens_kappaRR, gammaRR,hspRR, &
                            deltaRR,ndim=ndim)
@@ -975,10 +979,8 @@ call calculate_H11_real(ndim)
           CLOSE(333)
 
 
-!! hsp in canonical basis
-call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
-                               ovac0,nocc0,nemp0,ndim)
-D0 = real(bogo_zD0)
+
+!D0 = real(bogo_zD0)
 
 !call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_rhoRR,ndim,zero,A1,ndim)
 !call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,rhoc,ndim)
