@@ -1598,8 +1598,8 @@ V_trans = zero
 allocate(uncoupled_H22_VS(VSsp_dim,VSsp_dim,VSsp_dim,VSsp_dim))
 uncoupled_H22_VS = zero
 
-U_trans = bogo_U0
-V_trans = bogo_V0
+!U_trans = bogo_U0
+!V_trans = bogo_V0
 
 !! Apply the transformation on the U and V
 call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
@@ -2033,19 +2033,19 @@ aux = aux + aux_step_h2(it,1,2)
   temp_unc(qq1,qq2,qq3,qq4) = temp_unc(qq1,qq2,qq3,qq4) + aux
 
 if (abs(aux) .GT. 1.0d-8 ) then
-  WRITE(333, fmt="(A,i6,4i3,F12.6,A,4i3,F12.6)")" kk1=",kk,temp_indx_perm(1,1),&
+  WRITE(333, fmt="(A,i6,4i3,F13.9,A,4i3,F13.9)")" kk1=",kk,temp_indx_perm(1,1),&
     temp_indx_perm(1,2),temp_indx_perm(1,3),temp_indx_perm(1,4), &
     temp_h2b_perm(1),"=TR=", temp_indx_perm(2,1), temp_indx_perm(2,2), &
     temp_indx_perm(2,3),temp_indx_perm(2,4), temp_h2b_perm(2)
   do it = 1,2
     WRITE(333, fmt="(A,i2,A)",advance='no')"  h2 tr=", it,"=perms="
     do i = 1,4
-      WRITE(333, fmt="(F15.6)",advance='no') aux_step_h2(it,i,1)
+      WRITE(333, fmt="(F15.9)",advance='no') aux_step_h2(it,i,1)
     end do
     if ((temp_indx_perm(it,1).NE.temp_indx_perm(it,3)) .OR. &
         (temp_indx_perm(it,2).NE.temp_indx_perm(it,4)) ) then
       do i = 5,8
-        WRITE(333, fmt="(F15.6)",advance='no') aux_step_h2(it,i,1)
+        WRITE(333, fmt="(F15.9)",advance='no') aux_step_h2(it,i,1)
       end do
     end if
 
@@ -2080,12 +2080,12 @@ do i1 = 1, ndim
   temp_unc(qq1,qq2,qq3,qq4) = temp_unc(qq1,qq2,qq3,qq4) + aux
 
   if (abs(aux) .GT. 1.0d-6 ) then
-  WRITE(333, fmt="(A,i6,4i3,4F12.6)")" kk2=",kk, i1,i2,i3,i4, &
+  WRITE(333, fmt="(A,i6,4i3,4F13.9)")" kk2=",kk, i1,i2,i3,i4, &
     hamil_DD_H2_byT(1,kk), hamil_DD_H2_byT(2,kk), &
     hamil_DD_H2_byT(3,kk), hamil_DD_H2_byT(4,kk)
   WRITE(333, fmt="(A)",advance='no')"  h2dd UV="
   do i = 1,6
-    WRITE(333, fmt="(F15.6)",advance='no') aux_step_dd(1,i,1)
+    WRITE(333, fmt="(F15.9)",advance='no') aux_step_dd(1,i,1)
   end do
   WRITE(333, *) ""
   endif
@@ -2167,7 +2167,7 @@ do kk = 1, hamil_H2dim
   temp_unc(qq1,qq2,qq3,qq4) = temp_unc(qq1,qq2,qq3,qq4) + aux
 
   if (abs(aux) .GT. 1.0d-8 ) then
-  WRITE(333, fmt="(A,i6,4i3,F12.6,A,4i3,F12.6)")" kk1=",kk,temp_indx_perm(1,1),&
+  WRITE(333, fmt="(A,i6,4i3,F13.9,A,4i3,F13.9)")" kk1=",kk,temp_indx_perm(1,1),&
     temp_indx_perm(1,2),temp_indx_perm(1,3),temp_indx_perm(1,4), &
     temp_h2b_perm(1),"=TR=", temp_indx_perm(2,1), temp_indx_perm(2,2), &
     temp_indx_perm(2,3),temp_indx_perm(2,4), temp_h2b_perm(2)
@@ -2175,12 +2175,12 @@ do kk = 1, hamil_H2dim
   do it = 1,2
     WRITE(333, fmt="(A,i2,A)",advance='no')"  h2 tr=", it,"=perms="
     do i = 1,4
-      WRITE(333, fmt="(F15.6)",advance='no') aux_step_h2(it,i,1)
+      WRITE(333, fmt="(F15.9)",advance='no') aux_step_h2(it,i,1)
     end do
     if ((temp_indx_perm(it,1).NE.temp_indx_perm(it,3)) .OR. &
         (temp_indx_perm(it,2).NE.temp_indx_perm(it,4)) ) then
       do i = 5,8
-        WRITE(333, fmt="(F15.6)",advance='no') aux_step_h2(it,i,1)
+        WRITE(333, fmt="(F15.9)",advance='no') aux_step_h2(it,i,1)
       end do
     end if
 
@@ -2230,12 +2230,12 @@ do kk = 1, hamil_DD_H2dim
   temp_unc(qq1,qq2,qq3,qq4) = temp_unc(qq1,qq2,qq3,qq4) + aux
 
   if (abs(aux) .GT. 1.0d-6 ) then
-  WRITE(333, fmt="(A,i6,4i3,4F12.6)")" kk2=",kk, i1,i2,i3,i4, &
+  WRITE(333, fmt="(A,i6,4i3,4F13.9)")" kk2=",kk, i1,i2,i3,i4, &
     hamil_DD_H2_byT(1,kk), hamil_DD_H2_byT(2,kk), &
     hamil_DD_H2_byT(3,kk), hamil_DD_H2_byT(4,kk)
   WRITE(333, fmt="(A)",advance='no')"  h2dd UV="
   do i = 1,6
-    WRITE(333, fmt="(F15.6)",advance='no') aux_step_dd(1,i,1)
+    WRITE(333, fmt="(F15.9)",advance='no') aux_step_dd(1,i,1)
   end do
   WRITE(333, *) ""
   endif
