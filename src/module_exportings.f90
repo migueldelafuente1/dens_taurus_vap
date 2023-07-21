@@ -1501,8 +1501,8 @@ do i = 1, ndim ! QP loop
 !    print "(3(A,2i3),2i4)", " FND(QP,HO):", i, k1, "  (VS,VSHO):", j, k2, &
 !                            "   (VSQP/VSQP.HO)",  kk, VSQPtoHOsp_index(kk), &
 !                            VSQPtoQPsp_index(kk), VSQPtoVSsp_index(kk)
-  print "(A,i3,3F10.3,A,2i3,3i5)", "FND(QP,VS):", &
-    i, qpsp_j(i),qpsp_jz(i),2*qpsp_nn(i) - qpsp_zz(i), " =(vs) ",&
+  print "(A,i3,3F6.1,A,2i3,3i5)", "FND(QP,VS):", &
+    i, qpsp_j(i),qpsp_jz(i),qpsp_nn(i) - qpsp_zz(i), " =(vs) ",&
     j, k2, HOsp_2j(k2), HOsp_2mj(k2), HOsp_2mt(k2)
   endif
 
@@ -1598,14 +1598,14 @@ V_trans = zero
 allocate(uncoupled_H22_VS(VSsp_dim,VSsp_dim,VSsp_dim,VSsp_dim))
 uncoupled_H22_VS = zero
 
-!U_trans = bogo_U0
-!V_trans = bogo_V0
+U_trans = bogo_U0
+V_trans = bogo_V0
 
 !! Apply the transformation on the U and V
-call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
-           zero, U_trans, ndim)
-call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
-           zero, V_trans, ndim)
+!call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
+!           zero, U_trans, ndim)
+!call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
+!           zero, V_trans, ndim)
 
 !call dgemm('n','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_U0, ndim,&
 !           zero, U_trans, ndim)
