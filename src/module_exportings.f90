@@ -1686,8 +1686,12 @@ enddo
 close(334)
 
 
-if (TEST_FULL_HAMILTONIAN) call test_complete_hamiltonians(ndim)
+if (TEST_FULL_HAMILTONIAN) then
+  call test_complete_hamiltonians(ndim)
+endif
+print "(A)", " *** Done the c. hamiltonian"
 call test_register_QPhamiltonianH22(ndim, TEST_FULL_HAMILTONIAN)
+print "(A)", " *** Done the register"
 call test_check_antisymmetry_H22VS(ndim)
 RETURN
 
