@@ -1985,8 +1985,9 @@ OPEN(333, file="h22_reconstr.txt")
 OPEN(334, file='uncoupled_hamil_qp.txt')
 WRITE(334, fmt="(A)") "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, 2mt)"
 do qq1 = 1, VSsp_dim
-  print "(A,2i4)", " * qq1,isp = ", qq1, VStoHOsp_index(qq1)
   i = VStoHOsp_index(qq1)
+  print "(A,8i4)", " * qq1,isp = ", qq1,i, HOsp_sh(i),HOsp_n(i),HOsp_l(i), &
+      HOsp_2j(i), HOsp_2mj(i), HOsp_2mt(i)
   WRITE(334, fmt='(I4,7(A,I4))') qq1, ',', i,',', HOsp_sh(i), ',', HOsp_n(i),&
     ',', HOsp_l(i),',', HOsp_2j(i),'/2,', HOsp_2mj(i),'/2,', HOsp_2mt(i)
 enddo
