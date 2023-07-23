@@ -1527,6 +1527,7 @@ allocate(test_hamil_bb(ndim,ndim,ndim,ndim), test_hamil_dd(ndim,ndim,ndim,ndim))
 test_hamil_bb = zero
 test_hamil_dd = zero
 
+print "(A)", "   *** START explicitly instance."
 do kk = 1, hamil_H2dim
   i1 = hamil_abcd(1+4*(kk-1))
   i2 = hamil_abcd(2+4*(kk-1))
@@ -1557,6 +1558,7 @@ do kk = 1, hamil_H2dim
 
   enddo
 enddo
+print "(A)", "   *** BB term explicitly instanced."
 
 do kk = 1, hamil_DD_H2dim
 
@@ -1574,6 +1576,20 @@ do kk = 1, hamil_DD_H2dim
 
   ! add the result to the uncoupled quasi particle matrix element
 end do
+print "(A)", "   *** DD term explicitly instanced."
+
+print "(A)", "   *** TEST - READ THE INSTANCES."
+do i1= 1, ndim
+  do i2= 1, ndim
+    do i3 = 1, ndim
+      do i4 = 1, ndim
+        h2b = test_hamil_bb(i1,i2,i3,i4)
+        h2b = test_hamil_dd(i1,i2,i3,i4)
+      end do
+    end do
+  end do
+end do
+print "(A)", "   *** DONE - READ THE INSTANCES."
 
 end subroutine test_complete_hamiltonians
 
