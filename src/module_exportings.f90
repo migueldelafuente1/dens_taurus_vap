@@ -1972,10 +1972,13 @@ real(r64), dimension(2)     :: temp_h2b_perm
 logical   :: is_t_eq_1
 integer   :: tt1, tt2, tt
 
+print *, " // in Test registerQP START"
 sn = ndim / 2
 
 allocate(temp_unc(VSsp_dim,VSsp_dim,VSsp_dim,VSsp_dim))
 temp_unc = zero
+
+print *, " // allocated temp_unc Test registerQP START"
 
 OPEN(333, file="h22_reconstr.txt")
 
