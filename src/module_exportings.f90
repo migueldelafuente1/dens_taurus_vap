@@ -2148,7 +2148,7 @@ do kk = 1, hamil_H2dim
   i2 = hamil_abcd(2+4*(kk-1))
   i3 = hamil_abcd(3+4*(kk-1))
   i4 = hamil_abcd(4+4*(kk-1))
-  h2b  = hamil_H2(kk)     0.0d0     !! all are > TOL.
+  h2b  = hamil_H2(kk)  *  0.0d0     !! all are > TOL.
   perm = hamil_trperm(kk)
 
   temp_indx_perm = 0
