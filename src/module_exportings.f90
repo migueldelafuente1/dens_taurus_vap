@@ -1968,7 +1968,7 @@ real(r64) :: aux, h2b, temp_val
 real(r64), dimension(:,:,:,:), allocatable :: temp_unc
 real(r64), dimension(2,8,2) :: aux_step_h2, aux_step_dd ! [it][abcd, abdc, ...][h2b,bogoOps, add]
 integer,   dimension(2,4)   :: temp_indx_perm
-real(r64), dimension(2)     :: temp_h2b_perm
+real(r64), dimension(4)     :: temp_h2b_perm
 logical   :: is_t_eq_1
 integer   :: tt1, tt2, tt
 
@@ -2029,6 +2029,7 @@ WRITE(333, fmt="(A,4i5,A,4i4,A,4i6)") &
 
 IF (TEST_FULL_HAMILTONIAN) then
 it = 1
+kk = 0
 do i1 = 1, ndim
   do i2 = 1, ndim
     do i3 = 1, ndim
@@ -2084,7 +2085,7 @@ if (abs(temp_unc(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
   temp_val = temp_unc(qq1,qq2,qq3,qq4)
 endif
 
-
+kk = 0
 do i1 = 1, ndim
   do i2 = 1, ndim
     do i3 = 1, ndim
@@ -2092,8 +2093,20 @@ do i1 = 1, ndim
 
   aux_step_dd = zero
   aux_step_dd(1,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
+  h2b = test_hamil_dd(i1,i2, i3,i4)
+  aux_step_dd(1,1,2) = aux_step_dd(1,1,1) * h2b
 
-  aux_step_dd(1,1,2) = aux_step_dd(1,1,1) * test_hamil_dd(i1,i2, i3,i4)
+  temp_h2b_perm = zero
+  if      ((HOsp_2mt(i1).EQ.-1).AND. (HOsp_2mt(i2).EQ.-1)) then
+    temp_h2b_perm (1) = h2b
+  else if ((HOsp_2mt(i1).EQ. 1).AND. (HOsp_2mt(i2).EQ. 1)) then
+    temp_h2b_perm (4) = h2b
+  else if ((HOsp_2mt(i1).EQ.HOsp_2mt(i3))) then
+    temp_h2b_perm (2) = h2b
+  else if ((HOsp_2mt(i1).EQ.HOsp_2mt(i4))) then
+    temp_h2b_perm (3) = h2b
+  end if
+
 
   aux = zero
   aux = aux + aux_step_dd(1,1,2)
@@ -2104,8 +2117,7 @@ do i1 = 1, ndim
   if (abs(aux) .GT. 1.0d-6 ) then
     print "(A,F15.9)", "found h2b dd=", aux
   WRITE(333, fmt="(A,i6,4i3,4F15.9)")" kk2=",kk, i1,i2,i3,i4, &
-    hamil_DD_H2_byT(1,kk), hamil_DD_H2_byT(2,kk), &
-    hamil_DD_H2_byT(3,kk), hamil_DD_H2_byT(4,kk)
+    temp_h2b_perm(1), temp_h2b_perm(2), temp_h2b_perm(3), temp_h2b_perm(4)
   WRITE(333, fmt="(A)",advance='no')"  h2dd UV="
   do i = 1,6
     WRITE(333, fmt="(F15.9)",advance='no') aux_step_dd(1,i,1)
