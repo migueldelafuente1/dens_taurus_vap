@@ -1568,10 +1568,10 @@ do kk = 1, hamil_DD_H2dim
   i4 = hamil_DD_abcd(4+4*(kk-1))
 
   test_hamil_dd(i1,i2,i3,i4)       = hamil_DD_H2_byT(1,kk)
-  test_hamil_dd(i1,i2+sn,i3,i4+sn) = hamil_DD_H2_byT(2,kk)
-  test_hamil_dd(i1+sn,i2,i3+sn,i4) = hamil_DD_H2_byT(2,kk)
-  test_hamil_dd(i1,i2+sn,i3+sn,i4) = hamil_DD_H2_byT(3,kk)
-  test_hamil_dd(i1+sn,i2,i3,i4+sn) = hamil_DD_H2_byT(3,kk)
+  test_hamil_dd(i1,i2+sn,i3,i4+sn) = hamil_DD_H2_byT(3,kk)
+  test_hamil_dd(i1+sn,i2,i3+sn,i4) = hamil_DD_H2_byT(3,kk)
+  test_hamil_dd(i1,i2+sn,i3+sn,i4) = hamil_DD_H2_byT(2,kk)
+  test_hamil_dd(i1+sn,i2,i3,i4+sn) = hamil_DD_H2_byT(2,kk)
   test_hamil_dd(i1+sn,i2+sn,i3+sn,i4+sn) = hamil_DD_H2_byT(4,kk)
 
   ! add the result to the uncoupled quasi particle matrix element
@@ -2048,8 +2048,8 @@ temp_indx_perm(it,3) = i3
 temp_indx_perm(it,4) = i4
 temp_h2b_perm (it)   = test_hamil_bb(i1,i2, i3,i4) * 0.0d0
 
-aux_step_h2(it,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
-aux_step_h2(it,1,2) = aux_step_h2(it,1,1) * temp_h2b_perm (it)
+aux_step_h2(it,1,1)  = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
+aux_step_h2(it,1,2)  = aux_step_h2(it,1,1) * temp_h2b_perm (it)
 
 aux = aux + aux_step_h2(it,1,2)
 
