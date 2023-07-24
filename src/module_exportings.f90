@@ -1978,8 +1978,6 @@ sn = ndim / 2
 allocate(temp_unc(VSsp_dim,VSsp_dim,VSsp_dim,VSsp_dim))
 temp_unc = zero
 
-print *, " // allocated temp_unc Test registerQP START"
-
 OPEN(333, file="h22_reconstr.txt")
 
 OPEN(334, file='uncoupled_hamil_qp.txt')
@@ -1994,6 +1992,8 @@ enddo
 
 WRITE(334, fmt="(A)") "//  a    b    c    d         hamilR_H2         &
                       &h_bb_abcd         h_DD_abcd"
+
+print *, " // loop quasipart. registerQP START"
 do qq1 = 1, VSsp_dim
   q1 = VStoQPsp_index (qq1)
   do qq2 = 1, VSsp_dim
