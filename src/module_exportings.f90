@@ -2096,6 +2096,7 @@ do i1 = 1, ndim
   aux_step_dd(1,1,2) = aux_step_dd(1,1,1) * h2b
 
   temp_h2b_perm = zero
+  temp_h2b_perm (1) = h2b
   if      ((HOsp_2mt(i1).EQ.-1).AND. (HOsp_2mt(i2).EQ.-1)) then
     temp_h2b_perm (1) = h2b
   else if ((HOsp_2mt(i1).EQ. 1).AND. (HOsp_2mt(i2).EQ. 1)) then
