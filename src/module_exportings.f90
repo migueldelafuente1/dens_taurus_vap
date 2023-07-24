@@ -1972,7 +1972,6 @@ real(r64), dimension(2)     :: temp_h2b_perm
 logical   :: is_t_eq_1
 integer   :: tt1, tt2, tt
 
-print *, " // in Test registerQP START"
 sn = ndim / 2
 
 allocate(temp_unc(VSsp_dim,VSsp_dim,VSsp_dim,VSsp_dim))
@@ -1984,8 +1983,6 @@ OPEN(334, file='uncoupled_hamil_qp.txt')
 WRITE(334, fmt="(A)") "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, 2mt)"
 do qq1 = 1, VSsp_dim
   i = VStoHOsp_index(qq1)
-  print "(A,8i4)", " * qq1,isp = ", qq1,i, HOsp_sh(i),HOsp_n(i),HOsp_l(i), &
-      HOsp_2j(i), HOsp_2mj(i), HOsp_2mt(i)
   WRITE(334, fmt='(I4,7(A,I4))') qq1, ',', i,',', HOsp_sh(i), ',', HOsp_n(i),&
     ',', HOsp_l(i),',', HOsp_2j(i),'/2,', HOsp_2mj(i),'/2,', HOsp_2mt(i)
 enddo
@@ -1993,7 +1990,6 @@ enddo
 WRITE(334, fmt="(A)") "//  a    b    c    d         hamilR_H2         &
                       &h_bb_abcd         h_DD_abcd"
 
-print *, " // loop quasipart. registerQP START"
 do qq1 = 1, VSsp_dim
   q1 = VStoQPsp_index (qq1)
   do qq2 = 1, VSsp_dim
@@ -2031,7 +2027,7 @@ WRITE(333, fmt="(A,4i5,A,4i4,A,4i6)") &
 !!! ********************************************************************* !!!
 !!! ********************************************************************* !!!
 
-if (TEST_FULL_HAMILTONIAN) then
+IF (TEST_FULL_HAMILTONIAN) then
 it = 1
 do i1 = 1, ndim
   do i2 = 1, ndim
@@ -2050,7 +2046,7 @@ temp_indx_perm(it,4) = i4
 temp_h2b_perm (it)   = test_hamil_bb(i1,i2, i3,i4)
 
 aux_step_h2(it,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
-aux_step_h2(it,1,2) = aux_step_h2(it,1,1) * h2b
+aux_step_h2(it,1,2) = aux_step_h2(it,1,1) * temp_h2b_perm (it)
 
 aux = aux + aux_step_h2(it,1,2)
 
@@ -2058,19 +2054,20 @@ aux = aux + aux_step_h2(it,1,2)
   temp_unc(qq1,qq2,qq3,qq4) = temp_unc(qq1,qq2,qq3,qq4) + aux
 
 if (abs(aux) .GT. 1.0d-8 ) then
+  print "(A,F15.9)", "found h2b bb=", aux
   WRITE(333, fmt="(A,i6,4i3,F15.9,A,4i3,F15.9)")" kk1=",kk,temp_indx_perm(1,1),&
     temp_indx_perm(1,2),temp_indx_perm(1,3),temp_indx_perm(1,4), &
     temp_h2b_perm(1),"=TR=", temp_indx_perm(2,1), temp_indx_perm(2,2), &
     temp_indx_perm(2,3),temp_indx_perm(2,4), temp_h2b_perm(2)
   do it = 1,2
-    WRITE(333, fmt="(A,i2,A)",advance='no')"  h2 tr=", it,"=perms="
+    WRITE(333, fmt="(A,i2,A)", advance='no') "  h2 tr=", it,"=perms="
     do i = 1,4
       WRITE(333, fmt="(F15.9)",advance='no') aux_step_h2(it,i,1)
     end do
     if ((temp_indx_perm(it,1).NE.temp_indx_perm(it,3)) .OR. &
         (temp_indx_perm(it,2).NE.temp_indx_perm(it,4)) ) then
       do i = 5,8
-        WRITE(333, fmt="(F15.9)",advance='no') aux_step_h2(it,i,1)
+        WRITE(333, fmt="(F15.9)", advance='no') aux_step_h2(it,i,1)
       end do
     end if
 
@@ -2094,7 +2091,7 @@ do i1 = 1, ndim
       do i4 = 1, ndim
 
   aux_step_dd = zero
-  aux_step_dd(1,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1,i2,i3,i4)
+  aux_step_dd(1,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
 
   aux_step_dd(1,1,2) = aux_step_dd(1,1,1) * test_hamil_dd(i1,i2, i3,i4)
 
@@ -2105,6 +2102,7 @@ do i1 = 1, ndim
   temp_unc(qq1,qq2,qq3,qq4) = temp_unc(qq1,qq2,qq3,qq4) + aux
 
   if (abs(aux) .GT. 1.0d-6 ) then
+    print "(A,F15.9)", "found h2b dd=", aux
   WRITE(333, fmt="(A,i6,4i3,4F15.9)")" kk2=",kk, i1,i2,i3,i4, &
     hamil_DD_H2_byT(1,kk), hamil_DD_H2_byT(2,kk), &
     hamil_DD_H2_byT(3,kk), hamil_DD_H2_byT(4,kk)
@@ -2128,7 +2126,7 @@ if ((abs(temp_unc(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) .OR. &
 endif
 
 
-else
+ELSE
 !!! ********************************************************************* !!!
 !!! ********************************************************************* !!!
 
@@ -2274,7 +2272,7 @@ if ((abs(temp_unc(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) .OR. &
                                 temp_unc(qq1,qq2,qq3,qq4) - temp_val
 endif
 
-endif !! IF of the Explicit sum
+ENDIF !! IF of the Explicit sum
 !!---------------------------------------------------------------------------
 
       enddo
