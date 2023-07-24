@@ -1731,7 +1731,7 @@ do i1 = 1, ndim
     do i3 = 1, ndim
       do i4 = 1, ndim
 
-aux = test_hamil_bb(i1,i2, i3,i4)
+aux = test_hamil_bb(i1,i2, i3,i4) * 0.0d0
 aux = aux * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
 uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
 
@@ -1773,7 +1773,7 @@ do kk = 1, hamil_H2dim
   i2 = hamil_abcd(2+4*(kk-1))
   i3 = hamil_abcd(3+4*(kk-1))
   i4 = hamil_abcd(4+4*(kk-1))
-  h2b  = hamil_H2(kk)          !! all are > TOL.
+  h2b  = hamil_H2(kk) * 0.0d0
   perm = hamil_trperm(kk)
 
   aux = zero
