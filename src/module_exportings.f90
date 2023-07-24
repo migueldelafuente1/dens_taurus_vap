@@ -1732,6 +1732,7 @@ do i1 = 1, ndim
       do i4 = 1, ndim
 
 aux = test_hamil_bb(i1,i2, i3,i4)
+aux = aux * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
 uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
 
       end do
@@ -1748,6 +1749,7 @@ do i1 = 1, ndim
       do i4 = 1, ndim
 
 aux = test_hamil_dd(i1,i2, i3,i4)
+aux = aux * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
 uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
 
       end do
