@@ -2219,7 +2219,7 @@ open  (uth7, status='scratch', action='readwrite', access='stream', &
 ! read and export all the possible matrix elements (non sorted)
 ndim = 0
 spo2 = WBsp_dim / 2
-open (3333, file="hamil_abcd")
+open (3333, file="hamil_abcd.gut")
 do kk = 1, hamil_H2dim
   i1 = hamil_abcd(1+4*(kk-1))
   i2 = hamil_abcd(2+4*(kk-1))
@@ -2280,7 +2280,7 @@ red_indx  = 0
 red_dim   = 0
 sort_red_pointer = 0
 POW10 = floor(log10(HOsp_dim + 0.0d0)) + 1
-open (3333, file="temp_abcd_init")
+open (3333, file="temp_abcd_init.gut")
 write(3333, fmt ="(A,3i6)") "POW10,spo2,ndim(total)=", POW10,spo2,ndim
 do kk = 1, ndim
   i1 = temp_abcd(4*(kk-1) + 1)
@@ -2383,7 +2383,7 @@ do k1 = 1, ndim
 end do
 
 !! Assign in the temp_hamil_byT the element by T
-open (3333, file="temp_abcd_sorted")
+open (3333, file="temp_abcd_sorted.gut")
 do k1 = 1, ndim
   kk = sort_pointer(k1)
 
