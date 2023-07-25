@@ -2062,10 +2062,10 @@ if (ALL_ISOS) then
   close (uth7)
 
   do kk = 1, hamil_DD_H2dim
-    hamil_DD_H2_byT(1, kk) =  hamil_temp(4*(kk-1) + 1)
-    hamil_DD_H2_byT(2, kk) =  hamil_temp(4*(kk-1) + 2)
-    hamil_DD_H2_byT(3, kk) =  hamil_temp(4*(kk-1) + 3)
-    hamil_DD_H2_byT(4, kk) =  hamil_temp(4*(kk-1) + 4)
+    hamil_DD_H2_byT(1, kk) =  hamil_temp(4*(kk-1) + 1) ! pp pp
+    hamil_DD_H2_byT(2, kk) =  hamil_temp(4*(kk-1) + 2) ! pn pn
+    hamil_DD_H2_byT(3, kk) =  hamil_temp(4*(kk-1) + 3) ! pn np
+    hamil_DD_H2_byT(4, kk) =  hamil_temp(4*(kk-1) + 4) ! nn nn
   enddo
   deallocate(hamil_temp)
 
