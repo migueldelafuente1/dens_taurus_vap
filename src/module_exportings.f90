@@ -1568,10 +1568,10 @@ do kk = 1, hamil_DD_H2dim
   i4 = hamil_DD_abcd(4+4*(kk-1))
 
   test_hamil_dd(i1,i2,i3,i4)       = hamil_DD_H2_byT(1,kk)
-  test_hamil_dd(i1,i2+sn,i3,i4+sn) = hamil_DD_H2_byT(3,kk)
-  test_hamil_dd(i1+sn,i2,i3+sn,i4) = hamil_DD_H2_byT(3,kk)
-  test_hamil_dd(i1,i2+sn,i3+sn,i4) = hamil_DD_H2_byT(2,kk)
-  test_hamil_dd(i1+sn,i2,i3,i4+sn) = hamil_DD_H2_byT(2,kk)
+  test_hamil_dd(i1,i2+sn,i3,i4+sn) = hamil_DD_H2_byT(2,kk)
+  test_hamil_dd(i1+sn,i2,i3+sn,i4) = hamil_DD_H2_byT(2,kk)
+  test_hamil_dd(i1,i2+sn,i3+sn,i4) = hamil_DD_H2_byT(3,kk)
+  test_hamil_dd(i1+sn,i2,i3,i4+sn) = hamil_DD_H2_byT(3,kk)
   test_hamil_dd(i1+sn,i2+sn,i3+sn,i4+sn) = hamil_DD_H2_byT(4,kk)
 
   ! add the result to the uncoupled quasi particle matrix element
@@ -1689,14 +1689,16 @@ close(334)
 if (TEST_FULL_HAMILTONIAN) then
   call test_complete_hamiltonians(ndim)
 endif
-print "(A)", " *** Done the c. hamiltonian"
-call test_register_QPhamiltonianH22(ndim, TEST_FULL_HAMILTONIAN)
-print "(A)", " *** Done the register"
-call test_check_antisymmetry_H22VS(ndim)
-RETURN
+!print "(A)", " *** Done the c. hamiltonian"
+!call test_register_QPhamiltonianH22(ndim, TEST_FULL_HAMILTONIAN)
+!print "(A)", " *** Done the register"
+!call test_check_antisymmetry_H22VS(ndim)
+!RETURN
+!print *, " [ERROR] IF THIS LINE APPEAR KILL YOURSELF. ************************"
 
 
 !! Transformation for the QP valence space
+
 OPEN(334, file='uncoupled_hamil_qp.txt')
 WRITE(334, fmt="(A)") "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, 2mt)"
 do qq1 = 1, VSsp_dim
@@ -1725,7 +1727,8 @@ do qq1 = 1, VSsp_dim
 !!! ********************************************************************* !!!
 !!! ********************************************************************* !!!
 
-if (TEST_FULL_HAMILTONIAN) then
+IF (TEST_FULL_HAMILTONIAN) THEN
+
 do i1 = 1, ndim
   do i2 = 1, ndim
     do i3 = 1, ndim
@@ -1763,8 +1766,7 @@ if ((abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) .OR. &
                                 uncoupled_H22_VS(qq1,qq2,qq3,qq4) - temp_val
 endif
 
-cycle
-endif
+ELSE
 !!! ********************************************************************* !!!
 !!! ********************************************************************* !!!
 
@@ -1839,6 +1841,8 @@ if ((abs(uncoupled_H22_VS(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) .OR. &
                                 uncoupled_H22_VS(qq1,qq2,qq3,qq4), temp_val, &
                                 uncoupled_H22_VS(qq1,qq2,qq3,qq4) - temp_val
 endif
+
+ENDIF
 !!---------------------------------------------------------------------------
 
       enddo
@@ -1968,7 +1972,7 @@ logical, intent(in) :: TEST_FULL_HAMILTONIAN
 integer   :: i, i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it, perm
 real(r64) :: aux, h2b, temp_val
 real(r64), dimension(:,:,:,:), allocatable :: temp_unc
-real(r64), dimension(2,8,2) :: aux_step_h2, aux_step_dd ! [it][abcd, abdc, ...][h2b,bogoOps, add]
+real(r64), dimension(2,8,3) :: aux_step_h2, aux_step_dd ! [it][abcd, abdc, ...][h2b,bogoOps, add]
 integer,   dimension(2,4)   :: temp_indx_perm
 real(r64), dimension(4)     :: temp_h2b_perm
 logical   :: is_t_eq_1
