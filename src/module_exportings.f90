@@ -1752,7 +1752,7 @@ do i1 = 1, ndim
       do i4 = 1, ndim
 
 aux = test_hamil_dd(i1,i2, i3,i4)
-aux = aux !* bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
+aux = aux * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
 uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
 
       end do
@@ -1819,21 +1819,16 @@ do kk = 1, hamil_DD_H2dim
   i4 = hamil_DD_abcd(4+4*(kk-1))
 
   aux = zero
-!  aux = aux + (hamil_DD_H2_byT(1,kk) * &
-!               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
-!  aux = aux + (hamil_DD_H2_byT(2,kk) * ( &
-!               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2+sn,i3,i4+sn) + &
-!               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1+sn,i2,i3+sn,i4)) )
-!  aux = aux + (hamil_DD_H2_byT(3,kk) * ( &
-!               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2+sn,i3+sn,i4) + &
-!               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1+sn,i2,i3,i4+sn)) )
-!  aux = aux + (hamil_DD_H2_byT(4,kk) * &
-!               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1+sn,i2+sn,i3+sn,i4+sn))
-
-  aux = aux + (hamil_DD_H2_byT(1,kk) * 1.0d0)
-  aux = aux + (hamil_DD_H2_byT(2,kk) * 2.0d0)
-  aux = aux + (hamil_DD_H2_byT(3,kk) * 2.0d0)
-  aux = aux + (hamil_DD_H2_byT(4,kk) * 1.0d0)
+  aux = aux + (hamil_DD_H2_byT(1,kk) * &
+               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
+  aux = aux + (hamil_DD_H2_byT(2,kk) * ( &
+               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2+sn,i3,i4+sn) + &
+               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1+sn,i2,i3+sn,i4)) )
+  aux = aux + (hamil_DD_H2_byT(3,kk) * ( &
+               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2+sn,i3+sn,i4) + &
+               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1+sn,i2,i3,i4+sn)) )
+  aux = aux + (hamil_DD_H2_byT(4,kk) * &
+               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1+sn,i2+sn,i3+sn,i4+sn))
 
   ! add the result to the uncoupled quasi particle matrix element
   uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
