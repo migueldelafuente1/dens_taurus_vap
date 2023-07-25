@@ -2068,6 +2068,8 @@ do i1 = 1, ndim
     do i3 = 1, ndim
       do i4 = 1, ndim
 
+  cycle
+
   temp_indx_perm = 0
   temp_h2b_perm  = zero
   aux_step_h2    = zero
@@ -2123,8 +2125,6 @@ do i1 = 1, ndim
     do i3 = 1, ndim
       do i4 = 1, ndim
 
-  cycle
-
   aux_step_dd = zero
   aux_step_dd(1,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
   h2b = test_hamil_dd(i1,i2, i3,i4)
@@ -2177,6 +2177,9 @@ ELSE
 !!! ********************************************************************* !!!
 
 do kk = 1, hamil_H2dim
+
+  cycle
+
   i1 = hamil_abcd(1+4*(kk-1))
   i2 = hamil_abcd(2+4*(kk-1))
   i3 = hamil_abcd(3+4*(kk-1))
@@ -2267,7 +2270,7 @@ endif
 !! Loop for the Density Dependent term
 !! (does not use TR and perm. sort but explicit separation on the isospin)
 do kk = 1, hamil_DD_H2dim
-  cycle
+
   i1 = hamil_DD_abcd(1+4*(kk-1)) !! NOTE: Hamil_DD_abcd is only up to ndim_/2
   i2 = hamil_DD_abcd(2+4*(kk-1))
   i3 = hamil_DD_abcd(3+4*(kk-1))
