@@ -1545,41 +1545,41 @@ do kk = 1, hamil_H2dim
     endif
 
     !! 1. Criteria from module_fields.calculate_fields (general)
-!    test_hamil_bb(i1,i2,i3,i4) =          h2b
-!    test_hamil_bb(i1,i2,i4,i3) = -1.0d0 * h2b
-!    test_hamil_bb(i2,i1,i3,i4) = -1.0d0 * h2b
-!    test_hamil_bb(i2,i1,i4,i3) =          h2b
-!
-!    if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
-!
-!    test_hamil_bb(i3,i4,i1,i2) =          h2b
-!    test_hamil_bb(i3,i4,i2,i1) = -1.0d0 * h2b
-!    test_hamil_bb(i4,i3,i1,i2) = -1.0d0 * h2b
-!    test_hamil_bb(i4,i3,i2,i1) =          h2b
+    test_hamil_bb(i1,i2,i3,i4) =          h2b
+    test_hamil_bb(i1,i2,i4,i3) = -1.0d0 * h2b
+    test_hamil_bb(i2,i1,i3,i4) = -1.0d0 * h2b
+    test_hamil_bb(i2,i1,i4,i3) =          h2b
+
+    if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
+
+    test_hamil_bb(i3,i4,i1,i2) =          h2b
+    test_hamil_bb(i3,i4,i2,i1) = -1.0d0 * h2b
+    test_hamil_bb(i4,i3,i1,i2) = -1.0d0 * h2b
+    test_hamil_bb(i4,i3,i2,i1) =          h2b
 
 
     !! 2. Criteria from module_fields.calculate_fields_diag
-    test_hamil_bb(i1,i2,i3,i4) =          h2b
-    test_hamil_bb(i1,i2,i4,i3) = -1.0d0 * h2b
-
-    if ((i1.EQ.i3) .AND. (i2.NE.i4)) then
-      test_hamil_bb(i3,i4,i1,i2) =          h2b
-    endif
-    if (i2.LE.i4) then
-      test_hamil_bb(i2,i1,i4,i3) =          h2b
-    endif
-    if (i2.LE.i3) then
-      test_hamil_bb(i2,i1,i3,i4) = -1.0d0 * h2b
-    endif
-
-    if ((i1.NE.i3) .OR. (i2.NE.i4)) then
-      if (i4.LE.i2) then
-        test_hamil_bb(i4,i3,i2,i1) =          h2b
-      endif
-      if (i3.LE.i2) then
-        test_hamil_bb(i3,i4,i2,i1) = -1.0d0 * h2b
-      endif
-    endif
+!    test_hamil_bb(i1,i2,i3,i4) =          h2b
+!    test_hamil_bb(i1,i2,i4,i3) = -1.0d0 * h2b
+!
+!    if ((i1.EQ.i3) .AND. (i2.NE.i4)) then
+!      test_hamil_bb(i3,i4,i1,i2) =          h2b
+!    endif
+!    if (i2.LE.i4) then
+!      test_hamil_bb(i2,i1,i4,i3) =          h2b
+!    endif
+!    if (i2.LE.i3) then1
+!      test_hamil_bb(i2,i1,i3,i4) = -1.0d0 * h2b
+!    endif
+!
+!    if ((i1.NE.i3) .OR. (i2.NE.i4)) then
+!      if (i4.LE.i2) then
+!        test_hamil_bb(i4,i3,i2,i1) =          h2b
+!      endif
+!      if (i3.LE.i2) then
+!        test_hamil_bb(i3,i4,i2,i1) = -1.0d0 * h2b
+!      endif
+!    endif
     !! remains:: test_hamil_bb(i4,i3,i1,i2) = -1.0d0 * h2b
 
   enddo
@@ -1715,12 +1715,12 @@ close(334)
 if (TEST_FULL_HAMILTONIAN) then
   call test_complete_hamiltonians(ndim)
 endif
-!print "(A)", " *** Done the c. hamiltonian"
-!call test_register_QPhamiltonianH22(ndim, TEST_FULL_HAMILTONIAN)
-!print "(A)", " *** Done the register"
-!call test_check_antisymmetry_H22VS(ndim)
-!RETURN
-!print *, " [ERROR] IF THIS LINE APPEAR KILL YOURSELF. ************************"
+print "(A)", " *** Done the c. hamiltonian"
+call test_register_QPhamiltonianH22(ndim, TEST_FULL_HAMILTONIAN)
+print "(A)", " *** Done the register"
+call test_check_antisymmetry_H22VS(ndim)
+RETURN
+print *, " [ERROR] IF THIS LINE APPEAR KILL YOURSELF. ************************"
 
 
 !! Transformation for the QP valence space
@@ -2077,7 +2077,7 @@ temp_indx_perm(it,1) = i1
 temp_indx_perm(it,2) = i2
 temp_indx_perm(it,3) = i3
 temp_indx_perm(it,4) = i4
-temp_h2b_perm (it)   = test_hamil_bb(i1,i2, i3,i4) * 0.0d0
+temp_h2b_perm (it)   = test_hamil_bb(i1,i2, i3,i4) !* 0.0d0
 
 aux_step_h2(it,1,1)  = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
 aux_step_h2(it,1,2)  = aux_step_h2(it,1,1) * temp_h2b_perm (it)
@@ -2122,6 +2122,8 @@ do i1 = 1, ndim
   do i2 = 1, ndim
     do i3 = 1, ndim
       do i4 = 1, ndim
+
+  cycle
 
   aux_step_dd = zero
   aux_step_dd(1,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
@@ -2179,7 +2181,7 @@ do kk = 1, hamil_H2dim
   i2 = hamil_abcd(2+4*(kk-1))
   i3 = hamil_abcd(3+4*(kk-1))
   i4 = hamil_abcd(4+4*(kk-1))
-  h2b  = hamil_H2(kk)  *  0.0d0     !! all are > TOL.
+  h2b  = hamil_H2(kk)   !! all are > TOL.
   perm = hamil_trperm(kk)
 
   temp_indx_perm = 0
@@ -2265,7 +2267,7 @@ endif
 !! Loop for the Density Dependent term
 !! (does not use TR and perm. sort but explicit separation on the isospin)
 do kk = 1, hamil_DD_H2dim
-
+  cycle
   i1 = hamil_DD_abcd(1+4*(kk-1)) !! NOTE: Hamil_DD_abcd is only up to ndim_/2
   i2 = hamil_DD_abcd(2+4*(kk-1))
   i3 = hamil_DD_abcd(3+4*(kk-1))
