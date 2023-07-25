@@ -1544,17 +1544,43 @@ do kk = 1, hamil_H2dim
       h2b = sign(one,perm*one) * h2b
     endif
 
+    !! 1. Criteria from module_fields.calculate_fields (general)
+!    test_hamil_bb(i1,i2,i3,i4) =          h2b
+!    test_hamil_bb(i1,i2,i4,i3) = -1.0d0 * h2b
+!    test_hamil_bb(i2,i1,i3,i4) = -1.0d0 * h2b
+!    test_hamil_bb(i2,i1,i4,i3) =          h2b
+!
+!    if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
+!
+!    test_hamil_bb(i3,i4,i1,i2) =          h2b
+!    test_hamil_bb(i3,i4,i2,i1) = -1.0d0 * h2b
+!    test_hamil_bb(i4,i3,i1,i2) = -1.0d0 * h2b
+!    test_hamil_bb(i4,i3,i2,i1) =          h2b
+
+
+    !! 2. Criteria from module_fields.calculate_fields_diag
     test_hamil_bb(i1,i2,i3,i4) =          h2b
     test_hamil_bb(i1,i2,i4,i3) = -1.0d0 * h2b
-    test_hamil_bb(i2,i1,i3,i4) = -1.0d0 * h2b
-    test_hamil_bb(i2,i1,i4,i3) =          h2b
 
-    if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
+    if ((i1.EQ.i3) .AND. (i2.NE.i4)) then
+      test_hamil_bb(i3,i4,i1,i2) =          h2b
+    endif
+    if (i2.LE.i4) then
+      test_hamil_bb(i2,i1,i4,i3) =          h2b
+    endif
+    if (i2.LE.i3) then
+      test_hamil_bb(i2,i1,i3,i4) = -1.0d0 * h2b
+    endif
 
-    test_hamil_bb(i3,i4,i1,i2) =          h2b
-    test_hamil_bb(i3,i4,i2,i1) = -1.0d0 * h2b
-    test_hamil_bb(i4,i3,i1,i2) = -1.0d0 * h2b
-    test_hamil_bb(i4,i3,i2,i1) =          h2b
+    if ((i1.NE.i3) .OR. (i2.NE.i4)) then
+      if (i4.LE.i2) then
+        test_hamil_bb(i4,i3,i2,i1) =          h2b
+      endif
+      if (i3.LE.i2) then
+        test_hamil_bb(i3,i4,i2,i1) = -1.0d0 * h2b
+      endif
+    endif
+    !! remains:: test_hamil_bb(i4,i3,i1,i2) = -1.0d0 * h2b
 
   enddo
 enddo
@@ -1603,7 +1629,7 @@ subroutine calculate_QuasiParticle_Hamiltonian_H22(bogo_U0, bogo_V0, ndim)
 integer, intent(in) :: ndim
 real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0,bogo_V0
 integer   :: i, i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it, perm
-logical :: TEST_FULL_HAMILTONIAN = .FALSE.
+logical :: TEST_FULL_HAMILTONIAN = .TRUE.
 real(r64) :: aux, h2b, temp_val
 
 sn = ndim / 2
