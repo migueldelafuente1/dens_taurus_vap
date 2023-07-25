@@ -1521,11 +1521,16 @@ subroutine test_complete_hamiltonians(ndim)
 integer, intent(in) :: ndim
 integer :: kk, tt, i1,i2,i3,i4, perm, sn, it
 real(r64) :: h2b
+integer, dimension(ndim,ndim,ndim,ndim) :: registered_h2b ! test which m.e. is registered
 
 sn = ndim / 2
 allocate(test_hamil_bb(ndim,ndim,ndim,ndim), test_hamil_dd(ndim,ndim,ndim,ndim))
 test_hamil_bb = zero
 test_hamil_dd = zero
+
+!! registered_h2b is an
+registered_h2b = 0
+
 
 print "(A)", "   *** START explicitly instance."
 do kk = 1, hamil_H2dim
@@ -1550,12 +1555,22 @@ do kk = 1, hamil_H2dim
     test_hamil_bb(i2,i1,i3,i4) = -1.0d0 * h2b
     test_hamil_bb(i2,i1,i4,i3) =          h2b
 
+    registered_h2b(i1,i2,i3,i4) = registered_h2b(i1,i2,i3,i4) + 1
+    registered_h2b(i1,i2,i4,i3) = registered_h2b(i1,i2,i4,i3) + 1
+    registered_h2b(i2,i1,i3,i4) = registered_h2b(i2,i1,i3,i4) + 1
+    registered_h2b(i2,i1,i4,i3) = registered_h2b(i2,i1,i4,i3) + 1
+
     if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
 
     test_hamil_bb(i3,i4,i1,i2) =          h2b
     test_hamil_bb(i3,i4,i2,i1) = -1.0d0 * h2b
     test_hamil_bb(i4,i3,i1,i2) = -1.0d0 * h2b
     test_hamil_bb(i4,i3,i2,i1) =          h2b
+
+    registered_h2b(i3,i4,i1,i2) = registered_h2b(i3,i4,i1,i2) + 1
+    registered_h2b(i3,i4,i2,i1) = registered_h2b(i3,i4,i2,i1) + 1
+    registered_h2b(i4,i3,i1,i2) = registered_h2b(i4,i3,i1,i2) + 1
+    registered_h2b(i4,i3,i2,i1) = registered_h2b(i4,i3,i2,i1) + 1
 
 
     !! 2. Criteria from module_fields.calculate_fields_diag
@@ -1605,16 +1620,20 @@ end do
 print "(A)", "   *** DD term explicitly instanced."
 
 print "(A)", "   *** TEST - READ THE INSTANCES."
+OPEN(3333, file="test_reconstruction_BBhamil.gut")
 do i1= 1, ndim
   do i2= 1, ndim
     do i3 = 1, ndim
       do i4 = 1, ndim
+        WRITE(3333, fmt="(5i4)") i1,i2,i3,i4, registered_h2b(i1,i2,i3,i4)
+
         h2b = test_hamil_bb(i1,i2,i3,i4)
         h2b = test_hamil_dd(i1,i2,i3,i4)
       end do
     end do
   end do
 end do
+CLOSE(3333)
 print "(A)", "   *** DONE - READ THE INSTANCES."
 
 end subroutine test_complete_hamiltonians
