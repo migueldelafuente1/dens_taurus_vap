@@ -378,8 +378,7 @@ do a = 1, HOsp_dim
           call uncouple_J(a,b,c,d,Vdec)
         endif
 
-        !Vdec = Vdec * scaling_2b
-        Vdec = 1.0d00
+        Vdec = Vdec * scaling_2b
 
         !!! Select only matrix elements above a given cutoff to reduce the
         !!! CPU time and storage
