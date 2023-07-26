@@ -2256,10 +2256,41 @@ do kk = 1, hamil_H2dim
     write(uth7)  h2b, -h2b, -h2b,  h2b
     ndim = ndim + 4
 
+!    !! 1. Criteria from module_fields.calculate_fields (general)
+!    registered_h2b(i1,i2,i3,i4) = registered_h2b(i1,i2,i3,i4) + 1
+!    registered_h2b(i1,i2,i4,i3) = registered_h2b(i1,i2,i4,i3) + 1
+!    registered_h2b(i2,i1,i3,i4) = registered_h2b(i2,i1,i3,i4) + 1
+!    registered_h2b(i2,i1,i4,i3) = registered_h2b(i2,i1,i4,i3) + 1
+!    if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) then
+!      registered_h2b(i3,i4,i1,i2) = registered_h2b(i3,i4,i1,i2) + 1
+!      registered_h2b(i3,i4,i2,i1) = registered_h2b(i3,i4,i2,i1) + 1
+!      registered_h2b(i4,i3,i1,i2) = registered_h2b(i4,i3,i1,i2) + 1
+!      registered_h2b(i4,i3,i2,i1) = registered_h2b(i4,i3,i2,i1) + 1
+!    endif
+
+    !! 2. Criteria from module_fields.calculate_fields_diag
     registered_h2b(i1,i2,i3,i4) = registered_h2b(i1,i2,i3,i4) + 1
     registered_h2b(i1,i2,i4,i3) = registered_h2b(i1,i2,i4,i3) + 1
-    registered_h2b(i2,i1,i3,i4) = registered_h2b(i2,i1,i3,i4) + 1
-    registered_h2b(i2,i1,i4,i3) = registered_h2b(i2,i1,i4,i3) + 1
+
+    if ((i1.EQ.i3) .AND. (i2.NE.i4)) then
+      registered_h2b(i3,i4,i1,i2) = registered_h2b(i3,i4,i1,i2) + 1
+    endif
+    if (i2.LE.i4) then
+      registered_h2b(i2,i1,i4,i3) = registered_h2b(i2,i1,i4,i3) + 1
+    endif
+    if (i2.LE.i3) then1
+      registered_h2b(i2,i1,i3,i4) = registered_h2b(i2,i1,i3,i4) + 1
+    endif
+
+    if ((i1.NE.i3) .OR. (i2.NE.i4)) then
+      if (i4.LE.i2) then
+        registered_h2b(i4,i3,i2,i1) = registered_h2b(i4,i3,i2,i1) + 1
+      endif
+      if (i3.LE.i2) then
+        registered_h2b(i3,i4,i2,i1) = registered_h2b(i3,i4,i2,i1) + 1
+      endif
+    endif
+    !! -----------------------------------------------------------------------
 
     if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
 
@@ -2270,10 +2301,7 @@ do kk = 1, hamil_H2dim
     write(uth7)  h2b, -h2b, -h2b,  h2b
     ndim = ndim + 4
 
-    registered_h2b(i3,i4,i1,i2) = registered_h2b(i3,i4,i1,i2) + 1
-    registered_h2b(i3,i4,i2,i1) = registered_h2b(i3,i4,i2,i1) + 1
-    registered_h2b(i4,i3,i1,i2) = registered_h2b(i4,i3,i1,i2) + 1
-    registered_h2b(i4,i3,i2,i1) = registered_h2b(i4,i3,i2,i1) + 1
+
   enddo
 end do
 close(3333)
