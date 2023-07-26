@@ -2368,13 +2368,13 @@ do i1 = 1, HOsp_dim
       do i4 = 1, HOsp_dim
 
   if ((-1)**(HOsp_l(i1)+HOsp_l(i2)) /= (-1)**(HOsp_l(i3)+HOsp_l(i4))) then
-    registered_h2b(i1,i2,i3,i4) = registered_h2b(i1,i2,i3,i4) + 2
+    registered_h2b(i1,i2,i3,i4) = 3
   end if
   if ((HOsp_2mj(i1)+HOsp_2mj(i2)) /= HOsp_2mj(i3)+HOsp_2mj(i4)) then
-    registered_h2b(i1,i2,i3,i4) = registered_h2b(i1,i2,i3,i4) + 2
+    registered_h2b(i1,i2,i3,i4) = 3
   end if
   if ((HOsp_2mt(i1)+HOsp_2mt(i2)) /= HOsp_2mt(i3)+HOsp_2mt(i4)) then
-    registered_h2b(i1,i2,i3,i4) = registered_h2b(i1,i2,i3,i4) + 2
+    registered_h2b(i1,i2,i3,i4) = 3
   end if
 
   WRITE(3334, fmt="(5i4)") i1,i2,i3,i4, registered_h2b(i1,i2,i3,i4)
