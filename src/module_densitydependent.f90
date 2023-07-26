@@ -2361,18 +2361,29 @@ do kk = 1, ndim
 enddo
 close(3333)
 
-      OPEN(3334, file="test_reconstruction_BBhamil.gut")
-      do i1 = 1, HOsp_dim
-        do i2 = 1, HOsp_dim
-          do i3 = 1, HOsp_dim
-            do i4 = 1, HOsp_dim
-              WRITE(3334, fmt="(5i4)") i1,i2,i3,i4, registered_h2b(i1,i2,i3,i4)
-            end do
-          end do
-        end do
+OPEN(3334, file="test_reconstruction_BBhamil.gut")
+do i1 = 1, HOsp_dim
+  do i2 = 1, HOsp_dim
+    do i3 = 1, HOsp_dim
+      do i4 = 1, HOsp_dim
+
+  if ((-1)**(HOsp_l(i1)+HOsp_l(i2)) /= (-1)**(HOsp_l(i1)+HOsp_l(i2))) then
+    registered_h2b(i1,i2,i3,i4) = 2
+  end if
+  if ((HOsp_2mj(i1)+HOsp_2mj(i2)) /= HOsp_2mj(i1)+HOsp_2mj(i2)) then
+    registered_h2b(i1,i2,i3,i4) = 2
+  end if
+  if ((HOsp_2mt(i1)+HOsp_2mt(i2)) /= HOsp_2mt(i1)+HOsp_2mt(i2)) then
+    registered_h2b(i1,i2,i3,i4) = 2
+  end if
+
+  WRITE(3334, fmt="(5i4)") i1,i2,i3,i4, registered_h2b(i1,i2,i3,i4)
       end do
-      CLOSE(3334)
-      deallocate(registered_h2b)
+    end do
+  end do
+end do
+CLOSE(3334)
+deallocate(registered_h2b)
 
 allocate(temp_hamil_byT(4, red_dim), &
          red_abcd(WBsp_dim/2, WBsp_dim/2, WBsp_dim/2, WBsp_dim/2))
