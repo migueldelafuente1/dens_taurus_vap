@@ -2261,7 +2261,7 @@ do kk = 1, hamil_H2dim
     registered_h2b(i1,i2,i4,i3) = registered_h2b(i1,i2,i4,i3) + 1
     registered_h2b(i2,i1,i3,i4) = registered_h2b(i2,i1,i3,i4) + 1
     registered_h2b(i2,i1,i4,i3) = registered_h2b(i2,i1,i4,i3) + 1
-    if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) then
+    if ((kdelta(i1,i3) * kdelta(i2,i4)) .NE. 1) then
       registered_h2b(i3,i4,i1,i2) = registered_h2b(i3,i4,i1,i2) + 1
       registered_h2b(i3,i4,i2,i1) = registered_h2b(i3,i4,i2,i1) + 1
       registered_h2b(i4,i3,i1,i2) = registered_h2b(i4,i3,i1,i2) + 1
