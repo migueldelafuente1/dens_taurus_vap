@@ -2278,7 +2278,7 @@ do kk = 1, hamil_H2dim
     if (i2.LE.i4) then
       registered_h2b(i2,i1,i4,i3) = registered_h2b(i2,i1,i4,i3) + 1
     endif
-    if (i2.LE.i3) then1
+    if (i2.LE.i3) then
       registered_h2b(i2,i1,i3,i4) = registered_h2b(i2,i1,i3,i4) + 1
     endif
 
