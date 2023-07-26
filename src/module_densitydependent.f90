@@ -2210,8 +2210,9 @@ real(r64), dimension(:),   allocatable :: temp_hamil
 real(r64), dimension(:,:), allocatable :: temp_hamil_byT
 integer,   dimension(:,:,:,:), allocatable :: red_abcd
 logical :: found
-integer, dimension(ndim,ndim,ndim,ndim) :: registered_h2b ! test which m.e. is registered
+integer, dimension(:,:,:,:), allocatable:: registered_h2b ! test which m.e. is registered
 
+allocate(registered_h2b(HOsp_dim,HOsp_dim,HOsp_dim,HOsp_dim))
 
 print "(A)", "[  ] EXPORT Hamiltonian (uncoupled) for current interaction."
 open  (uth6, status='scratch', action='readwrite', access='stream', &
@@ -2361,16 +2362,17 @@ enddo
 close(3333)
 
       OPEN(3334, file="test_reconstruction_BBhamil.gut")
-      do i1 = 1, ndim
-        do i2 = 1, ndim
-          do i3 = 1, ndim
-            do i4 = 1, ndim
+      do i1 = 1, HOsp_dim
+        do i2 = 1, HOsp_dim
+          do i3 = 1, HOsp_dim
+            do i4 = 1, HOsp_dim
               WRITE(3334, fmt="(5i4)") i1,i2,i3,i4, registered_h2b(i1,i2,i3,i4)
             end do
           end do
         end do
       end do
       CLOSE(3334)
+      deallocate(registered_h2b)
 
 allocate(temp_hamil_byT(4, red_dim), &
          red_abcd(WBsp_dim/2, WBsp_dim/2, WBsp_dim/2, WBsp_dim/2))
