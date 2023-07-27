@@ -1052,7 +1052,7 @@ call calculate_H11_real(ndim)
 !enddo
 
 !!! Diagonalizes hsp
-call dsyev('v','l',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
+call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
 if (info_H11 .NE. 0) then
   print "(A,I5)", "  invalid info at Diag. H11 info_H11=", info_H11
 end if
@@ -1129,7 +1129,7 @@ do i = 1, evnum
 !    end do
 !  end do
 
-  call dsyev('v','l',k,hspr,k,eigenr,workr,3*k-1,info_H11)
+  call dsyev('v','u',k,hspr,k,eigenr,workr,3*k-1,info_H11)
   if (info_H11 .NE. 0) then
     print "(A,2I5)", "  invalid info at Diag. Jztrasn, i,info_H11=", i,info_H11
   end if
