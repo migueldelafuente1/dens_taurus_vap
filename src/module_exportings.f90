@@ -1052,7 +1052,7 @@ call calculate_H11_real(ndim)
 !enddo
 
 !!! Diagonalizes hsp
-call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
+call dsyev('v','l',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
 if (info_H11 .NE. 0) then
   print "(A,I5)", "  invalid info at Diag. H11 info_H11=", info_H11
 end if
@@ -1129,7 +1129,7 @@ do i = 1, evnum
 !    end do
 !  end do
 
-  call dsyev('v','u',k,hspr,k,eigenr,workr,3*k-1,info_H11)
+  call dsyev('v','l',k,hspr,k,eigenr,workr,3*k-1,info_H11)
   if (info_H11 .NE. 0) then
     print "(A,2I5)", "  invalid info at Diag. Jztrasn, i,info_H11=", i,info_H11
   end if
@@ -1146,7 +1146,7 @@ enddo
         OPEN(333, file="jz_finalTransf.gut")
         do i = 1, ndim
           do j = 1, ndim
-            WRITE(333,fmt="(F16.6)",advance='no') A1(i, j)
+            WRITE(333,fmt="(F16.6)",advance='no') A1(i,j)
           enddo
           WRITE(333,fmt="(A)") ""
         enddo
@@ -1163,7 +1163,7 @@ OPEN(335, file="H11_transform_py.txt")
 ! copy the transformation matrix
 do i = 1, ndim
   do j = 1, ndim
-    READ(335, fmt="(F12.9)") field_H11(i,j)
+!    READ(335, fmt="(F12.9)") field_H11(i,j)
     transf_H11(i,j) = field_H11(i,j)
   end do
 end do
