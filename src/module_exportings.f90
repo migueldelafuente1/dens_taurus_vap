@@ -2511,7 +2511,7 @@ do sh1 = 1, VSsh_dim
               endif
             end if
 
-            WRITE(3302, fmt="(f14.9)", advance='no') &
+            WRITE(3302, fmt="(f15.8)", advance='no') &
                   aux_val * reduced_H22_VS(J,tt,sh1,sh2,sh3,sh4)
           end do
           WRITE(3302, fmt="(A)") ""
