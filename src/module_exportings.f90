@@ -1163,7 +1163,7 @@ OPEN(335, file="H11_transform_py.txt")
 ! copy the transformation matrix
 do i = 1, ndim
   do j = 1, ndim
-    !READ(335, fmt="(F12.9)") field_H11(i,j)
+    READ(335, fmt="(F12.9)") field_H11(i,j)
     transf_H11(i,j) = field_H11(i,j)
   end do
 end do
