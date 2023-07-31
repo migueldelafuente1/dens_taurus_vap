@@ -274,6 +274,7 @@ print '(A,2L10)',  'export QP Val.Sp   =', evalQuasiParticleVSpace
 
 if (.NOT.exportValSpace) then
   deallocate(hamil_H2cpd_DD) ! It wont be used
+  print "(A)", "  I did the hamiltonian cpd cause not used!"
 endif
 if (exportValSpace)then
   print '(A,2I4)', '    ... sh states to export DIM(sh/sp):',VSsh_dim,VSsp_dim
@@ -307,6 +308,7 @@ print *, ''
 
 haveX0M1 = abs(x0_DD_FACTOR - 1.0d+0) > 1.0d-6
 
+print "(A)", "   Done the DD importing parameters."
 end subroutine import_DD_parameters
 
 
