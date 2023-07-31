@@ -272,9 +272,13 @@ print '(A,I10)',   'PHI_grid           =', PHI_grid
 print '(A,2L10)',  'eval/export Val.Sp =', evalFullSPSpace, exportValSpace
 print '(A,2L10)',  'export QP Val.Sp   =', evalQuasiParticleVSpace
 
-if (.NOT.exportValSpace) then
+if ((.NOT.exportValSpace).AND.(implement_H2cpd_DD)) then
   deallocate(hamil_H2cpd_DD) ! It wont be used
   print "(A)", "  I did the hamiltonian cpd cause not used!"
+else if ((exportValSpace).AND.(.NOT.implement_H2cpd_DD)) then
+  print "(2A)", " ERROR, do not export the matrix elements with hamiltonian",&
+                " of type=1 or 2, program stops"
+  STOP
 endif
 if (exportValSpace)then
   print '(A,2I4)', '    ... sh states to export DIM(sh/sp):',VSsh_dim,VSsp_dim
