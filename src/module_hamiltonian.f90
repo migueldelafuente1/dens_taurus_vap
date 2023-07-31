@@ -267,6 +267,16 @@ select case (hamil_type)
 
     call read_hamiltonian_2body_antoine
 
+    !! [DENSITY MOD] ------------
+    if (implement_H2cpd_DD) then
+      allocate( hamil_H2cpd_DD(0:3,0:HO_2jmax, &
+                             HOsh_dim,HOsh_dim,HOsh_dim,HOsh_dim), &
+              stat=ialloc )
+      if( ialloc /= 0 ) stop 'Error during allocation of coupled hamiltonian_DD'
+      hamil_H2cpd_DD = zero
+    endif
+    !! ---------------------------
+
   case (3:4)
     allocate( hamil_H2cpd(0:5,0:HO_2jmax,HOsh_dim,HOsh_dim,HOsh_dim,HOsh_dim), &
               stat=ialloc )
