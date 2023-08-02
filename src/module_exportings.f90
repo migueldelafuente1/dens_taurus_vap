@@ -952,8 +952,10 @@ eigen_H11  = zero
 transf_H11 = zero
 
 !!! Computes the fields
-call calculate_fields_diag(zone*dens_rhoRR, zone*dens_kappaRR, gammaRR,hspRR, &
-                           deltaRR,ndim=ndim)
+!call calculate_fields_diag(zone*dens_rhoRR, zone*dens_kappaRR, gammaRR,hspRR, &
+!                           deltaRR,ndim=ndim)
+call calculate_fields(zone*dens_rhoRR, zone*dens_kappaRR, zone*dens_kappaRR, &
+                      gammaRR, hspRR, deltaRR, deltaRR, ndim)
 !call calculate_expectval_density(zone*dens_rhoRR, &
 !                                 zone*dens_kappaRR, zone*dens_kappaRR, ndim, 0)
 !call calculate_fields_DD_diag(zone*dens_rhoRR, zone*dens_kappaRR, &
