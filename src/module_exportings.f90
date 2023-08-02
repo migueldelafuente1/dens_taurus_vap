@@ -1630,6 +1630,7 @@ real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0,bogo_V0
 integer   :: i, i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it, perm
 logical :: TEST_FULL_HAMILTONIAN = .FALSE.
 real(r64) :: aux, h2b, temp_val
+real(r64), dimension(ndim,ndim) :: aux_U,aux_V
 
 sn = ndim / 2
 allocate(U_trans(ndim,ndim), V_trans(ndim,ndim))
@@ -1643,28 +1644,19 @@ U_trans = bogo_U0
 V_trans = bogo_V0
 
 !! Apply the transformation on the U and V
-call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
-           zero, U_trans, ndim)
-call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
-           zero, V_trans, ndim)
-
-!call dgemm('n','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_U0, ndim,&
+!call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
 !           zero, U_trans, ndim)
-!call dgemm('n','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_V0, ndim,&
+!call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
 !           zero, V_trans, ndim)
-!
-!do i1 = 1, ndim !transpose
-!  do i2 = 1, ndim
-!    temp_val = U_trans(i1,i2)
-!    U_trans(i1,i2) = U_trans(i2,i1)
-!    U_trans(i2,i1) = temp_val
-!
-!    temp_val = V_trans(i1,i2)
-!    V_trans(i1,i2) = V_trans(i2,i1)
-!    V_trans(i2,i1) = temp_val
-!  end do
-!enddo
 
+call dgemm('t','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_U0, ndim,&
+           zero, aux_U, ndim)
+call dgemm('t','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_V0, ndim,&
+           zero, aux_V, ndim)
+call dgemm('n','n', ndim, ndim, ndim, one, aux_U, ndim, transf_H11, ndim,&
+           zero, U_trans, ndim)
+call dgemm('n','n', ndim, ndim, ndim, one, aux_V, ndim, transf_H11, ndim,&
+           zero, V_trans, ndim)
 
 !do i1 = 1, ndim
 !  do i2 = 1, ndim
