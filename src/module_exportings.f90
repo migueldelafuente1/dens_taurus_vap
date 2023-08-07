@@ -931,22 +931,21 @@ end subroutine print_DD_matrix_elements
 subroutine calculate_jz11_real(bogo_U0, bogo_V0, ndim)
 
 integer, intent(in) :: ndim
-real(r64), dimension(ndim,ndim) :: bogo_U0, bogo_V0
+real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0, bogo_V0
 real(r64), dimension(ndim,ndim) :: A1, A2, A3, A4, A5, Jz_aux
-integer :: k, i, j
+integer :: i,j,k
 
+!!! Re-express the 1-body Jz operator.
 Jz_aux = zero
 k = 0
-          OPEN(333, file="jz_operator.gut")
-          do i=1, ndim
-            do j=1, ndim
-              k = k + 1
-              Jz_aux(i,j) = angumome_Jz(k)
-              WRITE(333,fmt="(F16.6)",advance='no') angumome_Jz(k)
-            enddo
-            WRITE(333,fmt="(A)") ""
-          enddo
-          CLOSE(333)
+do i=1, ndim
+  do j=1, ndim
+    k = k + 1
+    Jz_aux(i,j) = angumome_Jz(k)
+  enddo
+enddo
+
+!!! Evaluating the 1 body operator (there is no c+c+ terms)
 
 !!! U^t h U
 call dgemm('t','n',ndim,ndim,ndim,one,bogo_U0,ndim,Jz_aux,ndim,zero,A1, &
@@ -961,7 +960,7 @@ call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,bogo_V0,ndim,zero,A3,ndim)
 !!! H11
 Jz_11 = A2 - A3
 
-end subroutine calculate_H11_real
+end subroutine calculate_jz11_real
 
 
 !------------------------------------------------------------------------------!
@@ -1015,7 +1014,7 @@ field_hspRR   = real(hspRR)
 field_deltaRR = real(deltaRR)
 
 call calculate_H11_real (ndim)
-call calculate_jz11_real(bogo_U0, bogo_V0,ndim)
+call calculate_jz11_real(bogo_U0, bogo_V0, ndim)
 
           OPEN(333,file="H11_init.gut")
           do i=1, ndim
