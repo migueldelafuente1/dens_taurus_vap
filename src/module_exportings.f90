@@ -1703,6 +1703,23 @@ uncoupled_H22_VS = zero
 U_trans = bogo_U0
 V_trans = bogo_V0
 
+    open(334, file='bogo_U0_init.gut')
+    do i1 = 1, ndim
+      do i2 = 1, ndim
+        write(334,fmt="(f10.6)", advance='no') bogo_U0(i1,i2) !U_trans(i1,i2)
+      end do
+      write(334, fmt="(A)") ""
+    enddo
+    close(334)
+    open(334, file='bogo_V0_init.gut')
+    do i1 = 1, ndim
+      do i2 = 1, ndim
+        write(334,fmt="(f10.6)", advance='no') bogo_V0(i1,i2) !V_trans(i1,i2)
+      end do
+      write(334, fmt="(A)") ""
+    enddo
+    close(334)
+
 !! Apply the transformation on the U and V
 call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
            zero, U_trans, ndim)
