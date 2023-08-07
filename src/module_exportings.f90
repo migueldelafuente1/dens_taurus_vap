@@ -1213,9 +1213,10 @@ enddo
         enddo
         CLOSE(333)
 
+field_H11 = A1
 
-call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,&
-           zero,field_H11,ndim)
+!call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,A1,ndim,&
+!           zero,field_H11,ndim)
 !call dgemm('t','n',ndim,ndim,ndim,one, D0,ndim,A1,ndim,zero, A2,ndim)
 !call dgemm('n','n',ndim,ndim,ndim,one, A2,ndim,D0,ndim,zero, field_H11,ndim)
 !endif  ***********************************************************
