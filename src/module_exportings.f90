@@ -988,7 +988,7 @@ integer, dimension(1) :: tabmin
 integer, dimension(ndim) :: eigenh_order, evdeg
 real(r64), dimension(ndim) :: eigenh_tmp
 real(r64), dimension(3*ndim-1) :: work
-real(r64), dimension(ndim,ndim) :: D0, rhoc, hspc, A1, A2, Jz_aux
+real(r64), dimension(ndim,ndim) :: D0, rhoc, hspc, A1, A2, Jz_aux, D0inv
 
 real(r64), dimension(:,:), allocatable :: hspr
 real(r64), dimension(:), allocatable :: workr, eigenr
@@ -1159,9 +1159,12 @@ k = 0
         CLOSE(333)
 
 D0 = field_H11
-!call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,Jz_11,ndim, zero,A2,ndim)
+D0inv = field_H11
+call dgetri(ndim,D0inv,ndim,ndim,1,-1,info_H11)
 
-call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,Jz_11,ndim, zero,A1,ndim)
+call dgemm('n','n',ndim,ndim,ndim,one,D0inv,ndim,Jz_11,ndim, zero,A1,ndim)
+
+!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,Jz_11,ndim, zero,A1,ndim)
 !call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,angumome_Jz(1:ndim**2),ndim,&
 !                   zero,A1,ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,A2,ndim)
