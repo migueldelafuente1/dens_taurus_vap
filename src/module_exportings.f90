@@ -1146,6 +1146,11 @@ k = 0
           do j=1, ndim
             k = k + 1
             Jz_aux(i,j) = angumome_Jz(k)
+            if (dabs(Jz_11(i,j).LT.1.0d-6) then
+              Jz_11(i,j) = dabs(Jz_11(i,j))
+            else
+              Jz_11(i,j) = Jz_11(i,j)
+            end if
             WRITE(333,fmt="(F16.6)",advance='no') Jz_11(i,j)
           enddo
           WRITE(333,fmt="(A)") ""
