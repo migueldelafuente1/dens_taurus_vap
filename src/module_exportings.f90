@@ -940,11 +940,12 @@ k = 0
 do i=1, ndim
   do j=1, ndim
     k = k + 1
-    if (dabs(angumome_Jz(k)).LT.1.0d-6) then
-      Jz_aux(i,j) = dabs(angumome_Jz(k))
-    else
-      Jz_aux(i,j) = angumome_Jz(k)
-    endif
+    Jz_aux(i,j) = angumome_Jz(k)
+!    if (dabs(angumome_Jz(k)).LT.1.0d-6) then
+!      Jz_aux(i,j) = dabs(angumome_Jz(k))
+!    else
+!      Jz_aux(i,j) = angumome_Jz(k)
+!    endif
     WRITE(333,fmt="(F16.6)",advance='no') Jz_aux(i,j) !!angumome_Jz(k)
   enddo
   WRITE(333,fmt="(A)") ""
@@ -1146,11 +1147,11 @@ k = 0
           do j=1, ndim
             k = k + 1
             Jz_aux(i,j) = angumome_Jz(k)
-            if (dabs(Jz_11(i,j)).LT.1.0d-6) then
-              Jz_11(i,j) = dabs(Jz_11(i,j))
-            else
-              Jz_11(i,j) = Jz_11(i,j)
-            end if
+!            if (dabs(Jz_11(i,j)).LT.1.0d-6) then
+!              Jz_11(i,j) = dabs(Jz_11(i,j))
+!            else
+!              Jz_11(i,j) = Jz_11(i,j)
+!            end if
             WRITE(333,fmt="(F16.6)",advance='no') Jz_11(i,j)
           enddo
           WRITE(333,fmt="(A)") ""
