@@ -1149,7 +1149,8 @@ k = 0
         CLOSE(333)
 
 D0 = field_H11
-call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,Jz_11,ndim, zero,A2,ndim)
+!call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,Jz_11,ndim, zero,A2,ndim)
+A2 = Jz_11
 
 !call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,Jz_11,ndim, zero,A1,ndim)
 !call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,angumome_Jz(1:ndim**2),ndim,&
