@@ -1136,12 +1136,12 @@ enddo
 ! Jz in the matrix that diagonalizes h
 Jz_aux = zero
 k = 0
-            OPEN(333, file="jz_operator.gut")
+            OPEN(333, file="jz11_operator.gut")
             do i=1, ndim
               do j=1, ndim
                 k = k + 1
                 Jz_aux(i,j) = angumome_Jz(k)
-                WRITE(333,fmt="(F16.6)",advance='no') angumome_Jz(k)
+                WRITE(333,fmt="(F16.6)",advance='no') Jz_11(i,j)
               enddo
               WRITE(333,fmt="(A)") ""
             enddo
