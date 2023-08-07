@@ -35,6 +35,7 @@ real(r64), dimension(:), allocatable, private   :: eigen_hsp, & ! sp energies
                                                    eigen_H11    ! qp    "
 real(r64), dimension(:,:), allocatable, private :: transf_H11
 real(r64), dimension(:,:), allocatable, private :: U_trans, V_trans
+real(r64), dimension(:,:), allocatable, private :: Jz_11
 
 !! As for VStoHO_index, this arrays give the index of "right" array for the
 !! corresponding "left" element. i.e the HO index of the i-th VS state
@@ -919,17 +920,62 @@ close(298)
 print *, " * [OK] Printing 2B Matrix elements DD from WF_HFB\n"
 end subroutine print_DD_matrix_elements
 
+!------------------------------------------------------------------------------!
+! subroutine calculate_H11_real                                                !
+!                                                                              !
+! Computes the H11 part of the Hamiltonian in the QP basis, i.e.               !
+!   H11 = U^t h U - V^t h^t V + U^t delta V - V^t delta U                      !
+!                                                                              !
+! Input: ndim = dimension of the sp basis                                      !
+!------------------------------------------------------------------------------!
+subroutine calculate_jz11_real(bogo_U0, bogo_V0, ndim)
+
+integer, intent(in) :: ndim
+real(r64), dimension(ndim,ndim) :: bogo_U0, bogo_V0
+real(r64), dimension(ndim,ndim) :: A1, A2, A3, A4, A5, Jz_aux
+integer :: k, i, j
+
+Jz_aux = zero
+k = 0
+          OPEN(333, file="jz_operator.gut")
+          do i=1, ndim
+            do j=1, ndim
+              k = k + 1
+              Jz_aux(i,j) = angumome_Jz(k)
+              WRITE(333,fmt="(F16.6)",advance='no') angumome_Jz(k)
+            enddo
+            WRITE(333,fmt="(A)") ""
+          enddo
+          CLOSE(333)
+
+!!! U^t h U
+call dgemm('t','n',ndim,ndim,ndim,one,bogo_U0,ndim,Jz_aux,ndim,zero,A1, &
+           ndim)
+call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,bogo_U0,ndim,zero,A2,ndim)
+
+!!! V^t h^t V
+call dgemm('t','t',ndim,ndim,ndim,one,bogo_V0,ndim,Jz_aux,ndim,zero,A1, &
+           ndim)
+call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,bogo_V0,ndim,zero,A3,ndim)
+
+!!! H11
+Jz_11 = A2 - A3
+
+end subroutine calculate_H11_real
+
 
 !------------------------------------------------------------------------------!
 ! subroutine diagonalize_H11_and_jz                                            !
 !  Obtains the simultaneous diagonalization of H11 and the Jz operator,        !
 !  following the same process from the module_gradient for printing eigenbasis !
 !------------------------------------------------------------------------------!
-subroutine diagonalize_H11_with_jz(dens_rhoRR, dens_kappaRR, ndim)
+subroutine diagonalize_H11_with_jz(dens_rhoRR, dens_kappaRR, &
+                                   bogo_U0, bogo_V0, ndim)
 
 integer, intent(in) :: ndim
 !complex(r64), dimension(ndim,ndim), intent(in) :: bogo_zU0,bogo_zV0
-real(r64), dimension(ndim,ndim), intent(in)    :: dens_rhoRR, dens_kappaRR
+real(r64), dimension(ndim,ndim), intent(in)    :: dens_rhoRR, dens_kappaRR, &
+                                                  bogo_U0, bogo_V0
 
 integer :: i, j, k, l, m, nocc0, nemp0, evnum, ialloc=0
 real(r64) :: ovac0
@@ -944,12 +990,14 @@ real(r64), dimension(:), allocatable :: workr, eigenr
 complex(r64), dimension(ndim,ndim) :: hspRR, gammaRR, deltaRR
 
 allocate(eigen_hsp(HOsp_dim), eigen_H11(HOsp_dim), &
-         transf_H11(HOsp_dim, HOsp_dim), stat=ialloc )
+         transf_H11(HOsp_dim, HOsp_dim), Jz_11(HOsp_dim,HOsp_dim), &
+         stat=ialloc )
 if ( ialloc /= 0 ) stop 'Error during allocation of gradient'
 
 eigen_hsp  = zero
 eigen_H11  = zero
 transf_H11 = zero
+Jz_11      = zero
 
 !!! Computes the fields
 !call calculate_fields_diag(zone*dens_rhoRR, zone*dens_kappaRR, gammaRR,hspRR, &
@@ -966,8 +1014,8 @@ call calculate_fields(zone*dens_rhoRR, zone*dens_kappaRR, zone*dens_kappaRR, &
 field_hspRR   = real(hspRR)
 field_deltaRR = real(deltaRR)
 
-call calculate_H11_real(ndim)
-
+call calculate_H11_real (ndim)
+call calculate_jz11_real(bogo_U0, bogo_V0,ndim)
 
           OPEN(333,file="H11_init.gut")
           do i=1, ndim
@@ -1103,7 +1151,7 @@ k = 0
 D0 = field_H11
 !call dgemm('n','t',ndim,ndim,ndim,one,Jz_aux,ndim,D0,ndim, zero,A2,ndim)
 
-call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,Jz_aux,ndim, zero,A1,ndim)
+call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,Jz_11,ndim, zero,A1,ndim)
 !call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,angumome_Jz(1:ndim**2),ndim,&
 !                   zero,A1,ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,A2,ndim)
@@ -2556,7 +2604,7 @@ real(r64), dimension(ndim,ndim) :: hspRR_eigenvect, U_trans, V_trans
 
 print "(A)", "  1[  ] print_quasipartile_DD_matrix_elements"
 
-call diagonalize_H11_with_jz(dens_rhoRR, dens_kappaRR, ndim)
+call diagonalize_H11_with_jz(dens_rhoRR, dens_kappaRR, bogo_U0, bogo_V0, ndim)
 
 deallocate(sphharmDUAL_memo, AngFunctDUAL_HF, AngFunctDUAL_P1, &
            AngFunctDUAL_P2, BulkHF, BulkP1, BulkP2)
