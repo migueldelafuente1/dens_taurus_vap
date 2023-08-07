@@ -1160,10 +1160,10 @@ k = 0
 D0 = field_H11
 !call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,Jz_11,ndim, zero,A2,ndim)
 
-call dgemm('n','n',ndim,ndim,ndim,one,D0,ndim,Jz_11,ndim, zero,A1,ndim)
+call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,Jz_11,ndim, zero,A1,ndim)
 !call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,angumome_Jz(1:ndim**2),ndim,&
 !                   zero,A1,ndim)
-call dgemm('n','t',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,A2,ndim)
+call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,A2,ndim)
 
 
         OPEN(333, file="jz_inH11_basis.gut")
