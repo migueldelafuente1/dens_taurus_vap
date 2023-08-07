@@ -935,14 +935,16 @@ real(r64), dimension(ndim,ndim) :: A1, A2, A3, A4, A5, Jz_aux
 integer :: i,j,k
 
 !!! Re-express the 1-body Jz operator.
-Jz_aux = zero
-k = 0
+OPEN(333, file="jz_operator.gut")
 do i=1, ndim
   do j=1, ndim
     k = k + 1
     Jz_aux(i,j) = angumome_Jz(k)
+    WRITE(333,fmt="(F16.6)",advance='no') angumome_Jz(k)
   enddo
+  WRITE(333,fmt="(A)") ""
 enddo
+CLOSE(333)
 
 !!! Evaluating the 1 body operator (there is no c+c+ terms)
 
@@ -1134,16 +1136,16 @@ enddo
 ! Jz in the matrix that diagonalizes h
 Jz_aux = zero
 k = 0
-            OPEN(333, file="jz11_operator.gut")
-            do i=1, ndim
-              do j=1, ndim
-                k = k + 1
-                Jz_aux(i,j) = angumome_Jz(k)
-                WRITE(333,fmt="(F16.6)",advance='no') Jz_11(i,j)
-              enddo
-              WRITE(333,fmt="(A)") ""
-            enddo
-            CLOSE(333)
+        OPEN(333, file="jz11_operator.gut")
+        do i=1, ndim
+          do j=1, ndim
+            k = k + 1
+            Jz_aux(i,j) = angumome_Jz(k)
+            WRITE(333,fmt="(F16.6)",advance='no') Jz_11(i,j)
+          enddo
+          WRITE(333,fmt="(A)") ""
+        enddo
+        CLOSE(333)
 
 D0 = field_H11
 !call dgemm('n','t',ndim,ndim,ndim,one,Jz_aux,ndim,D0,ndim, zero,A2,ndim)
@@ -2618,7 +2620,7 @@ print "(A)", "  3[OK] Computing the Hamiltonian states in the QP basis"
 
 print "(A)", "  4[  ] Recouple the H22 hamilonian."
 call recouple_QuasiParticle_Hamiltonian_H22(ndim)
-print "(A)", "  4[OK] Recouple the H22 hamilonian."
+print "(A)", "  4[OK] Recouple the H22 hamilonian.    Files: hamilQPD1S.*"
 
 end subroutine print_quasipartile_DD_matrix_elements
 
