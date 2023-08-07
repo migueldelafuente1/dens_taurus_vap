@@ -936,6 +936,7 @@ integer :: i,j,k
 
 !!! Re-express the 1-body Jz operator.
 OPEN(333, file="jz_operator.gut")
+k = 0
 do i=1, ndim
   do j=1, ndim
     k = k + 1
