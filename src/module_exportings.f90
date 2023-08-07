@@ -33,9 +33,8 @@ integer, private :: info_H11       ! check if problem during diag(field_H11)
 
 real(r64), dimension(:), allocatable, private   :: eigen_hsp, & ! sp energies
                                                    eigen_H11    ! qp    "
-real(r64), dimension(:,:), allocatable, private :: transf_H11
+real(r64), dimension(:,:), allocatable, private :: transf_H11, Jz_11
 real(r64), dimension(:,:), allocatable, private :: U_trans, V_trans
-real(r64), dimension(:,:), allocatable, private :: Jz_11
 
 !! As for VStoHO_index, this arrays give the index of "right" array for the
 !! corresponding "left" element. i.e the HO index of the i-th VS state
@@ -948,16 +947,15 @@ enddo
 !!! Evaluating the 1 body operator (there is no c+c+ terms)
 
 !!! U^t h U
-call dgemm('t','n',ndim,ndim,ndim,one,bogo_U0,ndim,Jz_aux,ndim,zero,A1, &
-           ndim)
+call dgemm('t','n',ndim,ndim,ndim,one,bogo_U0,ndim,Jz_aux,ndim,zero,A1,ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,bogo_U0,ndim,zero,A2,ndim)
 
 !!! V^t h^t V
-call dgemm('t','t',ndim,ndim,ndim,one,bogo_V0,ndim,Jz_aux,ndim,zero,A1, &
-           ndim)
+call dgemm('t','t',ndim,ndim,ndim,one,bogo_V0,ndim,Jz_aux,ndim,zero,A1,ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,bogo_V0,ndim,zero,A3,ndim)
 
 !!! H11
+Jz_11 = zero
 Jz_11 = A2 - A3
 
 end subroutine calculate_jz11_real
