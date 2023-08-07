@@ -940,7 +940,11 @@ k = 0
 do i=1, ndim
   do j=1, ndim
     k = k + 1
-    Jz_aux(i,j) = angumome_Jz(k)
+    if (dabs(angumome_Jz(k)).LE.1.0d-6) then
+      Jz_aux(i,j) = dabs(angumome_Jz(k))
+    else
+      Jz_aux(i,j) = angumome_Jz(k)
+    endif
     WRITE(333,fmt="(F16.6)",advance='no') angumome_Jz(k)
   enddo
   WRITE(333,fmt="(A)") ""
