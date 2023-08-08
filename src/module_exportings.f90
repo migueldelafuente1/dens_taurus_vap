@@ -1161,6 +1161,9 @@ k = 0
 D0 = field_H11
 D0inv = field_H11
 call dgetri(ndim,D0inv,ndim,ndim,1,-1,info_H11)
+if (info_H11 .NE. 0) then
+  print "(A,I5)", "  invalid dgetri(inverse) H11 transf .info_H11=", info_H11
+end if
 
         OPEN(333, file="transH11_inv.gut")
         do i = 1, ndim
