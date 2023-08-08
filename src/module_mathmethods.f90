@@ -638,8 +638,8 @@ end subroutine jacobi
 subroutine jacobi_srt(A, D, V, n, ndim)
 
 integer, intent(in) :: n, ndim
-real(r64), dimension(ndim,ndim), intent(in) :: A
-real(r64), dimension(ndim,ndim) :: V
+!real(r64), dimension(ndim,ndim) :: A
+real(r64), dimension(ndim,ndim) :: A, V
 real(r64), dimension(ndim)      :: D
 
 real(r64), dimension(ndim,ndim) :: V_
