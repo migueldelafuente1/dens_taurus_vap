@@ -1108,10 +1108,12 @@ call calculate_jz11_real(bogo_U0, bogo_V0, ndim)
 !enddo
 
 !!! Diagonalizes hsp
-call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
-if (info_H11 .NE. 0) then
-  print "(A,I5)", "  invalid info at Diag. H11 info_H11=", info_H11
-end if
+!call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
+!if (info_H11 .NE. 0) then
+!  print "(A,I5)", "  invalid info at Diag. H11 info_H11=", info_H11
+!end if
+call jacobi_srt(field_H11, eigen_H11, field_H11, ndim, ndim)
+
 
         OPEN(333,file="H11_diag_transf.gut")
         do i=1, ndim

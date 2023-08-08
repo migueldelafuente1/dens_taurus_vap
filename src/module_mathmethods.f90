@@ -513,6 +513,167 @@ return
 end subroutine Wigner9JCoeff
 
 !------------------------------------------------------------------------------!
+! subroutine jacobi_srt  and jacobi(non sorted)                                !
+!                                                                              !
+! Implemented subroutine from Fortran 77 - Numerical recipes for symmetrical   !
+! eigenvalue problem, to obtain the eigenvalues and eigenvectors sorted in in- !
+! increasing order.                                                            !
+!------------------------------------------------------------------------------!
+subroutine jacobi(A, D, V, n, ndim)
+
+integer, intent(in) :: n, ndim
+real(r64), dimension(ndim,ndim), intent(in) :: A
+real(r64), dimension(ndim,ndim) :: V
+real(r64), dimension(ndim)      :: D
+
+integer :: nrot, NMAX=500, i, ip, iq, j
+real(r64) ::c,g,h,s,sm,t,tau,theta,tresh, TOL=1.0d-9
+real(r64), dimension(NMAX) :: b, z
+
+do ip=1,n    !! Initialize to the identity matrix.
+  do iq=1,n
+    v(ip,iq)=0.0d0
+  enddo
+  v(ip,ip)=1.0d0
+enddo
+
+do ip=1,n
+  b(ip) = A(ip,ip)         !! Initialize b and d to the diagonal of a.
+  D(ip) = b(ip)
+  z(ip) = 0.0d0
+enddo
+nrot = 0
+
+do i = 1, 50
+  sm = 0.0d0
+  do ip = 1,n-1            !! Sum off-diagonal elements.
+    do iq = ip+1,n
+      sm = sm + dabs(A(ip,iq))
+    enddo
+  enddo
+  if (dabs(sm).LT.TOL) return
+  if (i.LT.4) then
+    tresh = 0.2d0 * sm / (n**2)
+  else
+    tresh = 0.0d0
+  endif
+
+  do ip = 1, n-1
+    do iq = ip+1, n
+      g = 100.0d0 * dabs(A(ip,iq))
+      !! After 4 sweeps, skip the rotation if the off-diagonal element is small
+      if ((i.GT.4) &
+          .AND. (dabs( dabs(D(ip))+g - dabs(D(ip)) ).LT.TOL) &
+          .AND. (dabs( dabs(D(iq))+g - dabs(D(iq)) ).LT.TOL)) then
+          A(ip, iq) = 0.0d0
+      elseif (dabs(A(ip,iq)) .GT. tresh) then
+        h=d(iq)-d(ip)
+        if(dabs( dabs(h)+g - dabs(h)) .LT. TOL)then
+          t = A(ip,iq) / h
+        else
+          theta = 0.5d0 * h / A(ip,iq)
+          t = 1.0d0 / (dabs(theta) + dsqrt(1.0d0 + theta**2))
+          if (theta .LT. 0.0d0) t = -t
+        endif
+
+        c = 1.0d0 / dsqrt(1.0d0 + t**2)
+        s = t*c
+        tau = s / (1.0d0 + c)
+        h = t * A(ip,iq)
+        z(ip) = z(ip) - h
+        z(iq) = z(iq) + h
+        D(ip) = D(ip) - h
+        D(iq) = D(iq) + h
+        A(ip,iq) = 0.0d0
+
+        do j = 1,ip-1                 !! Case of rotations 1 <= j < p
+          g = A( j,ip)
+          h = A( j,iq)
+          A( j,ip) = g - (s*(h + g*tau))
+          A( j,iq) = h + (s*(g - h*tau))
+        enddo
+        do j = ip+1,iq-1              !! Case of rotations p <  j < q
+          g = A(ip, j)
+          h = A( j,iq)
+          A(ip, j) = g - (s*(h + g*tau))
+          A( j,iq) = h + (s*(g - h*tau))
+        enddo
+        do j = iq+1,n                 !! Case of rotations q < j <= n
+          g = A(ip, j)
+          h = A(iq, j)
+          A(ip, j) = g - (s*(h + g*tau))
+          A(iq, j) = h + (s*(g - h*tau))
+        enddo
+
+        do j = 1,n
+          g = V(j,ip)
+          h = V(j,iq)
+          V(j,ip) = g - (s*(h + g*tau))
+          V(j,iq) = h + (s*(g - h*tau))
+        enddo
+        nrot = nrot + 1
+
+      endif
+    enddo
+  enddo
+
+  do ip = 1,n
+    b(ip) = b(ip) + z(ip)
+    D(ip) = b(ip)                !! Update d with the sum of t*a_pq
+    z(ip) = 0.0d0                !! and reinitialize z
+  enddo
+
+enddo
+
+print "(A,I6)", "[WARNING] Jacobi eigen. solver had too many iters 50: nrot=",&
+                nrot
+
+end subroutine jacobi
+
+
+
+
+subroutine jacobi_srt(A, D, V, n, ndim)
+
+integer, intent(in) :: n, ndim
+real(r64), dimension(ndim,ndim), intent(in) :: A
+real(r64), dimension(ndim,ndim) :: V
+real(r64), dimension(ndim)      :: D
+
+real(r64), dimension(ndim,ndim) :: V_
+real(r64), dimension(ndim)      :: D_
+integer :: i,j,k
+real(r64) :: p
+
+call jacobi(A, D_, V_, n, ndim)
+
+do i = 1,n-1
+  k=i
+  p=D_(i)
+  do  j = i+1,n
+    if(D_(j).LE.p)then
+      k=j
+      p=D_(j)
+    endif
+  enddo
+
+  if(k.NE.i)then
+    D_(k)=D_(i)
+    D_(i)=p
+    do j = 1,n
+      p=V_(j,i)
+      V_(j,i)=V_(j,k)
+      V_(j,k)=p
+    enddo
+  endif
+enddo
+
+D = D_
+V = V_
+
+end subroutine jacobi_srt
+
+!------------------------------------------------------------------------------!
 ! function lapack_sel                                                          !
 !                                                                              !
 ! Dummy logical function "select" for LAPACK (used for Schur decomposition).   !
