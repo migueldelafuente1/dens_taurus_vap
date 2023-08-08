@@ -990,7 +990,7 @@ real(r64), dimension(ndim) :: eigenh_tmp
 real(r64), dimension(3*ndim-1) :: work
 real(r64), dimension(ndim,ndim) :: D0, rhoc, hspc, A1, A2, Jz_aux
 
-real(r64), dimension(:,:), allocatable :: hspr
+real(r64), dimension(:,:), allocatable :: hspr, hspr2
 real(r64), dimension(:), allocatable :: workr, eigenr
 complex(r64), dimension(ndim,ndim) :: hspRR, gammaRR, deltaRR
 
@@ -1003,6 +1003,33 @@ eigen_hsp  = zero
 eigen_H11  = zero
 transf_H11 = zero
 Jz_11      = zero
+
+
+!! REMOVE TEST:
+allocate (hspr(4,4), eigenr(4),hspr2(4,4))
+hspr(1,:) = (/1.0d0, 1.0d0, 1.0d0, 1.0d0/)
+hspr(2,:) = (/1.0d0,-2.0d0, 3.0d0, 4.0d0/)
+hspr(3,:) = (/1.0d0, 3.0d0, 6.0d0,10.0d0/)
+hspr(4,:) = (/1.0d0, 4.0d0,10.0d0,20.0d0/)
+print "(A)", " TEST: Base Matrix"
+do i = 1, 4
+  print "(4f15.8)", hspr(i,1), hspr(i,2), hspr(i,3), hspr(i,4)
+end do
+print *, ""
+
+call jacobi_srt(hspr, eigenr, hspr2, 4,4)
+
+print "(A)", " TEST: Eigenvalues"
+do i = 1, 4
+  print "(f15.8)", eigenr(i)
+end do
+print *, ""
+print "(A)", " TEST: Eigenvectors"
+do i = 1, 4
+  print "(4f15.8)", hspr2(i,1), hspr2(i,2), hspr2(i,3), hspr2(i,4)
+end do
+
+deallocate (hspr, eigenr, hspr2)
 
 !!! Computes the fields
 !call calculate_fields_diag(zone*dens_rhoRR, zone*dens_kappaRR, gammaRR,hspRR, &
