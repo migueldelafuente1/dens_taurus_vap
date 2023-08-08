@@ -1139,8 +1139,9 @@ call calculate_jz11_real(bogo_U0, bogo_V0, ndim)
 !if (info_H11 .NE. 0) then
 !  print "(A,I5)", "  invalid info at Diag. H11 info_H11=", info_H11
 !end if
-call jacobi_srt(field_H11, eigen_H11, field_H11, ndim, ndim)
-
+A1 = field_H11
+call jacobi_srt(A1, eigen_H11, field_H11, ndim, ndim)
+A1 = zero
 
         OPEN(333,file="H11_diag_transf.gut")
         do i=1, ndim
