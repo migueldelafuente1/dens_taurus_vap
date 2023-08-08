@@ -1014,10 +1014,10 @@ call calculate_fields(zone*dens_rhoRR, zone*dens_kappaRR, zone*dens_kappaRR, &
 !call calculate_fields_DD_diag(zone*dens_rhoRR, zone*dens_kappaRR, &
 !                              gammaRR, hspRR, deltaRR, ndim)
 
-!field_hspRR   = real(hspRR)   + field_gammaRR_DD + field_rearrRR_DD
-!field_deltaRR = real(deltaRR) + field_deltaRR_DD
-field_hspRR   = real(hspRR)
-field_deltaRR = real(deltaRR)
+field_hspRR   = real(hspRR)   + field_gammaRR_DD + field_rearrRR_DD
+field_deltaRR = real(deltaRR) + field_deltaRR_DD
+!field_hspRR   = real(hspRR)
+!field_deltaRR = real(deltaRR)
 
 call calculate_H11_real (ndim)
 call calculate_jz11_real(bogo_U0, bogo_V0, ndim)
@@ -1161,6 +1161,15 @@ k = 0
 D0 = field_H11
 D0inv = field_H11
 call dgetri(ndim,D0inv,ndim,ndim,1,-1,info_H11)
+
+        OPEN(333, file="transH11_inv.gut")
+        do i = 1, ndim
+          do j = 1, ndim
+            WRITE(333,fmt="(F16.6)",advance='no') D0inv(i, j)
+          enddo
+          WRITE(333,fmt="(A)") ""
+        enddo
+        CLOSE(333)
 
 call dgemm('n','n',ndim,ndim,ndim,one,D0inv,ndim,Jz_11,ndim, zero,A1,ndim)
 
