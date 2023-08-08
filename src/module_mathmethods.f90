@@ -642,36 +642,36 @@ integer, intent(in) :: n, ndim
 real(r64), dimension(ndim,ndim) :: A, V
 real(r64), dimension(ndim)      :: D
 
-real(r64), dimension(ndim,ndim) :: V_
-real(r64), dimension(ndim)      :: D_
+!real(r64), dimension(ndim,ndim) :: V_
+!real(r64), dimension(ndim)      :: D_
 integer :: i,j,k
 real(r64) :: p
 
-call jacobi(A, D_, V_, n, ndim)
+call jacobi(A, D, V, n, ndim)
 
 do i = 1,n-1
-  k=i
-  p=D_(i)
-  do  j = i+1,n
-    if(D_(j).LE.p)then
-      k=j
-      p=D_(j)
+  k = i
+  p = D(i)
+  do j = i+1,n
+    if(D(j) .LE. p)then
+      k = j
+      p = D(j)
     endif
   enddo
 
   if(k.NE.i)then
-    D_(k)=D_(i)
-    D_(i)=p
+    D(k) = D(i)
+    D(i) = p
     do j = 1,n
-      p=V_(j,i)
-      V_(j,i)=V_(j,k)
-      V_(j,k)=p
+      p = V(j,i)
+      V(j,i) = V(j,k)
+      V(j,k) = p
     enddo
   endif
 enddo
-
-D = D_
-V = V_
+!
+!D = D_
+!V = V_
 
 end subroutine jacobi_srt
 
