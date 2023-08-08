@@ -526,9 +526,11 @@ real(r64), dimension(ndim,ndim), intent(in) :: A
 real(r64), dimension(ndim,ndim) :: V
 real(r64), dimension(ndim)      :: D
 
-integer :: nrot, NMAX=500, i, ip, iq, j
-real(r64) ::c,g,h,s,sm,t,tau,theta,tresh, TOL=1.0d-9
-real(r64), dimension(NMAX) :: b, z
+integer   :: nrot, NMAX=500, i, ip, iq, j
+real(r64) :: c, g, h, s, sm, t, tau, theta, tresh, TOL=1.0d-9
+real(r64), dimension(:), allocatable :: b, z
+
+allocate(b(NMAX), z(NMAX))
 
 do ip=1,n    !! Initialize to the identity matrix.
   do iq=1,n
