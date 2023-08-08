@@ -522,8 +522,8 @@ end subroutine Wigner9JCoeff
 subroutine jacobi(A, D, V, n, ndim)
 
 integer, intent(in) :: n, ndim
-real(r64), dimension(ndim,ndim), intent(in) :: A
-real(r64), dimension(ndim,ndim) :: V
+!real(r64), dimension(ndim,ndim) :: Ainp
+real(r64), dimension(ndim,ndim) :: V, A
 real(r64), dimension(ndim)      :: D
 
 integer   :: nrot, NMAX=500, i, ip, iq, j
@@ -534,7 +534,7 @@ allocate(b(NMAX), z(NMAX))
 
 do ip=1,n    !! Initialize to the identity matrix.
   do iq=1,n
-    v(ip,iq)=0.0d0
+    v(ip,iq) = 0.0d0
   enddo
   v(ip,ip)=1.0d0
 enddo
