@@ -1004,33 +1004,6 @@ eigen_H11  = zero
 transf_H11 = zero
 Jz_11      = zero
 
-
-!! REMOVE TEST:
-allocate (hspr(4,4), eigenr(4),hspr2(4,4))
-hspr(1,:) = (/1.0d0, 1.0d0, 1.0d0, 1.0d0/)
-hspr(2,:) = (/1.0d0,-2.0d0, 3.0d0, 4.0d0/)
-hspr(3,:) = (/1.0d0, 3.0d0, 6.0d0,10.0d0/)
-hspr(4,:) = (/1.0d0, 4.0d0,10.0d0,20.0d0/)
-print "(A)", " TEST: Base Matrix"
-do i = 1, 4
-  print "(4f15.8)", hspr(i,1), hspr(i,2), hspr(i,3), hspr(i,4)
-end do
-print *, ""
-
-call jacobi_srt(hspr, eigenr, hspr2, 4,4)
-
-print "(A)", " TEST: Eigenvalues"
-do i = 1, 4
-  print "(f15.8)", eigenr(i)
-end do
-print *, ""
-print "(A)", " TEST: Eigenvectors"
-do i = 1, 4
-  print "(4f15.8)", hspr2(i,1), hspr2(i,2), hspr2(i,3), hspr2(i,4)
-end do
-
-deallocate (hspr, eigenr, hspr2)
-
 !!! Computes the fields
 !call calculate_fields_diag(zone*dens_rhoRR, zone*dens_kappaRR, gammaRR,hspRR, &
 !                           deltaRR,ndim=ndim)
@@ -1211,7 +1184,7 @@ A1 = zero
 
 do i = 1, evnum
   k = evdeg(i)
-  allocate( hspr(k,k), eigenr(k), workr(3*k-1) )
+  allocate( hspr(k,k), eigenr(k), workr(3*k-1), hspr2(k,k))
   hspr(:,:) = A2(1+j:j+k,1+j:j+k)
 !  do l = 1,k
 !    do m = 1,k
@@ -1219,18 +1192,23 @@ do i = 1, evnum
 !    end do
 !  end do
 
-  call dsyev('v','u',k,hspr,k,eigenr,workr,3*k-1,info_H11)
-  if (info_H11 .NE. 0) then
-    print "(A,2I5)", "  invalid info at Diag. Jztrasn, i,info_H11=", i,info_H11
-  end if
-  A1(1+j:j+k,1+j:j+k) = hspr(1:k,1:k)
+!  call dsyev('v','u',k,hspr,k,eigenr,workr,3*k-1,info_H11)
+!  if (info_H11 .NE. 0) then
+!    print "(A,2I5)", "  invalid info at Diag. Jztrasn, i,info_H11=", i,info_H11
+!  end if
+!  A1(1+j:j+k,1+j:j+k) = hspr(1:k,1:k)
+
+
+  call jacobi_srt(hspr, eigenr, hspr2, k, k)
+  A1(1+j:j+k,1+j:j+k) = hspr2(1:k,1:k)
+
 !  do l = 1,k
 !    do m = 1,k
 !      A1(j+l,j+m) = hspr(l,m)
 !    end do
 !  end do
   j = j + k
-  deallocate( hspr, eigenr, workr )
+  deallocate( hspr, eigenr, workr, hspr2)
 enddo
 
         OPEN(333, file="jz_finalTransf.gut")
