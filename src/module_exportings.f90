@@ -1836,7 +1836,7 @@ do i1 = 1, ndim
       do i4 = 1, ndim
 
 aux = test_hamil_bb(i1,i2, i3,i4)
-aux = aux * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
+aux = aux * ops_bogo_UV_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
 uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
 
       end do
@@ -1853,7 +1853,7 @@ do i1 = 1, ndim
       do i4 = 1, ndim
 
 aux = test_hamil_dd(i1,i2, i3,i4)
-aux = aux * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
+aux = aux * ops_bogo_UV_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
 uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
 
       end do
@@ -1888,17 +1888,17 @@ do kk = 1, hamil_H2dim
       h2b = sign(one,perm*one) * h2b
     endif
 
-    aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
-    aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i4,i3))
-    aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i3,i4))
-    aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i4,i3))
+    aux = aux + (h2b * ops_bogo_UV_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
+    aux = aux - (h2b * ops_bogo_UV_for_H22(q1,q2,q3,q4, i1,i2,i4,i3))
+    aux = aux - (h2b * ops_bogo_UV_for_H22(q1,q2,q3,q4, i2,i1,i3,i4))
+    aux = aux + (h2b * ops_bogo_UV_for_H22(q1,q2,q3,q4, i2,i1,i4,i3))
 
     if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
 
-    aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i1,i2))
-    aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1))
-    aux = aux - (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i1,i2))
-    aux = aux + (h2b * bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i2,i1))
+    aux = aux + (h2b * ops_bogo_UV_for_H22(q1,q2,q3,q4, i3,i4,i1,i2))
+    aux = aux - (h2b * ops_bogo_UV_for_H22(q1,q2,q3,q4, i3,i4,i2,i1))
+    aux = aux - (h2b * ops_bogo_UV_for_H22(q1,q2,q3,q4, i4,i3,i1,i2))
+    aux = aux + (h2b * ops_bogo_UV_for_H22(q1,q2,q3,q4, i4,i3,i2,i1))
   enddo
 
   !! add the result to the uncoupled quasi particle matrix element
@@ -1921,15 +1921,15 @@ do kk = 1, hamil_DD_H2dim
 
   aux = zero
   aux = aux + (hamil_DD_H2_byT(1,kk) * &
-               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
+               ops_bogo_UV_for_H22(q1,q2,q3,q4, i1,i2,i3,i4))
   aux = aux + (hamil_DD_H2_byT(2,kk) * ( &
-               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2+sn,i3,i4+sn) + &
-               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1+sn,i2,i3+sn,i4)) )
+               ops_bogo_UV_for_H22(q1,q2,q3,q4, i1,i2+sn,i3,i4+sn) + &
+               ops_bogo_UV_for_H22(q1,q2,q3,q4, i1+sn,i2,i3+sn,i4)) )
   aux = aux + (hamil_DD_H2_byT(3,kk) * ( &
-               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2+sn,i3+sn,i4) + &
-               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1+sn,i2,i3,i4+sn)) )
+               ops_bogo_UV_for_H22(q1,q2,q3,q4, i1,i2+sn,i3+sn,i4) + &
+               ops_bogo_UV_for_H22(q1,q2,q3,q4, i1+sn,i2,i3,i4+sn)) )
   aux = aux + (hamil_DD_H2_byT(4,kk) * &
-               bogo_UV_operations_for_H22(q1,q2,q3,q4, i1+sn,i2+sn,i3+sn,i4+sn))
+               ops_bogo_UV_for_H22(q1,q2,q3,q4, i1+sn,i2+sn,i3+sn,i4+sn))
 
   ! add the result to the uncoupled quasi particle matrix element
   uncoupled_H22_VS(qq1,qq2,qq3,qq4) = uncoupled_H22_VS(qq1,qq2,qq3,qq4) + aux
@@ -2021,9 +2021,9 @@ do qq1 = 1, VSsp_dim
 end do
 
 if (failures .GT. 0) then
-  print "(A,i6)", "   t[FAIL] H22 VS is not antisymmetric, failures=", failures
+  print "(A,i9)", "   t[FAIL] H22 VS is not antisymmetric, failures=", failures
 else
-  print "(A,i6)", "   t[PASS] H22 VS is antisymmetric, test passed.:", correct
+  print "(A,i9)", "   t[PASS] H22 VS is antisymmetric, test passed.:", correct
 end if
 print *, ""
 
@@ -2031,10 +2031,10 @@ end subroutine test_check_antisymmetry_H22VS
 
 
 !------------------------------------------------------------------------------!
-! function bogo_UV_operations_for_H22                                        !
+! function ops_bogo_UV_for_H22                                        !
 ! Evaluates the U,V operations for the ho matrix i(1,2,3,4) and qp k(1,2,3,4)  !
 !------------------------------------------------------------------------------!
-function bogo_UV_operations_for_H22(k1,k2,k3,k4, i1,i2,i3,i4) result (aux)
+function ops_bogo_UV_for_H22(k1,k2,k3,k4, i1,i2,i3,i4) result (aux)
 
 integer, intent(in) :: k1,k2,k3,k4, i1,i2,i3,i4
 real(r64) :: aux
@@ -2153,7 +2153,7 @@ temp_indx_perm(it,3) = i3
 temp_indx_perm(it,4) = i4
 temp_h2b_perm (it)   = test_hamil_bb(i1,i2, i3,i4) !* 0.0d0
 
-aux_step_h2(it,1,1)  = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
+aux_step_h2(it,1,1)  = ops_bogo_UV_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
 aux_step_h2(it,1,2)  = aux_step_h2(it,1,1) * temp_h2b_perm (it)
 
 aux = aux + aux_step_h2(it,1,2)
@@ -2198,7 +2198,7 @@ do i1 = 1, ndim
       do i4 = 1, ndim
 
   aux_step_dd = zero
-  aux_step_dd(1,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
+  aux_step_dd(1,1,1) = ops_bogo_UV_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
   h2b = test_hamil_dd(i1,i2, i3,i4)
   aux_step_dd(1,1,2) = aux_step_dd(1,1,1) * h2b
 
@@ -2274,10 +2274,10 @@ do kk = 1, hamil_H2dim
     temp_indx_perm(it,4) = i4
     temp_h2b_perm (it)   = h2b
 
-    aux_step_h2(it,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
-    aux_step_h2(it,2,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i4,i3)
-    aux_step_h2(it,3,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i3,i4)
-    aux_step_h2(it,4,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i4,i3)
+    aux_step_h2(it,1,1) = ops_bogo_UV_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
+    aux_step_h2(it,2,1) = ops_bogo_UV_for_H22(q1,q2,q3,q4, i1,i2,i4,i3)
+    aux_step_h2(it,3,1) = ops_bogo_UV_for_H22(q1,q2,q3,q4, i2,i1,i3,i4)
+    aux_step_h2(it,4,1) = ops_bogo_UV_for_H22(q1,q2,q3,q4, i2,i1,i4,i3)
     aux_step_h2(it,1,2) =      h2b
     aux_step_h2(it,2,2) = -1 * h2b
     aux_step_h2(it,3,2) = -1 * h2b
@@ -2294,10 +2294,10 @@ do kk = 1, hamil_H2dim
 
     if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
 
-    aux_step_h2(it,5,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i1,i2)
-    aux_step_h2(it,6,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1)
-    aux_step_h2(it,7,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i1,i2)
-    aux_step_h2(it,8,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i2,i1)
+    aux_step_h2(it,5,1) = ops_bogo_UV_for_H22(q1,q2,q3,q4, i3,i4,i1,i2)
+    aux_step_h2(it,6,1) = ops_bogo_UV_for_H22(q1,q2,q3,q4, i3,i4,i2,i1)
+    aux_step_h2(it,7,1) = ops_bogo_UV_for_H22(q1,q2,q3,q4, i4,i3,i1,i2)
+    aux_step_h2(it,8,1) = ops_bogo_UV_for_H22(q1,q2,q3,q4, i4,i3,i2,i1)
     aux_step_h2(it,5,2) =      h2b
     aux_step_h2(it,6,2) = -1 * h2b
     aux_step_h2(it,7,2) = -1 * h2b
@@ -2355,13 +2355,13 @@ do kk = 1, hamil_DD_H2dim
   i4 = hamil_DD_abcd(4+4*(kk-1))
 
   aux_step_dd = zero
-  aux_step_dd(1,1,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1,i2,i3,i4)
-  aux_step_dd(1,2,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1,i2+sn,i3,i4+sn)
-  aux_step_dd(1,3,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1,i2+sn,i3+sn,i4)
-  aux_step_dd(1,4,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1+sn,i2,i3,i4+sn)
-  aux_step_dd(1,5,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1+sn,i2,i3+sn,i4)
-  aux_step_dd(1,6,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,&
-                                                  i1+sn,i2+sn,i3+sn,i4+sn)
+  aux_step_dd(1,1,1) = ops_bogo_UV_for_H22(q1,q2,q3,q4, i1,i2,i3,i4)
+  aux_step_dd(1,2,1) = ops_bogo_UV_for_H22(q1,q2,q3,q4, i1,i2+sn,i3,i4+sn)
+  aux_step_dd(1,3,1) = ops_bogo_UV_for_H22(q1,q2,q3,q4, i1,i2+sn,i3+sn,i4)
+  aux_step_dd(1,4,1) = ops_bogo_UV_for_H22(q1,q2,q3,q4, i1+sn,i2,i3,i4+sn)
+  aux_step_dd(1,5,1) = ops_bogo_UV_for_H22(q1,q2,q3,q4, i1+sn,i2,i3+sn,i4)
+  aux_step_dd(1,6,1) = ops_bogo_UV_for_H22(q1,q2,q3,q4, i1+sn,i2+sn,i3+sn,i4+sn)
+
   aux_step_dd(1,1,2) = hamil_DD_H2_byT(1,kk)
   aux_step_dd(1,2,2) = hamil_DD_H2_byT(2,kk)
   aux_step_dd(1,3,2) = hamil_DD_H2_byT(3,kk)

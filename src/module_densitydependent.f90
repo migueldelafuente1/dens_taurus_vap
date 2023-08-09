@@ -1943,7 +1943,7 @@ if (iteration < CONVERG_ITER) then
 endif
 
 Vcut = 5.0d-14
-if (ALL_ISOS) Vcut = 1.0d-10
+if (ALL_ISOS) Vcut = 1.0d-9
 kk = 0
 NOT_DEL_FILE = .FALSE.
 
@@ -2531,6 +2531,8 @@ deallocate(sort_indx, sort_pointer,sort_isos, temp_hamil, &
            temp_abcd, red_indx , sort_red_pointer, red_abcd)
 print "(A)", "[OK] EXPORT Hamiltonian (uncoupled) for current interaction."
 end subroutine print_uncoupled_hamiltonian_H2
+
+
 !------------------------------------------------------------------------------!
 ! subroutine calculate_rearrang_field_explicit                                 !
 !                                                                              !
