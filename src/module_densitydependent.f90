@@ -269,7 +269,7 @@ print '(A,I10)',   'Omega_Order        =', Omega_Order
 print '(A,I10)',   'THE_grid           =', THE_grid
 print '(A,I10)',   'PHI_grid           =', PHI_grid
 !print '(A,F10.6)', 'R_MAX (fm)         =', R_MAX
-print '(A,2L10)',  'eval/export Val.Sp =', evalFullSPSpace, exportValSpace
+print '(A,2L5)',  'eval/export Val.Sp =', evalFullSPSpace, exportValSpace
 print '(A,2L10)',  'export QP Val.Sp   =', evalQuasiParticleVSpace
 
 if ((.NOT.exportValSpace).AND.(implement_H2cpd_DD)) then

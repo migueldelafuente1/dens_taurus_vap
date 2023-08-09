@@ -2248,6 +2248,7 @@ ELSE
 !!! ********************************************************************* !!!
 !!! ********************************************************************* !!!
 
+if (.FALSE.) then
 do kk = 1, hamil_H2dim
 
   i1 = hamil_abcd(1+4*(kk-1))
@@ -2339,6 +2340,7 @@ do kk = 1, hamil_H2dim
   endif
 
 end do !! kk
+endif
 
 temp_val = zero
 if (abs(temp_unc(qq1,qq2,qq3,qq4)) .GE. 1.0d-6) then
