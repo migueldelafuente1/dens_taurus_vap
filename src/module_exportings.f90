@@ -1695,7 +1695,7 @@ subroutine calculate_QuasiParticle_Hamiltonian_H22(bogo_U0, bogo_V0, ndim)
 integer, intent(in) :: ndim
 real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0,bogo_V0
 integer   :: i, i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it, perm
-logical :: TEST_FULL_HAMILTONIAN = .FALSE.
+logical :: TEST_FULL_HAMILTONIAN = .TRUE.
 real(r64) :: aux, h2b, temp_val
 real(r64), dimension(ndim,ndim) :: aux_U,aux_V
 
@@ -2041,21 +2041,21 @@ real(r64) :: aux
 
 aux = zero
 !! Without projection, the U and V are real (Check Ring Shuck E.23c)
-aux = aux + (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k3) * U_trans(i3,k4))
-aux = aux - (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k3) * U_trans(i3,k4))
-aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k4) * U_trans(i3,k3))
-aux = aux + (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k4) * U_trans(i3,k3))
-
-aux = aux + (U_trans(i1,k1) * U_trans(i2,k2) * U_trans(i3,k3) * U_trans(i4,k4))
-aux = aux + (V_trans(i3,k1) * V_trans(i4,k2) * V_trans(i1,k3) * V_trans(i2,k4))
-
-!aux = aux + (U_trans(k1,i1) * V_trans(k2,i4) * V_trans(k3,i2) * U_trans(k4,i3))
-!aux = aux - (U_trans(k2,i1) * V_trans(k1,i4) * V_trans(k3,i2) * U_trans(k4,i3))
-!aux = aux - (U_trans(k1,i1) * V_trans(k2,i4) * V_trans(k4,i2) * U_trans(k3,i3))
-!aux = aux + (U_trans(k2,i1) * V_trans(k1,i4) * V_trans(k4,i2) * U_trans(k3,i3))
+!aux = aux + (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k3) * U_trans(i3,k4))
+!aux = aux - (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k3) * U_trans(i3,k4))
+!aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k4) * U_trans(i3,k3))
+!aux = aux + (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k4) * U_trans(i3,k3))
 !
-!aux = aux + (U_trans(k1,i1) * U_trans(k2,i2) * U_trans(k3,i3) * U_trans(k4,i4))
-!aux = aux + (V_trans(k1,i3) * V_trans(k2,i4) * V_trans(k3,i1) * V_trans(k4,i2))
+!aux = aux + (U_trans(i1,k1) * U_trans(i2,k2) * U_trans(i3,k3) * U_trans(i4,k4))
+!aux = aux + (V_trans(i3,k1) * V_trans(i4,k2) * V_trans(i1,k3) * V_trans(i2,k4))
+
+aux = aux + (U_trans(k1,i1) * V_trans(k2,i4) * V_trans(k3,i2) * U_trans(k4,i3))
+aux = aux - (U_trans(k2,i1) * V_trans(k1,i4) * V_trans(k3,i2) * U_trans(k4,i3))
+aux = aux - (U_trans(k1,i1) * V_trans(k2,i4) * V_trans(k4,i2) * U_trans(k3,i3))
+aux = aux + (U_trans(k2,i1) * V_trans(k1,i4) * V_trans(k4,i2) * U_trans(k3,i3))
+
+aux = aux + (U_trans(k1,i1) * U_trans(k2,i2) * U_trans(k3,i3) * U_trans(k4,i4))
+aux = aux + (V_trans(k1,i3) * V_trans(k2,i4) * V_trans(k3,i1) * V_trans(k4,i2))
 
 return
 end function
