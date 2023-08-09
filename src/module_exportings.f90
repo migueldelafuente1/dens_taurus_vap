@@ -1728,10 +1728,10 @@ V_trans = bogo_V0
     close(334)
 
 !! Apply the transformation on the U and V
-call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
-           zero, U_trans, ndim)
-call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
-           zero, V_trans, ndim)
+!call dgemm('n','n', ndim, ndim, ndim, one, bogo_U0, ndim, transf_H11, ndim,&
+!           zero, U_trans, ndim)
+!call dgemm('n','n', ndim, ndim, ndim, one, bogo_V0, ndim, transf_H11, ndim,&
+!           zero, V_trans, ndim)
 
 !call dgemm('t','n', ndim, ndim, ndim, one, transf_H11, ndim, bogo_U0, ndim,&
 !           zero, aux_U, ndim)
