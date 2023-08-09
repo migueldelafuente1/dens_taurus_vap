@@ -2041,21 +2041,21 @@ real(r64) :: aux
 
 aux = zero
 !! Without projection, the U and V are real (Check Ring Shuck E.23c)
-!aux = aux + (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k3) * U_trans(i3,k4))
-!aux = aux - (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k3) * U_trans(i3,k4))
-!aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k4) * U_trans(i3,k3))
-!aux = aux + (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k4) * U_trans(i3,k3))
+aux = aux + (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k3) * U_trans(i3,k4))
+aux = aux - (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k3) * U_trans(i3,k4))
+aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k4) * U_trans(i3,k3))
+aux = aux + (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k4) * U_trans(i3,k3))
+
+aux = aux + (U_trans(i1,k1) * U_trans(i2,k2) * U_trans(i3,k3) * U_trans(i4,k4))
+aux = aux + (V_trans(i3,k1) * V_trans(i4,k2) * V_trans(i1,k3) * V_trans(i2,k4))
+
+!aux = aux + (U_trans(k1,i1) * V_trans(k2,i4) * V_trans(k3,i2) * U_trans(k4,i3))
+!aux = aux - (U_trans(k2,i1) * V_trans(k1,i4) * V_trans(k3,i2) * U_trans(k4,i3))
+!aux = aux - (U_trans(k1,i1) * V_trans(k2,i4) * V_trans(k4,i2) * U_trans(k3,i3))
+!aux = aux + (U_trans(k2,i1) * V_trans(k1,i4) * V_trans(k4,i2) * U_trans(k3,i3))
 !
-!aux = aux + (U_trans(i1,k1) * U_trans(i2,k2) * U_trans(i3,k3) * U_trans(i4,k4))
-!aux = aux + (V_trans(i3,k1) * V_trans(i4,k2) * V_trans(i1,k3) * V_trans(i2,k4))
-
-aux = aux + (U_trans(k1,i1) * V_trans(k2,i4) * V_trans(k3,i2) * U_trans(k4,i3))
-aux = aux - (U_trans(k2,i1) * V_trans(k1,i4) * V_trans(k3,i2) * U_trans(k4,i3))
-aux = aux - (U_trans(k1,i1) * V_trans(k2,i4) * V_trans(k4,i2) * U_trans(k3,i3))
-aux = aux + (U_trans(k2,i1) * V_trans(k1,i4) * V_trans(k4,i2) * U_trans(k3,i3))
-
-aux = aux + (U_trans(k1,i1) * U_trans(k2,i2) * U_trans(k3,i3) * U_trans(k4,i4))
-aux = aux + (V_trans(k1,i3) * V_trans(k2,i4) * V_trans(k3,i1) * V_trans(k4,i2))
+!aux = aux + (U_trans(k1,i1) * U_trans(k2,i2) * U_trans(k3,i3) * U_trans(k4,i4))
+!aux = aux + (V_trans(k1,i3) * V_trans(k2,i4) * V_trans(k3,i1) * V_trans(k4,i2))
 
 return
 end function
@@ -2291,8 +2291,8 @@ do kk = 1, hamil_H2dim
     if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
 
     aux_step_h2(it,5,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i1,i2)
-    aux_step_h2(it,6,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1)
-    aux_step_h2(it,7,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i1,i2)
+    aux_step_h2(it,6,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i1,i2)   !! MOD
+    aux_step_h2(it,7,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1)   !! MOD
     aux_step_h2(it,8,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i2,i1)
     aux_step_h2(it,5,2) =      aux_step_h2(it,5,1) * h2b
     aux_step_h2(it,6,2) = -1 * aux_step_h2(it,6,1) * h2b
