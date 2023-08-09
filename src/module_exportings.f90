@@ -2073,7 +2073,7 @@ logical, intent(in) :: TEST_FULL_HAMILTONIAN
 integer   :: i, i1,i2,i3,i4, q1,q2,q3,q4, qq1,qq2,qq3,qq4, sn, kk, it, perm
 real(r64) :: aux, h2b, temp_val
 real(r64), dimension(:,:,:,:), allocatable :: temp_unc
-real(r64), dimension(2,8,3) :: aux_step_h2, aux_step_dd ! [it][abcd, abdc, ...][h2b,bogoOps, add]
+real(r64), dimension(2,8,3) :: aux_step_h2, aux_step_dd ! [it][abcd, abdc, ...][bogoOps, h2b, add]
 integer,   dimension(2,4)   :: temp_indx_perm
 real(r64), dimension(4)     :: temp_h2b_perm
 logical   :: is_t_eq_1
@@ -2094,7 +2094,7 @@ do qq1 = 1, VSsp_dim
     ',', HOsp_l(i),',', HOsp_2j(i),'/2,', HOsp_2mj(i),'/2,', HOsp_2mt(i)
 enddo
 
-WRITE(334, fmt="(A)") "//  a    b    c    d         hamilR_H2         &
+WRITE(334, fmt="(A)") "//VSa    b    c    d         hamilR_H2         &
                       &h_bb_abcd         h_DD_abcd"
 
 do qq1 = 1, VSsp_dim
@@ -2278,31 +2278,39 @@ do kk = 1, hamil_H2dim
     aux_step_h2(it,2,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i1,i2,i4,i3)
     aux_step_h2(it,3,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i3,i4)
     aux_step_h2(it,4,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i2,i1,i4,i3)
-    aux_step_h2(it,1,2) =      aux_step_h2(it,1,1) * h2b
-    aux_step_h2(it,2,2) = -1 * aux_step_h2(it,2,1) * h2b
-    aux_step_h2(it,3,2) = -1 * aux_step_h2(it,3,1) * h2b
-    aux_step_h2(it,4,2) =      aux_step_h2(it,4,1) * h2b
+    aux_step_h2(it,1,2) =      h2b
+    aux_step_h2(it,2,2) = -1 * h2b
+    aux_step_h2(it,3,2) = -1 * h2b
+    aux_step_h2(it,4,2) =      h2b
+    aux_step_h2(it,1,3) = aux_step_h2(it,1,1) * aux_step_h2(it,1,2)
+    aux_step_h2(it,2,3) = aux_step_h2(it,2,1) * aux_step_h2(it,2,2)
+    aux_step_h2(it,3,3) = aux_step_h2(it,3,1) * aux_step_h2(it,3,2)
+    aux_step_h2(it,4,3) = aux_step_h2(it,4,1) * aux_step_h2(it,4,2)
 
-    aux = aux + aux_step_h2(it,1,2)
-    aux = aux + aux_step_h2(it,2,2)
-    aux = aux + aux_step_h2(it,3,2)
-    aux = aux + aux_step_h2(it,4,2)
+    aux = aux + aux_step_h2(it,1,3)
+    aux = aux + aux_step_h2(it,2,3)
+    aux = aux + aux_step_h2(it,3,3)
+    aux = aux + aux_step_h2(it,4,3)
 
     if ((kdelta(i1,i3) * kdelta(i2,i4)) .EQ. 1) cycle
 
     aux_step_h2(it,5,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i1,i2)
-    aux_step_h2(it,6,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i1,i2)   !! MOD
-    aux_step_h2(it,7,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1)   !! MOD
+    aux_step_h2(it,6,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i3,i4,i2,i1)
+    aux_step_h2(it,7,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i1,i2)
     aux_step_h2(it,8,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4, i4,i3,i2,i1)
-    aux_step_h2(it,5,2) =      aux_step_h2(it,5,1) * h2b
-    aux_step_h2(it,6,2) = -1 * aux_step_h2(it,6,1) * h2b
-    aux_step_h2(it,7,2) = -1 * aux_step_h2(it,7,1) * h2b
-    aux_step_h2(it,8,2) =      aux_step_h2(it,8,1) * h2b
+    aux_step_h2(it,5,2) =      h2b
+    aux_step_h2(it,6,2) = -1 * h2b
+    aux_step_h2(it,7,2) = -1 * h2b
+    aux_step_h2(it,8,2) =      h2b
+    aux_step_h2(it,5,3) = aux_step_h2(it,5,1) * aux_step_h2(it,5,2)
+    aux_step_h2(it,6,3) = aux_step_h2(it,6,1) * aux_step_h2(it,6,2)
+    aux_step_h2(it,7,3) = aux_step_h2(it,7,1) * aux_step_h2(it,7,2)
+    aux_step_h2(it,8,3) = aux_step_h2(it,8,1) * aux_step_h2(it,8,2)
 
-    aux = aux + aux_step_h2(it,5,2)
-    aux = aux + aux_step_h2(it,6,2)
-    aux = aux + aux_step_h2(it,7,2)
-    aux = aux + aux_step_h2(it,8,2)
+    aux = aux + aux_step_h2(it,5,3)
+    aux = aux + aux_step_h2(it,6,3)
+    aux = aux + aux_step_h2(it,7,3)
+    aux = aux + aux_step_h2(it,8,3)
   enddo
 
   !! add the result to the uncoupled quasi particle matrix element
@@ -2354,19 +2362,25 @@ do kk = 1, hamil_DD_H2dim
   aux_step_dd(1,5,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,i1+sn,i2,i3+sn,i4)
   aux_step_dd(1,6,1) = bogo_UV_operations_for_H22(q1,q2,q3,q4,&
                                                   i1+sn,i2+sn,i3+sn,i4+sn)
+  aux_step_dd(1,1,2) = hamil_DD_H2_byT(1,kk)
+  aux_step_dd(1,2,2) = hamil_DD_H2_byT(2,kk)
+  aux_step_dd(1,3,2) = hamil_DD_H2_byT(3,kk)
+  aux_step_dd(1,4,2) = hamil_DD_H2_byT(3,kk)
+  aux_step_dd(1,5,2) = hamil_DD_H2_byT(2,kk)
+  aux_step_dd(1,6,2) = hamil_DD_H2_byT(4,kk)
 
-  aux_step_dd(1,1,2) = aux_step_dd(1,1,1) * hamil_DD_H2_byT(1,kk)
-  aux_step_dd(1,2,2) = aux_step_dd(1,2,1) * hamil_DD_H2_byT(2,kk)
-  aux_step_dd(1,3,2) = aux_step_dd(1,3,1) * hamil_DD_H2_byT(3,kk)
-  aux_step_dd(1,4,2) = aux_step_dd(1,4,1) * hamil_DD_H2_byT(3,kk)
-  aux_step_dd(1,5,2) = aux_step_dd(1,5,1) * hamil_DD_H2_byT(2,kk)
-  aux_step_dd(1,6,2) = aux_step_dd(1,6,1) * hamil_DD_H2_byT(4,kk)
+  aux_step_dd(1,1,3) = aux_step_dd(1,1,1) * aux_step_dd(1,1,2)
+  aux_step_dd(1,2,3) = aux_step_dd(1,2,1) * aux_step_dd(1,2,2)
+  aux_step_dd(1,3,3) = aux_step_dd(1,3,1) * aux_step_dd(1,3,2)
+  aux_step_dd(1,4,3) = aux_step_dd(1,4,1) * aux_step_dd(1,4,2)
+  aux_step_dd(1,5,3) = aux_step_dd(1,5,1) * aux_step_dd(1,5,2)
+  aux_step_dd(1,6,3) = aux_step_dd(1,6,1) * aux_step_dd(1,6,2)
 
   aux = zero
-  aux = aux + aux_step_dd(1,1,2)
-  aux = aux + aux_step_dd(1,2,2) + aux_step_dd(1,5,2)
-  aux = aux + aux_step_dd(1,3,2) + aux_step_dd(1,4,2)
-  aux = aux + aux_step_dd(1,6,2)
+  aux = aux + aux_step_dd(1,1,3)
+  aux = aux + aux_step_dd(1,2,3) + aux_step_dd(1,5,3)
+  aux = aux + aux_step_dd(1,3,3) + aux_step_dd(1,4,3)
+  aux = aux + aux_step_dd(1,6,3)
 
   ! add the result to the uncoupled quasi particle matrix element
   temp_unc(qq1,qq2,qq3,qq4) = temp_unc(qq1,qq2,qq3,qq4) + aux

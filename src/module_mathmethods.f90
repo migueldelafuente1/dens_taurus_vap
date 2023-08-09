@@ -532,18 +532,19 @@ real(r64), dimension(:), allocatable :: b, z
 
 allocate(b(NMAX), z(NMAX))
 
-do ip=1,n    !! Initialize to the identity matrix.
-  do iq=1,n
+do ip = 1,n    !! Initialize to the identity matrix.
+  do iq = 1,n
     v(ip,iq) = 0.0d0
   enddo
   v(ip,ip)=1.0d0
 enddo
 
-do ip=1,n
+do ip = 1,n
   b(ip) = A(ip,ip)         !! Initialize b and d to the diagonal of a.
   D(ip) = b(ip)
   z(ip) = 0.0d0
 enddo
+
 nrot = 0
 
 do i = 1, 50
@@ -638,12 +639,8 @@ end subroutine jacobi
 subroutine jacobi_srt(A, D, V, n, ndim)
 
 integer, intent(in) :: n, ndim
-!real(r64), dimension(ndim,ndim) :: A
 real(r64), dimension(ndim,ndim) :: A, V
 real(r64), dimension(ndim)      :: D
-
-!real(r64), dimension(ndim,ndim) :: V_
-!real(r64), dimension(ndim)      :: D_
 integer :: i,j,k
 real(r64) :: p
 
@@ -653,13 +650,13 @@ do i = 1,n-1
   k = i
   p = D(i)
   do j = i+1,n
-    if(D(j) .LE. p)then
+    if (D(j) .LT. p) then
       k = j
       p = D(j)
     endif
   enddo
 
-  if(k.NE.i)then
+  if (k .NE. i) then
     D(k) = D(i)
     D(i) = p
     do j = 1,n
@@ -669,10 +666,8 @@ do i = 1,n-1
     enddo
   endif
 enddo
-!
-!D = D_
-!V = V_
 
+return
 end subroutine jacobi_srt
 
 !------------------------------------------------------------------------------!
