@@ -2041,21 +2041,22 @@ real(r64) :: aux
 
 aux = zero
 !! Without projection, the U and V are real (Check Ring Shuck E.23c)
-aux = aux + (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k3) * U_trans(i3,k4))
-aux = aux - (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k3) * U_trans(i3,k4))
-aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k4) * U_trans(i3,k3))
-aux = aux + (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k4) * U_trans(i3,k3))
+!aux = aux + (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k3) * U_trans(i3,k4))
+!aux = aux - (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k3) * U_trans(i3,k4))
+!aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k4) * U_trans(i3,k3))
+!aux = aux + (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k4) * U_trans(i3,k3))
+!
+!aux = aux + (U_trans(i1,k1) * U_trans(i2,k2) * U_trans(i3,k3) * U_trans(i4,k4))
+!aux = aux + (V_trans(i3,k1) * V_trans(i4,k2) * V_trans(i1,k3) * V_trans(i2,k4))
+
+!! My evaluation of the QP to PS states.
+aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k3) * U_trans(i3,k3))
+aux = aux + (U_trans(i1,k1) * V_trans(i3,k2) * V_trans(i2,k4) * U_trans(i4,k3))
+aux = aux + (U_trans(i2,k1) * V_trans(i4,k2) * V_trans(i1,k4) * U_trans(i3,k3))
+aux = aux - (U_trans(i2,k1) * V_trans(i3,k2) * V_trans(i1,k4) * U_trans(i4,k3))
 
 aux = aux + (U_trans(i1,k1) * U_trans(i2,k2) * U_trans(i3,k3) * U_trans(i4,k4))
-aux = aux + (V_trans(i3,k1) * V_trans(i4,k2) * V_trans(i1,k3) * V_trans(i2,k4))
-
-!aux = aux + (U_trans(k1,i1) * V_trans(k2,i4) * V_trans(k3,i2) * U_trans(k4,i3))
-!aux = aux - (U_trans(k2,i1) * V_trans(k1,i4) * V_trans(k3,i2) * U_trans(k4,i3))
-!aux = aux - (U_trans(k1,i1) * V_trans(k2,i4) * V_trans(k4,i2) * U_trans(k3,i3))
-!aux = aux + (U_trans(k2,i1) * V_trans(k1,i4) * V_trans(k4,i2) * U_trans(k3,i3))
-!
-!aux = aux + (U_trans(k1,i1) * U_trans(k2,i2) * U_trans(k3,i3) * U_trans(k4,i4))
-!aux = aux + (V_trans(k1,i3) * V_trans(k2,i4) * V_trans(k3,i1) * V_trans(k4,i2))
+aux = aux + (V_trans(i1,k3) * V_trans(i2,k4) * V_trans(i4,k2) * V_trans(i3,k1))
 
 return
 end function
@@ -2094,7 +2095,7 @@ do qq1 = 1, VSsp_dim
     ',', HOsp_l(i),',', HOsp_2j(i),'/2,', HOsp_2mj(i),'/2,', HOsp_2mt(i)
 enddo
 
-WRITE(334, fmt="(A)") "//VSa    b    c    d         hamilR_H2         &
+WRITE(334, fmt="(A)") "//  a    b    c    d  (QPVS) hamilR_H2         &
                       &h_bb_abcd         h_DD_abcd"
 
 do qq1 = 1, VSsp_dim
@@ -2387,7 +2388,7 @@ do kk = 1, hamil_DD_H2dim
   ! add the result to the uncoupled quasi particle matrix element
   temp_unc(qq1,qq2,qq3,qq4) = temp_unc(qq1,qq2,qq3,qq4) + aux
 
-  if (abs(aux) .GT. 1.0d-6 ) then
+  if (abs(aux) .GT. 1.0d-8 ) then
   WRITE(333, fmt="(A,i6,4i3,4F15.9)")" kk2=",kk, i1,i2,i3,i4, &
     hamil_DD_H2_byT(1,kk), hamil_DD_H2_byT(2,kk), &
     hamil_DD_H2_byT(3,kk), hamil_DD_H2_byT(4,kk)
