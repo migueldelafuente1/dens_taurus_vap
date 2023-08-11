@@ -1773,7 +1773,8 @@ endif
 do i_r = 1, r_dim
   if (integration_method > 1) then
     radial = weight_R(i_r) * radial_2b_sho_noexp_memo(a_sh, c_sh, i_r) &
-                           * radial_2b_sho_noexp_memo(b_sh, d_sh, i_r)
+                           * radial_2b_sho_noexp_memo(b_sh, d_sh, i_r) &
+                           * exp((2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
   elseif (integration_method == 1) then
     radial = ((r(i_r))**2) * weight_R(i_r) *  &
                 radial_2b_sho_memo(a_sh, c_sh, i_r) * &
