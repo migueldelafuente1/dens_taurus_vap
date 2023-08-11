@@ -2041,22 +2041,22 @@ real(r64) :: aux
 
 aux = zero
 !! Without projection, the U and V are real (Check Ring Shuck E.23c)
-!aux = aux + (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k3) * U_trans(i3,k4))
-!aux = aux - (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k3) * U_trans(i3,k4))
-!aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k4) * U_trans(i3,k3))
-!aux = aux + (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k4) * U_trans(i3,k3))
-!
-!aux = aux + (U_trans(i1,k1) * U_trans(i2,k2) * U_trans(i3,k3) * U_trans(i4,k4))
-!aux = aux + (V_trans(i3,k1) * V_trans(i4,k2) * V_trans(i1,k3) * V_trans(i2,k4))
-
-!! My evaluation of the QP to PS states.
-aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k3) * U_trans(i3,k3))
-aux = aux + (U_trans(i1,k1) * V_trans(i3,k2) * V_trans(i2,k4) * U_trans(i4,k3))
-aux = aux + (U_trans(i2,k1) * V_trans(i4,k2) * V_trans(i1,k4) * U_trans(i3,k3))
-aux = aux - (U_trans(i2,k1) * V_trans(i3,k2) * V_trans(i1,k4) * U_trans(i4,k3))
+aux = aux + (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k3) * U_trans(i3,k4))
+aux = aux - (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k3) * U_trans(i3,k4))
+aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k4) * U_trans(i3,k3))
+aux = aux + (U_trans(i1,k2) * V_trans(i4,k1) * V_trans(i2,k4) * U_trans(i3,k3))
 
 aux = aux + (U_trans(i1,k1) * U_trans(i2,k2) * U_trans(i3,k3) * U_trans(i4,k4))
-aux = aux + (V_trans(i1,k3) * V_trans(i2,k4) * V_trans(i4,k2) * V_trans(i3,k1))
+aux = aux + (V_trans(i3,k1) * V_trans(i4,k2) * V_trans(i1,k3) * V_trans(i2,k4))
+
+!! My evaluation of the QP to PS states.
+!aux = aux - (U_trans(i1,k1) * V_trans(i4,k2) * V_trans(i2,k3) * U_trans(i3,k3))
+!aux = aux + (U_trans(i1,k1) * V_trans(i3,k2) * V_trans(i2,k4) * U_trans(i4,k3))
+!aux = aux + (U_trans(i2,k1) * V_trans(i4,k2) * V_trans(i1,k4) * U_trans(i3,k3))
+!aux = aux - (U_trans(i2,k1) * V_trans(i3,k2) * V_trans(i1,k4) * U_trans(i4,k3))
+!
+!aux = aux + (U_trans(i1,k1) * U_trans(i2,k2) * U_trans(i3,k3) * U_trans(i4,k4))
+!aux = aux + (V_trans(i1,k3) * V_trans(i2,k4) * V_trans(i4,k2) * V_trans(i3,k1))
 
 return
 end function
