@@ -1200,13 +1200,13 @@ do i = 1, evnum
 
 
   call jacobi_srt(hspr, eigenr, hspr2, k, k)
-!  A1(1+j:j+k,1+j:j+k) = hspr2(1:k,1:k)
+  A1(1+j:j+k,1+j:j+k) = hspr2(1:k,1:k)
 
-  do l = 1,k
-    do m = 1,k
-      A1(j+l,j+m) = hspr(m, l)
-    end do
-  end do
+!  do l = 1,k
+!    do m = 1,k
+!      A1(j+l,j+m) = hspr(l,m)
+!    end do
+!  end do
   j = j + k
   deallocate( hspr, eigenr, workr, hspr2)
 enddo
