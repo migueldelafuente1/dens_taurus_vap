@@ -1199,7 +1199,7 @@ do i = 1, evnum
 !  A1(1+j:j+k,1+j:j+k) = hspr(1:k,1:k)
 
 
-  call jacobi_srt(hspr, eigenr, hspr2, k, k)
+  call jacobi(hspr, eigenr, hspr2, k, k)
   A1(1+j:j+k,1+j:j+k) = hspr2(1:k,1:k)
 
 !  do l = 1,k
