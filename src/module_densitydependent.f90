@@ -2381,7 +2381,7 @@ do k1 = 1, ndim
 !  print "(A)", "-----------------------"
 
   red_abcd(i1,i2,i3,i4) = k2
-
+  print *, ""
 end do
 close(3333)
 
