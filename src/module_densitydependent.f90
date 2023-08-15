@@ -344,6 +344,10 @@ VSsp_dim  = 0
 allocate(temp_list_index(HOsp_dim))
 temp_list_index = 0
 
+do j=1, VSsh_dim
+  print "(A,2I3)", "TEST_VSsh:", j, VSsh_list(j)
+end do
+
 do i=1, HOsp_dim
   i_ant = 10000*HOsp_n(i) + 100*HOsp_l(i) + HOsp_2j(i)
   do j=1, VSsh_dim
