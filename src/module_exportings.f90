@@ -2723,7 +2723,7 @@ int_dens_Z = zzero
 int_dens_N = zzero
 
 open( 613, file='export_density_rtp.txt') !====================================
-write(613, fmt='(A,3I5,F10.6') &
+write(613, fmt='(A,3I5,F10.6)') &
                 "RDim,CThDim,PhiDim,b lenght_", &
                 r_dim, theta_dim, phi_dim, HO_b
 write(613, fmt='(A,A)') " i_r i_t i_p    r	       cos_th         phi", &
