@@ -2034,7 +2034,7 @@ endif
 open (123, file=filename)
 if (ALL_ISOS) then
   write(123,fmt='(A)')"//SING PART INDEX (i_sp, i_sh, n,l,2j,2mj,tr)"
-  do i=1, WBsp_dim
+  do kk=1, WBsp_dim
     i = WBtoHOsp_index(kk)
     kk=0
     write(123, fmt='(I4,6(A,I4))') i,',', HOsp_sh(i), ',', HOsp_n(i),&
