@@ -175,14 +175,10 @@ read(runit,formatEE) str_, t3_DD_CONST
 read(runit,formatEE) str_, x0_DD_FACTOR
 read(runit,formatEE) str_, alpha_DD
 read(runit,formatST) str_
-read(runit,formatST) str_
-read(runit,formatI1) str_, aux_int
-export_density = aux_int.EQ.1
-
 read(runit,formatI3) str_, r_dim
 read(runit,formatI3) str_, Omega_Order
-read(runit,formatI3) str_, THE_grid
-read(runit,formatI3) str_, PHI_grid
+read(runit,formatI1) str_, aux_int
+export_density = aux_int.EQ.1
 read(runit,formatI1) str_, aux_int
 evalQuasiParticleVSpace = aux_int.GE.1
 read(runit,formatI1) str_, aux_int
@@ -257,13 +253,10 @@ print '(A,F10.6)', 'alpha_DD               =', alpha_DD
 print *, ''
 print *,           '   Integration parameters  '
 print *,           '-----------------------------------------------'
-print '(A,L10)',   'export_density     =', export_density
 print '(A,I10)',   'r_dim              =', r_dim
 print '(A,I10)',   'Omega_Order        =', Omega_Order
-print '(A,I10)',   'THE_grid           =', THE_grid
-print '(A,I10)',   'PHI_grid           =', PHI_grid
-!print '(A,F10.6)', 'R_MAX (fm)         =', R_MAX
-print '(A,2L5)',  'eval/export Val.Sp =', evalFullSPSpace, exportValSpace
+print '(A,L10)',   'export_density     =', export_density
+print '(A,2L5)',   'eval/export Val.Sp =', evalFullSPSpace, exportValSpace
 print '(A,2L10)',  'export QP Val.Sp   =', evalQuasiParticleVSpace
 
 if ((.NOT.exportValSpace).AND.(implement_H2cpd_DD)) then
