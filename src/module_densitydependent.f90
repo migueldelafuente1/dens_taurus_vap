@@ -258,6 +258,8 @@ print '(A,I10)',   'Omega_Order        =', Omega_Order
 print '(A,L10)',   'export_density     =', export_density
 print '(A,2L5)',   'eval/export Val.Sp =', evalFullSPSpace, exportValSpace
 print '(A,2L10)',  'export QP Val.Sp   =', evalQuasiParticleVSpace
+print *,           '-----------------------------------------------'
+print *, ''
 
 if ((.NOT.exportValSpace).AND.(implement_H2cpd_DD)) then
   deallocate(hamil_H2cpd_DD) ! It wont be used
@@ -343,10 +345,6 @@ integer, dimension(:), allocatable :: temp_list_index
 VSsp_dim  = 0
 allocate(temp_list_index(HOsp_dim))
 temp_list_index = 0
-
-do j=1, VSsh_dim
-  print "(A,2I3)", "TEST_VSsh:", j, VSsh_list(j)
-end do
 
 do i=1, HOsp_dim
   i_ant = 10000*HOsp_n(i) + 100*HOsp_l(i) + HOsp_2j(i)
@@ -2303,7 +2301,7 @@ end do
 deallocate(registered_h2b)
 
 allocate(temp_hamil_byT(4, red_dim), &
-         red_abcd(WBsp_dim/2, WBsp_dim/2, WBsp_dim/2, WBsp_dim/2))
+         red_abcd(HOsp_dim/2, HOsp_dim/2, HOsp_dim/2, HOsp_dim/2))
 temp_hamil_byT = zero
 red_abcd       = 0
 ! bubble sorting
