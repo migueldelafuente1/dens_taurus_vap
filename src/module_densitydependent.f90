@@ -2034,8 +2034,8 @@ endif
 open (123, file=filename)
 if (ALL_ISOS) then
   write(123,fmt='(A)')"//SING PART INDEX (i_sp, i_sh, n,l,2j,2mj,tr)"
-  do i=1, WBsp_dim / 2
-!    i = VStoHOsp_index(kk)
+  do i=1, WBsp_dim
+    i = WBtoHOsp_index(kk)
     kk=0
     write(123, fmt='(I4,6(A,I4))') i,',', HOsp_sh(i), ',', HOsp_n(i),&
       ',', HOsp_l(i),',', HOsp_2j(i),'/2,', HOsp_2mj(i),'/2,', HOsp_tr(i)
@@ -2275,7 +2275,7 @@ do kk = 1, ndim
 enddo
 close(3333)
 
-OPEN(3334, file="test_reconstruction_BBhamil.gut")
+!OPEN(3334, file="test_reconstruction_BBhamil.gut")
 do i1 = 1, HOsp_dim
   do i2 = 1, HOsp_dim
     do i3 = 1, HOsp_dim
@@ -2291,12 +2291,12 @@ do i1 = 1, HOsp_dim
     registered_h2b(i1,i2,i3,i4) = 3
   end if
 
-  WRITE(3334, fmt="(5i4)") i1,i2,i3,i4, registered_h2b(i1,i2,i3,i4)
+  !WRITE(3334, fmt="(5i4)") i1,i2,i3,i4, registered_h2b(i1,i2,i3,i4)
       end do
     end do
   end do
 end do
-CLOSE(3334)
+!CLOSE(3334)
 deallocate(registered_h2b)
 
 allocate(temp_hamil_byT(4, red_dim), &
@@ -2381,7 +2381,8 @@ close(3333)
 !! print the matrix elements in a file
 open (336, file="uncoupled_BB.2b")
 write(336, fmt="(A)") "//SING PART INDEX (sp_vs,i_sp, i_sh, n,l,2j,2m, tr)"
-do i = 1, WBsp_dim / 2
+do kk = 1, WBsp_dim
+  i = WBtoHOsp_index(kk)
   write(336, fmt='(I4,6(A,I4))') i,',', HOsp_sh(i), ',', HOsp_n(i),&
       ',', HOsp_l(i),',', HOsp_2j(i),'/2,', HOsp_2mj(i),'/2,', HOsp_tr(i)
 enddo
@@ -2407,7 +2408,7 @@ do k1 = 1, red_dim
 enddo
 
 close(336)
-deallocate(sort_indx, sort_pointer,sort_isos, temp_hamil, &
+deallocate(sort_indx, sort_pointer,sort_isos, temp_hamil, temp_hamil_byT, &
            temp_abcd, red_indx , sort_red_pointer, red_abcd)
 print "(A)", "[OK] EXPORT Hamiltonian (uncoupled) for current interaction."
 end subroutine print_uncoupled_hamiltonian_H2

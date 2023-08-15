@@ -104,16 +104,15 @@ if (exportValSpace) then !-----------------------------------------------------
   call calculate_densityDep_hamiltonian(dens_rhoRRc, &
                                         dens_kappaRRc, dens_kappaRRc, ndim)
   print "(A,/,A)", "", " [DONE] Evaluating the Hamiltonian."
-  if (.NOT. evalQuasiParticleVSpace) then
-    deallocate(rearrangement_me, rearrang_field, &
-               rea_common_RadAng, REACommonFields)
-  endif
 
-  if (.NOT.evalQuasiParticleVSpace) then
-    call print_DD_matrix_elements
-  else
+  if (evalQuasiParticleVSpace) then
     call print_quasipartile_DD_matrix_elements(bogo_U0, bogo_V0, &
                                                dens_rhoRR, dens_kappaRR, ndim)
+  else
+    deallocate(rearrangement_me, rearrang_field, &
+               rea_common_RadAng, REACommonFields)
+
+    call print_DD_matrix_elements
   endif
 endif
 
@@ -516,7 +515,7 @@ real(r64), dimension(:,:,:,:),   allocatable :: auxHamilRed ! H2JM(T, K, JMbra, 
 
 
 print *, ""
-print *, "* [  ] Printing 2B Matrix elements DD from WF_HFB /dim H2_DD:", &
+print "(A,I5)", "* [  ] Printing 2B Mat Elements DD from WF_HFB /dim H2_DD:", &
     hamil_DD_H2dim
 
 open(298, file="D1S_vs_red.2b")
