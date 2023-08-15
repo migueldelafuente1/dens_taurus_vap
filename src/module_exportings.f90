@@ -203,6 +203,7 @@ do a = 1, spO2
     J_min = max(M, max(abs(ja - jb)/2, 0))  ! i.e. cannot have J=1, M=+-3
     J_max = (ja + jb) / 2
 
+    print "(A,2I4)", "  loop read en. sp  a,b=", a, b, " Jlims,M",J_min,J_max,M
     do J = J_min, J_max
       call ClebschGordan(ja,jb,2*J, ma,mb,2*M, cgc1)
 
@@ -250,6 +251,7 @@ do a = 1, spO2
       enddo ! loop the other m_j
     enddo ! loop J
 
+    print "(A)", "   ok"
   enddo
 enddo
 
