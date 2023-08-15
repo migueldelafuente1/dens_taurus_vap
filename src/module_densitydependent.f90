@@ -538,8 +538,6 @@ integer   :: a_sh, b_sh, i_r, na,la,nb,lb
 real(r64) :: radial, x
 
 allocate(radial_2b_sho_memo(HOsh_dim,HOsh_dim,r_dim))
-allocate(radial_2b_sho_noexp_memo(HOsh_dim,HOsh_dim,r_dim))
-
 if (export_density) then
   allocate(radial_2b_sho_export_memo(HOsh_dim,HOsh_dim,r_dim))
 end if
@@ -3007,12 +3005,11 @@ do a = 1, spO2
     intgama = zzero
 
     do i_r = 1, r_dim
-      rad_ac = weight_R(i_r) * radial_2b_noexp_memo(a_sh, c_sh, i_r)
+      rad_ac = weight_R(i_r) * radial_2b_sho_memo(a_sh, c_sh, i_r)
       rad_ac = rad_ac * exp((2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
       do i_ang = 1, angular_dim
         auxHfD = zzero
         !! DIRECT terms for the HF field
-
         sumD_ang  = AngFunctDUAL_HF(1,a,c,i_ang) + AngFunctDUAL_HF(4,a,c,i_ang)
         auxHfD(1) = dens_pnt(5,i_r,i_ang) - (x0_DD_FACTOR*dens_pnt(1,i_r,i_ang))
         auxHfD(2) = dens_pnt(5,i_r,i_ang) - (x0_DD_FACTOR*dens_pnt(2,i_r,i_ang))
