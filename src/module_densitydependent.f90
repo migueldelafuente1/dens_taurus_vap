@@ -2036,7 +2036,6 @@ if (ALL_ISOS) then
   write(123,fmt='(A)')"//SING PART INDEX (i_sp, i_sh, n,l,2j,2mj,tr)"
   do kk=1, WBsp_dim
     i = WBtoHOsp_index(kk)
-    kk=0
     write(123, fmt='(I4,6(A,I4))') i,',', HOsp_sh(i), ',', HOsp_n(i),&
       ',', HOsp_l(i),',', HOsp_2j(i),'/2,', HOsp_2mj(i),'/2,', HOsp_tr(i)
   enddo
