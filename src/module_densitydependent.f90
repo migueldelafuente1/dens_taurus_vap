@@ -33,7 +33,6 @@ real(r64) :: x0_DD_FACTOR = 0.0!= 1.0d+00        ! exchange factor of DD term
 real(r64) :: alpha_DD     = 0.0!=  0.33333d+00   ! power of the DD term
 
 ! 0 trapezoidal, 1 Gauss-Legendre, 2 Gauss-Laguerre(r)/Legendre (t,p), 3 Laguerre-Lebedev
-integer   :: integration_method  = 3
 logical   :: export_density      = .FALSE. ! .TRUE. !
 
 integer   :: r_dim       = 0 != 10  ! dimension of the r array
@@ -56,8 +55,6 @@ real(r64) :: d_phi
 ! Quadratures for integration
 real(r64), dimension(:), allocatable   :: x_R
 real(r64), dimension(:), allocatable   :: weight_R
-real(r64), dimension(:), allocatable   :: weight_THE
-real(r64), dimension(:), allocatable   :: weight_PHI
 real(r64), dimension(:,:), allocatable :: x_Leb
 real(r64), dimension(:), allocatable   :: weight_LEB
 
@@ -76,7 +73,6 @@ complex(r64), dimension(:,:), allocatable :: pairdens_export_n,pairdens_export_p
 
 !! Pre-calculated saved functions and coefficients
 real(r64), dimension(:, :, :), allocatable, save :: radial_2b_sho_memo        !(ish1, ish2, ir)
-real(r64), dimension(:, :, :), allocatable, save :: radial_2b_sho_noexp_memo  !(ish1, ish2, ir)
 real(r64), dimension(:, :, :), allocatable, save :: radial_2b_sho_export_memo !(ish1, ish2, ir)
 
 complex(r64), dimension(:,:), allocatable,   save :: sph_harmonics_memo
@@ -180,7 +176,6 @@ read(runit,formatEE) str_, x0_DD_FACTOR
 read(runit,formatEE) str_, alpha_DD
 read(runit,formatST) str_
 read(runit,formatST) str_
-read(runit,formatI1) str_, integration_method
 read(runit,formatI1) str_, aux_int
 export_density = aux_int.EQ.1
 
@@ -262,7 +257,6 @@ print '(A,F10.6)', 'alpha_DD               =', alpha_DD
 print *, ''
 print *,           '   Integration parameters  '
 print *,           '-----------------------------------------------'
-print '(A,I10)',   'integration_method =', integration_method
 print '(A,L10)',   'export_density     =', export_density
 print '(A,I10)',   'r_dim              =', r_dim
 print '(A,I10)',   'Omega_Order        =', Omega_Order
@@ -416,140 +410,59 @@ subroutine set_integration_grid
 integer :: i_r, i_th, i_phi, i
 real(r64) :: sum_, x, y
 
-if (integration_method == 3) then
-  call GaussLaguerre(x_R, weight_R, r_dim, 0.5d+00)
-  do i_r = 1, r_dim
-    r(i_r)        = HO_b * sqrt(x_R(i_r) / (2.0 + alpha_DD))
-    r_export(i_r) = HO_b * sqrt(x_R(i_r))
-  enddo
+call GaussLaguerre(x_R, weight_R, r_dim, 0.5d+00)
+do i_r = 1, r_dim
+  r(i_r)        = HO_b * sqrt(x_R(i_r) / (2.0 + alpha_DD))
+  r_export(i_r) = HO_b * sqrt(x_R(i_r))
+enddo
 
-  Leb_dim   = nPoints(Omega_Order) ! := N_Omega
-  theta_dim = Leb_dim
-  phi_dim   = Leb_dim
-  angular_dim = Leb_dim
-  print '(A,i5,a,i5)','Using Gauss-Laguerre/LEBEDEV Integration method. A_dim',&
-    angular_dim, "  xR_dim=", angular_dim*r_dim
-  allocate(x_Leb(3, Leb_dim))
-  allocate(weight_THE(theta_dim))
-  allocate(weight_PHI(phi_dim))
-  allocate(weight_LEB(phi_dim))
+Leb_dim   = nPoints(Omega_Order) ! := N_Omega
+theta_dim = Leb_dim
+phi_dim   = Leb_dim
+angular_dim = Leb_dim
+print '(A,i5,a,i5)','Using Gauss-Laguerre/LEBEDEV Integration method. A_dim',&
+  angular_dim, "  xR_dim=", angular_dim*r_dim
+allocate(x_Leb(3, Leb_dim))
+allocate(weight_LEB(phi_dim))
 
-  allocate(theta(theta_dim))
-  allocate(theta_export(theta_dim))
-  allocate(cos_th(theta_dim))
-  allocate(cos_th_export(theta_dim))
-  allocate(phi(phi_dim))
-  allocate(phi_export(phi_dim))
+allocate(theta(theta_dim))
+allocate(theta_export(theta_dim))
+allocate(cos_th(theta_dim))
+allocate(cos_th_export(theta_dim))
+allocate(phi(phi_dim))
+allocate(phi_export(phi_dim))
 
-  call LLgrid(x_Leb, weight_LEB, Omega_Order)
-  sum_ = zero
+call LLgrid(x_Leb, weight_LEB, Omega_Order)
+sum_ = zero
+
+if (PRINT_GUTS) then
+  open(620, file='LebedevPointsWeights.gut')
+  write(620,fmt='(A,I3)') "i, cos(th), phi, weight_LEB. OMEGA =", Omega_Order
+endif
+do i = 1, Leb_dim
+
+  theta(i) = acos(x_Leb(3, i))
+  x = x_Leb(1, i)
+  y = x_Leb(2, i)
+  if(y >= 0.d0) then
+    phi(i) = atan2(y,x)
+  else
+    phi(i) = atan2(y,x) + 2.d0 * pi
+  endif
+
+  theta_export(i) = theta(i)
+  cos_th(i)       = x_Leb(3, i)
+  cos_th_export(i)= cos_th(i)
+  phi_export(i)   = phi(i)
 
   if (PRINT_GUTS) then
-    open(620, file='LebedevPointsWeights.gut')
-    write(620,fmt='(A,I3)') "i, cos(th), phi, weight_LEB. OMEGA =", Omega_Order
+    write(620,fmt='(I5,3D22.13)') i, cos_th(i), phi(i), weight_LEB(i)
   endif
-  do i = 1, Leb_dim
 
-    theta(i) = acos(x_Leb(3, i))
-    x = x_Leb(1, i)
-    y = x_Leb(2, i)
-    if(y >= 0.d0) then
-      phi(i) = atan2(y,x)
-    else
-      phi(i) = atan2(y,x) + 2.d0 * pi
-    endif
+  sum_ = sum_ + weight_LEB(i)
+enddo
 
-    theta_export(i) = theta(i)
-    cos_th(i)       = x_Leb(3, i)
-    cos_th_export(i)= cos_th(i)
-    phi_export(i)   = phi(i)
-
-    weight_PHI(i)   = one
-    weight_THE(i)   = weight_LEB(i) ! don't do the sqrt, weight_LEB might be < 0
-
-    if (PRINT_GUTS) then
-      write(620,fmt='(I5,3D22.13)') i, cos_th(i), phi(i), weight_LEB(i)
-    endif
-
-    sum_ = sum_ + weight_LEB(i)
-  enddo
-
-  if (PRINT_GUTS) close(620)
-
-else ! Non Lebedev Quadratures
-  theta_dim = THE_grid
-  phi_dim   = PHI_grid
-  angular_dim = theta_dim * phi_dim
-
-  !! spatial steps for trapezoidal integration
-  d_theta = pi / (theta_dim - 1)
-  d_phi   = 2.0d0 * pi / (phi_dim - 1)
-
-  allocate(weight_THE(theta_dim))
-  allocate(weight_PHI(phi_dim))
-
-  allocate(theta(theta_dim))
-  allocate(theta_export(theta_dim))
-  allocate(cos_th(theta_dim))
-  allocate(cos_th_export(theta_dim))
-  allocate(phi(phi_dim))
-  allocate(phi_export(phi_dim))
-
-!! RADIAL
-
-if (integration_method == 0) then     ! Trapezoidal
-  print '(A)', ' Using Trapezoidal Integration Method'
-  do i_r = 1, r_dim
-    r(i_r)   = (i_r - 1) * d_r
-    r_export(i_r) = r(i_r)
-    weight_R(i_r) = d_r
-  enddo
-elseif (integration_method == 1) then ! Legendre-radial
-  print '(A)', ' Using Gauss-Legendre (3) Integration Method'
-  call GaussLegendre(0.0d0, R_MAX, x_R,  weight_R  , r_dim)
-  do i_r = 1, r_dim
-    r(i_r)        = x_R(i_r)
-    r_export(i_r) = x_R(i_r)
-  enddo
-elseif (integration_method == 2) then ! Laguerre
-  print '(A)', ' Using Gauss-Laguerre/Legendre (2) Integration Method'
-  call GaussLaguerre(x_R, weight_R, r_dim, 0.5d+00)
-  do i_r = 1, r_dim
-    r(i_r)        = HO_b * sqrt(x_R(i_r) / (2.0 + alpha_DD)) !
-    r_export(i_r) = HO_b * sqrt(x_R(i_r)) !
-  enddo
-endif
-
-!! ANGULAR
-if (integration_method == 0) then   ! Trapezoidal
-  do i_th = 1, theta_dim
-    theta(i_th)  = (i_th - 1)  * d_theta
-    cos_th(i_th) = cos(theta(i_th))
-    theta_export(i_th)  = theta(i_th)
-    cos_th_export(i_th) = cos_th(i_th)
-    weight_THE(i_th)    = d_theta
-  enddo
-  do i_phi = 1, phi_dim
-    phi(i_phi)   = (i_phi - 1) * d_phi
-    phi_export(i_phi) = phi(i_phi)
-    weight_PHI(i_phi) = d_phi
-  enddo
-else                                ! Legendre
-  !call GaussLegendre( 0.0d0, pi,    theta,  weight_THE, theta_dim)
-  call GaussLegendre(-1.0d0, 1.0d0, cos_th, weight_THE, theta_dim)
-  do i_th = 1, theta_dim
-    theta(i_th) = acos(cos_th(i_r))
-    theta_export(i_th)  = theta(i_th)
-    cos_th_export(i_th) = cos_th(i_th)
-  enddo
-
-  call GaussLegendre( 0.0d0, 2.0d0*pi, phi, weight_PHI, phi_dim)
-  do i_phi = 1, phi_dim
-    phi_export(i_phi) = phi(i_phi)
-  enddo
-endif
-
-endif ! Non Lebedev Quadratures
+if (PRINT_GUTS) close(620)
 
 end subroutine set_integration_grid
 
@@ -648,17 +561,14 @@ do a_sh = 1, HOsh_dim
 
     if (PRINT_GUTS) write(629, fmt="(4I3)", advance='no') na, la, nb, lb
     do i_r = 1, r_dim
-        ! integration_method == 1 (r =x_leg over R)   * == 2 (r = b * sqrt(x_lag))
-        radial = two_sho_radial_functions_bench(a_sh, b_sh, r(i_r))
+!        radial = two_sho_radial_functions_bench(a_sh, b_sh, r(i_r))
+        radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .TRUE.)
 
         radial_2b_sho_memo(a_sh, b_sh, i_r) = radial
         radial_2b_sho_memo(b_sh, a_sh, i_r) = radial ! a_sh=b_sh overwrites
 
-        ! Radial grid for
+        ! Radial grid for Laguerre
         !r _lag = b *(x_R / 2+alpha)**0.5
-        radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .TRUE.)
-
-        !! Note:: For using only the polynomials of the rad wf set to .FALSE.
 
         !! assert test R_ab = R_ba
         if (dabs(two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.) - &
@@ -672,18 +582,9 @@ do a_sh = 1, HOsh_dim
         if (PRINT_GUTS) then
           write(629,fmt='(3D22.13)',advance='no') r(i_r), radial, weight_R(i_r)
         endif
-        radial_2b_sho_noexp_memo(a_sh, b_sh, i_r) = radial
-        radial_2b_sho_noexp_memo(b_sh, a_sh, i_r) = radial
 
         if (export_density) then
-          if (integration_method > 1) then
-            radial = two_sho_radial_functions(a_sh,b_sh, r_export(i_r), .FALSE.)
-!            radial = two_sho_radial_functions_bench(a_sh, b_sh, r_export(i_r)) &
-!                    * exp(r_export(i_r)**2)
-          else
-            !radial = two_sho_radial_functions(a_sh,b_sh, r_export(i_r), .TRUE.)
-            radial = two_sho_radial_functions_bench(a_sh, b_sh, r_export(i_r))
-          endif
+          radial = two_sho_radial_functions(a_sh,b_sh, r_export(i_r), .FALSE.)
 
           radial_2b_sho_export_memo(a_sh, b_sh, i_r) = radial
           radial_2b_sho_export_memo(b_sh, a_sh, i_r) = radial
@@ -740,7 +641,7 @@ subroutine angular_index(index_, i_theta, i_phi)
     integer, intent(in) :: index_
     integer :: i_theta, i_phi
 
-    if (integration_method == 3) then
+    if (.TRUE.) then  ! integration_method == 3
       i_theta = index_
       i_phi   = index_
     else
@@ -1142,7 +1043,7 @@ if ((a > spO2).OR.(b > spO2)) then
    STOP
 endif
 
-radial_ab = radial_2b_sho_noexp_memo(a_sh, b_sh, i_r)
+radial_ab = radial_2b_sho_memo(a_sh, b_sh, i_r)
 
 roP = radial_ab * rhoLR  (b, a)
 roN = radial_ab * rhoLR  (b +spO2, a +spO2)
@@ -1244,7 +1145,7 @@ aNeQb = kdelta(a, b).ne.1
 a_n   = a + spO2
 b_n   = b + spO2
 
-radial_ab = radial_2b_sho_noexp_memo(a_sh, b_sh, i_r)
+radial_ab = radial_2b_sho_memo(a_sh, b_sh, i_r)
 
 roP = radial_ab * rhoLR  (b  ,a)
 roN = radial_ab * rhoLR  (b_n,a_n)
@@ -1415,11 +1316,7 @@ do a = 1, spO2 ! avoid pn states
     bN = b + spO2
 
     do i_r = 1, r_dim
-      if (integration_method < 2) then
-        radial = radial_2b_sho_memo(HOsp_sh(a), HOsp_sh(b),i_r)
-      else
-        radial = radial_2b_sho_noexp_memo(HOsp_sh(a), HOsp_sh(b),i_r)
-      end if
+      radial = radial_2b_sho_memo(HOsp_sh(a), HOsp_sh(b),i_r)
 
       do i_ang = 1, angular_dim
 !        !! --  Process with spatial 2- body harmonics  -----------------------!
@@ -1758,35 +1655,22 @@ endif
 
 
 integral_factor = t3_DD_CONST
-!! Note :: Remember that radial functions already have the factor 1/b**3
-if (integration_method > 1) then
-  integral_factor = integral_factor * 0.5d0 * (HO_b**3)
-  integral_factor = integral_factor  / ((2.0d0 + alpha_DD)**1.5d0)
-  if (integration_method == 3) then ! add Lebedev norm factor
-    integral_factor = integral_factor * 4 * pi
-  endif
-elseif (integration_method == 0) then
-  print *, " CANNOT EVALUATE matrix_element_v_DD with TRAPEZOIDAL integration"
-  STOP
-endif
+!! NOTE :: Remember that radial functions already have the factor 1/b**3
+integral_factor = integral_factor * 0.5d0 * (HO_b**3)
+integral_factor = integral_factor  / ((2.0d0 + alpha_DD)**1.5d0)
+integral_factor = integral_factor * 4 * pi  ! add Lebedev norm factor
+
 
 do i_r = 1, r_dim
-  if (integration_method > 1) then
-    radial = weight_R(i_r) * radial_2b_sho_noexp_memo(a_sh, c_sh, i_r) &
-                           * radial_2b_sho_noexp_memo(b_sh, d_sh, i_r) &
-                           * exp((2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
+
+  radial = weight_R(i_r) * radial_2b_sho_memo(a_sh, c_sh, i_r) &
+                         * radial_2b_sho_memo(b_sh, d_sh, i_r) &
+                         * exp((2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
   !! NOTE: the inclusion of the exponential part is necessary due the form of
   !! of the density and radial functions with the exp(-r/b^2) for stability
   !! requirement in larger shells.
 
-  elseif (integration_method == 1) then
-    radial = ((r(i_r))**2) * weight_R(i_r) *  &
-                radial_2b_sho_memo(a_sh, c_sh, i_r) * &
-                radial_2b_sho_memo(b_sh, d_sh, i_r)
-  endif
-
   do i_ang = 1, angular_dim
-      call angular_index(i_ang, i_th, i_phi)
       !! ====================================================================
       aux_dir  = zzero
       if (abs(delta_dir) > 1.0d-15) then
@@ -1832,7 +1716,7 @@ do i_r = 1, r_dim
       endif
       !! ====================================================================
 
-      angular    = weight_THE(i_th) * weight_PHI(i_phi)
+      angular = weight_LEB(i_ang)
 
       if (ALL_ISOS) then
         !v_nnnn = v_pppp
@@ -3072,12 +2956,6 @@ PRNT_ = (PRINT_GUTS).OR.(.FALSE.)
 iteration = iteration + 1
 doTraceTest_ = (iteration.eq.1).OR.(MOD(iteration, 10).EQ.0)
 
-if (integration_method.NE.3) then
-   print *,"[ERROR] Fields calculation can only be performed in Levedeb-Gauss",&
-        " (integration_method=3). Program STOPS."
-   STOP
-endif
-
 if(doTraceTest_) then !! copy the Fields to plot in the case of printing.
   do i = 1, ndim
     do j = 1, ndim
@@ -3136,7 +3014,7 @@ do a = 1, spO2
     intgama = zzero
 
     do i_r = 1, r_dim
-      rad_ac = weight_R(i_r) * radial_2b_sho_noexp_memo(a_sh, c_sh, i_r)
+      rad_ac = weight_R(i_r) * radial_2b_noexp_memo(a_sh, c_sh, i_r)
       rad_ac = rad_ac * exp((2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
       do i_ang = 1, angular_dim
         auxHfD = zzero

@@ -2723,22 +2723,22 @@ int_dens_Z = zzero
 int_dens_N = zzero
 
 open( 613, file='export_density_rtp.txt') !====================================
-write(613, fmt='(A,3I5,F10.6,I3)') &
-                "RDim,CThDim,PhiDim,b lenght,integration method_", &
-                r_dim, theta_dim, phi_dim, HO_b, integration_method
+write(613, fmt='(A,3I5,F10.6') &
+                "RDim,CThDim,PhiDim,b lenght_", &
+                r_dim, theta_dim, phi_dim, HO_b
 write(613, fmt='(A,A)') " i_r i_t i_p    r	       cos_th         phi", &
     "            REAL(dens)     IMAG(dens)     weight_prod"
 open( 615, file='export_dens_pairing_rtp.txt') !===============================
-write(615, fmt='(A,3I5,F10.6,I3)') &
-                "RDim,CThDim,PhiDim,b lenght,integration method_", &
-                r_dim, theta_dim, phi_dim, HO_b, integration_method
+write(615, fmt='(A,3I5,F10.6)') &
+                "RDim,CThDim,PhiDim,b lenght_", &
+                r_dim, theta_dim, phi_dim, HO_b
 write(615, fmt='(A,A,A)') " i_r i_t i_p    r	       cos_th         phi", &
     "            REAL(kappaZ)   IMAG(kappaZ)    REAL(kappaN)    IMAG(kappaN)",&
     "     weight_prod"
 open( 614, file='export_density_xyz.txt') !====================================
-write(614, fmt='(A,3I5,F10.6,I3)') &
-                "RDim,CThDim,PhiDim,b lenght_,integration_method", &
-                r_dim, theta_dim, phi_dim, HO_b, integration_method
+write(614, fmt='(A,3I5,F10.6)') &
+                "RDim,CThDim,PhiDim,b lenght_", &
+                r_dim, theta_dim, phi_dim, HO_b
 write(614, fmt='(A,A,A)') " i_r i_t i_p     X               Y               Z",&
 "               REAL(densZ)     IMAG(densZ)     REAL(densN)     IMAG(densZ)",&
 "     Weight_prod"
@@ -2825,45 +2825,20 @@ do i_r = 1, r_dim
     enddo   ! do j
 
     density_export(i_r, i_ang)  = density_export_p(i_r, i_ang) + &
-                                    density_export_n(i_r, i_ang)
+                                  density_export_n(i_r, i_ang)
     call cpu_time(fin_2)
     time_ij = time_ij + (fin_2 - st_2)
 
-    weight = weight_R(i_r) * weight_THE(i_th) * weight_PHI(i_phi)
-    select case(integration_method)
-      case(0)
-        aux_fi = weight * ((r_export(i_r))**2) * sin(theta(i_th))
-        r_case_export = r_export(i_r)
-        d_exp_rtp = density_export(i_r, i_ang)
-        dExpZ =  density_export_p (i_r, i_ang)
-        dExpN =  density_export_p (i_r, i_ang)
-        kExpZ =  pairdens_export_p(i_r, i_ang)
-        kExpN =  pairdens_export_n(i_r, i_ang)
-      case(1)
-        aux_fi = weight * ((r_export(i_r))**2)
-        r_case_export = r_export(i_r)
-        d_exp_rtp = density_export(i_r, i_ang)
-        dExpZ =  density_export_p (i_r, i_ang)
-        dExpN =  density_export_p (i_r, i_ang)
-        kExpZ =  pairdens_export_p(i_r, i_ang)
-        kExpN =  pairdens_export_n(i_r, i_ang)
-      case(2)
-        aux_fi = weight * (HO_b**3) / 2.0
-        r_case_export = r_export(i_r) / HO_b
-        d_exp_rtp = density_export(i_r, i_ang) / exp((r_case_export)**2)
-        dExpZ =  density_export_p (i_r, i_ang) / exp((r_case_export)**2)
-        dExpN =  density_export_p (i_r, i_ang) / exp((r_case_export)**2)
-        kExpZ =  pairdens_export_p(i_r, i_ang) / exp((r_case_export)**2)
-        kExpN =  pairdens_export_n(i_r, i_ang) / exp((r_case_export)**2)
-      case(3)
-        aux_fi = weight * (HO_b**3) * 4 * pi / 2.0
-        r_case_export = r_export(i_r) * HO_b
-        d_exp_rtp = density_export(i_r, i_ang) / exp((r_case_export)**2)
-        dExpZ =  density_export_p (i_r, i_ang) / exp((r_case_export)**2)
-        dExpN =  density_export_p (i_r, i_ang) / exp((r_case_export)**2)
-        kExpZ =  pairdens_export_p(i_r, i_ang) / exp((r_case_export)**2)
-        kExpN =  pairdens_export_n(i_r, i_ang) / exp((r_case_export)**2)
-    end select ! the resultant integral must be A
+    weight = weight_R(i_r) * weight_LEB(i_ang)
+
+      aux_fi = weight * (HO_b**3) * 4 * pi / 2.0
+      r_case_export = r_export(i_r) * HO_b
+      d_exp_rtp = density_export(i_r, i_ang) / exp((r_case_export)**2)
+      dExpZ =  density_export_p (i_r, i_ang) / exp((r_case_export)**2)
+      dExpN =  density_export_p (i_r, i_ang) / exp((r_case_export)**2)
+      kExpZ =  pairdens_export_p(i_r, i_ang) / exp((r_case_export)**2)
+      kExpN =  pairdens_export_n(i_r, i_ang) / exp((r_case_export)**2)
+    ! the resultant integral must be A
 
     write(613, fmt='(3I4,6D20.9)') &
         i_r,i_th,i_phi, r_export(i_r), cos_th_export(i_th),phi_export(i_phi), &
@@ -2919,7 +2894,6 @@ print '(A,F18.15,A,F18.15)', "Integral density  dr^3 =", real(integral_dens), &
                                                  ' +j ', imag(integral_dens)
 print '(A,F18.15)', "Int dens Protons  dr^3 =", real(int_dens_Z)
 print '(A,F18.15)', "Int dens Neutrons dr^3 =", real(int_dens_N)
-print *, "Integration method = ", integration_method
 
 !export_density = .FALSE. ! Do not export more
 print *, '[OK] EXPORT expected value of density: files = '
