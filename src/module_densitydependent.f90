@@ -2347,7 +2347,7 @@ do k1 = 1, ndim
   i2 = temp_abcd(4*(kk-1) + 2)
   i3 = temp_abcd(4*(kk-1) + 3)
   i4 = temp_abcd(4*(kk-1) + 4)
-  print "(A,i4)", "Test 3: temp_abcd(kk)=", i1,i2,i3,i4
+  print "(A,4i4)", "Test 3: temp_abcd(kk)=", i1,i2,i3,i4
 
   k2 = sort_red_pointer(k1) ! extract the index of the reduced space
   print "(A,i4)", "Test 4: k2=", k2
@@ -2356,7 +2356,7 @@ do k1 = 1, ndim
   !NOTE: the sort_red_pointer still points in the reduced non zero list,
   ! here, we are not assigning k2 in order, the order will appear while reading
   temp_hamil_byT(tt, k2) = temp_hamil(kk)
-  print "(A,i4)", "Test 6: temp_hamil_byT(tt,k2)=",  temp_hamil(kk)
+  print "(A,F9.5)", "Test 6: temp_hamil_byT(tt,k2)=",  temp_hamil(kk)
 
   write(3333, fmt="(3i8,A,4i4,A,i2,A,F15.6)")k1,kk,k2," indx:", i1,i2,i3,i4, &
                                              "  (t:",tt,") =",temp_hamil(kk)
