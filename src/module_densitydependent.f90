@@ -2339,7 +2339,7 @@ end do
 !! Assign in the temp_hamil_byT the element by T
 open (3333, file="temp_abcd_sorted.gut")
 do k1 = 1, ndim
-  print "(A,i5)", "Test 1: k1=", k1
+  print "(A,2i7)", "Test 1: k1/ndim=", k1, ndim
   kk = sort_pointer(k1)
   print "(A,i9)", "Test 2: kk _ sort_pointer=", kk
 
