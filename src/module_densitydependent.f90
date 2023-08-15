@@ -2339,18 +2339,24 @@ end do
 !! Assign in the temp_hamil_byT the element by T
 open (3333, file="temp_abcd_sorted.gut")
 do k1 = 1, ndim
+  print "(A,i4)", "Test 1: k1=", k1
   kk = sort_pointer(k1)
+  print "(A,i4)", "Test 2: kk _ sort_pointer=", kk
 
   i1 = temp_abcd(4*(kk-1) + 1)
   i2 = temp_abcd(4*(kk-1) + 2)
   i3 = temp_abcd(4*(kk-1) + 3)
   i4 = temp_abcd(4*(kk-1) + 4)
+  print "(A,i4)", "Test 3: temp_abcd(kk)=", i1,i2,i3,i4
 
   k2 = sort_red_pointer(k1) ! extract the index of the reduced space
+  print "(A,i4)", "Test 4: k2=", k2
   tt = sort_isos(k1)
+  print "(A,i4)", "Test 5: k1 isos tt=", tt
   !NOTE: the sort_red_pointer still points in the reduced non zero list,
   ! here, we are not assigning k2 in order, the order will appear while reading
   temp_hamil_byT(tt, k2) = temp_hamil(kk)
+  print "(A,i4)", "Test 6: temp_hamil_byT(tt,k2)=",  temp_hamil(kk)
 
   write(3333, fmt="(3i8,A,4i4,A,i2,A,F15.6)")k1,kk,k2," indx:", i1,i2,i3,i4, &
                                              "  (t:",tt,") =",temp_hamil(kk)
