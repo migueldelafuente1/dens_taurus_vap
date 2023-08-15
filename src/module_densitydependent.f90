@@ -2087,7 +2087,7 @@ subroutine print_uncoupled_hamiltonian_H2
 
 integer   :: i, kk, i1, i2, i3, i4, it, perm, uth6=uth+8,uth7=uth+9, ialloc=0,&
              ared, bred, cred, dred, ndim, ndim2, k1, k2, POW10, spo2, point_,&
-             j1, j2, j3, j4, tt, red_dim
+             j1, j2, j3, j4, tt, red_dim, sh_vs
 integer(i64) :: indx_, ind_r
 integer(i64), dimension(:), allocatable :: sort_indx, red_indx
 integer,      dimension(:), allocatable :: temp_abcd, sort_pointer, sort_isos,&
@@ -2096,6 +2096,7 @@ real(r64) :: h2b, aux, i1_t, i2_t, i3_t, i4_t
 real(r64), dimension(:),   allocatable :: temp_hamil
 real(r64), dimension(:,:), allocatable :: temp_hamil_byT
 integer,   dimension(:,:,:,:), allocatable :: red_abcd
+integer, dimension(4) :: sh_curr
 logical :: found
 integer, dimension(:,:,:,:), allocatable:: registered_h2b ! test which m.e. is registered
 
@@ -2119,6 +2120,24 @@ do kk = 1, hamil_H2dim
   i2 = hamil_abcd(2+4*(kk-1))
   i3 = hamil_abcd(3+4*(kk-1))
   i4 = hamil_abcd(4+4*(kk-1))
+
+  if (.NOT.evalQuasiParticleVSpace) then
+    !! Skip if the state is not in the WB
+    found = .TRUE.
+    sh_curr = (/HOsh_ant(i1), HOsh_ant(i2), HOsh_ant(i3),  HOsh_ant(i4)/)
+    do k1 = 1, 4
+      k2 = 0
+      do sh_vs=1, VSsh_dim
+        if (sh_curr(k1) .EQ. VSsh_list(sh_vs)) k2 = 1
+      end do
+      if (k2 .EQ. 0) then
+        found = .FALSE.
+        EXIT
+      endif
+    end do
+    if (.NOT. found) cycle
+  endif
+
   h2b  = hamil_H2(kk)
   perm = hamil_trperm(kk)
 
@@ -2277,31 +2296,31 @@ enddo
 close(3333)
 
 !OPEN(3334, file="test_reconstruction_BBhamil.gut")
-do i1 = 1, HOsp_dim
-  do i2 = 1, HOsp_dim
-    do i3 = 1, HOsp_dim
-      do i4 = 1, HOsp_dim
-
-  if ((-1)**(HOsp_l(i1)+HOsp_l(i2)) /= (-1)**(HOsp_l(i3)+HOsp_l(i4))) then
-    registered_h2b(i1,i2,i3,i4) = 3
-  end if
-  if ((HOsp_2mj(i1)+HOsp_2mj(i2)) /= HOsp_2mj(i3)+HOsp_2mj(i4)) then
-    registered_h2b(i1,i2,i3,i4) = 3
-  end if
-  if ((HOsp_2mt(i1)+HOsp_2mt(i2)) /= HOsp_2mt(i3)+HOsp_2mt(i4)) then
-    registered_h2b(i1,i2,i3,i4) = 3
-  end if
-
-  !WRITE(3334, fmt="(5i4)") i1,i2,i3,i4, registered_h2b(i1,i2,i3,i4)
-      end do
-    end do
-  end do
-end do
-!CLOSE(3334)
-deallocate(registered_h2b)
+!do i1 = 1, HOsp_dim
+!  do i2 = 1, HOsp_dim
+!    do i3 = 1, HOsp_dim
+!      do i4 = 1, HOsp_dim
+!
+!  if ((-1)**(HOsp_l(i1)+HOsp_l(i2)) /= (-1)**(HOsp_l(i3)+HOsp_l(i4))) then
+!    registered_h2b(i1,i2,i3,i4) = 3
+!  end if
+!  if ((HOsp_2mj(i1)+HOsp_2mj(i2)) /= HOsp_2mj(i3)+HOsp_2mj(i4)) then
+!    registered_h2b(i1,i2,i3,i4) = 3
+!  end if
+!  if ((HOsp_2mt(i1)+HOsp_2mt(i2)) /= HOsp_2mt(i3)+HOsp_2mt(i4)) then
+!    registered_h2b(i1,i2,i3,i4) = 3
+!  end if
+!
+!  !WRITE(3334, fmt="(5i4)") i1,i2,i3,i4, registered_h2b(i1,i2,i3,i4)
+!      end do
+!    end do
+!  end do
+!end do
+!!CLOSE(3334)
+!deallocate(registered_h2b)
 
 allocate(temp_hamil_byT(4, red_dim), &
-         red_abcd(HOsp_dim , HOsp_dim , HOsp_dim , HOsp_dim))
+         red_abcd(WBsp_dim , WBsp_dim , WBsp_dim , WBsp_dim))
 temp_hamil_byT = zero
 red_abcd       = 0
 ! bubble sorting
