@@ -2301,7 +2301,7 @@ end do
 deallocate(registered_h2b)
 
 allocate(temp_hamil_byT(4, red_dim), &
-         red_abcd(HOsp_dim/2, HOsp_dim/2, HOsp_dim/2, HOsp_dim/2))
+         red_abcd(HOsp_dim , HOsp_dim , HOsp_dim , HOsp_dim))
 temp_hamil_byT = zero
 red_abcd       = 0
 ! bubble sorting
