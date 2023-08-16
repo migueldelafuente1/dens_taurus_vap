@@ -253,7 +253,6 @@ do a = 1, spO2
   enddo
 enddo
 
-print "(A)", "Now the core"
 !! SUM the DENSITY INDEPENDENT HAMILTONIAN (shell indexes)
 CORE_NUMBER = 0
 do a_sh = 1, HOsh_dim
