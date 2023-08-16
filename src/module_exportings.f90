@@ -786,10 +786,10 @@ do aa = 1, VSsh_dim
 
   !!! ================================================================
   ! part to recouple with the j and conjugate j elements
-  a_con = reciprocal_nlj_shell(a)
-  b_con = reciprocal_nlj_shell(b)
-  c_con = reciprocal_nlj_shell(c)
-  d_con = reciprocal_nlj_shell(d)
+  a_con = reciprocal_nlj_shell(aa)
+  b_con = reciprocal_nlj_shell(bb)
+  c_con = reciprocal_nlj_shell(cc)
+  d_con = reciprocal_nlj_shell(dd)
   recoupl_factor = ((-1)**(Jbra+Jket))*(2*KK + 1.0d0)*(2*Jket + 1.0d0)
   recoupl_factor = recoupl_factor * aux_1 * aux_2 * aux_3 * aux_4
 
