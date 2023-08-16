@@ -383,7 +383,7 @@ integer  , dimension(4)   :: ind_sh_ab, ind_sh_cd
 real(r64), dimension(4)   :: aux_r_ab, aux_r_cd
 logical,   dimension(4)   :: j_isitsconjugate
 
-print "(3(A,4I4))", " Status Start, abcd",a,b,c,d," abcd_con", &
+print "(3(A,4I6))", " Status Start, abcd",a,b,c,d," abcd_con", &
       a_con,b_con,c_con,d_con, "Sbk,Lbk", Sbra,Sket,Lbra,Lket
 
 
@@ -578,7 +578,7 @@ do aa = 1, VSsh_dim
     end if
   enddo
   bb = reciprocal_nlj_shell(aa)
-!  print "(A,2I7,A,2I7)", "  * ", aa, VSsh_list(aa), " -> ", bb, VSsh_list(bb)
+  print "(A,2I7,A,2I7)", "  * ", aa, VSsh_list(aa), " -> ", bb, VSsh_list(bb)
 enddo      !!! --------------------------------------------------------------
 
 !! TODO: The HamilJM can be reduced to just Core + VS -Shells
