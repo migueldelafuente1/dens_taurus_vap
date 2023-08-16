@@ -729,7 +729,7 @@ do aa = 1, VSsh_dim
   !! ======= Evaluate the rearrange for tensor components on the D1S
 !  print *, ""
 !  print "(A,4I5,2(A,2I3))", " abcd ", a_ant,b_ant,c_ant,d_ant, " lims bra:",&
-    Jb_min,Jb_max, " ket:", Jk_min,Jk_max
+!    Jb_min,Jb_max, " ket:", Jk_min,Jk_max
   auxHamilRed = zero
   do Jbra = Jb_min, Jb_max
     Mbra = 0
