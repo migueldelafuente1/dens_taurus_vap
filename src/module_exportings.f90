@@ -413,7 +413,7 @@ enddo
 
 E_core = zero
 do tt = 1, 3
-  print "(I2,A,2F10.4)",tt," Tcore/Vcore=",T_core(tt), V_core(tt)
+  print "(I2,A,2F15.6)",tt," Tcore/Vcore=",T_core(tt), V_core(tt)
   E_core  = E_core + T_core(tt) + (1.0d0 * V_core(tt)) !! we sum all
 enddo
 
