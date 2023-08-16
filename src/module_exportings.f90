@@ -387,7 +387,7 @@ do a_sh = 1, HOsh_dim
 
       h2int = hamil_H2cpd_DD(0, J, a_sh, b_sh, a_sh, b_sh) + &
                  hamil_DDcpd(0, J, a_sh, b_sh, a_sh, b_sh)
-      h2int = h2int * (ja + 1.0d0) * (jb + 1.0d0)
+      h2int = h2int * sqrt((ja + 1.0d0) * (jb + 1.0d0))
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(1) = V_core(1) + (aux_v * h2int)
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
@@ -396,7 +396,7 @@ do a_sh = 1, HOsh_dim
 
       h2int = hamil_H2cpd_DD(5, J, a_sh, b_sh, a_sh, b_sh) + &
                  hamil_DDcpd(5, J, a_sh, b_sh, a_sh, b_sh)
-      h2int = h2int * (ja + 1.0d0) * (jb + 1.0d0)
+      h2int = h2int * sqrt((ja + 1.0d0) * (jb + 1.0d0))
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(3) = V_core(3) + (aux_v * h2int)
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
