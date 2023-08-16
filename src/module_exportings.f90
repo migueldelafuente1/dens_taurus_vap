@@ -518,11 +518,16 @@ print *, ""
 print "(A,I5)", "* [  ] Printing 2B Mat Elements DD from WF_HFB /dim H2_DD:", &
     hamil_DD_H2dim
 
-open(298, file="D1S_vs_red.2b")
-open(299, file="D1S_vs_scalar.2b")
-open(300, file="onlyDD_D1S_scalar.2b")
-open(301, file="onlyDD_D1S_k1.2b")
-open(302, file="onlyDD_D1S_k2.2b")
+open(298, file="D1S_vs_red.2b", status='replace', action='write', &
+          form='formatted')
+open(299, file="D1S_vs_scalar.2b", status='replace', action='write', &
+          form='formatted')
+open(300, file="onlyDD_D1S_scalar.2b", status='replace', action='write', &
+          form='formatted')
+open(301, file="onlyDD_D1S_k1.2b", status='replace', action='write', &
+          form='formatted')
+open(302, file="onlyDD_D1S_k2.2b", status='replace', action='write', &
+          form='formatted')
 write (298, fmt="(A,I3)") " Write the shit fucking fortran", 51
 
 do KK = 0, TENSOR_ORD
