@@ -170,10 +170,10 @@ do a = 1, spO2
   if (Na .GT. NHO_vs) then  ! outer vs outer are neglected/ useless ------------
     cycle
   else if (Na .LE. NHO_co) then    !! Kinetic Energy Core -----------------
-    T_core(1) = T_core(1) + (aux_t / (ja + 1.0)**0.0d0)
-    T_core(3) = T_core(3) + (aux_t / (ja + 1.0)**0.0d0)
+    T_core(1) = T_core(1) + aux_t
+    T_core(3) = T_core(3) + aux_t
   else if ((Na .LE. NHO_vs).AND.(a_sh_vs.NE.0)) then  !! Valence Space ----
-    t_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (aux_t / (ja + 1.0)**0.0d0)
+    t_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + aux_t
   endif   !!    --------
 
   do b = 1, spO2
@@ -353,9 +353,10 @@ do a_sh = 1, HOsh_dim
     if (Nb .GT. NHO_vs) cycle ! outer vs outer are neglected/ useless
 
     delta_ab = 0
-    if ((ja.EQ.jb).AND.(la.EQ.lb).AND.(HOsh_n(a_sh).EQ.HOsh_n(b_sh))) then
+!    if ((ja.EQ.jb).AND.(la.EQ.lb).AND.(HOsh_n(a_sh).EQ.HOsh_n(b_sh))) then
+    if (a_sh .EQ. b_sh) then
       delta_ab = 1
-      endif
+    endif
 
     J_min = max(abs(ja - jb)/2, 0)
     J_max = (ja + jb) / 2
@@ -370,7 +371,7 @@ do a_sh = 1, HOsh_dim
       !! T = 1,2,3,4 (pnpn)
       if (delta_ab.EQ.0) NormAB = one
 
-      aux_v = NormAB * sqrt(2*J + 1.0)
+      aux_v = NormAB * (2*J + 1.0d0)
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(2) = V_core(2) + (aux_v * h2int)
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
@@ -379,10 +380,10 @@ do a_sh = 1, HOsh_dim
 
       !! pppp, nnnn
       if (delta_ab.EQ.1) then
-        NormAB = one / 2
+        NormAB = one / sqrt(2.0d0)
         if (MOD(J, 2).EQ.0) NormAB = zero
       endif
-      aux_v = NormAB * sqrt(2*J + 1.0)
+      aux_v = NormAB * (2*J + 1.0d0)
 
       h2int = hamil_H2cpd_DD(0, J, a_sh, b_sh, a_sh, b_sh) + &
                  hamil_DDcpd(0, J, a_sh, b_sh, a_sh, b_sh)
