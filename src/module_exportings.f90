@@ -141,7 +141,7 @@ real(r64), dimension(:,:,:,:,:,:), allocatable :: hamil_DDcpd
 print *, ""
 print *, " [  ] calculate_valenceSpaceReduced"
 
-allocate(hamil_DDcpd(0:5, HO_2jmax, HOsh_dim,HOsh_dim, HOsh_dim,HOsh_dim))
+allocate(hamil_DDcpd(0:5, HO_2jmax / 2, HOsh_dim,HOsh_dim, HOsh_dim,HOsh_dim))
 hamil_DDcpd = zero
 
 spO2 = HOsp_dim / 2
@@ -170,9 +170,10 @@ do a = 1, spO2
   if (Na .GT. NHO_vs) then  ! outer vs outer are neglected/ useless ------------
     cycle
   else if (Na .LE. NHO_co) then    !! Kinetic Energy Core -----------------
-    T_core(2+ta) = T_core(2+ta) + (aux_t / sqrt(2*ja + 1.0))
+    T_core(1) = T_core(1) + (aux_t / sqrt(ja + 1.0))
+    T_core(3) = T_core(3) + (aux_t / sqrt(ja + 1.0))
   else if ((Na .LE. NHO_vs).AND.(a_sh_vs.NE.0)) then  !! Valence Space ----
-    t_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (aux_t / sqrt(2*ja + 1.0))
+    t_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (aux_t / sqrt(ja + 1.0))
   endif   !!    --------
 
   do b = 1, spO2
@@ -208,7 +209,7 @@ do a = 1, spO2
       hamil_DDcpd(0, J, a_sh, b_sh, a_sh, b_sh) = &
           hamil_DDcpd(0, J, a_sh, b_sh, a_sh, b_sh) + v_temp(1)
       hamil_DDcpd(5, J, a_sh, b_sh, a_sh, b_sh) = &
-          hamil_DDcpd(0, J, a_sh, b_sh, a_sh, b_sh) + v_temp(4)
+          hamil_DDcpd(5, J, a_sh, b_sh, a_sh, b_sh) + v_temp(4)
 
       hamil_DDcpd(1, J, a_sh, b_sh, a_sh, b_sh) = &
           hamil_DDcpd(1, J, a_sh, b_sh, a_sh, b_sh) + v_temp(2)
@@ -330,8 +331,6 @@ end do
 !  enddo
 !enddo
 
-print "(A)", "DD energies for core."
-print "(3F15.6)", V_core(1), V_core(2), V_core(3)
 !! SUM the DENSITY INDEPENDENT HAMILTONIAN (shell indexes)
 CORE_NUMBER = 0
 do a_sh = 1, HOsh_dim
@@ -411,11 +410,9 @@ do a_sh = 1, HOsh_dim
 
 enddo
 
-print "(A)", "BB+DD energies for core."
-print "(3F15.6)", V_core(1), V_core(2), V_core(3)
-
 E_core = zero
 do tt = 1, 3
+  print "(I2,A,2F10.4)",tt," Tcore/Vcore=",T_core(tt), V_core(tt)
   E_core  = E_core + T_core(tt) + (1.0d0 * V_core(tt)) !! we sum all
 enddo
 
@@ -436,7 +433,7 @@ do a_sh_vs = 1, VSsh_dim
 enddo
 close(297)
 
-deallocate(T_core, V_core, e_sp_vs, t_sp_vs)
+deallocate(T_core, V_core, e_sp_vs, t_sp_vs, hamil_DDcpd)
 
 print *,  " [OK] calculate_valenceSpaceReduced"
 print *, ""
