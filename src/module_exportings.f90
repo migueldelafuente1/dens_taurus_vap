@@ -405,6 +405,7 @@ aux_r_cd (1) = sqrt((HOsh_2j(c)+1)*(HOsh_2j(d)+1)*(2*Sket + 1)*(2*Lket + 1.0d0))
 aux_r_cd (1) = aux_r_cd(1) * aux2
 ind_sh_cd(1) = two_shell_states_index(c, d)
 
+print "(A,4i5)", "Here 1, abcd=", a,b,c,d
 !! cases for complementary j, avoid calculating twice if j=j_con_ ------------
 do i = 2, 4
   aa = a
@@ -444,6 +445,7 @@ do i = 2, 4
 
   endif
 
+  print "(A,I3,4i5)", " 1.1 index selected i=", i, aa,bb,cc,dd
   !! If the index are zero, then the state is repeated with a previous one
   if (ind_sh_ab(i) .NE. 0) then
     call Wigner9JCoeff(2*HOsh_l(aa), 1,HOsh_2j(aa), &
@@ -453,6 +455,7 @@ do i = 2, 4
                        (2*Sbra + 1)*(2*Lbra + 1.0d0))
     aux_r_ab(i) = aux_r_ab(i) * aux1
   endif
+  print "(A)", " 1.1 index selected (ket)."
   if (ind_sh_cd(i) .NE. 0) then
     call Wigner9JCoeff(2*HOsh_l(cc), 1,HOsh_2j(cc), &
                        2*HOsh_l(dd), 1,HOsh_2j(dd), &
@@ -463,6 +466,7 @@ do i = 2, 4
   endif
 enddo
 
+print "(A)", "Here 2"
 !! sum all non
 do i =  1, 4
   aa = ind_sh_ab(i)
@@ -518,17 +522,11 @@ print *, ""
 print "(A,I5)", "* [  ] Printing 2B Mat Elements DD from WF_HFB /dim H2_DD:", &
     hamil_DD_H2dim
 
-open(298, file="D1S_vs_red.2b", status='replace', action='write', &
-          form='formatted')
-open(299, file="D1S_vs_scalar.2b", status='replace', action='write', &
-          form='formatted')
-open(300, file="onlyDD_D1S_scalar.2b", status='replace', action='write', &
-          form='formatted')
-open(301, file="onlyDD_D1S_k1.2b", status='replace', action='write', &
-          form='formatted')
-open(302, file="onlyDD_D1S_k2.2b", status='replace', action='write', &
-          form='formatted')
-write(298, fmt="(A)") " Write the shit fucking fortran"
+open(298, file="D1S_vs_red.2b")
+open(299, file="D1S_vs_scalar.2b")
+open(300, file="onlyDD_D1S_scalar.2b")
+open(301, file="onlyDD_D1S_k1.2b")
+open(302, file="onlyDD_D1S_k2.2b")
 
 do KK = 0, TENSOR_ORD
   write(300+KK, fmt="(A,I3,A,F10.5,A,F10.5,A,F6.4)") &
@@ -848,7 +846,7 @@ do aa = 1, VSsh_dim
 
       do KK = KKmin, KKmax
         if (all_zero(KK)) cycle
-!  print "(A,2I4,A,I4)", " ", Jbra, Jket, "  KK=",KK
+  print "(A,2I4,A,I4)", " ", Jbra, Jket, "  KK=",KK
         !! Write line
         if (KK > 0) then
           write(300+KK,fmt='(2I4)',advance='no')Jbra, Jket
