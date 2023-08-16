@@ -1751,11 +1751,13 @@ do i_r = 1, r_dim
    enddo ! angular iter_
 enddo    ! radial  iter_
 
-TOP = abs(maxval(real(rearrangement_me)))
-LOW = abs(minval(real(rearrangement_me)))
-if (TOP > 1.0D+10) then !((TOP < 1.0D+10).AND.(LOW > 1.E-10)) then
-    print "(A,4I3,2F20.10)", "!! REA", a,b,c,d, &
-        minval(real(rearrangement_me)), maxval(real(rearrangement_me))
+if (eval_explicit_fieldsDD) then
+  TOP = abs(maxval(real(rearrangement_me)))
+  LOW = abs(minval(real(rearrangement_me)))
+  if (TOP > 1.0D+10) then !((TOP < 1.0D+10).AND.(LOW > 1.E-10)) then
+      print "(A,4I3,2F20.10)", "!! REA", a,b,c,d, &
+          minval(real(rearrangement_me)), maxval(real(rearrangement_me))
+  endif
 endif
 
 v_dd_val_Real(1) = real(v_dd_value(1), r64) * integral_factor

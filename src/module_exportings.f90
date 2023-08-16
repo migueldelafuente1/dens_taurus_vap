@@ -216,9 +216,9 @@ do a = 1, spO2
         if ((b2 .LT. b_min).OR.(b2 .GT. b_max)) cycle ! INVALID mb2 value
 
         call ClebschGordan(ja,jb,2*J, ma2, mb2,2*M, cgc2)
-      print "(A)", "after CG"
+
         Vdd_dec = matrix_element_v_DD(a, b, a2, b2, .TRUE.)
-      print "(A)", "after Vdd"
+
         !! T = 0
         if (delta_ab.EQ.0) NormAB = one
         if (delta_ab.EQ.1) then
@@ -226,14 +226,13 @@ do a = 1, spO2
           if (MOD(J, 2).EQ.0) NormAB = zero
         endif
         aux_v = NormAB * cgc1 * cgc2 * sqrt(2*J + 1.0)
-      print "(A)", "after norm"
         if (Nb .LE. NHO_co) then !! CORE PART :
           V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) - Vdd_dec(3)))
         else if (a_sh_vs.NE.0) then ! -------- !! VALENCE SPACE SP Energies :
           aux_v = aux_v * (Vdd_dec(2) - Vdd_dec(3))
           e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v
         endif
-      print "(A)", "after Core part"
+
         !! T = 1
         if (delta_ab.EQ.1) then
           NormAB = one / 2
