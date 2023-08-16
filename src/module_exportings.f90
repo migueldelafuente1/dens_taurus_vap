@@ -203,13 +203,10 @@ do a = 1, spO2
     J_min = max(M, max(abs(ja - jb)/2, 0))  ! i.e. cannot have J=1, M=+-3
     J_max = (ja + jb) / 2
 
-    print "(A,2I4,A,3I4)", "  loop en. sp  a,b=",a,b," Jlims,M",J_min,J_max,M
     do J = J_min, J_max
       call ClebschGordan(ja,jb,2*J, ma,mb,2*M, cgc1)
 
       do a2 = a_min, a_max ! loop for the second CG
-        print "(A,I4,A,3I4)", "   ++ In the loop:", J, " As:", a2, a_min, a_max
-
         ma2 = HOsp_2mj(a2)
         mb2 = 2*M - HOsp_2mj(a2)
         b2  = b_min + (jb - mb2) / 2
@@ -253,7 +250,6 @@ do a = 1, spO2
       enddo ! loop the other m_j
     enddo ! loop J
 
-    print "(A)", "   ok"
   enddo
 enddo
 
@@ -731,9 +727,9 @@ do aa = 1, VSsh_dim
   endif
 
   !! ======= Evaluate the rearrange for tensor components on the D1S
-!  print *, ""
-!  print "(A,4I5,2(A,2I3))", " abcd ", a_ant,b_ant,c_ant,d_ant, " lims bra:",&
-!    Jb_min,Jb_max, " ket:", Jk_min,Jk_max
+  print *, ""
+  print "(A,4I5,2(A,2I3))", " abcd ", a_ant,b_ant,c_ant,d_ant, " lims bra:",&
+    Jb_min,Jb_max, " ket:", Jk_min,Jk_max
   auxHamilRed = zero
   do Jbra = Jb_min, Jb_max
     Mbra = 0
@@ -788,8 +784,8 @@ do aa = 1, VSsh_dim
   recoupl_factor = ((-1)**(Jbra+Jket))*(2*KK + 1.0d0)*(2*Jket + 1.0d0)
   recoupl_factor = recoupl_factor * aux_1 * aux_2 * aux_3 * aux_4
 
-!  print "(A,3I4,A,I4,A,3I3,F15.9)", "   > got to the recoup!: (J,S,L)bra=", &
-!        Jbra,Sbra,Lbra," KK=",KK, " (J,S,L)ket=", Jket,Sket,Lket,recoupl_factor
+  print "(A,3I4,A,I4,A,3I3,F15.9)", "   > got to the recoup!: (J,S,L)bra=", &
+        Jbra,Sbra,Lbra," KK=",KK, " (J,S,L)ket=", Jket,Sket,Lket,recoupl_factor
 
   call recouple_jjLSConjugatedME(a,b,c,d, a_con,b_con,c_con,d_con, &
                                  Sbra,Sket,Lbra,Lket,Jbra,Jket,Mbra,Mket,&
@@ -808,6 +804,7 @@ do aa = 1, VSsh_dim
     enddo ! k loop
   enddo ! Jbra loop
 
+  print "(A)", "END LOOP JLS <ab cd> rearrange for tensor components"
   !! WRITE the final result of the loop for each block ============
   do KK = 0, TENSOR_ORD
     if (all_zero(KK)) cycle
