@@ -203,7 +203,7 @@ do a = 1, spO2
     J_min = max(M, max(abs(ja - jb)/2, 0))  ! i.e. cannot have J=1, M=+-3
     J_max = (ja + jb) / 2
 
-    print "(A,2I4)", "  loop read en. sp  a,b=", a, b, " Jlims,M",J_min,J_max,M
+    print "(A,2I4,A,3I4)", "  loop en. sp  a,b=",a,b," Jlims,M",J_min,J_max,M
     do J = J_min, J_max
       call ClebschGordan(ja,jb,2*J, ma,mb,2*M, cgc1)
 
@@ -217,6 +217,7 @@ do a = 1, spO2
 
         Vdd_dec = matrix_element_v_DD(a, b, a2, b2, .TRUE.)
 
+    print "(A,3I4)", "   ++ In the loop:", J,a2,b2
         !! T = 0
         if (delta_ab.EQ.0) NormAB = one
         if (delta_ab.EQ.1) then
@@ -604,8 +605,8 @@ do KK = 1, hamil_DD_H2dim
   mc = HOsp_2mj(c)
   md = HOsp_2mj(d)
 
-  print "(A,I6,A,4I3,A,I2,A,8(A,2I3,A))", "kk=",kk," [",a,b,c,d,"] tt=",tt, &
-    " jm_abcd=","(",ja,ma,")", "(",jb,mb,")", "(",jc,mc,")", "(",jd,md,")"
+!  print "(A,I6,A,4I3,A,I2,A,8(A,2I3,A))", "kk=",kk," [",a,b,c,d,"] tt=",tt, &
+!    " jm_abcd=","(",ja,ma,")", "(",jb,mb,")", "(",jc,mc,")", "(",jd,md,")"
 
   Mbra = (ma + mb) / 2
   Mket = (mc + md) / 2
@@ -615,8 +616,8 @@ do KK = 1, hamil_DD_H2dim
   Jk_min = abs(jc - jd) / 2
   Jk_max =    (jc + jd) / 2
 
-  print "(A,2I3,A,3I3,A,3I3,A)", " *ind_j_ab, cd=", ind_sab, ind_scd, &
-    " JM,J'M', range=[", Jb_min,Jb_max,Mbra, "]   [", Jk_min,Jk_max, Mket,"]"
+!  print "(A,2I3,A,3I3,A,3I3,A)", " *ind_j_ab, cd=", ind_sab, ind_scd, &
+!    " JM,J'M', range=[", Jb_min,Jb_max,Mbra, "]   [", Jk_min,Jk_max, Mket,"]"
 
   do Jbra = Jb_min, Jb_max
     if (abs(Mbra) > Jbra) cycle
@@ -631,9 +632,9 @@ do KK = 1, hamil_DD_H2dim
       norm = sqrt((1.0d0 + delta_ab*((-1)**Jbra))*(1 + delta_cd*((-1)**Jket)))
       norm = norm / ((1 + delta_ab) * (1 + delta_cd))
 
-      print "(A,2I3,A,2I3,A,2I4,A,4F15.9)","   (jajb),JM,JM'(",Jbra,Mbra, &
-          ")(",Jket,Mket,") ind_jm_bra, ket=", ind_jm_b, ind_jm_k, " +=",&
-          cgc1 , cgc2, h2b(2), cgc1 * cgc2 * h2b(2)
+!      print "(A,2I3,A,2I3,A,2I4,A,4F15.9)","   (jajb),JM,JM'(",Jbra,Mbra, &
+!          ")(",Jket,Mket,") ind_jm_bra, ket=", ind_jm_b, ind_jm_k, " +=",&
+!          cgc1 , cgc2, h2b(2), cgc1 * cgc2 * h2b(2)
       do tt = 1, 4
         aux_val = cgc1 * cgc2 * h2b(tt)
         if ((tt .NE. 2).AND.(tt .NE. 3)) aux_val = aux_val * norm
