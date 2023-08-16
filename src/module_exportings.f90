@@ -216,7 +216,7 @@ do a = 1, spO2
         if ((b2 .LT. b_min).OR.(b2 .GT. b_max)) cycle ! INVALID mb2 value
 
         call ClebschGordan(ja,jb,2*J, ma2, mb2,2*M, cgc2)
-
+      print "(A)", "after CG"
         Vdd_dec = matrix_element_v_DD(a, b, a2, b2, .TRUE.)
 
         !! T = 0
