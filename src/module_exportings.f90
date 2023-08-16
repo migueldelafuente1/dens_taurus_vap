@@ -543,6 +543,7 @@ write(299, fmt="(A,A,F9.3,A,F10.5,A,F5.3,A,2F5.2)") &
     'Density 2BME on explicit HFB wf from taurus, Scalar', &
     ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=',x0_DD_FACTOR,' ALPHA=',alpha_DD, &
     '  CORE(n,p):', valence_N, valence_Z
+close(298)
 
 !! allocate the big JM, Jm', ab, cd array for the matrix elements
 dim_jm = angular_momentum_index(2*HO_2jmax,2*HO_2jmax,.FALSE.)
