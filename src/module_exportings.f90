@@ -383,10 +383,6 @@ integer  , dimension(4)   :: ind_sh_ab, ind_sh_cd
 real(r64), dimension(4)   :: aux_r_ab, aux_r_cd
 logical,   dimension(4)   :: j_isitsconjugate
 
-print "(3(A,4I6))", " Status Start, abcd",a,b,c,d," abcd_con", &
-      a_con,b_con,c_con,d_con, "Sbk,Lbk", Sbra,Sket,Lbra,Lket
-
-
 j_isitsconjugate = (/ a.EQ.a_con, b.EQ.b_con, c.EQ.c_con, d.EQ.d_con /)
 ind_jm_b  = angular_momentum_index(Jbra, Mbra, .FALSE.)
 ind_jm_k  = angular_momentum_index(Jket, Mket, .FALSE.)
@@ -409,7 +405,6 @@ aux_r_cd (1) = sqrt((HOsh_2j(c)+1)*(HOsh_2j(d)+1)*(2*Sket + 1)*(2*Lket + 1.0d0))
 aux_r_cd (1) = aux_r_cd(1) * aux2
 ind_sh_cd(1) = two_shell_states_index(c, d)
 
-print "(A,4i5)", "Here 1, abcd=", a,b,c,d
 !! cases for complementary j, avoid calculating twice if j=j_con_ ------------
 do i = 2, 4
   aa = a
@@ -449,7 +444,6 @@ do i = 2, 4
 
   endif
 
-  print "(A,I3,4i5)", " 1.1 index selected i=", i, aa,bb,cc,dd
   !! If the index are zero, then the state is repeated with a previous one
   if (ind_sh_ab(i) .NE. 0) then
     call Wigner9JCoeff(2*HOsh_l(aa), 1,HOsh_2j(aa), &
@@ -459,7 +453,6 @@ do i = 2, 4
                        (2*Sbra + 1)*(2*Lbra + 1.0d0))
     aux_r_ab(i) = aux_r_ab(i) * aux1
   endif
-  print "(A)", " 1.1 index selected (ket)."
   if (ind_sh_cd(i) .NE. 0) then
     call Wigner9JCoeff(2*HOsh_l(cc), 1,HOsh_2j(cc), &
                        2*HOsh_l(dd), 1,HOsh_2j(dd), &
@@ -470,7 +463,6 @@ do i = 2, 4
   endif
 enddo
 
-print "(A)", "Here 2"
 !! sum all non
 do i =  1, 4
   aa = ind_sh_ab(i)
@@ -545,7 +537,6 @@ write(299, fmt="(A,A,F9.3,A,F10.5,A,F5.3,A,2F5.2)") &
     'Density 2BME on explicit HFB wf from taurus, Scalar', &
     ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=',x0_DD_FACTOR,' ALPHA=',alpha_DD, &
     '  CORE(n,p):', valence_N, valence_Z
-close(298)
 
 !! allocate the big JM, Jm', ab, cd array for the matrix elements
 dim_jm = angular_momentum_index(2*HO_2jmax,2*HO_2jmax,.FALSE.)
@@ -578,7 +569,7 @@ do aa = 1, VSsh_dim
     end if
   enddo
   bb = reciprocal_nlj_shell(aa)
-  print "(A,2I7,A,2I7)", "  * ", aa, VSsh_list(aa), " -> ", bb, VSsh_list(bb)
+!  print "(A,2I7,A,2I7)", "  * ", aa, VSsh_list(aa), " -> ", bb, VSsh_list(bb)
 enddo      !!! --------------------------------------------------------------
 
 !! TODO: The HamilJM can be reduced to just Core + VS -Shells
@@ -736,8 +727,8 @@ do aa = 1, VSsh_dim
   endif
 
   !! ======= Evaluate the rearrange for tensor components on the D1S
-  print *, ""
-  print "(A,4I5,2(A,2I3))", " abcd ", a_ant,b_ant,c_ant,d_ant, " lims bra:",&
+!  print *, ""
+!  print "(A,4I5,2(A,2I3))", " abcd ", a_ant,b_ant,c_ant,d_ant, " lims bra:",&
     Jb_min,Jb_max, " ket:", Jk_min,Jk_max
   auxHamilRed = zero
   do Jbra = Jb_min, Jb_max
@@ -793,8 +784,8 @@ do aa = 1, VSsh_dim
   recoupl_factor = ((-1)**(Jbra+Jket))*(2*KK + 1.0d0)*(2*Jket + 1.0d0)
   recoupl_factor = recoupl_factor * aux_1 * aux_2 * aux_3 * aux_4
 
-  print "(A,3I4,A,I4,A,3I3,F15.9)", "   > got to the recoup!: (J,S,L)bra=", &
-        Jbra,Sbra,Lbra," KK=",KK, " (J,S,L)ket=", Jket,Sket,Lket,recoupl_factor
+!  print "(A,3I4,A,I4,A,3I3,F15.9)", "   > got to the recoup!: (J,S,L)bra=", &
+!        Jbra,Sbra,Lbra," KK=",KK, " (J,S,L)ket=", Jket,Sket,Lket,recoupl_factor
 
   call recouple_jjLSConjugatedME(a,b,c,d, a_con,b_con,c_con,d_con, &
                                  Sbra,Sket,Lbra,Lket,Jbra,Jket,Mbra,Mket,&
@@ -813,7 +804,7 @@ do aa = 1, VSsh_dim
     enddo ! k loop
   enddo ! Jbra loop
 
-  print "(A)", "END LOOP JLS <ab cd> rearrange for tensor components"
+!  print "(A)", "END LOOP JLS <ab cd> rearrange for tensor components"
   !! WRITE the final result of the loop for each block ============
   do KK = 0, TENSOR_ORD
     if (all_zero(KK)) cycle
@@ -850,7 +841,6 @@ do aa = 1, VSsh_dim
 
       do KK = KKmin, KKmax
         if (all_zero(KK)) cycle
-  print "(A,2I4,A,I4)", " ", Jbra, Jket, "  KK=",KK
         !! Write line
         if (KK > 0) then
           write(300+KK,fmt='(2I4)',advance='no')Jbra, Jket
