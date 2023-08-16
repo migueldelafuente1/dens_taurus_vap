@@ -208,7 +208,7 @@ do a = 1, spO2
       call ClebschGordan(ja,jb,2*J, ma,mb,2*M, cgc1)
 
       do a2 = a_min, a_max ! loop for the second CG
-        print "(A,3I4)", "   ++ In the loop:", J,a2, b_min + (jb - mb2) / 2
+        print "(A,I4,A,3I4)", "   ++ In the loop:", J, " As:", a2, a_min, a_max
 
         ma2 = HOsp_2mj(a2)
         mb2 = 2*M - HOsp_2mj(a2)
