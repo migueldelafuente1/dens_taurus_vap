@@ -524,7 +524,7 @@ open(300, file="onlyDD_D1S_scalar.2b")
 open(301, file="onlyDD_D1S_k1.2b")
 open(302, file="onlyDD_D1S_k2.2b")
 do KK = 0, TENSOR_ORD
-  write(300+KK, fmt='(A,I3,A,F10.5,A,F10.5,A,F6.4)') &
+  write(300+KK, fmt="(A,I3,A,F10.5,A,F10.5,A,F6.4)") &
     'Density 2BME on explicit HFB wf from taurus, Tensor=',KK, &
     ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=', x0_DD_FACTOR, ' ALPHA=', alpha_DD
 enddo
