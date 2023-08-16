@@ -528,7 +528,7 @@ open(301, file="onlyDD_D1S_k1.2b", status='replace', action='write', &
           form='formatted')
 open(302, file="onlyDD_D1S_k2.2b", status='replace', action='write', &
           form='formatted')
-write(298, fmt=*) " Write the shit fucking fortran"
+write(298, fmt="(A)") " Write the shit fucking fortran"
 
 do KK = 0, TENSOR_ORD
   write(300+KK, fmt="(A,I3,A,F10.5,A,F10.5,A,F6.4)") &
