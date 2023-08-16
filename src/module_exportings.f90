@@ -253,6 +253,8 @@ do a = 1, spO2
   enddo
 enddo
 
+print "(A)", "DD energies for core."
+print "(3F15.6)", V_core(1), V_core(2), V_core(3)
 !! SUM the DENSITY INDEPENDENT HAMILTONIAN (shell indexes)
 CORE_NUMBER = 0
 do a_sh = 1, HOsh_dim
@@ -327,6 +329,9 @@ do a_sh = 1, HOsh_dim
   endif
 
 enddo
+
+print "(A)", "BB+DD energies for core."
+print "(3F15.6)", V_core(1), V_core(2), V_core(3)
 
 E_core = zero
 do tt = 1, 3
