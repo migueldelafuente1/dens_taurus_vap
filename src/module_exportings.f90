@@ -369,7 +369,7 @@ do a_sh = 1, HOsh_dim
       end do
 
       !! T = 1,2,3,4 (pnpn)
-      if (delta_ab.EQ.0) NormAB = one
+      NormAB = one
 
       aux_v = NormAB * (2*J + 1.0d0)
       if (Nb .LE. NHO_co) then !! CORE PART :
