@@ -135,10 +135,14 @@ integer      :: a_ant,b_ant, t, tt, a_sh, b_sh, a_sh_vs, la,lb,&
                 i_jm, i_sab, Na, Nb, spO2, NormAB, delta_ab, CORE_NUMBER
 real(r64) :: aux_t, aux_v, E_core, cgc1, cgc2, cgc_t1, cgc_t2, h2int
 real(r64), dimension(:), allocatable :: e_sp_vs,t_sp_vs, T_core, V_core
-real(r64), dimension(4) :: Vdd_dec
+real(r64), dimension(4) :: Vdd_dec, v_temp
+real(r64), dimension(:,:,:,:,:), allocatable :: hamil_DDcpd
 
 print *, ""
 print *, " [  ] calculate_valenceSpaceReduced"
+
+allocate(hamil_DDcpd(0:5, HO_2jmax, HOsh_dim,HOsh_dim, HOsh_dim,HOsh_dim))
+hamil_DDcpd = zero
 
 spO2 = HOsp_dim / 2
 allocate(T_core(3), V_core(3))
@@ -148,32 +152,20 @@ allocate(e_sp_vs(VSsh_dim), t_sp_vs(VSsh_dim)) ! assuming different sp.energies 
 e_sp_vs = zero
 t_sp_vs = zero
 
-a_min   = 0
-a_max   = 0
-ja_prev = 0
-b_min   = 0
-b_max   = 0
-jb_prev = 0
-
+!! Get the reduced matrix Elements for the DD term
 do a = 1, spO2
-
   Na = 2*HOsp_n(a) + HOsp_l(a)
-  ja = HOsp_2j (a)
-  ma = HOsp_2mj(a)
   a_sh = HOsp_sh(a)
-  ta = HOsp_2mt(a)
+  ja   = HOsp_2j(a)
+  ma   = HOsp_2mj(a)
 
-  if ((a_min.EQ.0).OR.(ja.NE.ja_prev)) then ! update the first mj to evaluate b
-    a_min = a
-    a_max = a + ja
-    ja_prev = ja
-
-    a_sh_vs = 0 ! if it's 0, then we do not add up to the VS energy
-    do aa = 1, VSsh_dim ! find the index in the VS
-      if (VSsh_list(aa).EQ.HOsh_ant(a_sh)) a_sh_vs = aa
-    enddo
-  endif
-
+  a_sh_vs = 0 ! if it's 0, then we do not add up to the VS energy
+  do aa = 1, VSsh_dim ! find the index in the VS
+    if (VSsh_list(aa).EQ.HOsh_ant(a_sh)) then
+      a_sh_vs = aa
+      exit
+    endif
+  enddo
   aux_t = hamil_H1(a, a)
   if (Na .GT. NHO_vs) then  ! outer vs outer are neglected/ useless ------------
     cycle
@@ -183,75 +175,160 @@ do a = 1, spO2
     t_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (aux_t / sqrt(2*ja + 1.0))
   endif   !!    --------
 
-  !! Calculate the 2Body Interaction for the CORE and the VALENCE
-  do b = a_min, spO2
-    Nb = 2*HOsp_n(b) + HOsp_l(b)
-    jb = HOsp_2j (b)
-    mb = HOsp_2mj(b)
+  do b = 1, spO2
+    b_sh = HOsp_sh(b)
+    jb   = HOsp_2j(b)
+    mb   = HOsp_2mj(b)
 
-    delta_ab = 0
-    if ((ja.EQ.jb).AND.(la.EQ.lb).AND.(HOsp_n(a).EQ.HOsp_n(b))) delta_ab = 1
-
-    if (Nb .GT. NHO_vs) cycle ! outer vs outer are neglected/ useless
-    if ((b_min.EQ.0).OR.(jb.NE.jb_prev)) then ! update the first mj to evaluate b
-      b_min = b
-      b_max = b + jb
-      jb_prev = jb
-    endif
-
-    M = (ma + mb) / 2
-    J_min = max(M, max(abs(ja - jb)/2, 0))  ! i.e. cannot have J=1, M=+-3
+    J_min = max( abs(ja - jb)/ 2 ,0)
     J_max = (ja + jb) / 2
-
+    M = (ma + mb) / 2
     do J = J_min, J_max
       call ClebschGordan(ja,jb,2*J, ma,mb,2*M, cgc1)
 
-      do a2 = a_min, a_max ! loop for the second CG
-        ma2 = HOsp_2mj(a2)
-        mb2 = 2*M - HOsp_2mj(a2)
-        b2  = b_min + (jb - mb2) / 2
-        if ((b2 .LT. b_min).OR.(b2 .GT. b_max)) cycle ! INVALID mb2 value
+      v_temp = zero
+      !! Do another loop to get the other possible a,b 3rd componets
+      do a2 = 1, spO2
+        do b2 = 1, spO2
+          if ((HOsp_sh(a).NE.HOsp_sh(a2)).OR.(HOsp_sh(b).NE.HOsp_sh(b2))) cycle
+          if ((HOsp_2mj(a2)+HOsp_2mj(b2)) / 2 .NE. M) cycle
 
-        call ClebschGordan(ja,jb,2*J, ma2, mb2,2*M, cgc2)
+          call ClebschGordan(HOsp_2j (a2), HOsp_2j (b2),2*J, &
+                             HOsp_2mj(a2), HOsp_2mj(b2),2*M, cgc2)
 
-        Vdd_dec = matrix_element_v_DD(a, b, a2, b2, .TRUE.)
+          Vdd_dec = matrix_element_v_DD(a, b, a2, b2, .TRUE.)
 
-        !! T = 0
-        if (delta_ab.EQ.0) NormAB = one
-        if (delta_ab.EQ.1) then
-          NormAB = one / 2
-          if (MOD(J, 2).EQ.0) NormAB = zero
-        endif
-        aux_v = NormAB * cgc1 * cgc2 / (2*J + 1.0)!* sqrt(2*J + 1.0)
-        if (Nb .LE. NHO_co) then !! CORE PART :
-          V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) - Vdd_dec(3)))
-        else if (a_sh_vs.NE.0) then ! -------- !! VALENCE SPACE SP Energies :
-          aux_v = aux_v * (Vdd_dec(2) - Vdd_dec(3))
-          e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v
-        endif
+          do tt = 1, 4
+            v_temp(tt) = v_temp(tt) + cgc1 * cgc2 * Vdd_dec(tt)
+          end do
 
-        !! T = 1
-        if (delta_ab.EQ.1) then
-          NormAB = one / 2
-          if (MOD(J, 2).EQ.1) NormAB = zero
-        endif
+        end do
+      end do
 
-        aux_v = NormAB * cgc1 * cgc2 / ((2*J + 1.0) * 3) !* sqrt((2*J + 1.0) * 3)
-        if (Nb .LE. NHO_co) then !! CORE PART :
-          V_core(1) = V_core(1) + (aux_v *  Vdd_dec(1))
-          V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) + Vdd_dec(3)))
-          V_core(3) = V_core(3) + (aux_v *  Vdd_dec(4))
-        else if (a_sh_vs.NE.0) then ! ---------- !! VALENCE SPACE SP Energies :
-          e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v * Vdd_dec(1)
-          e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v *(Vdd_dec(2) + Vdd_dec(3))
-          e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v * Vdd_dec(4)
-        endif
+      hamil_DDcpd(0, J, a_sh, b_sh, a_sh, b_sh) = &
+          hamil_DDcpd(0, J, a_sh, b_sh, a_sh, b_sh) + v_temp(1)
+      hamil_DDcpd(5, J, a_sh, b_sh, a_sh, b_sh) = &
+          hamil_DDcpd(0, J, a_sh, b_sh, a_sh, b_sh) + v_temp(4)
 
-      enddo ! loop the other m_j
-    enddo ! loop J
+      hamil_DDcpd(1, J, a_sh, b_sh, a_sh, b_sh) = &
+          hamil_DDcpd(1, J, a_sh, b_sh, a_sh, b_sh) + v_temp(2)
+      hamil_DDcpd(2, J, a_sh, b_sh, a_sh, b_sh) = &
+          hamil_DDcpd(2, J, a_sh, b_sh, a_sh, b_sh) + v_temp(3)
+      hamil_DDcpd(3, J, a_sh, b_sh, a_sh, b_sh) = &
+          hamil_DDcpd(3, J, a_sh, b_sh, a_sh, b_sh) + v_temp(3)
+      hamil_DDcpd(4, J, a_sh, b_sh, a_sh, b_sh) = &
+          hamil_DDcpd(4, J, a_sh, b_sh, a_sh, b_sh) + v_temp(2)
 
-  enddo
-enddo
+    end do
+
+  end do
+end do
+
+
+!a_min   = 0
+!a_max   = 0
+!ja_prev = 0
+!b_min   = 0
+!b_max   = 0
+!jb_prev = 0
+!
+!do a = 1, spO2
+!
+!  Na = 2*HOsp_n(a) + HOsp_l(a)
+!  ja = HOsp_2j (a)
+!  ma = HOsp_2mj(a)
+!  a_sh = HOsp_sh(a)
+!  ta = HOsp_2mt(a)
+!
+!  if ((a_min.EQ.0).OR.(ja.NE.ja_prev)) then ! update the first mj to evaluate b
+!    a_min = a
+!    a_max = a + ja
+!    ja_prev = ja
+!
+!    a_sh_vs = 0 ! if it's 0, then we do not add up to the VS energy
+!    do aa = 1, VSsh_dim ! find the index in the VS
+!      if (VSsh_list(aa).EQ.HOsh_ant(a_sh)) a_sh_vs = aa
+!    enddo
+!  endif
+!
+!  aux_t = hamil_H1(a, a)
+!  if (Na .GT. NHO_vs) then  ! outer vs outer are neglected/ useless ------------
+!    cycle
+!  else if (Na .LE. NHO_co) then    !! Kinetic Energy Core -----------------
+!    T_core(2+ta) = T_core(2+ta) + (aux_t / sqrt(2*ja + 1.0))
+!  else if ((Na .LE. NHO_vs).AND.(a_sh_vs.NE.0)) then  !! Valence Space ----
+!    t_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (aux_t / sqrt(2*ja + 1.0))
+!  endif   !!    --------
+!
+!  !! Calculate the 2Body Interaction for the CORE and the VALENCE
+!  do b = a_min, spO2
+!    Nb = 2*HOsp_n(b) + HOsp_l(b)
+!    jb = HOsp_2j (b)
+!    mb = HOsp_2mj(b)
+!
+!    delta_ab = 0
+!    if ((ja.EQ.jb).AND.(la.EQ.lb).AND.(HOsp_n(a).EQ.HOsp_n(b))) delta_ab = 1
+!
+!    if (Nb .GT. NHO_vs) cycle ! outer vs outer are neglected/ useless
+!    if ((b_min.EQ.0).OR.(jb.NE.jb_prev)) then ! update the first mj to evaluate b
+!      b_min = b
+!      b_max = b + jb
+!      jb_prev = jb
+!    endif
+!
+!    M = (ma + mb) / 2
+!    J_min = max(M, max(abs(ja - jb)/2, 0))  ! i.e. cannot have J=1, M=+-3
+!    J_max = (ja + jb) / 2
+!
+!    do J = J_min, J_max
+!      call ClebschGordan(ja,jb,2*J, ma,mb,2*M, cgc1)
+!
+!      do a2 = a_min, a_max ! loop for the second CG
+!        ma2 = HOsp_2mj(a2)
+!        mb2 = 2*M - HOsp_2mj(a2)
+!        b2  = b_min + (jb - mb2) / 2
+!        if ((b2 .LT. b_min).OR.(b2 .GT. b_max)) cycle ! INVALID mb2 value
+!
+!        call ClebschGordan(ja,jb,2*J, ma2, mb2,2*M, cgc2)
+!
+!        Vdd_dec = matrix_element_v_DD(a, b, a2, b2, .TRUE.)
+!
+!        !! T = 0
+!        if (delta_ab.EQ.0) NormAB = one
+!        if (delta_ab.EQ.1) then
+!          NormAB = one / 2
+!          if (MOD(J, 2).EQ.0) NormAB = zero
+!        endif
+!        aux_v = NormAB * cgc1 * cgc2  !* sqrt(2*J + 1.0)
+!        if (Nb .LE. NHO_co) then !! CORE PART :
+!          V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) - Vdd_dec(3)))
+!        else if (a_sh_vs.NE.0) then ! -------- !! VALENCE SPACE SP Energies :
+!          aux_v = aux_v * (Vdd_dec(2) - Vdd_dec(3))
+!          e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v
+!        endif
+!
+!        !! T = 1
+!        if (delta_ab.EQ.1) then
+!          NormAB = one / 2
+!          if (MOD(J, 2).EQ.1) NormAB = zero
+!        endif
+!
+!        aux_v = NormAB * cgc1 * cgc2  !* sqrt((2*J + 1.0) * 3)
+!        if (Nb .LE. NHO_co) then !! CORE PART :
+!          V_core(1) = V_core(1) + (aux_v *  Vdd_dec(1))
+!          V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) + Vdd_dec(3)))
+!          V_core(3) = V_core(3) + (aux_v *  Vdd_dec(4))
+!        else if (a_sh_vs.NE.0) then ! ---------- !! VALENCE SPACE SP Energies :
+!          e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v * Vdd_dec(1)
+!          e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v *(Vdd_dec(2) + Vdd_dec(3))
+!          e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v * Vdd_dec(4)
+!        endif
+!
+!      enddo ! loop the other m_j
+!    enddo ! loop J
+!
+!  enddo
+!enddo
 
 print "(A)", "DD energies for core."
 print "(3F15.6)", V_core(1), V_core(2), V_core(3)
@@ -285,10 +362,12 @@ do a_sh = 1, HOsh_dim
     J_max = (ja + jb) / 2
     do J = J_min, J_max
 
-      h2int =         hamil_H2cpd_DD(1, J, a_sh, b_sh, a_sh, b_sh)
-      h2int = h2int + hamil_H2cpd_DD(2, J, a_sh, b_sh, a_sh, b_sh)
-      h2int = h2int + hamil_H2cpd_DD(3, J, a_sh, b_sh, a_sh, b_sh)
-      h2int = h2int + hamil_H2cpd_DD(4, J, a_sh, b_sh, a_sh, b_sh)
+      h2int = zero
+      do tt = 1, 4
+        h2int = h2int + hamil_H2cpd_DD(tt, J, a_sh, b_sh, a_sh, b_sh) + &
+                           hamil_DDcpd(tt, J, a_sh, b_sh, a_sh, b_sh)
+      end do
+
       !! T = 1,2,3,4 (pnpn)
       if (delta_ab.EQ.0) NormAB = one
 
@@ -306,14 +385,16 @@ do a_sh = 1, HOsh_dim
       endif
       aux_v = NormAB * sqrt(2*J + 1.0)
 
-      h2int = hamil_H2cpd_DD(0, J, a_sh, b_sh, a_sh, b_sh)
+      h2int = hamil_H2cpd_DD(0, J, a_sh, b_sh, a_sh, b_sh) + &
+                 hamil_DDcpd(0, J, a_sh, b_sh, a_sh, b_sh)
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(1) = V_core(1) + (aux_v * h2int)
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
         e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + (aux_v * h2int)
       endif
 
-      h2int = hamil_H2cpd_DD(5, J, a_sh, b_sh, a_sh, b_sh)
+      h2int = hamil_H2cpd_DD(5, J, a_sh, b_sh, a_sh, b_sh) + &
+                 hamil_DDcpd(5, J, a_sh, b_sh, a_sh, b_sh)
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(3) = V_core(3) + (aux_v * h2int)
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
