@@ -348,12 +348,19 @@ do a_sh = 1, HOsh_dim
     if (VSsh_list(aa).EQ.HOsh_ant(a_sh)) a_sh_vs = aa
   enddo
   do b_sh = a_sh, HOsh_dim
+    !! ========================================================================
+    !! NOTE: All the degeneration factors are estimations counting the number
+    !! of states in each level and all the core states to account for them
+    !! the final E_core =approx E_HFB, and also the T energy descomposition
+    !!
+    !! The formulas from the Chinese article does not give anything similar.
+    !! ========================================================================
+
     Nb = 2*HOsh_n(b_sh) + HOsh_l(b_sh)
     jb = HOsh_2j(b_sh)
     if (Nb .GT. NHO_vs) cycle ! outer vs outer are neglected/ useless
 
     delta_ab = 0
-!    if ((ja.EQ.jb).AND.(la.EQ.lb).AND.(HOsh_n(a_sh).EQ.HOsh_n(b_sh))) then
     if (a_sh .EQ. b_sh) then
       delta_ab = 1
     endif
@@ -375,7 +382,7 @@ do a_sh = 1, HOsh_dim
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(2) = V_core(2) + (aux_v * h2int)
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
-        e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + (aux_v * h2int)
+        e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + (aux_v * h2int * sqrt(jb + 1.0d0))
       endif
 
       !! pppp, nnnn
@@ -391,7 +398,7 @@ do a_sh = 1, HOsh_dim
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(1) = V_core(1) + (aux_v * h2int)
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
-        e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + (aux_v * h2int)
+        e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + (aux_v * h2int * sqrt(jb + 1.0d0))
       endif
 
       h2int = hamil_H2cpd_DD(5, J, a_sh, b_sh, a_sh, b_sh) + &
@@ -400,7 +407,7 @@ do a_sh = 1, HOsh_dim
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(3) = V_core(3) + (aux_v * h2int)
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
-        e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + (aux_v * h2int)
+        e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + (aux_v * h2int * sqrt(jb + 1.0d0))
       endif
 
     enddo ! sum J
@@ -408,6 +415,9 @@ do a_sh = 1, HOsh_dim
   enddo
 
   if (a_sh_vs.NE.0) then
+    print "(A,2I4,A,2F15.6)", "VS_spe  a/j(a)",VSsh_list(aa), ja, " t,v=", &
+        t_sp_vs(a_sh_vs), e_sp_vs(a_sh_vs)
+
     e_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (0.5d0 * e_sp_vs(a_sh_vs)/(ja+1.0d0))
   endif
 
