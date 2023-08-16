@@ -173,7 +173,7 @@ do a = 1, spO2
     T_core(1) = T_core(1) + aux_t
     T_core(3) = T_core(3) + aux_t
   else if ((Na .LE. NHO_vs).AND.(a_sh_vs.NE.0)) then  !! Valence Space ----
-    t_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + aux_t
+    t_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + aux_t / (ja + 1.0d0)
   endif   !!    --------
 
   do b = 1, spO2
@@ -415,7 +415,7 @@ do a_sh = 1, HOsh_dim
   enddo
 
   if (a_sh_vs.NE.0) then
-    print "(A,2I4,A,2F15.6)", "VS_spe  a/j(a)",HOsh_ant(a_sh), ja, " t,v=", &
+    print "(A,2I6,A,2F15.6)", "VS_spe  a/j(a)",HOsh_ant(a_sh), ja, " t,v=", &
         t_sp_vs(a_sh_vs), e_sp_vs(a_sh_vs)
 
     e_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (0.5d0 * e_sp_vs(a_sh_vs)/(ja+1.0d0))
