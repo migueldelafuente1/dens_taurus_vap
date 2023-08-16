@@ -644,7 +644,7 @@ do KK = 1, hamil_DD_H2dim
       enddo
     enddo
   enddo
-  print  *, ''
+!  print  *, ''
 enddo !k
 print *, " *** I have read the full uncoupled hamiltonian. Now [step 2]"
 
