@@ -222,7 +222,7 @@ do a = 1, spO2
           NormAB = one / 2
           if (MOD(J, 2).EQ.0) NormAB = zero
         endif
-        aux_v = NormAB * cgc1 * cgc2 * sqrt(2*J + 1.0)
+        aux_v = NormAB * cgc1 * cgc2 !* sqrt(2*J + 1.0)
         if (Nb .LE. NHO_co) then !! CORE PART :
           V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) - Vdd_dec(3)))
         else if (a_sh_vs.NE.0) then ! -------- !! VALENCE SPACE SP Energies :
@@ -236,7 +236,7 @@ do a = 1, spO2
           if (MOD(J, 2).EQ.1) NormAB = zero
         endif
 
-        aux_v = NormAB * cgc1 * cgc2 * sqrt((2*J + 1.0) * 3)
+        aux_v = NormAB * cgc1 * cgc2 !* sqrt((2*J + 1.0) * 3)
         if (Nb .LE. NHO_co) then !! CORE PART :
           V_core(1) = V_core(1) + (aux_v *  Vdd_dec(1))
           V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) + Vdd_dec(3)))
