@@ -170,10 +170,10 @@ do a = 1, spO2
   if (Na .GT. NHO_vs) then  ! outer vs outer are neglected/ useless ------------
     cycle
   else if (Na .LE. NHO_co) then    !! Kinetic Energy Core -----------------
-    T_core(1) = T_core(1) + (aux_t / (ja + 1.0)**1.0d0)
-    T_core(3) = T_core(3) + (aux_t / (ja + 1.0)**1.0d0)
+    T_core(1) = T_core(1) + (aux_t / (ja + 1.0)**0.0d0)
+    T_core(3) = T_core(3) + (aux_t / (ja + 1.0)**0.0d0)
   else if ((Na .LE. NHO_vs).AND.(a_sh_vs.NE.0)) then  !! Valence Space ----
-    t_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (aux_t / (ja + 1.0))
+    t_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (aux_t / (ja + 1.0)**0.0d0)
   endif   !!    --------
 
   do b = 1, spO2
