@@ -523,16 +523,18 @@ open(299, file="D1S_vs_scalar.2b")
 open(300, file="onlyDD_D1S_scalar.2b")
 open(301, file="onlyDD_D1S_k1.2b")
 open(302, file="onlyDD_D1S_k2.2b")
+write (298, fmt="(A,F15.6)") " Write the shit fucking fortran", 512.54351
+
 do KK = 0, TENSOR_ORD
   write(300+KK, fmt="(A,I3,A,F10.5,A,F10.5,A,F6.4)") &
     'Density 2BME on explicit HFB wf from taurus, Tensor=',KK, &
     ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=', x0_DD_FACTOR, ' ALPHA=', alpha_DD
 enddo
-write(298, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2F5.1)') &
+write(298, fmt="(2A,F9.3,A,F10.5,A,F5.3,A,2F5.2)") &
     'Density 2BME on explicit HFB wf from taurus, Scalar', &
     ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=',x0_DD_FACTOR,' ALPHA=',alpha_DD, &
     '  CORE(n,p):', valence_N, valence_Z
-write(299, fmt='(A,A,F9.3,A,F10.5,A,F5.3,A,2F5.1)') &
+write(299, fmt="(A,A,F9.3,A,F10.5,A,F5.3,A,2F5.2)") &
     'Density 2BME on explicit HFB wf from taurus, Scalar', &
     ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=',x0_DD_FACTOR,' ALPHA=',alpha_DD, &
     '  CORE(n,p):', valence_N, valence_Z
