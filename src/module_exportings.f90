@@ -523,7 +523,7 @@ open(299, file="D1S_vs_scalar.2b")
 open(300, file="onlyDD_D1S_scalar.2b")
 open(301, file="onlyDD_D1S_k1.2b")
 open(302, file="onlyDD_D1S_k2.2b")
-write (298, fmt="(A,F15.6)") " Write the shit fucking fortran", 512.54351
+write (298, fmt="(A,I3)") " Write the shit fucking fortran", 51
 
 do KK = 0, TENSOR_ORD
   write(300+KK, fmt="(A,I3,A,F10.5,A,F10.5,A,F6.4)") &
