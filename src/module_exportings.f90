@@ -383,6 +383,10 @@ integer  , dimension(4)   :: ind_sh_ab, ind_sh_cd
 real(r64), dimension(4)   :: aux_r_ab, aux_r_cd
 logical,   dimension(4)   :: j_isitsconjugate
 
+print "(3(A,4I4))", " Status Start, abcd",a,b,c,d," abcd_con", &
+      a_con,b_con,c_con,d_con, "Sbk,Lbk", Sbra,Sket,Lbra,Lket
+
+
 j_isitsconjugate = (/ a.EQ.a_con, b.EQ.b_con, c.EQ.c_con, d.EQ.d_con /)
 ind_jm_b  = angular_momentum_index(Jbra, Mbra, .FALSE.)
 ind_jm_k  = angular_momentum_index(Jket, Mket, .FALSE.)
