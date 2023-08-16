@@ -367,7 +367,7 @@ do a_sh = 1, HOsh_dim
         h2int = h2int + hamil_H2cpd_DD(tt, J, a_sh, b_sh, a_sh, b_sh) + &
                            hamil_DDcpd(tt, J, a_sh, b_sh, a_sh, b_sh)
       end do
-      h2int = h2int
+      h2int = h2int * sqrt((ja + 1.0d0) * (jb + 1.0d0))
       !! T = 1,2,3,4 (pnpn)
       NormAB = one
 
@@ -380,7 +380,7 @@ do a_sh = 1, HOsh_dim
 
       !! pppp, nnnn
       if (delta_ab.EQ.1) then
-        NormAB = one / sqrt(2.0d0)
+        NormAB = one / 2.0d0
         if (MOD(J, 2).EQ.0) NormAB = zero
       endif
       aux_v = NormAB * (2*J + 1.0d0)
