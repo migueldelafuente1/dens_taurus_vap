@@ -136,7 +136,7 @@ integer      :: a_ant,b_ant, t, tt, a_sh, b_sh, a_sh_vs, la,lb,&
 real(r64) :: aux_t, aux_v, E_core, cgc1, cgc2, cgc_t1, cgc_t2, h2int
 real(r64), dimension(:), allocatable :: e_sp_vs,t_sp_vs, T_core, V_core
 real(r64), dimension(4) :: Vdd_dec, v_temp
-real(r64), dimension(:,:,:,:,:), allocatable :: hamil_DDcpd
+real(r64), dimension(:,:,:,:,:,:), allocatable :: hamil_DDcpd
 
 print *, ""
 print *, " [  ] calculate_valenceSpaceReduced"
