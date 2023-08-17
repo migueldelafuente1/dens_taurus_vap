@@ -134,7 +134,8 @@ integer      :: a_ant,b_ant, t, tt, a_sh, b_sh, a_sh_vs, la,lb,&
                 ja,jb, ma,mb,ta,tb, ma2,mb2,mta2,mtb2, ja_prev, jb_prev,&
                 i_jm, i_sab, Na, Nb, spO2, NormAB, delta_ab, CORE_NUMBER
 real(r64) :: aux_t, aux_v, E_core, cgc1, cgc2, cgc_t1, cgc_t2, h2int
-real(r64), dimension(:), allocatable :: e_sp_vs,t_sp_vs, T_core, V_core
+real(r64), dimension(:), allocatable :: ep_sp_vs, en_sp_vs, t_sp_vs, &
+                                        T_core, V_core
 real(r64), dimension(4) :: Vdd_dec, v_temp
 real(r64), dimension(:,:,:,:,:,:), allocatable :: hamil_DDcpd
 
@@ -148,9 +149,11 @@ spO2 = HOsp_dim / 2
 allocate(T_core(3), V_core(3))
 T_core  = zero
 V_core  = zero
-allocate(e_sp_vs(VSsh_dim), t_sp_vs(VSsh_dim)) ! assuming different sp.energies for p-n
-e_sp_vs = zero
-t_sp_vs = zero
+! assuming different sp.energies for p-n
+allocate(ep_sp_vs(VSsh_dim), en_sp_vs(VSsh_dim), t_sp_vs(VSsh_dim))
+ep_sp_vs = zero
+en_sp_vs = zero
+t_sp_vs  = zero
 
 !! Get the reduced matrix Elements for the DD term
 do a = 1, spO2
@@ -393,7 +396,8 @@ do a_sh = 1, HOsh_dim
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(2) = V_core(2) + (aux_v * h2int * (jb + 1.0d0))
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
-        e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) +  (aux_v * h2int * (jb + 1.0d0))
+        continue
+        !e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) +  (aux_v * h2int * (jb + 1.0d0))
       endif
 
       !! pppp, nnnn
@@ -409,7 +413,7 @@ do a_sh = 1, HOsh_dim
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(1) = V_core(1) + (aux_v * h2int * (jb + 1.0d0))
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
-        e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) +  (aux_v * h2int * (jb + 1.0d0))
+        ep_sp_vs(a_sh_vs) = ep_sp_vs(a_sh_vs) +  (aux_v * h2int * (jb + 1.0d0))
       endif
 
       h2int = hamil_H2cpd_DD(5, J, a_sh, b_sh, a_sh, b_sh) + &
@@ -418,7 +422,7 @@ do a_sh = 1, HOsh_dim
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(3) = V_core(3) + (aux_v * h2int * (jb + 1.0d0))
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
-        e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) +  (aux_v * h2int * (jb + 1.0d0))
+        en_sp_vs(a_sh_vs) = en_sp_vs(a_sh_vs) +  (aux_v * h2int * (jb + 1.0d0))
       endif
 
     enddo ! sum J
@@ -426,8 +430,8 @@ do a_sh = 1, HOsh_dim
   enddo
 
   if (a_sh_vs.NE.0) then
-    print "(A,2I6,A,2F15.6)", "VS_spe  a/j(a)",HOsh_ant(a_sh), ja, " t,v=", &
-        t_sp_vs(a_sh_vs), e_sp_vs(a_sh_vs)
+    print "(A,2I6,A,3F15.6)", "VS_spe  a/j(a)",HOsh_ant(a_sh), ja, " t,v=", &
+        t_sp_vs(a_sh_vs), ep_sp_vs(a_sh_vs), en_sp_vs(a_sh_vs)
 
     e_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (0.5d0 * e_sp_vs(a_sh_vs)/(ja+1.0d0))
   endif
@@ -440,24 +444,40 @@ do tt = 1, 3
   E_core  = E_core + T_core(tt) + (1.0d0 * V_core(tt)) !! we sum all
 enddo
 
+
+!! WRITE IN THE 1 BODY FILES
 open (297, file="D1S_vs_scalar.sho")
+open (298, file="D1S_vs_scalar.01b")
 write(297, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2I5)') &
   'Density 2BME on explicit HFB wf from taurus, Scalar', &
   ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=', x0_DD_FACTOR, ' ALPHA=', alpha_DD, &
   '  CORE(n,p):', CORE_NUMBER, CORE_NUMBER
-write(297, fmt="(2I4,F12.6)") INT(CORE_NUMBER), INT(CORE_NUMBER), E_core
-
+write(298, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2I5)') &
+  'Density 2BME on explicit HFB wf from taurus, Scalar', &
+  ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=', x0_DD_FACTOR, ' ALPHA=', alpha_DD, &
+  '  CORE(n,p):', CORE_NUMBER, CORE_NUMBER
+!! SHO FILE
+write(297, fmt="(I1)") 3
+write(297, fmt="(I3)") VSsh_dim
 do a_sh_vs = 1, VSsh_dim
   a_ant = VSsh_list(a_sh_vs)
   write(297, fmt="(I8)", advance='no') a_ant
 enddo
 write(297,*) ""
-do a_sh_vs = 1, VSsh_dim
-  write(297, fmt="(F12.6)", advance='no') e_sp_vs(a_sh_vs)
-enddo
-close(297)
+write(297, fmt="(2I4,F12.6)") INT(CORE_NUMBER), INT(CORE_NUMBER)!, E_core
+write(297, fmt="(I2,15.9)") 2, HO_hw
 
-deallocate(T_core, V_core, e_sp_vs, t_sp_vs, hamil_DDcpd)
+!! ZERO BODY / 1-BODY FILE
+write(298, fmt="(F12.6)") E_core
+do a_sh_vs = 1, VSsh_dim
+  write(298, fmt="(2I6,2F12.6)") &
+    VSsh_list(a_sh_vs), VSsh_list(a_sh_vs), ep_sp_vs(a_sh_vs), en_sp_vs(a_sh_vs)
+enddo
+
+close(297)
+close(298)
+
+deallocate(T_core, V_core, ep_sp_vs, en_sp_vs, t_sp_vs, hamil_DDcpd)
 
 print *,  " [OK] calculate_valenceSpaceReduced"
 print *, ""
