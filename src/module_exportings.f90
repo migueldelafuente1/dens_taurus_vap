@@ -478,7 +478,8 @@ enddo
 close(297)
 close(298)
 
-deallocate(T_core, V_core, ep_sp_vs, en_sp_vs, t_sp_vs, hamil_DDcpd)
+deallocate(T_core, V_core, ep_sp_vs, en_sp_vs, t_sp_vs)
+!deallocate(hamil_DDcpd)
 
 print *,  " [OK] calculate_valenceSpaceReduced"
 print *, ""
