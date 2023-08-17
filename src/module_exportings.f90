@@ -444,7 +444,7 @@ do tt = 1, 3
   print "(I2,A,2F15.6)",tt," Tcore/Vcore=",T_core(tt), V_core(tt)
   E_core  = E_core + T_core(tt) + (1.0d0 * V_core(tt)) !! we sum all
 enddo
-
+print "(/,A,F15.6)", "  E_core=", E_core
 
 !! WRITE IN THE 1 BODY FILES
 open (297, file="D1S_vs_scalar.sho")
@@ -458,11 +458,11 @@ write(298, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2I5)') &
   ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=', x0_DD_FACTOR, ' ALPHA=', alpha_DD, &
   '  CORE(n,p):', CORE_NUMBER, CORE_NUMBER
 !! SHO FILE
-write(297, fmt="(I1)") 3
-write(297, fmt="(I3)") VSsh_dim
+write(297, fmt="(I3)") 3
+write(297, fmt="(I3)", advance='no') VSsh_dim
 do a_sh_vs = 1, VSsh_dim
   a_ant = VSsh_list(a_sh_vs)
-  write(297, fmt="(I8)", advance='no') a_ant
+  write(297, fmt="(I6)", advance='no') a_ant
 enddo
 write(297,*) ""
 write(297, fmt="(2I4,F12.6)") INT(CORE_NUMBER), INT(CORE_NUMBER)!, E_core
@@ -471,7 +471,7 @@ write(297, fmt="(I2,F15.9)") 2, HO_hw
 !! ZERO BODY / 1-BODY FILE
 write(298, fmt="(F12.6)") E_core
 do a_sh_vs = 1, VSsh_dim
-  write(298, fmt="(2I6,2F12.6)") &
+  write(298, fmt="(2I7,2F12.6)") &
     VSsh_list(a_sh_vs), VSsh_list(a_sh_vs), ep_sp_vs(a_sh_vs), en_sp_vs(a_sh_vs)
 enddo
 
