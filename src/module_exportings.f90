@@ -391,7 +391,7 @@ do a_sh = 1, HOsh_dim
 
       aux_v = NormAB * (2*J + 1.0d0)
       if (Nb .LE. NHO_co) then !! CORE PART :
-        V_core(2) = V_core(2) + (aux_v * h2int * (ja + 1.0d0) * (jb + 1.0d0))
+        V_core(2) = V_core(2) + (aux_v * h2int * (jb + 1.0d0))
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
         e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) +  (aux_v * h2int * (jb + 1.0d0))
       endif
@@ -407,7 +407,7 @@ do a_sh = 1, HOsh_dim
                  hamil_DDcpd(0, J, a_sh, b_sh, a_sh, b_sh)
 !      h2int = h2int
       if (Nb .LE. NHO_co) then !! CORE PART :
-        V_core(1) = V_core(1) + (aux_v * h2int * (ja + 1.0d0) * (jb + 1.0d0))
+        V_core(1) = V_core(1) + (aux_v * h2int * (jb + 1.0d0))
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
         e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) +  (aux_v * h2int * (jb + 1.0d0))
       endif
@@ -416,7 +416,7 @@ do a_sh = 1, HOsh_dim
                  hamil_DDcpd(5, J, a_sh, b_sh, a_sh, b_sh)
 !      h2int = h2int * (ja + 1.0d0)
       if (Nb .LE. NHO_co) then !! CORE PART :
-        V_core(3) = V_core(3) + (aux_v * h2int * (ja + 1.0d0) * (jb + 1.0d0))
+        V_core(3) = V_core(3) + (aux_v * h2int * (jb + 1.0d0))
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
         e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) +  (aux_v * h2int * (jb + 1.0d0))
       endif
