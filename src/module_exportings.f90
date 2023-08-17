@@ -384,7 +384,7 @@ do a_sh = 1, HOsh_dim
     do J = J_min, J_max
 
       h2int = zero
-      do tt = 1, 1
+      do tt = 2, 2
         h2int = h2int + hamil_H2cpd_DD(tt, J, a_sh, b_sh, a_sh, b_sh) + &
                            hamil_DDcpd(tt, J, a_sh, b_sh, a_sh, b_sh)
       end do
