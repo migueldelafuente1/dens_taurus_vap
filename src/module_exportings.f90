@@ -142,7 +142,8 @@ real(r64), dimension(:,:,:,:,:,:), allocatable :: hamil_DDcpd
 print *, ""
 print *, " [  ] calculate_valenceSpaceReduced"
 
-allocate(hamil_DDcpd(0:5, 0:HO_2jmax/2, HOsh_dim,HOsh_dim, HOsh_dim,HOsh_dim))
+allocate(hamil_DDcpd(0:5, 0:HO_2jmax, HOsh_dim, HOsh_dim, HOsh_dim, HOsh_dim),&
+         stat=ialloc)
 hamil_DDcpd = zero
 
 spO2 = HOsp_dim / 2
@@ -481,8 +482,8 @@ close(298)
 
 print "(A)", " files closed"
 deallocate(T_core, V_core, ep_sp_vs, en_sp_vs, t_sp_vs)
-print "(A)", " 1-dim arrays deallocated"
-deallocate(hamil_DDcpd)
+print "(A,I9)", " 1-dim arrays deallocated, ialloc=", ialloc
+deallocate (hamil_DDcpd)
 
 print "(A)", " [OK] calculate_valenceSpaceReduced"
 print "(A)", ""
