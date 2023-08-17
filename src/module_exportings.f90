@@ -384,12 +384,12 @@ do a_sh = 1, HOsh_dim
     print "(A,2I6)", "  Interactions for ab:", HOsh_ant(a_sh), HOsh_ant(b_sh)
     do J = J_min, J_max
 
-      print "(A,4F10.3)", " bb: ", J,&
+      print "(A,I4,4F10.3)", " bb: ", J,&
         hamil_H2cpd_DD(0,J,a_sh,b_sh,a_sh,b_sh), &
         hamil_H2cpd_DD(1,J,a_sh,b_sh,a_sh,b_sh), &
         hamil_H2cpd_DD(2,J,a_sh,b_sh,a_sh,b_sh), &
         hamil_H2cpd_DD(5,J,a_sh,b_sh,a_sh,b_sh)
-      print "(A,4F10.3)", " dd: ", J,&
+      print "(A,I4,4F10.3)", " dd: ", J,&
         hamil_DDcpd(0,J,a_sh,b_sh,a_sh,b_sh), &
         hamil_DDcpd(1,J,a_sh,b_sh,a_sh,b_sh), &
         hamil_DDcpd(2,J,a_sh,b_sh,a_sh,b_sh), &
