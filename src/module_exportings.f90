@@ -480,10 +480,8 @@ enddo
 close(297)
 close(298)
 
-print "(A)", " files closed"
 deallocate(T_core, V_core, ep_sp_vs, en_sp_vs, t_sp_vs)
-print "(A,I9)", " 1-dim arrays deallocated, ialloc=", ialloc
-deallocate (hamil_DDcpd)
+deallocate(hamil_DDcpd)
 
 print "(A)", " [OK] calculate_valenceSpaceReduced"
 print "(A)", ""
@@ -2784,7 +2782,7 @@ real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0, bogo_V0
 real(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR, dens_kappaRR
 real(r64), dimension(ndim,ndim) :: hspRR_eigenvect, U_trans, V_trans
 
-
+if (.NOT.eval_density_dependent) return
 print "(A)", "  1[  ] print_quasipartile_DD_matrix_elements"
 
 call diagonalize_H11_with_jz(dens_rhoRR, dens_kappaRR, bogo_U0, bogo_V0, ndim)
