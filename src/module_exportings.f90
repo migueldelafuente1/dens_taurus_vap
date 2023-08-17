@@ -393,7 +393,7 @@ do a_sh = 1, HOsh_dim
         hamil_DDcpd(0,J,a_sh,b_sh,a_sh,b_sh), &
         hamil_DDcpd(1,J,a_sh,b_sh,a_sh,b_sh), &
         hamil_DDcpd(2,J,a_sh,b_sh,a_sh,b_sh), &
-        hamil_DDcpd(5,J,a_sh,b_sh,a_sh,b_sh), &
+        hamil_DDcpd(5,J,a_sh,b_sh,a_sh,b_sh)
 
       h2int = zero
       do tt = 1, 4
