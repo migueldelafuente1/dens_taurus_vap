@@ -386,12 +386,11 @@ do a_sh = 1, HOsh_dim
     print "(A,2I6)", "  Interactions for ab:", HOsh_ant(a_sh), HOsh_ant(b_sh)
     do J = J_min, J_max
 
-      print "(A,I4,4F10.3)", " bb: ", J,&
+      print "(A,I4,4F10.3,A,4F10.3)", "  bb: ", J,&
         hamil_H2cpd_DD(0,J,a_sh,b_sh,a_sh,b_sh), &
         hamil_H2cpd_DD(1,J,a_sh,b_sh,a_sh,b_sh), &
         hamil_H2cpd_DD(2,J,a_sh,b_sh,a_sh,b_sh), &
-        hamil_H2cpd_DD(5,J,a_sh,b_sh,a_sh,b_sh)
-      print "(A,I4,4F10.3)", " dd: ", J,&
+        hamil_H2cpd_DD(5,J,a_sh,b_sh,a_sh,b_sh), "  dd: ", &
         hamil_DDcpd(0,J,a_sh,b_sh,a_sh,b_sh), &
         hamil_DDcpd(1,J,a_sh,b_sh,a_sh,b_sh), &
         hamil_DDcpd(2,J,a_sh,b_sh,a_sh,b_sh), &
@@ -425,7 +424,7 @@ do a_sh = 1, HOsh_dim
 
       h2int = hamil_H2cpd_DD(0, J, a_sh, b_sh, a_sh, b_sh) + &
                  hamil_DDcpd(0, J, a_sh, b_sh, a_sh, b_sh)
-!      h2int = h2int
+      h2int = h2int
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(1) = V_core(1) + (aux_v * h2int)! * (jb + 1.0d0))
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
@@ -449,8 +448,8 @@ do a_sh = 1, HOsh_dim
     print "(A,2I6,A,3F15.6)", "VS_spe  a/j(a)",HOsh_ant(a_sh), ja, " t,v=", &
         t_sp_vs(a_sh_vs), ep_sp_vs(a_sh_vs), en_sp_vs(a_sh_vs)
 
-    ep_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (0.5d0*ep_sp_vs(a_sh_vs)/(ja+1.0d0))
-    en_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (0.5d0*en_sp_vs(a_sh_vs)/(ja+1.0d0))
+    ep_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (ep_sp_vs(a_sh_vs)/(ja+1.0d0))
+    en_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (en_sp_vs(a_sh_vs)/(ja+1.0d0))
   endif
 
 enddo
