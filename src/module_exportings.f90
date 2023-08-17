@@ -360,6 +360,7 @@ do a_sh = 1, HOsh_dim
   a_sh_vs = 0
   do aa = 1, VSsh_dim ! find the index in the VS
     if (VSsh_list(aa).EQ.HOsh_ant(a_sh)) a_sh_vs = aa
+    exit
   enddo
   do b_sh = a_sh, HOsh_dim
     !! ========================================================================
@@ -384,11 +385,11 @@ do a_sh = 1, HOsh_dim
     do J = J_min, J_max
 
       h2int = zero
-      do tt = 1, 4
+      do tt = 1, 2
         h2int = h2int + hamil_H2cpd_DD(tt, J, a_sh, b_sh, a_sh, b_sh) + &
                            hamil_DDcpd(tt, J, a_sh, b_sh, a_sh, b_sh)
       end do
-      h2int = h2int / 4
+      h2int = h2int / 2
       !! T = 1,2,3,4 (pnpn)
       NormAB = one
 
@@ -413,7 +414,7 @@ do a_sh = 1, HOsh_dim
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(1) = V_core(1) + (aux_v * h2int * (jb + 1.0d0))
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
-        ep_sp_vs(a_sh_vs) = ep_sp_vs(a_sh_vs) +  (aux_v * h2int * (jb + 1.0d0))
+        ep_sp_vs(a_sh_vs) = ep_sp_vs(a_sh_vs) + (aux_v * h2int * (jb + 1.0d0))
       endif
 
       h2int = hamil_H2cpd_DD(5, J, a_sh, b_sh, a_sh, b_sh) + &
@@ -478,7 +479,9 @@ enddo
 close(297)
 close(298)
 
+print "(A)", " files closed"
 deallocate(T_core, V_core, ep_sp_vs, en_sp_vs, t_sp_vs)
+print "(A)", " 1-dim arrays deallocated"
 deallocate(hamil_DDcpd)
 
 print "(A)", " [OK] calculate_valenceSpaceReduced"
