@@ -332,17 +332,17 @@ do a = 1, HOsh_dim
                 tt = find_iso(T,1,ht)
                 hamil_H2cpd_DD(tt,J,a,b,d,c) = hamil_H2cpd(tt,J,a,b,d,c)
                 tt = find_iso(T,2,ht)
-                hamil_H2cpd_DD(tt,J,a,b,d,c) = hamil_H2cpd(tt,J,b,a,c,d)
+                hamil_H2cpd_DD(tt,J,b,a,c,d) = hamil_H2cpd(tt,J,b,a,c,d)
                 tt = find_iso(T,3,ht)
-                hamil_H2cpd_DD(tt,J,a,b,d,c) = hamil_H2cpd(tt,J,b,a,d,c)
+                hamil_H2cpd_DD(tt,J,b,a,d,c) = hamil_H2cpd(tt,J,b,a,d,c)
                 tt = find_iso(T,4,ht)
-                hamil_H2cpd_DD(tt,J,a,b,d,c) = hamil_H2cpd(tt,J,c,d,a,b)
+                hamil_H2cpd_DD(tt,J,c,d,a,b) = hamil_H2cpd(tt,J,c,d,a,b)
                 tt = find_iso(T,5,ht)
-                hamil_H2cpd_DD(tt,J,a,b,d,c) = hamil_H2cpd(tt,J,c,d,b,a)
+                hamil_H2cpd_DD(tt,J,c,d,b,a) = hamil_H2cpd(tt,J,c,d,b,a)
                 tt = find_iso(T,6,ht)
-                hamil_H2cpd_DD(tt,J,a,b,d,c) = hamil_H2cpd(tt,J,d,c,a,b)
+                hamil_H2cpd_DD(tt,J,d,c,a,b) = hamil_H2cpd(tt,J,d,c,a,b)
                 tt = find_iso(T,7,ht)
-                hamil_H2cpd_DD(tt,J,a,b,d,c) = hamil_H2cpd(tt,J,d,c,b,a)
+                hamil_H2cpd_DD(tt,J,d,c,b,a) = hamil_H2cpd(tt,J,d,c,b,a)
 
               endif
               !! ------------
