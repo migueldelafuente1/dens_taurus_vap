@@ -433,7 +433,8 @@ do a_sh = 1, HOsh_dim
     print "(A,2I6,A,3F15.6)", "VS_spe  a/j(a)",HOsh_ant(a_sh), ja, " t,v=", &
         t_sp_vs(a_sh_vs), ep_sp_vs(a_sh_vs), en_sp_vs(a_sh_vs)
 
-    e_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (0.5d0 * e_sp_vs(a_sh_vs)/(ja+1.0d0))
+    ep_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (0.5d0*ep_sp_vs(a_sh_vs)/(ja+1.0d0))
+    en_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (0.5d0*en_sp_vs(a_sh_vs)/(ja+1.0d0))
   endif
 
 enddo
@@ -465,7 +466,7 @@ do a_sh_vs = 1, VSsh_dim
 enddo
 write(297,*) ""
 write(297, fmt="(2I4,F12.6)") INT(CORE_NUMBER), INT(CORE_NUMBER)!, E_core
-write(297, fmt="(I2,15.9)") 2, HO_hw
+write(297, fmt="(I2,F15.9)") 2, HO_hw
 
 !! ZERO BODY / 1-BODY FILE
 write(298, fmt="(F12.6)") E_core
