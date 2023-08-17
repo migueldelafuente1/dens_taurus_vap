@@ -385,7 +385,7 @@ do a_sh = 1, HOsh_dim
         h2int = h2int + hamil_H2cpd_DD(tt, J, a_sh, b_sh, a_sh, b_sh) + &
                            hamil_DDcpd(tt, J, a_sh, b_sh, a_sh, b_sh)
       end do
-!      h2int = h2int
+      h2int = h2int / 4
       !! T = 1,2,3,4 (pnpn)
       NormAB = one
 
