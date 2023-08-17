@@ -167,7 +167,6 @@ do a = 1, spO2
   do aa = 1, VSsh_dim ! find the index in the VS
     if (VSsh_list(aa).EQ.HOsh_ant(a_sh)) then
       a_sh_vs = aa
-      exit
     endif
   enddo
   aux_t = hamil_H1(a, a)
@@ -361,7 +360,6 @@ do a_sh = 1, HOsh_dim
   a_sh_vs = 0
   do aa = 1, VSsh_dim ! find the index in the VS
     if (VSsh_list(aa).EQ.HOsh_ant(a_sh)) a_sh_vs = aa
-    exit
   enddo
   do b_sh = a_sh, HOsh_dim
     !! ========================================================================
@@ -459,6 +457,7 @@ write(298, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2I5)') &
   'Density 2BME on explicit HFB wf from taurus, Scalar', &
   ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=', x0_DD_FACTOR, ' ALPHA=', alpha_DD, &
   '  CORE(n,p):', CORE_NUMBER, CORE_NUMBER
+
 !! SHO FILE
 write(297, fmt="(I3)") 3
 write(297, fmt="(I3)", advance='no') VSsh_dim
