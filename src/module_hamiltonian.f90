@@ -329,10 +329,21 @@ do a = 1, HOsh_dim
               !! [DENSITY PART] copy values
               if ((hamil_type > 2).AND.(implement_H2cpd_DD)) then
                 ! for HamilType=1,2 raise error here since it's not allocated
-                do tt = 1, 7
-                  Vtmp = hamil_H2cpd(find_iso(T,tt,ht),J,a,b,d,c)
-                  hamil_H2cpd_DD(find_iso(T,tt,ht),J,a,b,d,c) = Vtmp
-                enddo
+                tt = find_iso(T,1,ht)
+                hamil_H2cpd_DD(tt,J,a,b,d,c) = hamil_H2cpd(tt,J,a,b,d,c)
+                tt = find_iso(T,2,ht)
+                hamil_H2cpd_DD(tt,J,a,b,d,c) = hamil_H2cpd(tt,J,b,a,c,d)
+                tt = find_iso(T,3,ht)
+                hamil_H2cpd_DD(tt,J,a,b,d,c) = hamil_H2cpd(tt,J,b,a,d,c)
+                tt = find_iso(T,4,ht)
+                hamil_H2cpd_DD(tt,J,a,b,d,c) = hamil_H2cpd(tt,J,c,d,a,b)
+                tt = find_iso(T,5,ht)
+                hamil_H2cpd_DD(tt,J,a,b,d,c) = hamil_H2cpd(tt,J,c,d,b,a)
+                tt = find_iso(T,6,ht)
+                hamil_H2cpd_DD(tt,J,a,b,d,c) = hamil_H2cpd(tt,J,d,c,a,b)
+                tt = find_iso(T,7,ht)
+                hamil_H2cpd_DD(tt,J,a,b,d,c) = hamil_H2cpd(tt,J,d,c,b,a)
+
               endif
               !! ------------
 			  endif

@@ -53,6 +53,8 @@ real(r64), dimension(:,:,:,:,:,:), allocatable :: reduced_H22_VS
 real(r64), dimension(:,:,:,:), allocatable     :: test_hamil_bb, test_hamil_dd
 !! Methods
 
+logical :: hpd_DD_hamil_completed = .FALSE.
+
 CONTAINS
 
 !------------------------------------------------------------------------------!
