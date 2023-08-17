@@ -398,7 +398,7 @@ do a_sh = 1, HOsh_dim
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(2) = V_core(2) + (aux_v * h2int * (jb + 1.0d0))
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
-        continue
+
         !e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) +  (aux_v * h2int * (jb + 1.0d0))
       endif
 
