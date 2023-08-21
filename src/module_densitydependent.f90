@@ -1866,7 +1866,7 @@ NOT_DEL_FILE = .FALSE.
 
 rearrang_field = zero
 
-print "(A,L4,I3)", "  Test, evalFullSpace/WBsp:", evalFullSPSpace, WBsp_dim<
+print "(A,L4,I3)", "  Test, evalFullSpace/WBsp:", evalFullSPSpace, WBsp_dim
 
 do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
   print "(A,2I4)", "   a: wb -> sp:", aa, WBtoHOsp_index(aa)
