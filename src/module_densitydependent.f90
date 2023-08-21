@@ -186,7 +186,6 @@ read(runit,formatI2) str_, aux_int
 exportValSpace = aux_int.GE.1
 
 VSsh_dim = aux_int
-print "(A,2I3)", "Vs shells to print:", VSsh_dim, HOsh_dim
 if (exportValSpace) then
   if ((VSsh_dim.LE.HOsh_dim).OR.(evalQuasiParticleVSpace)) then
     print "(A,I3,A)", "   ... Reading VS sh states", VSsh_dim, &
@@ -1866,6 +1865,8 @@ kk = 0
 NOT_DEL_FILE = .FALSE.
 
 rearrang_field = zero
+
+print "(A,2I4)", "  Test in eval_hamil wbsp_dim/HOsp=", WBsp_dim, HOsp_dim
 
 do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
   a  = WBtoHOsp_index(aa) !VStoHOsp_index(aa)

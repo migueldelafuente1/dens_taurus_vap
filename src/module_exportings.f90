@@ -103,7 +103,8 @@ if (exportValSpace) then !-----------------------------------------------------
   print "(A)", " [  SR] Evaluating the Hamiltonian."
   if (evalQuasiParticleVSpace) then
     print "(A,/,A)","        For full space, Be patient ...",""
-    endif
+  endif
+
   call calculate_densityDep_hamiltonian(dens_rhoRRc, &
                                         dens_kappaRRc, dens_kappaRRc, ndim)
   print "(A,/,A)", "", " [DONE] Evaluating the Hamiltonian."
@@ -3057,16 +3058,12 @@ end subroutine export_expectval_density
 subroutine export_rearrangement_field
 
 integer :: i, j
-character(4)  :: filetype
 character(11) :: fileform
-character(19) :: filename
+character(23) :: filename
 logical :: is_binary
 
-
 fileform = 'formatted'
-filetype = '.txt'
-filename = 'final_rearrangement' // filetype
-
+filename = 'final_rearrangement.txt'
 
 open(utw, file=filename, status='replace', action='write',form=fileform)
 
