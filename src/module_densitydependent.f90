@@ -309,18 +309,15 @@ end subroutine import_DD_parameters
 ! If there is a File called fixed_rearrangement.txt, import this matrix and   !
 ! set up the arguments necessary to add up as constant for the Gamma Field    !
 !-----------------------------------------------------------------------------!
-!
-! TODO: Design and Import a Matrix for the rearrangement
-! TODO: Write "final_rearrangement.txt" in the loop of the Fields
-! TODO: Introduce an additional subroutine to paste the Rearr Field in the projection module
-!
 subroutine import_Rearrange_field_if_exist
+
 integer   :: runit = 333, bogo_label
 logical   :: is_exist
 CHARACTER(LEN=20) :: file_input = "initial_rearrangement.txt"
 INTEGER   :: io, aux_int
-integer :: i, j, icheck, HOsh_dim0
+integer   :: i, j, icheck, HOsh_dim0
 integer, dimension(:), allocatable :: HOsh_na0
+real(r64) :: aux_real
 
 inquire (file=file_input, exist=is_exist)
 if ( is_exist ) then
@@ -355,7 +352,8 @@ fixed_rearrang_field = zzero
 read(runit,*) bogo_label
 do i = 1, HOsp_dim
   do j = 1, HOsp_dim
-    read(runit,*) complex(fixed_rearrang_field(j,i), 0.0d0)
+    read(runit,*) aux_real
+    fixed_rearrang_field(j,i) = complex(aux_real, 0.0d0)
   enddo
 enddo
 USING_FIXED_REARRANGEMENT = .TRUE.
