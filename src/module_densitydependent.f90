@@ -213,6 +213,7 @@ if (exportValSpace) then
     end do
     do i=1, VSsp_dim
       VStoHOsp_index(i) = i
+      WBtoHOsp_index(i) = i
     end do
   endif
 endif
