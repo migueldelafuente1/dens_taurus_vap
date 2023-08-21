@@ -649,7 +649,7 @@ integer      :: a_ant,b_ant,c_ant,d_ant, t, tt, &
                 aa, bb, cc, dd, &
                 Sbra,Sket,Lbra,Lket,Lb_min,Lk_min,Lb_max,Lk_max,Sk_min,Sk_max,&
                 a_con,b_con,c_con,d_con, dim_jm,dim_sh
-logical      :: kval_is_zero
+logical      :: kval_is_zero, valid_scalar
 
 real(r64)    :: aux_val,aux_val2, cgc1,cgc2,norm, recoupl_factor,&
                 TOL=1.0e-10, aux_1, aux_2, aux_3, aux_4, phs_pnk0
@@ -805,22 +805,33 @@ allocate(all_zero(0:TENSOR_ORD))
 do aa = 1, VSsh_dim
   a  = VStoHOsh_index(aa)
   ja = HOsh_2j(a)
+  ma = HOsp_2mj(a)
   a_ant = VSsh_list(aa)
   do bb = aa, VSsh_dim
     b  = VStoHOsh_index(bb)
     jb = HOsh_2j(b)
+    mb = HOsp_2mj(b)
     b_ant = VSsh_list(bb)
     ind_sab = two_shell_states_index(a, b)
 
     do cc = aa, VSsh_dim
       c  = VStoHOsh_index(cc)
       jc = HOsh_2j(c)
+      mc = HOsp_2mj(c)
       c_ant = VSsh_list(cc)
       do dd = cc, VSsh_dim
         d  = VStoHOsh_index(dd)
         jd = HOsh_2j(d)
+        md = HOsp_2mj(d)
         d_ant = VSsh_list(dd)
         ind_scd = two_shell_states_index(c, d)
+
+        valid_scalar = .TRUE.
+        if ((HOsp_l(a)+HOsp_l(b) .NE. HOsp_l(c)+HOsp_l(d)) .OR. &
+            (ma + mb .NE. mc + md)) then !! TODO; And to preserve the quanta?
+          valid_scalar = .FALSE.
+        endif
+
 
   !! ======= Loop  for the <ab cd> states to output =======================
   ! this only see the (n,l,j) equivalence, the particle part is in the last step
@@ -880,13 +891,13 @@ do aa = 1, VSsh_dim
 !    Jb_min,Jb_max, " ket:", Jk_min,Jk_max
   auxHamilRed = zero
   do Jbra = Jb_min, Jb_max
-    Mbra = 0
+    Mbra = ma + mb !! 0 !! TODO !!
     ind_jm_b = angular_momentum_index(Jbra, Mbra, .FALSE.)
     J1 = angular_momentum_index(Jbra, 0, .FALSE.)
 
     do KK = 0, TENSOR_ORD
       do Jket = Jk_min, Jk_max
-        Mket = 0
+        Mket = mc + md !! 0 !!
         ind_jm_k = angular_momentum_index(Jket, Mket, .FALSE.)
         J2 = angular_momentum_index(Jket, 0, .FALSE.)
 
@@ -967,6 +978,7 @@ do aa = 1, VSsh_dim
       write(300+KK, fmt='(A,4I8,4I3)') &
         '0 5', a_ant, b_ant, c_ant, d_ant, J1, J2, J3, J4
     else
+      if (.NOT.valid_scalar) cycle
       write(300, fmt='(A,4I8,2I3)') ' 0 5', a_ant, b_ant, c_ant, d_ant, &
          max(Jb_min, Jk_min), min(Jb_max, Jk_max)
       write(299, fmt='(A,4I8,2I3)') ' 0 5', a_ant, b_ant, c_ant, d_ant, &
@@ -998,6 +1010,7 @@ do aa = 1, VSsh_dim
           aux_1 = auxHamilRed(t,KK,ind_jm_b,ind_jm_k)
 
           if (KK == 0) then
+            if (.NOT.valid_scalar) cycle
             !! select the import hamil 2B J-scheme
             select case(t)
               case (1)
