@@ -135,6 +135,7 @@ integer :: ios, i, seed_type_imported, aa, a, a_ant
 logical :: is_exist
 character(len=*), parameter :: formatST = "(1a)", &
                                formatI1 = "(1a30, 1i1)", &
+                               formatI2 = "(1a30, 1i2)", &
                                formatI3 = "(1a30, 1i3)", &
                                formatF6 = "(1a30, 1f9.6)", &
                                formatEE = "(1a30, 1es12.6)", &
@@ -181,7 +182,7 @@ read(runit,formatI1) str_, aux_int
 export_density = aux_int.EQ.1
 read(runit,formatI1) str_, aux_int
 evalQuasiParticleVSpace = aux_int.GE.1
-read(runit,formatI1) str_, aux_int
+read(runit,formatI2) str_, aux_int
 exportValSpace = aux_int.GE.1
 
 VSsh_dim = aux_int
