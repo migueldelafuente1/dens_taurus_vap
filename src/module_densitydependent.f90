@@ -118,7 +118,7 @@ integer   :: NHO_vs, NHO_co !! Major Shell number of the Valence. Sp to be expor
 logical   :: NOT_DEL_FILE
 logical   :: PRINT_GUTS = .FALSE.
 logical   :: DOING_PROJECTION = .FALSE.
-logical   :: usingFixedRearrangement = .FALSE.
+logical   :: USING_FIXED_REARRANGEMENT = .FALSE.
 
 !! [END] DENSITY DEPENDENT MODIFICATIONS =====================================
 !
@@ -315,21 +315,53 @@ end subroutine import_DD_parameters
 ! TODO: Introduce an additional subroutine to paste the Rearr Field in the projection module
 !
 subroutine import_Rearrange_field_if_exist
-integer   :: runit = 333
+integer   :: runit = 333, bogo_label
 logical   :: is_exist
 CHARACTER(LEN=20) :: file_input = "initial_rearrangement.txt"
 INTEGER   :: io, aux_int
+integer :: i, j, icheck, HOsh_dim0
+integer, dimension(:), allocatable :: HOsh_na0
 
 inquire (file=file_input, exist=is_exist)
 if ( is_exist ) then
   OPEN(runit, FILE=file_input, FORM="FORMATTED", STATUS="OLD", ACTION="READ")
+  print "(A)", " Initial rearrangement field present, reading from file."
 else
   return
 endif
 
-CLOSE(runit)
+read(runit,*) HOsh_dim0
+allocate(HOsh_na0(HOsh_dim0))
+do i = 1, HOsh_dim0
+  read(runit,*) HOsh_na0(i)
+enddo
 
+!!! Stops the run if the model spaces of the wave func. and interaction differ
+icheck = 0
+if ( HOsh_dim0 /= HOsh_dim ) icheck = icheck + 1
+do i = 1, min(HOsh_dim,HOsh_dim0)
+  if ( HOsh_na0(i) /= HOsh_na(i) ) icheck = icheck + 1
+enddo
+if ( icheck /= 0 ) then
+  print '(/,"The model space of the seed wave function is not consistent", &
+        & " with the one of the interaction.")'
+  print*, 'Inter:', HOsh_dim, (HOsh_na(i), i=1,HOsh_dim)
+  print*, 'State:', HOsh_dim0, (HOsh_na0(i), i=1,HOsh_dim0)
+  stop
+endif
 
+allocate(fixed_rearrang_field(HOsh_dim,HOsh_dim))
+fixed_rearrang_field = zzero
+read(runit,*) bogo_label
+do i = 1, HOsp_dim
+  do j = 1, HOsp_dim
+    read(runit,*) complex(fixed_rearrang_field(j,i), 0.0d0)
+  enddo
+enddo
+USING_FIXED_REARRANGEMENT = .TRUE.
+
+close (runit, status='keep')
+deallocate(HOsh_na0)
 
 end subroutine import_Rearrange_field_if_exist
 
@@ -484,6 +516,8 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   DOING_PROJECTION = (proj_Mphip > 1).OR.(proj_Mphin > 1)
 
   call import_DD_parameters
+  call import_Rearrange_field_if_exist
+
   if (.NOT.eval_density_dependent) then
     print "(A)", "  DD module is turned off, skip DD array setting [OK]"
     return

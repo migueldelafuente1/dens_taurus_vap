@@ -293,6 +293,8 @@ do nangle = nangle_min, nangle_max
     endif
 
 	  call test_printDesityKappaWF(dens_rhoLR, dens_kappaLR, dens_kappaRL, ndim)
+  elseif (USING_FIXED_REARRANGEMENT) then
+    field_hspLR = field_hspLR + fixed_rearrang_field
   endif
   !!!
 

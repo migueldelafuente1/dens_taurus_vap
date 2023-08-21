@@ -80,6 +80,7 @@ print "(A)", " [  SR] Exporting Hamiltonian and/or spatial density on the&
 if (export_density) then
   call export_expectval_density(dens_rhoRR, dens_kappaRR, dens_kappaRR, ndim)
 endif
+call export_rearrangement_field
 
 !! deallocate HF arrays from D1S to increase memory
 if (.NOT. evalQuasiParticleVSpace) then
@@ -3048,6 +3049,43 @@ print *, "     'density_rtp.txt', 'density_xyz.txt', 'dens_pairing_rtp.txt'"
 end subroutine export_expectval_density
 
 
+!==============================================================================!
+! subroutine export_rearrangement_field                                        !
+! Export the final rearrangement field (final_rearrangement.txt) to be imported!
+! as (initial_rearrangement.txt).                                              !
+!==============================================================================!
+subroutine export_rearrangement_field
+
+integer :: i, j
+character(4)  :: filetype
+character(11) :: fileform
+character(19) :: filename
+logical :: is_binary
+
+
+fileform = 'formatted'
+filetype = '.txt'
+filename = 'final_rearrangement' // filetype
+
+
+open(utw, file=filename, status='replace', action='write',form=fileform)
+
+!!! Writes the wave function and model space
+
+write(utw,*) HOsh_dim
+do i = 1, HOsh_dim
+  write(utw,*) HOsh_na(i)
+enddo
+write(utw,*) 1234567891011
+do i = 1, HOsp_dim
+  do j = 1, HOsp_dim
+    write(utw,*) dreal(rearrang_field(j,i), r64)
+  enddo
+enddo
+
+close(utw, status='keep')
+
+end subroutine export_rearrangement_field
 
 
 END MODULE DensDepResultExportings
