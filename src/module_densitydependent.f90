@@ -185,6 +185,7 @@ read(runit,formatI1) str_, aux_int
 exportValSpace = aux_int.GE.1
 
 VSsh_dim = aux_int
+print "(A,2I3)", "Vs shells to print:", VSsh_dim, HOsh_dim
 if (exportValSpace) then
   if ((VSsh_dim.LE.HOsh_dim).OR.(evalQuasiParticleVSpace)) then
     print "(A,I3,A)", "   ... Reading VS sh states", VSsh_dim, &
