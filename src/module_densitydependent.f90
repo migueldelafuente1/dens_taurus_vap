@@ -1866,7 +1866,7 @@ NOT_DEL_FILE = .FALSE.
 
 rearrang_field = zero
 
-print "(A,2I4)", "  Test in eval_hamil wbsp_dim/HOsp=", WBsp_dim, HOsp_dim
+print "(A,L4,I3)", "  Test, evalFullSpace/WBsp:", evalFullSPSpace, WBsp_dim
 
 do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
   a  = WBtoHOsp_index(aa) !VStoHOsp_index(aa)
@@ -1903,6 +1903,8 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
         ld = HOsp_l(d)
         md = HOsp_2mj(d)
         td = HOsp_2mt(d)
+
+        print "(A,4I4,A,4I4)", "  elem(wb): ",aa,bb,cc,dd," (sp):",a,b,c,d
 
         if ( ta + tb /= tc + td ) cycle
 
