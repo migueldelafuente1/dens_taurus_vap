@@ -3076,10 +3076,10 @@ write(utw,*) HOsh_dim
 do i = 1, HOsh_dim
   write(utw,*) HOsh_na(i)
 enddo
-write(utw,*) 1234567891011
+write(utw,*) 1234567890
 do i = 1, HOsp_dim
   do j = 1, HOsp_dim
-    write(utw,*) dreal(rearrang_field(j,i), r64)
+    write(utw,*) dreal(rearrang_field(j,i))
   enddo
 enddo
 
