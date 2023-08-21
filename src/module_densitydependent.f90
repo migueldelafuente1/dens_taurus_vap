@@ -182,7 +182,7 @@ read(runit,formatI1) str_, aux_int
 export_density = aux_int.EQ.1
 read(runit,formatI1) str_, aux_int
 evalQuasiParticleVSpace = aux_int.GE.1
-read(runit,formatI2) str_, aux_int
+read(runit,formatI3) str_, aux_int
 exportValSpace = aux_int.GE.1
 
 VSsh_dim = aux_int
