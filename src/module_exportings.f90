@@ -626,10 +626,13 @@ do i =  1, 4
       auxHamilRed(tt,ind_k, ind_jm_b,ind_jm_k) = &
           auxHamilRed(tt,ind_k, ind_jm_b,ind_jm_k) + aux_val
 
-      if (abs(aux_val) .GT. 1.0e-10) kval_is_zero = .FALSE.
     enddo
   enddo
 enddo
+
+if (abs(auxHamilRed(tt,ind_k, ind_jm_b,ind_jm_k)) .GT. 1.0e-6) then
+  kval_is_zero = .FALSE.
+endif
 
 end subroutine recouple_jjLSConjugatedME
 
@@ -827,7 +830,7 @@ do aa = 1, VSsh_dim
         ind_scd = two_shell_states_index(c, d)
 
         valid_scalar = .TRUE.
-        if ((HOsp_l(a)+HOsp_l(b) .NE. HOsp_l(c)+HOsp_l(d)) .OR. &
+        if ((MOD(HOsp_l(a)+HOsp_l(b),2) .NE. MOD(HOsp_l(c)+HOsp_l(d),2)) .OR. &
             (ma + mb .NE. mc + md)) then !! TODO; And to preserve the quanta?
           valid_scalar = .FALSE.
         endif
@@ -1055,9 +1058,13 @@ do aa = 1, VSsh_dim
           !! Parts for the Hamil DD only -----------------------------------
         enddo ! t iter
 
-        write(300+KK,*) ''
+        !write(300+KK,*) ''
         if (KK==0) then
+          if (.NOT.valid_scalar) cycle
           write(299,*) ''
+          write(300,*) ''
+        else
+          write(300+KK,*) ''
         endif
 
       enddo ! K tensor Loop
