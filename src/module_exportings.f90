@@ -626,13 +626,14 @@ do i =  1, 4
       auxHamilRed(tt,ind_k, ind_jm_b,ind_jm_k) = &
           auxHamilRed(tt,ind_k, ind_jm_b,ind_jm_k) + aux_val
 
+      if (abs(aux_val) .GT. 1.0e-6) kval_is_zero = .FALSE.
     enddo
   enddo
 enddo
 
-if (abs(auxHamilRed(tt,ind_k, ind_jm_b,ind_jm_k)) .GT. 1.0e-6) then
-  kval_is_zero = .FALSE.
-endif
+!if (abs(auxHamilRed(tt,ind_k, ind_jm_b,ind_jm_k)) .GT. 1.0e-6) then
+!  kval_is_zero = .FALSE.
+!endif
 
 end subroutine recouple_jjLSConjugatedME
 
