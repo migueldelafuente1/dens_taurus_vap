@@ -631,10 +631,6 @@ do i =  1, 4
   enddo
 enddo
 
-!if (abs(auxHamilRed(tt,ind_k, ind_jm_b,ind_jm_k)) .GT. 1.0e-6) then
-!  kval_is_zero = .FALSE.
-!endif
-
 end subroutine recouple_jjLSConjugatedME
 
 
