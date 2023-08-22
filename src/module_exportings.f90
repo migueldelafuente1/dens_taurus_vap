@@ -734,9 +734,9 @@ do KK = 1, hamil_DD_H2dim
   ! jump elements under another additional tolerace
   !if dabs(h2b) < TOL cycle  ! USELESS, elements in H_DD_H2 were non null
   delta_ab = 0
-  if (a_ant==b_ant) delta_ab = 1
+  if (HOsp_sh(a) .EQ. HOsp_sh(b)) delta_ab = 1
   delta_cd = 0
-  if (c_ant==d_ant) delta_cd = 1
+  if (HOsp_sh(c) .EQ. HOsp_sh(d)) delta_cd = 1
 
   ja = HOsp_2j(a)
   jb = HOsp_2j(b)
@@ -782,6 +782,7 @@ do KK = 1, hamil_DD_H2dim
 !          cgc1 , cgc2, h2b(2), cgc1 * cgc2 * h2b(2)
       do tt = 1, 4
         aux_val = cgc1 * cgc2 * h2b(tt)
+        !! pppp - nnnn require the normalization
         if ((tt .NE. 2).AND.(tt .NE. 3)) aux_val = aux_val * norm
 
         hamilJM(tt,ind_jm_b, ind_jm_k, ind_sab, ind_scd) = &
@@ -847,13 +848,12 @@ do aa = 1, VSsh_dim
   do Jbra = max(Jb_min, Jk_min), min(Jb_max, Jk_max)
     do Mbra = -Jbra, Jbra
       ind_jm_b = angular_momentum_index(Jbra, Mbra, .FALSE.)
-      ind_jm_k = angular_momentum_index(Jbra, 0, .FALSE.) ! for auxHamil to save
       do t = 1, 4
         aux_val = hamilJM(t, ind_jm_b, ind_jm_b, ind_sab, ind_scd)
         if (dabs(aux_val) .GT. TOL) then
-          !aux_val = aux_val * sqrt(2*Jbra + 1.0d0) ! factor for the Reduced ME
-          auxHamilRed(t,0,ind_jm_k,ind_jm_k) = &
-              auxHamilRed(t,0,ind_jm_k,ind_jm_k) + aux_val
+!          aux_val = aux_val * sqrt(2*Jbra + 1.0d0) ! factor for the Reduced ME
+          auxHamilRed(t,0,ind_jm_b,ind_jm_b) = &
+              auxHamilRed(t,0,ind_jm_b,ind_jm_b) + aux_val
 
           kval_is_zero = .FALSE.
         endif
