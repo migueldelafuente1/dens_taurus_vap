@@ -783,7 +783,7 @@ do KK = 1, hamil_DD_H2dim
       do tt = 1, 4
         aux_val = cgc1 * cgc2 * h2b(tt)
         !! pppp - nnnn require the normalization
-        if ((tt .NE. 2).AND.(tt .NE. 3)) aux_val = aux_val * norm
+        if ((tt .EQ. 1).OR.(tt .EQ. 4)) aux_val = aux_val * norm
 
         hamilJM(tt,ind_jm_b, ind_jm_k, ind_sab, ind_scd) = &
                 hamilJM(tt, ind_jm_b, ind_jm_k, ind_sab, ind_scd) + aux_val
