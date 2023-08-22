@@ -846,21 +846,21 @@ do aa = 1, VSsh_dim
   auxHamilRed = zero
   kval_is_zero = .TRUE.
   do Jbra = max(Jb_min, Jk_min), min(Jb_max, Jk_max)
-    do Mbra = -Jbra, Jbra
-      ind_jm_b = angular_momentum_index(Jbra, Mbra, .FALSE.)
-      do t = 1, 4
-        aux_val = hamilJM(t, ind_jm_b, ind_jm_b, ind_sab, ind_scd)
-        if (dabs(aux_val) .GT. TOL) then
+!    do Mbra = -Jbra, Jbra
+    ind_jm_b = angular_momentum_index(Jbra, 0, .FALSE.)
+    do t = 1, 4
+      aux_val = hamilJM(t, ind_jm_b, ind_jm_b, ind_sab, ind_scd)
+      if (dabs(aux_val) .GT. TOL) then
 !          aux_val = aux_val * sqrt(2*Jbra + 1.0d0) ! factor for the Reduced ME
-          auxHamilRed(t,0,ind_jm_b,ind_jm_b) = &
-              auxHamilRed(t,0,ind_jm_b,ind_jm_b) + aux_val
+        auxHamilRed(t,0,ind_jm_b,ind_jm_b) = &
+            auxHamilRed(t,0,ind_jm_b,ind_jm_b) + aux_val
 
-          kval_is_zero = .FALSE.
-          print "(A,F15.10,4I6)", "  !Elem is not 0, aux+=", aux_val, &
-            a_ant, b_ant, c_ant, d_ant
-        endif
-      end do
+        kval_is_zero = .FALSE.
+        print "(A,F15.10,6I6)", "  !Elem is not 0, aux+=", aux_val, &
+          a_ant, b_ant, c_ant, d_ant, Jbra, t
+      endif
     end do
+!    end do
   enddo
   if (.NOT.kval_is_zero) then
     write(298, fmt='(A,4I8,2I3)') ' 0 5', a_ant,b_ant,c_ant,d_ant, &
