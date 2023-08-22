@@ -856,6 +856,7 @@ do aa = 1, VSsh_dim
               auxHamilRed(t,0,ind_jm_b,ind_jm_b) + aux_val
 
           kval_is_zero = .FALSE.
+          print "(A,F15.10)", "  !Elem is not 0, aux+=", aux_val
         endif
       end do
     end do
