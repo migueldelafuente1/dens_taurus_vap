@@ -551,7 +551,7 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
 
     x3 = r ** ALP
     y3 = a * ALP
-    print "(I3,4F10.6,A,2F10.6,1F3.1)",i,real(z), imag(z), r, a, " ==(b)", &
+    print "(I3,4F10.6,A,2F10.6,1F5.1)",i,real(z), imag(z), r, a, " ==(b)", &
       x2, y1, 2 * a / pi
 
   enddo
