@@ -508,7 +508,7 @@ end subroutine set_integration_grid
 subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   integer, intent(in) :: seedtype, itermax, proj_Mphip, proj_Mphin
   complex(r64) :: x,y,z
-  real(r64)    :: x1, x2, y1, y2, z1, z2, r, a, ALP
+  real(r64)    :: x1, x2,x3, y1, y2,y3, z1, z2, r, a, ALP
   integer  :: i, n
 
   print *, "Setting up DD module [   ]"
