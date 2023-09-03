@@ -508,7 +508,7 @@ end subroutine set_integration_grid
 subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   integer, intent(in) :: seedtype, itermax, proj_Mphip, proj_Mphin
   complex(r64) :: x,y,z
-  real(r64)    :: x1, x2, y1, y2, z1, z2, r, a
+  real(r64)    :: x1, x2, y1, y2, z1, z2, r, a, ALP
   integer  :: i, n
 
   print *, "Setting up DD module [   ]"
@@ -537,16 +537,23 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   print "(A,L1)", "  DOING_PROJECTION = ", DOING_PROJECTION
 
   !!! TEST FOR COMPLEX
-  n = 315
-  x1 = pi / n
+  n = 315 / 4
+  x1 = 4 * pi / n
   x2 = 1.5
+  ALP = 0.33333
   print "(/,A)", " *** Test for complex roots and acos"
   do i = 1, n
     y1 = (i-1) * x1
     z  = cmplx(x2*cos(y1), x2*sin(y1))
     r  = sqrt(dreal(z)**2 + dimag(z)**2)
     a  = acos(dreal(z)/ r)
-    print "(4F10.6,A,2F10.6)", real(z), imag(z), r, a, " ==(b)", x2, y1
+
+
+    x3 = r ** ALP
+    y3 = a * ALP
+    print "(I3,4F10.6,A,2F10.6,1F3.1)",i,real(z), imag(z), r, a, " ==(b)", &
+      x2, y1, 2 * a / pi
+
   enddo
   !!!
 
