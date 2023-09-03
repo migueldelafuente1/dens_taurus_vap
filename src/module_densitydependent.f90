@@ -508,7 +508,8 @@ end subroutine set_integration_grid
 subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   integer, intent(in) :: seedtype, itermax, proj_Mphip, proj_Mphin
   complex(r64) :: x,y,z
-  real(r64)    :: x1, x2, y1, y2, z1, z2
+  real(r64)    :: x1, x2, y1, y2, z1, z2, r, a
+  integer  :: i, n
 
   print *, "Setting up DD module [   ]"
   seed_type_sym = seedtype
@@ -534,6 +535,20 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
 
   print "(A)", "  Setting up DD module [DONE]"
   print "(A,L1)", "  DOING_PROJECTION = ", DOING_PROJECTION
+
+  !!! TEST FOR COMPLEX
+  n = 315
+  x1 = pi / n
+  x2 = 1.5
+  print "(/,A)", " *** Test for complex roots and acos"
+  do i = 1, n
+    y1 = (i-1) * x1
+    z  = cmplx(x2*cos(y1), x2*sin(y1))
+    r  = sqrt(dreal(z)**2 + dimag(z)**2)
+    a  = acos(dreal(z)/ r)
+    print "(4F10.6,A,2F10.6)", real(z), imag(z), r, a, " ==(b)", x2, y1
+  enddo
+  !!!
 
 end subroutine set_densty_dependent
 
@@ -1386,12 +1401,11 @@ subroutine calculate_expectval_density(rhoLR, kappaLR, kappaRL, &
 integer, intent(in) :: ndim, iopt !
 complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaRL, kappaLR
 
-integer :: a,b, a_sh,la,ja,ma,mta, b_sh,lb,jb,mb,mtb, K, spO2, a_n, b_n
-integer :: ind_jm_a, ind_jm_b, ind_km
-integer :: M
+integer :: a,b, a_sh, b_sh, spO2
 integer :: i_r=1, i_an=1, msp
 
 real(r64) :: radial_part, dens_R, dens_A, rad4Integr, cga, cgb
+real(r64), dimension(10) :: a_roots
 complex(r64) :: sum_, integral_dens, sum_test, diff
 integer  :: mlb, mla, ms, ind_la, ind_lb
 logical :: PRNT_
@@ -1463,11 +1477,20 @@ do i_r = 1, r_dim
       endif
       ! Fold the density to the 1st quadrant.
       dens_R = dreal(density(i_r,i_an))**2 + dimag((density(i_r,i_an)))**2
-      dens_A = alpha_DD * dacos(dreal(density(i_r, i_an)) / dens_R)
+      dens_R = dsqrt(dens_R)
+      a_roots= alpha_DD * dacos(dreal(density(i_r, i_an)) / dens_R)
       dens_R = dens_R ** alpha_DD
 
+      dens_A = a_roots(1)
       dens_alpha(i_r,i_an) = dCMPLX(dens_R * dabs(dcos(dens_A)), &
                                     dens_R * dabs(dsin(dens_A)) )
+      dens_alpm1(i_r,i_an) = dens_alpha(i_r,i_a) / density(i_r,i_an)
+      if (dreal(dens_alpm1(i_r,i_a)) > 1.0D+30) then
+        dens_R = dreal(dens_alpm1(i_r,i_an))**2
+        dens_R = dens_R + dimag((dens_alpm1(i_r,i_an)))**2
+        dens_A = dacos(dreal(dens_alpm1(i_r, i_an)) / dsqrt(dens_R))
+        dens_alpm1(i_r,i_an) = dCMPLX(1.0D+30*cos(dens_A), 1.0D+30*sin(dens_A))
+      endif
     else
       dens_alpha(i_r,i_an) = dreal(density(i_r,i_an)) ** alpha_DD
       dens_alpm1(i_r,i_an) = dens_alpha(i_r,i_an) / density(i_r,i_an)
