@@ -108,6 +108,8 @@ integer   :: WBsh_dim = 0, WBsp_dim = 0
 integer, dimension(:), allocatable  :: VSsh_list, WBtoHOsp_index, VSsp_VSsh,&
                                        VStoHOsp_index, VStoHOsh_index
 
+integer   :: Mphip_DD= 0, & ! number of angles in the projection for protons
+             Mphin_DD = 0   !   "    "    "    "   "      "       "  neutrons
 integer   :: seed_type_sym  = 0        ! (UNDEFINED)
 logical   :: haveX0M1       = .FALSE.  ! |x0 - 1| > 1E-6
 logical   :: evalFullSPSpace= .TRUE.   ! compute the full a,b, c,d space for explicit DD fields (cannot be set)
@@ -515,6 +517,8 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   seed_type_sym = seedtype
   global_iter_max = itermax
   DOING_PROJECTION = (proj_Mphip > 1).OR.(proj_Mphin > 1)
+  Mphip_DD = proj_Mphip
+  Mphin_DD = proj_Mphin
 
   call import_DD_parameters
   call import_Rearrange_field_if_exist
@@ -537,29 +541,29 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   print "(A,L1)", "  DOING_PROJECTION = ", DOING_PROJECTION
 
   !!! TEST FOR COMPLEX  =======================================================
-  n = 315 / 4
-  x1 = 4 * pi / n
-  x2 = 1.5
-  ALP = 0.33333
-  print "(/,A)", " *** Test for complex roots and acos"
-  do i = 1, n
-    y1 = (i-1) * x1
-    z  = cmplx(x2*cos(y1), x2*sin(y1))
-    r  = sqrt(dreal(z)**2 + dimag(z)**2)
-    a  = acos(dreal(z)/ r)
-    !a2 = 0.0d0
-    if (dimag(z) .lt. 0.0) then
-      !a2 = ((1.0d0 - (dimag(z)/(dabs(dimag(z))))) / 2) * 2*(pi - a)
-      a = a + 2*(pi - a)
-    endif
-    !a = a + a2
-
-    x3 = r ** ALP
-    y3 = a * ALP
-    print "(I3,4F10.6,A,2F10.6,1F5.1)",i,real(z), imag(z), r, a, " ==(b)", &
-      x2, y1, 2 * a / pi + 1
-
-  enddo
+!  n = 315 / 4
+!  x1 = 4 * pi / n
+!  x2 = 1.5
+!  ALP = 0.33333
+!  print "(/,A)", " *** Test for complex roots and acos"
+!  do i = 1, n
+!    y1 = (i-1) * x1
+!    z  = cmplx(x2*cos(y1), x2*sin(y1))
+!    r  = sqrt(dreal(z)**2 + dimag(z)**2)
+!    a  = acos(dreal(z)/ r)
+!    !a2 = 0.0d0
+!    if (dimag(z) .lt. 0.0) then
+!      !a2 = ((1.0d0 - (dimag(z)/(dabs(dimag(z))))) / 2) * 2*(pi - a)
+!      a = a + 2*(pi - a)
+!    endif
+!    !a = a + a2
+!
+!    x3 = r ** ALP
+!    y3 = a * ALP
+!    print "(I3,4F10.6,A,2F10.6,1F5.1)",i,real(z), imag(z), r, a, " ==(b)", &
+!      x2, y1, 2 * a / pi + 1
+!
+!  enddo
   !!!  ========================================================================
 
 end subroutine set_densty_dependent
@@ -1413,7 +1417,7 @@ subroutine calculate_expectval_density(rhoLR, kappaLR, kappaRL, &
 integer, intent(in) :: ndim, iopt !
 complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaRL, kappaLR
 
-integer :: a,b, a_sh, b_sh, spO2
+integer :: a,b, a_sh, b_sh, spO2, ITER_PRNT
 integer :: i_r=1, i_an=1, msp
 
 real(r64) :: radial_part, dens_R, dens_A, rad4Integr, dens_Aa,dens_Ra
@@ -1484,7 +1488,7 @@ do i_r = 1, r_dim
       dens_R = dreal(density(i_r,i_an))**2 + dimag((density(i_r,i_an)))**2
       dens_R = dsqrt(dens_R)
       dens_A = dacos(dreal(density(i_r, i_an)) / max(dens_R, 1.0d-30))
-      if (dsin(dens_A) .lt. 0.0) then
+      if (dsin(dens_A) .lt. zero) then
         dens_A = dens_A + 2*(pi - dens_A)
       endif
 
@@ -1551,7 +1555,9 @@ if (PRNT_) then
 endif
 
 !! [TEST] For the density to be integrated in the variable for the m.e.
-if ((iteration.eq.0).OR.(MOD(iteration + 1, 10).EQ.0)) then
+ITER_PRNT = 10
+if (DOING_PROJECTION) ITER_PRNT = ITER_PRNT * Mphip_DD * Mphin_DD
+if ((iteration.eq.0).OR.(MOD(iteration + 1, ITER_PRNT).EQ.0)) then
   integral_dens = integral_dens * 2 * pi * (HO_b**3) / ((2.0 + alpha_DD)**1.5)
   print "(A,F13.9,A)", "      *A* ", dreal(integral_dens), "  <dens(r)> approx"
 endif
