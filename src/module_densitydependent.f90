@@ -1182,9 +1182,10 @@ end subroutine compute_bulkDens4Fields_bench
 ! subroutine to evaluate the the value and transposed values for all spaces    !
 !------------------------------------------------------------------------------!
 subroutine compute_bulkDens4Fields(a, b, a_sh, b_sh, i_r, i_a, &
-                                   rhoLR, kappaLR, kappaRL, ndim)
+                                   rhoLR, kappaLR, kappaRL, overlap, ndim)
 integer, intent(in)      :: a, b, a_sh, b_sh, i_r, i_a, ndim
 complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
+complex(r64), intent(in) :: overlap
 
 integer      :: spO2, par_ind,    ms,ms2, a_n, b_n
 complex(r64) :: roP, roN, rPN, rNP, kaP,kaN,kaCcP, kaCcN,kPN,kNP,kCcNP,kCcPN, &
@@ -1203,7 +1204,7 @@ aNeQb = kdelta(a, b).ne.1
 a_n   = a + spO2
 b_n   = b + spO2
 
-radial_ab = radial_2b_sho_memo(a_sh, b_sh, i_r)
+radial_ab = radial_2b_sho_memo(a_sh, b_sh, i_r) * overlap
 
 roP = radial_ab * rhoLR  (b  ,a)
 roN = radial_ab * rhoLR  (b_n,a_n)
@@ -1412,10 +1413,11 @@ end subroutine set_rearrangement_RadAng_fucntions
 ! iopt = optimal iteration (=1 when gradient has converged)                   !
 !
 !-----------------------------------------------------------------------------!
-subroutine calculate_expectval_density(rhoLR, kappaLR, kappaRL, &
+subroutine calculate_expectval_density(rhoLR, kappaLR, kappaRL, overlap,&
                                        ndim, iopt)
 integer, intent(in) :: ndim, iopt !
 complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaRL, kappaLR
+complex(r64), intent(in) :: overlap
 
 integer :: a,b, a_sh, b_sh, spO2, ITER_PRNT
 integer :: i_r=1, i_an=1, msp
@@ -1460,7 +1462,7 @@ do i_r = 1, r_dim
          b_sh = HOsp_sh(b)
 
          call compute_bulkDens4Fields(a, b, a_sh, b_sh, i_r, i_an, &
-                                      rhoLR, kappaLR, kappaRL, ndim)
+                                      rhoLR, kappaLR, kappaRL, overlap, ndim)
 !         call compute_bulkDens4Fields_bench(a, b, a_sh, b_sh, i_r, i_an, &
 !                                    rhoLR, kappaLR, kappaRL, ndim) ! BENCH REQUIRES B starting at 1
       enddo ! do b
@@ -3101,7 +3103,7 @@ do a = 1, spO2
 
     do i_r = 1, r_dim
       rad_ac = weight_R(i_r) * radial_2b_sho_memo(a_sh, c_sh, i_r)
-      rad_ac = rad_ac * exp((2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
+      rad_ac = rad_ac * dexp((2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
       do i_ang = 1, angular_dim
         auxHfD = zzero
         !! DIRECT terms for the HF field
@@ -3172,7 +3174,7 @@ do a = 1, spO2
         if (eval_rearrangement) then
           auxRea  = REACommonFields(i_r,i_ang) * dens_alpm1(i_r,i_ang)
           auxRea  = auxRea * rea_common_RadAng(a,c, i_r, i_ang)
-          auxRea  = auxRea * exp( (2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
+          auxRea  = auxRea * dexp( (2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
           int_rea = int_rea + (auxRea * weight_R(i_r) * weight_LEB(i_ang))
         endif
         ! rearrange for pn and np are the same (pn/np are Zero)
