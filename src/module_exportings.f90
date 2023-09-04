@@ -828,7 +828,7 @@ do aa = 1, VSsh_dim
         ind_scd = two_shell_states_index(c, d)
 
         valid_scalar = .TRUE.
-        if ((MOD(HOsp_l(a)+HOsp_l(b),2) .NE. MOD(HOsp_l(c)+HOsp_l(d),2)) .OR. &
+        if ((MOD(HOsh_l(a)+HOsh_l(b),2) .NE. MOD(HOsh_l(c)+HOsh_l(d),2)) .OR. &
             (ma + mb .NE. mc + md)) then !! TODO; And to preserve the quanta?
           valid_scalar = .FALSE.
         endif
@@ -1083,8 +1083,8 @@ end do
 close(299)
 close(298)
 
-print *, " * [OK] Printing 2B Matrix elements DD from WF_HFB\n"
-print "(/,A,7(/,A),/)", " Exported matrix elements: ", &
+print "(/,A)", " * [OK] Printing 2B Matrix elements DD from WF_HFB"
+print "(/,A,7(/,A))", " Exported 2-body DD matrix elements from the WF_HFB: ", &
   "--------------------------------------------",   "   D1S_vs_red.2b", &
   "   D1S_vs_scalar.2b", "   onlyDD_D1S_scalar.2b", "   onlyDD_D1S_k1.2b", &
   "   onlyDD_D1S_k2.2b", "   final_rearrangement.txt"
