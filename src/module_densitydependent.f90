@@ -548,9 +548,10 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
     r  = sqrt(dreal(z)**2 + dimag(z)**2)
     a  = acos(dreal(z)/ r)
     a2 = 0.0
-    if (dimag(z) .lt. 0.0) then
-      a2 = ((1.0d0 - (dimag(z)/max(dabs(dimag(z)), 1.0d-13))) / 2) * 2*(pi - a)
-      endif
+!    if (dimag(z) .lt. 0.0) then
+!      a2 = ((1.0d0 - (dimag(z)/max(dabs(dimag(z)), 1.0d-13))) / 2) * 2*(pi - a)
+!      endif
+    a2 = ((1.0d0 - (dimag(z)/(dabs(dimag(z))-1.0d-13))) / 2) * 2*(pi - a)
     a = a + a2
 
     x3 = r ** ALP
