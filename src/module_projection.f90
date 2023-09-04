@@ -279,7 +279,7 @@ do nangle = nangle_min, nangle_max
   !!! [CALCULATE PROJECTED DENSITY]
   if (eval_density_dependent) then
     call calculate_expectval_density(dens_rhoLR, dens_kappaLR, dens_kappaRL, &
-                                     rot_over, ndim, iopt)
+                                     rot_over*weip*wein, ndim, iopt)
     if (eval_explicit_fieldsDD) then
 	    call calculate_densityDep_hamiltonian(dens_rhoLR, &
 	                                          dens_kappaLR, dens_kappaRL, ndim)
