@@ -546,7 +546,7 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
     y1 = (i-1) * x1
     z  = cmplx(x2*cos(y1), x2*sin(y1))
     r  = sqrt(dreal(z)**2 + dimag(z)**2)
-    a  = acos(dreal(z)/ r) + pi*(1 - isign(dimag(z)/ r, 1.0)) / 2
+    a  = acos(dreal(z)/ r) + pi*(1.0d0 - dsign(dimag(z)/ r, 1.0)) / 2
 
 
     x3 = r ** ALP
