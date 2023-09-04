@@ -1204,7 +1204,7 @@ aNeQb = kdelta(a, b).ne.1
 a_n   = a + spO2
 b_n   = b + spO2
 
-radial_ab = radial_2b_sho_memo(a_sh, b_sh, i_r) * overlap
+radial_ab = radial_2b_sho_memo(a_sh, b_sh, i_r) / overlap
 
 roP = radial_ab * rhoLR  (b  ,a)
 roN = radial_ab * rhoLR  (b_n,a_n)
