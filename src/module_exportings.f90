@@ -829,7 +829,7 @@ do aa = 1, VSsh_dim
 
         valid_scalar = .TRUE.
         if ((MOD(HOsh_l(a)+HOsh_l(b),2) .NE. MOD(HOsh_l(c)+HOsh_l(d),2)) .OR. &
-            (ma + mb .NE. mc + md)) then !! TODO; And to preserve the quanta?
+            (ma + mb .NE. mc + md)) then
           valid_scalar = .FALSE.
         endif
 
@@ -856,8 +856,8 @@ do aa = 1, VSsh_dim
             auxHamilRed(t,0,ind_jm_b,ind_jm_b) + aux_val
 
         kval_is_zero = .FALSE.
-        print "(A,F15.10,6I6)", "  !Elem is not 0, aux+=", aux_val, &
-          a_ant, b_ant, c_ant, d_ant, Jbra, t
+        print "(A,F15.10,6I6,A,L3)", "  !Elem is not 0, aux+=", aux_val, &
+          a_ant, b_ant, c_ant, d_ant, Jbra, t, " val.scalar:", valid_scalar
       endif
     end do
 !    end do
@@ -1027,7 +1027,7 @@ do aa = 1, VSsh_dim
             aux_4 = aux_1
             if (implement_H2cpd_DD) then
               aux_4 = aux_4 + hamil_H2cpd_DD(tt, Jbra, a,b,c,d)
-              endif
+            endif
 !              print "(A,2F15.9)","    In:",aux_3,hamil_H2cpd_DD(tt,Jbra,a,b,c,d)
             if (t == 2) then ! print the permutations (for the pnpn)
               aux_2 = auxHamilRed(2,KK,ind_jm_b,ind_jm_k)
