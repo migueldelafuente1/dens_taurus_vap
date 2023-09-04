@@ -806,30 +806,25 @@ allocate(all_zero(0:TENSOR_ORD))
 do aa = 1, VSsh_dim
   a  = VStoHOsh_index(aa)
   ja = HOsh_2j(a)
-  ma = HOsp_2mj(a)
   a_ant = VSsh_list(aa)
   do bb = aa, VSsh_dim
     b  = VStoHOsh_index(bb)
     jb = HOsh_2j(b)
-    mb = HOsp_2mj(b)
     b_ant = VSsh_list(bb)
     ind_sab = two_shell_states_index(a, b)
 
     do cc = aa, VSsh_dim
       c  = VStoHOsh_index(cc)
       jc = HOsh_2j(c)
-      mc = HOsp_2mj(c)
       c_ant = VSsh_list(cc)
       do dd = cc, VSsh_dim
         d  = VStoHOsh_index(dd)
         jd = HOsh_2j(d)
-        md = HOsp_2mj(d)
         d_ant = VSsh_list(dd)
         ind_scd = two_shell_states_index(c, d)
 
         valid_scalar = .TRUE.
-        if ((MOD(HOsh_l(a)+HOsh_l(b),2) .NE. MOD(HOsh_l(c)+HOsh_l(d),2)) .OR. &
-            (ma + mb .NE. mc + md)) then
+        if ((MOD(HOsh_l(a)+HOsh_l(b),2) .NE. MOD(HOsh_l(c)+HOsh_l(d),2))) then
           valid_scalar = .FALSE.
         endif
 
@@ -893,13 +888,13 @@ do aa = 1, VSsh_dim
 !    Jb_min,Jb_max, " ket:", Jk_min,Jk_max
   auxHamilRed = zero
   do Jbra = Jb_min, Jb_max
-    Mbra = ma + mb !! 0 !! TODO !!
+    Mbra = 0 !! TODO !!ma + mb !!
     ind_jm_b = angular_momentum_index(Jbra, Mbra, .FALSE.)
     J1 = angular_momentum_index(Jbra, 0, .FALSE.)
 
     do KK = 0, TENSOR_ORD
       do Jket = Jk_min, Jk_max
-        Mket = mc + md !! 0 !!
+        Mket = 0 !!mc + md !!
         ind_jm_k = angular_momentum_index(Jket, Mket, .FALSE.)
         J2 = angular_momentum_index(Jket, 0, .FALSE.)
 
