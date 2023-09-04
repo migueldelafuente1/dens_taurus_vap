@@ -1494,8 +1494,8 @@ do i_r = 1, r_dim
       dens_R = dens_R ** alpha_DD
 
       dens_A = a_roots(1)
-      dens_alpha(i_r,i_an) = dCMPLX(dens_R * dabs(dcos(dens_A)), &
-                                    dens_R * dabs(dsin(dens_A)) )
+      dens_alpha(i_r,i_an) = dCMPLX(dens_R * (dcos(dens_A)), &
+                                    dens_R * (dsin(dens_A)) )
       dens_alpm1(i_r,i_an) = dens_alpha(i_r,i_an) / density(i_r,i_an)
       if (dreal(dens_alpm1(i_r,i_an)) > 1.0D+30) then
         dens_R = dreal(dens_alpm1(i_r,i_an))**2
