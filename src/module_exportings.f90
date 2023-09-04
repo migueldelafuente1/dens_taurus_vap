@@ -1084,6 +1084,10 @@ close(299)
 close(298)
 
 print *, " * [OK] Printing 2B Matrix elements DD from WF_HFB\n"
+print "(A,6(/,A))", " Exported matrix elements: ", "   D1S_vs_red.2b", &
+  "   D1S_vs_scalar.2b", "   onlyDD_D1S_scalar.2b", "   onlyDD_D1S_k1.2b", &
+  "   onlyDD_D1S_k2.2b", "   final_rearrangement.txt"
+
 end subroutine print_DD_matrix_elements
 
 !------------------------------------------------------------------------------!
