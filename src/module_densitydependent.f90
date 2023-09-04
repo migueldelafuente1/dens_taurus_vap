@@ -546,13 +546,13 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
     y1 = (i-1) * x1
     z  = cmplx(x2*cos(y1), x2*sin(y1))
     r  = sqrt(dreal(z)**2 + dimag(z)**2)
-    a  = acos(dreal(z)/ r)
+    a  = acos(dreal(z)/ r) + pi*(1 - isign(dimag(z)/ r)) / 2
 
 
     x3 = r ** ALP
     y3 = a * ALP
     print "(I3,4F10.6,A,2F10.6,1F5.1)",i,real(z), imag(z), r, a, " ==(b)", &
-      x2, y1, 2 * a / pi
+      x2, y1, 2 * a / pi + 1
 
   enddo
   !!!
