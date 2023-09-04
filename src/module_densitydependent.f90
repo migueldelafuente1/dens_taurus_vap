@@ -508,7 +508,7 @@ end subroutine set_integration_grid
 subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   integer, intent(in) :: seedtype, itermax, proj_Mphip, proj_Mphin
   complex(r64) :: x,y,z
-  real(r64)    :: x1, x2,x3, y1, y2,y3, z1, z2, r, a, ALP
+  real(r64)    :: x1, x2,x3, y1, y2,y3, z1, z2, r, a, ALP, a2
   integer  :: i, n
 
   print *, "Setting up DD module [   ]"
@@ -546,8 +546,9 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
     y1 = (i-1) * x1
     z  = cmplx(x2*cos(y1), x2*sin(y1))
     r  = sqrt(dreal(z)**2 + dimag(z)**2)
-    a  = acos(dreal(z)/ r) + pi*(1.0d0 - (dimag(z)/dabs(dimag(z)+1.0d-13))) / 2
-
+    a  = acos(dreal(z)/ r)
+    a2 = ((1.0d0 - (dimag(z)/dabs(dimag(z)+1.0d-13))) / 2) * 2*(pi - a)
+    a = a + a2
 
     x3 = r ** ALP
     y3 = a * ALP
