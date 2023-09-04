@@ -346,12 +346,12 @@ enddo
 if ( icheck /= 0 ) then
   print '(/,"The model space of the seed wave function is not consistent", &
         & " with the one of the interaction.")'
-  print*, 'Inter:', HOsh_dim, (HOsh_na(i), i=1,HOsh_dim)
+  print*, 'Inter:', HOsh_dim,  (HOsh_na(i), i=1,HOsh_dim)
   print*, 'State:', HOsh_dim0, (HOsh_na0(i), i=1,HOsh_dim0)
   stop
 endif
 
-allocate(fixed_rearrang_field(HOsh_dim,HOsh_dim))
+allocate(fixed_rearrang_field(HOsp_dim,HOsp_dim))
 fixed_rearrang_field = zzero
 read(runit,*) bogo_label
 do i = 1, HOsp_dim
