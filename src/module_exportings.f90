@@ -883,10 +883,10 @@ do aa = 1, VSsh_dim
   endif
 
   !! ======= Evaluate the rearrange for tensor components on the D1S
-!  print *, ""
-!  print "(A,4I5,2(A,2I3))", " abcd ", a_ant,b_ant,c_ant,d_ant, " lims bra:",&
-!    Jb_min,Jb_max, " ket:", Jk_min,Jk_max
-  print "(A)", "   ... begin recoupling."
+  !  print *, ""
+  print "(A)", " ** begin recoupling."
+  print "(A,4I5,2(A,2I3))", " abcd ", a_ant,b_ant,c_ant,d_ant, " lims bra:",&
+    Jb_min,Jb_max, " ket:", Jk_min,Jk_max
   auxHamilRed = zero
   do Jbra = Jb_min, Jb_max
   do Mbra = -Jbra, Jbra
@@ -900,7 +900,7 @@ do aa = 1, VSsh_dim
         ind_jm_k = angular_momentum_index(Jket, Mket, .FALSE.)
 
         if (KK .EQ. 0) then  !! ------------------------------------
-          print "(A,I3)", "     .. KK  scalar:", KK
+          print "(A,I3,4I5)", "     .. KK  scalar:", KK, Jbra,Mbra, Jket,Mket
           kval_is_zero = .TRUE.
           if (Mbra .NE. Mket) cycle
           if (Jbra .NE. Jket) cycle
@@ -919,7 +919,7 @@ do aa = 1, VSsh_dim
           cycle
         end if !! ---------------------------------------------------
 
-        print "(A,I3)", "     .. KK > 1:", KK
+        print "(A,I3,4I5)", "     .. KK > 1:", KK, Jbra,Mbra, Jket,Mket
         !!! From this point for the tensor orders  KK >= 1  ---------
         do Sbra = 0, 1
           Lb_min = abs(Jbra - Sbra)
