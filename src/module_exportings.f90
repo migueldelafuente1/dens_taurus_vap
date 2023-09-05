@@ -909,7 +909,7 @@ do aa = 1, VSsh_dim
             if (abs(aux_val) .GT. 1.0d-9) kval_is_zero = .FALSE.
 
             auxHamilRed(t,Jbra, ind_jm_b, ind_jm_k) = &
-              auxHamilRed(t,Jbra, ind_jm_b,i nd_jm_k) + aux_val
+              auxHamilRed(t,Jbra, ind_jm_b, ind_jm_k) + aux_val
           enddo
           if (all_zero(KK)) all_zero(KK) = kval_is_zero ! modify just if all was zero
 
