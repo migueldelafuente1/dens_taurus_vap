@@ -1063,7 +1063,7 @@ do aa = 1, VSsh_dim
                 tt = 5
               case default  !! t=2(pnpn) tt=1(,4) & t=3(pnnp) tt=2(,3)! 1,2==4,3
                 tt = t - 1
-            end select
+            endselect
 
 !            print "(A,4I3)", "    Nshell::", Na, Nb, Nc, Nd
 !              print "(A,2F15.9)","    In:",aux_3,hamil_H2cpd_DD(tt,Jbra,a,b,c,d)
@@ -1080,7 +1080,7 @@ do aa = 1, VSsh_dim
             else !(t = 1, 4)
               aux_4 = auxHamilRed(t,KK,ind_jm_b,ind_jm_k)
               !! particle index function:: 5*(t-1)/3 =   5(t=4); 0(t=1)
-              aux_4 = aux_4 + hamil_H2cpd_DD(5*(t-1)/3, Jbra, a,b,c,d)
+              aux_4 = aux_4 + hamil_H2cpd_DD(tt, Jbra, a,b,c,d)
               write(299,fmt='(F15.10)',advance='no') aux_4
             endif
           endif
