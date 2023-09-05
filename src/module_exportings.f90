@@ -839,24 +839,42 @@ do aa = 1, VSsh_dim
 
   !! ======= Extract the simpler form of the scalar D1S  ==================
   auxHamilRed = zero
+  all_zero(KK) = .TRUE.
   kval_is_zero = .TRUE.
   do Jbra = max(Jb_min, Jk_min), min(Jb_max, Jk_max)
-!    do Mbra = -Jbra, Jbra
+    do Mbra = -Jbra, Jbra
     ind_jm_b = angular_momentum_index(Jbra, 0, .FALSE.)
     do t = 1, 4
       aux_val = hamilJM(t, ind_jm_b, ind_jm_b, ind_sab, ind_scd)
       if (dabs(aux_val) .GT. TOL) then
-!          aux_val = aux_val * sqrt(2*Jbra + 1.0d0) ! factor for the Reduced ME
+          aux_val = aux_val / (2*Jbra + 1.0d0) ! factor for the Reduced ME
         auxHamilRed(t,0,ind_jm_b,ind_jm_b) = &
             auxHamilRed(t,0,ind_jm_b,ind_jm_b) + aux_val
 
         kval_is_zero = .FALSE.
-        print "(A,F15.10,6I6,A,L3)", "  !Elem is not 0, aux+=", aux_val, &
-          a_ant, b_ant, c_ant, d_ant, Jbra, t, " val.scalar:", valid_scalar
+        print "(A,F15.10,7I6,A,L3)", "  !Elem is not 0, aux+=", aux_val, &
+          a_ant, b_ant, c_ant, d_ant, Jbra,Mbra, t, " val.sc:", valid_scalar
       endif
     end do
-!    end do
+    end do !! Mbra loop
+    !! Second loop to see if there is any BB matrix element
+    !! In case BB element /=0 and DD =0 to not be ignored
+    do t = 0, 5
+      aux_val = hamil_H2cpd_DD(t, Jbra, a,b,c,d)
+      if (dabs(aux_val) .GT. TOL) then
+        auxHamilRed(t,0,ind_jm_b,ind_jm_b) = &
+            auxHamilRed(t,0,ind_jm_b,ind_jm_b) + aux_val
+
+        kval_is_zero = .FALSE.
+        print "(A,F15.10,6I6)", "  !(BB)Elem is not 0, aux+=", aux_val, &
+          a_ant, b_ant, c_ant, d_ant, Jbra, t
+        if (.NOT.kval_is_zero) all_zero(0) = .FALSE.
+      endif
+    enddo
+    !!!
   enddo
+  print "(A)", ""
+
   if (.NOT.kval_is_zero) then
     write(298, fmt='(A,4I6,2I3)') ' 0 5', a_ant,b_ant,c_ant,d_ant, &
                                     max(Jb_min,Jk_min), min(Jb_max,Jk_max)
