@@ -879,7 +879,7 @@ do aa = 1, VSsh_dim
 
   if (.NOT.kval_is_zero) then
     write(298, fmt='(A,4I6,2I3)') ' 0 5', a_ant,b_ant,c_ant,d_ant, &
-                                    max(Jb_min,Jk_min), min(Jb_max,Jk_max)
+                                  max(Jb_min,Jk_min), min(Jb_max,Jk_max)
 
     do Jbra = max(Jb_min, Jk_min), min(Jb_max, Jk_max)
 
@@ -1007,7 +1007,7 @@ do aa = 1, VSsh_dim
   enddo
   enddo ! Jbra loop
 
-!  print "(A)", "END LOOP JLS <ab cd> rearrange for tensor components"
+  print "(A)", "END LOOP JLS <ab cd> rearrange for tensor components"
   !! WRITE the final result of the loop for each block ============
   do KK = 0, TENSOR_ORD
     if (all_zero(KK)) cycle
