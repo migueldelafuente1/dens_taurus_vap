@@ -839,7 +839,7 @@ do aa = 1, VSsh_dim
 
   !! ======= Extract the simpler form of the scalar D1S  ==================
   auxHamilRed = zero
-  all_zero(KK) = .TRUE.
+  all_zero = .TRUE.
   kval_is_zero = .TRUE.
   Mbra = 0
   do Jbra = max(Jb_min, Jk_min), min(Jb_max, Jk_max)
