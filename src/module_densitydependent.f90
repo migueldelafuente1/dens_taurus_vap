@@ -192,14 +192,14 @@ if (exportValSpace) then
   if ((VSsh_dim.LE.HOsh_dim).OR.(evalQuasiParticleVSpace)) then
     print "(A,I3,A)", "   ... Reading VS sh states", VSsh_dim, &
       " (error if wrong sh dimension)"
-    print *, ""
+    !print *, ""
     backspace runit
     allocate(VSsh_list(VSsh_dim))
     read(runit,formatStrHeader, advance='no') str_
     read(runit,*) VSsh_dim, (VSsh_list(i),i=1,VSsh_dim)
     call set_valence_space_to_export
   else
-    print *,"   ... Reading for FULL valence space"
+    !print *,"   ... Reading for FULL valence space"
     VSsh_dim  = HOsh_dim
     VSsp_dim  = HOsp_dim
     VSsp_dim2 = HOsp_dim2
@@ -305,7 +305,7 @@ print *, ''
 
 haveX0M1 = abs(x0_DD_FACTOR - 1.0d+0) > 1.0d-6
 
-print "(A)", "   Done the DD importing parameters."
+print "(A)", " * Density dependent parameters imported."
 end subroutine import_DD_parameters
 
 
@@ -317,7 +317,7 @@ subroutine import_Rearrange_field_if_exist
 
 integer   :: runit = 333, bogo_label
 logical   :: is_exist
-CHARACTER(LEN=20) :: file_input = "initial_rearrangement.txt"
+CHARACTER(LEN=25) :: file_input = "rearrangement_initial.txt"
 INTEGER   :: io, aux_int
 integer   :: i, j, icheck, HOsh_dim0
 integer, dimension(:), allocatable :: HOsh_na0
@@ -326,9 +326,9 @@ real(r64) :: aux_real
 inquire (file=file_input, exist=is_exist)
 if ( is_exist ) then
   OPEN(runit, FILE=file_input, FORM="FORMATTED", STATUS="OLD", ACTION="READ")
-  print "(A)", " Initial rearrangement field present, reading from file."
+  print "(A)", " * Initial rearrangement field PRESENT, reading from file."
 else
-  print "(A)", " Initial rearrangement field not found."
+  print "(A)", " * Initial rearrangement field NOT found."
   return
 endif
 
@@ -515,7 +515,6 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   real(r64)    :: x1, x2,x3, y1, y2,y3, z1, z2, r, a, ALP, a2
   integer  :: i, n
 
-  print *, "Setting up DD module [   ]"
   seed_type_sym = seedtype
   global_iter_max = itermax
   DOING_PROJECTION = (proj_Mphip > 1).OR.(proj_Mphin > 1)
@@ -526,7 +525,7 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   call import_Rearrange_field_if_exist
 
   if (.NOT.eval_density_dependent) then
-    print "(A)", "  DD module is turned off, skip DD array setting [OK]"
+    print "(A)", " * DD module is TURNED OFF, skip DD array setting."
     return
   endif
 
@@ -539,8 +538,8 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   call set_Y_KM_matrixElements
   call set_rearrangement_RadAng_fucntions
 
-  print "(A)", "  Setting up DD module [DONE]"
-  print "(A,L1)", "  DOING_PROJECTION = ", DOING_PROJECTION
+  print "(A)", " * Setting up DD module [DONE]"
+  print "(A,L1)", " * DOING_PROJECTION (for DD) = ", DOING_PROJECTION
 
   !!! TEST FOR COMPLEX  =======================================================
 !  n = 315 / 4

@@ -3110,18 +3110,18 @@ end subroutine export_expectval_density
 
 !==============================================================================!
 ! subroutine export_rearrangement_field                                        !
-! Export the final rearrangement field (final_rearrangement.txt) to be imported!
-! as (initial_rearrangement.txt).                                              !
+! Export the final rearrangement field (rearrangement_final.txt) to be imported!
+! as (rearrangement_initial.txt).                                              !
 !==============================================================================!
 subroutine export_rearrangement_field
 
 integer :: i, j
 character(11) :: fileform
-character(23) :: filename
+character(24) :: filename
 logical :: is_binary
 
 fileform = 'formatted'
-filename = 'final_rearrangement.txt'
+filename = 'rearrangement_final.txt'
 
 open(utw, file=filename, status='replace', action='write',form=fileform)
 
