@@ -477,7 +477,7 @@ write(296, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2I5)') &
   '  CORE(n,p):', CORE_NUMBER, CORE_NUMBER
 
 !! SHO FILE
-write(297, fmt="(I3)") 3
+write(297, fmt="(I3)") 4 !3
 write(297, fmt="(I3)", advance='no') VSsh_dim
 do a_sh_vs = 1, VSsh_dim
   a_ant = VSsh_list(a_sh_vs)
