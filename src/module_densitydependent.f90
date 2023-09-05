@@ -359,7 +359,7 @@ do i = 1, HOsp_dim
   do j = 1, HOsp_dim
     read(runit,*) aux_real
     fixed_rearrang_field(j,i) = cmplx(aux_real, 0.0d0)
-    print "(F15.9)", fixed_rearrang_field(j,i)
+    print "(D20.15)", fixed_rearrang_field(j,i)
   enddo
 enddo
 USING_FIXED_REARRANGEMENT = .TRUE.
