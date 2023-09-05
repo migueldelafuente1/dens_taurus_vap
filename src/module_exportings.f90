@@ -792,13 +792,13 @@ do KK = 1, hamil_DD_H2dim
   enddo
 !  print  *, ''
 enddo !k
-print *, " *** I have read the full uncoupled hamiltonian. Now [step 2]"
+print *, "   *** I have read the full uncoupled hamiltonian. Now [step 2]"
 
 ! -------------------------------------------------------------------------
 !! 2. Calculate SP-Energy and core energy from Global Hamil and DD hamil
 call calculate_valenceSpaceReduced(hamilJM,dim_jm,dim_sh)
 
-print *, " *** I have evaluate the valence Space. Now [step 3]"
+print *, "   *** I have evaluate the valence Space. Now [step 3]"
 !return
 ! -------------------------------------------------------------------------
 !! 3 export the matrix elemnts in antoine format, also normalize by J
@@ -853,8 +853,8 @@ do aa = 1, VSsh_dim
             auxHamilRed(t,0,ind_jm_b,ind_jm_b) + aux_val
 
         kval_is_zero = .FALSE.
-        print "(A,F15.10,7I6,A,L3)", "  !Elem is not 0, aux+=", aux_val, &
-          a_ant, b_ant, c_ant, d_ant, Jbra,Mbra, t, " val.sc:", valid_scalar
+        !print "(A,F15.10,7I6,A,L3)", "  !Elem is not 0, aux+=", aux_val, &
+        !  a_ant, b_ant, c_ant, d_ant, Jbra,Mbra, t, " val.sc:", valid_scalar
       endif
     end do
 !    end do !! Mbra loop
@@ -864,8 +864,8 @@ do aa = 1, VSsh_dim
       aux_val = hamil_H2cpd_DD(t, Jbra, a,b,c,d)
       if (dabs(aux_val) .GT. TOL) then
         kval_is_zero = .FALSE.
-        print "(A,F15.10,6I6)", "  !(BB)Elem is not 0, aux+=", aux_val, &
-          a_ant, b_ant, c_ant, d_ant, Jbra, t
+        !print "(A,F15.10,6I6)", "  !(BB)Elem is not 0, aux+=", aux_val, &
+        !  a_ant, b_ant, c_ant, d_ant, Jbra, t
       endif
     enddo
 
@@ -1005,7 +1005,7 @@ do aa = 1, VSsh_dim
   enddo
   enddo ! Jbra loop
 
-  print "(A)", "END LOOP JLS <ab cd> rearrange for tensor components"
+  !print "(A)", "END LOOP JLS <ab cd> rearrange for tensor components"
   !! WRITE the final result of the loop for each block ============
   do KK = 0, TENSOR_ORD
     if (all_zero(KK)) cycle
@@ -1028,8 +1028,7 @@ do aa = 1, VSsh_dim
     endif
   enddo
 
-  print "(A)", "   stage 1 completed"
-
+  !!!  WRITING the matrix Element values of all DD and DD+BB files
   do Jbra = Jb_min, Jb_max
     do Jket = Jk_min, Jk_max
       KKmin = min(abs(Jbra - Jket), TENSOR_ORD)
@@ -1062,7 +1061,7 @@ do aa = 1, VSsh_dim
             endselect
 
 !            print "(A,4I3)", "    Nshell::", Na, Nb, Nc, Nd
-            print "(A,2F15.9)","    In:",aux_3,hamil_H2cpd_DD(tt,Jbra,a,b,c,d)
+!            print "(A,2F15.9)","    In:",aux_3,hamil_H2cpd_DD(tt,Jbra,a,b,c,d)
             if (t .EQ. 2) then ! print the permutations (for the pnpn)
               aux_2 = auxHamilRed(2,KK,ind_jm_b,ind_jm_k)
               aux_3 = auxHamilRed(3,KK,ind_jm_b,ind_jm_k)
