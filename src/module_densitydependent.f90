@@ -358,7 +358,8 @@ read(runit,*) bogo_label
 do i = 1, HOsp_dim
   do j = 1, HOsp_dim
     read(runit,*) aux_real
-    fixed_rearrang_field(j,i) = complex(aux_real, 0.0d0)
+    fixed_rearrang_field(j,i) = cmplx(aux_real, 0.0d0)
+    print "(F15.9)", fixed_rearrang_field(j,i)
   enddo
 enddo
 USING_FIXED_REARRANGEMENT = .TRUE.
@@ -540,32 +541,6 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
 
   print "(A)", " * Setting up DD module [DONE]"
   print "(A,L1)", " * DOING_PROJECTION (for DD) = ", DOING_PROJECTION
-
-  !!! TEST FOR COMPLEX  =======================================================
-!  n = 315 / 4
-!  x1 = 4 * pi / n
-!  x2 = 1.5
-!  ALP = 0.33333
-!  print "(/,A)", " *** Test for complex roots and acos"
-!  do i = 1, n
-!    y1 = (i-1) * x1
-!    z  = cmplx(x2*cos(y1), x2*sin(y1))
-!    r  = sqrt(dreal(z)**2 + dimag(z)**2)
-!    a  = acos(dreal(z)/ r)
-!    !a2 = 0.0d0
-!    if (dimag(z) .lt. 0.0) then
-!      !a2 = ((1.0d0 - (dimag(z)/(dabs(dimag(z))))) / 2) * 2*(pi - a)
-!      a = a + 2*(pi - a)
-!    endif
-!    !a = a + a2
-!
-!    x3 = r ** ALP
-!    y3 = a * ALP
-!    print "(I3,4F10.6,A,2F10.6,1F5.1)",i,real(z), imag(z), r, a, " ==(b)", &
-!      x2, y1, 2 * a / pi + 1
-!
-!  enddo
-  !!!  ========================================================================
 
 end subroutine set_densty_dependent
 
