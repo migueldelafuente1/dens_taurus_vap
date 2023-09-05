@@ -1000,7 +1000,7 @@ do aa = 1, VSsh_dim
       write(300+KK, fmt='(A,4I6,4I3)') &
         '0 5', a_ant, b_ant, c_ant, d_ant, J1, J2, J3, J4
     else
-      !if (.NOT.valid_scalar) cycle
+      if (.NOT.valid_scalar) cycle
       write(300, fmt='(A,4I6,2I3)') ' 0 5', a_ant, b_ant, c_ant, d_ant, &
          max(Jb_min, Jk_min), min(Jb_max, Jk_max)
       write(299, fmt='(A,4I6,2I3)') ' 0 5', a_ant, b_ant, c_ant, d_ant, &
@@ -1062,19 +1062,20 @@ do aa = 1, VSsh_dim
             else
               write(299,fmt='(F15.10)',advance='no') aux_4
             endif
-          endif !! K=0
 
-          !! Parts for the Hamil DD only -----------------------------------
-          if (t .EQ. 2) then ! print the permutations (for the pnpn)
-            aux_2 = auxHamilRed(2,KK,ind_jm_b,ind_jm_k)
-            aux_3 = auxHamilRed(3,KK,ind_jm_b,ind_jm_k)
-            write(300+KK,fmt='(4F15.10)',advance='no') aux_2,aux_3,aux_3,aux_2
-          else if (t .EQ. 3) then
-            cycle
-          else
-            write(300+KK,fmt='(F15.10)',advance='no') aux_1
+          else !! KK >= 1 for tensor componets
+            !! Parts for the Hamil DD only -----------------------------------
+            if (t .EQ. 2) then ! print the permutations (for the pnpn)
+              aux_2 = auxHamilRed(2,KK,ind_jm_b,ind_jm_k)
+              aux_3 = auxHamilRed(3,KK,ind_jm_b,ind_jm_k)
+              write(300+KK,fmt='(4F15.10)',advance='no')aux_2,aux_3,aux_3,aux_2
+            else if (t .EQ. 3) then
+              cycle
+            else
+              write(300+KK,fmt='(F15.10)',advance='no') aux_1
+            endif
+            !! Parts for the Hamil DD only -----------------------------------
           endif
-          !! Parts for the Hamil DD only -----------------------------------
         enddo ! t iter
 
         !write(300+KK,*) ''
