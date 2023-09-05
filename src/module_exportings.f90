@@ -841,13 +841,14 @@ do aa = 1, VSsh_dim
   auxHamilRed = zero
   all_zero(KK) = .TRUE.
   kval_is_zero = .TRUE.
+  Mbra = 0
   do Jbra = max(Jb_min, Jk_min), min(Jb_max, Jk_max)
-    do Mbra = -Jbra, Jbra
-    ind_jm_b = angular_momentum_index(Jbra, 0, .FALSE.)
+!    do Mbra = -Jbra, Jbra
+    ind_jm_b = angular_momentum_index(Jbra, Mbra, .FALSE.)
     do t = 1, 4
       aux_val = hamilJM(t, ind_jm_b, ind_jm_b, ind_sab, ind_scd)
       if (dabs(aux_val) .GT. TOL) then
-          aux_val = aux_val / (2*Jbra + 1.0d0) ! factor for the Reduced ME
+!          aux_val = aux_val / (2*Jbra + 1.0d0) ! factor for the Reduced ME
         auxHamilRed(t,0,ind_jm_b,ind_jm_b) = &
             auxHamilRed(t,0,ind_jm_b,ind_jm_b) + aux_val
 
@@ -856,7 +857,7 @@ do aa = 1, VSsh_dim
           a_ant, b_ant, c_ant, d_ant, Jbra,Mbra, t, " val.sc:", valid_scalar
       endif
     end do
-    end do !! Mbra loop
+!    end do !! Mbra loop
     !! Second loop to see if there is any BB matrix element
     !! In case BB element /=0 and DD =0 to not be ignored
     do t = 0, 5
@@ -868,9 +869,10 @@ do aa = 1, VSsh_dim
         kval_is_zero = .FALSE.
         print "(A,F15.10,6I6)", "  !(BB)Elem is not 0, aux+=", aux_val, &
           a_ant, b_ant, c_ant, d_ant, Jbra, t
-        if (.NOT.kval_is_zero) all_zero(0) = .FALSE.
       endif
     enddo
+
+    if (.NOT.kval_is_zero) all_zero(0) = .FALSE.
     !!!
   enddo
   print "(A)", ""
