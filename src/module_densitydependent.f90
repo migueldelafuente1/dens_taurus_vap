@@ -328,6 +328,7 @@ if ( is_exist ) then
   OPEN(runit, FILE=file_input, FORM="FORMATTED", STATUS="OLD", ACTION="READ")
   print "(A)", " Initial rearrangement field present, reading from file."
 else
+  print "(A)", " Initial rearrangement field not found."
   return
 endif
 
@@ -361,6 +362,7 @@ do i = 1, HOsp_dim
   enddo
 enddo
 USING_FIXED_REARRANGEMENT = .TRUE.
+!! TODO: REARRANGE THE rearrange field if the order of the shells doesn't match
 
 close (runit, status='keep')
 deallocate(HOsh_na0)
