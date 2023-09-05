@@ -646,7 +646,7 @@ integer      :: a_ant,b_ant,c_ant,d_ant, t, tt, &
                 ind_jm_b, ind_jm_k, ind_sab, ind_scd, delta_ab, delta_cd,&
                 TENSOR_ORD = 2, KK, MM, KKmin, KKmax, &
                 a_eq_b, a_eq_c, c_eq_d, b_eq_d, J1,J2,J3,J4, &
-                aa, bb, cc, dd, &
+                aa, bb, cc, dd, ind_j0, &
                 Sbra,Sket,Lbra,Lket,Lb_min,Lk_min,Lb_max,Lk_max,Sk_min,Sk_max,&
                 a_con,b_con,c_con,d_con, dim_jm,dim_sh
 logical      :: kval_is_zero, valid_scalar
@@ -908,15 +908,16 @@ do aa = 1, VSsh_dim
 
             if (abs(aux_val) .GT. 1.0d-9) kval_is_zero = .FALSE.
 
-            auxHamilRed(t,Jbra, ind_jm_b, ind_jm_k) = &
-              auxHamilRed(t,Jbra, ind_jm_b, ind_jm_k) + aux_val
+            ind_j0 = angular_momentum_index(Jbra, 0, .FALSE.)
+            auxHamilRed(t,Jbra, ind_j0, ind_j0) = &
+              auxHamilRed(t,Jbra, ind_j0, ind_j0) + aux_val
           enddo
           if (all_zero(KK)) all_zero(KK) = kval_is_zero ! modify just if all was zero
 
           cycle
         end if !! ---------------------------------------------------
 
-
+        !!! From this point for the tensor orders  KK >= 1  ---------
         do Sbra = 0, 1
           Lb_min = abs(Jbra - Sbra)
           Lb_max =     Jbra + Sbra
