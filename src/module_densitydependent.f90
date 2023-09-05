@@ -358,12 +358,12 @@ read(runit,*) bogo_label
 do i = 1, HOsp_dim
   do j = 1, HOsp_dim
     read(runit,*) aux_real
-    fixed_rearrang_field(j,i) = cmplx(aux_real, 0.0d0)
-    if (dabs(aux_real).GT. 1.0d-07) then
-      print "(F21.15)", dreal(fixed_rearrang_field(j,i))
-    else
-      print "(D23.15)", dreal(fixed_rearrang_field(j,i))
-    endif
+    fixed_rearrang_field(j,i) = dcmplx(aux_real, 0.0d0)
+!    if (dabs(aux_real).GT. 1.0d-07) then
+!      print "(F21.15)", dreal(fixed_rearrang_field(j,i))
+!    else
+!      print "(D23.15)", dreal(fixed_rearrang_field(j,i))
+!    endif
   enddo
 enddo
 USING_FIXED_REARRANGEMENT = .TRUE.
