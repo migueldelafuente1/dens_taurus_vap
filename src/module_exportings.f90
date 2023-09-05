@@ -863,9 +863,6 @@ do aa = 1, VSsh_dim
     do t = 0, 5
       aux_val = hamil_H2cpd_DD(t, Jbra, a,b,c,d)
       if (dabs(aux_val) .GT. TOL) then
-        auxHamilRed(t,0,ind_jm_b,ind_jm_b) = &
-            auxHamilRed(t,0,ind_jm_b,ind_jm_b) + aux_val
-
         kval_is_zero = .FALSE.
         print "(A,F15.10,6I6)", "  !(BB)Elem is not 0, aux+=", aux_val, &
           a_ant, b_ant, c_ant, d_ant, Jbra, t
@@ -877,6 +874,7 @@ do aa = 1, VSsh_dim
   enddo
   print "(A)", ""
 
+  !!! EXPORT FOR THE SCALAR DD TERM.
   if (.NOT.kval_is_zero) then
     write(298, fmt='(A,4I6,2I3)') ' 0 5', a_ant,b_ant,c_ant,d_ant, &
                                   max(Jb_min,Jk_min), min(Jb_max,Jk_max)
@@ -894,7 +892,7 @@ do aa = 1, VSsh_dim
         aux_2 ,&! + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
         aux_3 ,&!+ hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
         aux_3 ,&!+ hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
-        aux_2 !+ hamil_H2cpd_DD(4, Jbra, a,b,c,d)
+        aux_2   !+ hamil_H2cpd_DD(4, Jbra, a,b,c,d)
       aux_4 = auxHamilRed(4,0,ind_jm_b,ind_jm_b)
       write(298,fmt='(F15.10)', advance='no') &
         aux_4 !+ hamil_H2cpd_DD(5, Jbra, a,b,c,d)
@@ -927,11 +925,11 @@ do aa = 1, VSsh_dim
             aux_val = hamilJM(t,ind_jm_b, ind_jm_k, ind_sab, ind_scd)
             aux_val = aux_val / (2.0d0*Jbra + 1)
 
-            if (abs(aux_val) .GT. 1.0d-9) kval_is_zero = .FALSE.
+            if (abs(aux_val) .GT. TOL) kval_is_zero = .FALSE.
 
             ind_j0 = angular_momentum_index(Jbra, 0, .FALSE.)
             auxHamilRed(t,KK, ind_j0, ind_j0) = &
-              auxHamilRed(t,KK, ind_j0, ind_j0) + aux_val
+                auxHamilRed(t,KK, ind_j0, ind_j0) + aux_val
           enddo
           if (all_zero(KK)) all_zero(KK) = kval_is_zero ! modify just if all was zero
 
@@ -1030,6 +1028,8 @@ do aa = 1, VSsh_dim
     endif
   enddo
 
+  print "(A)", "   stage 1 completed"
+
   do Jbra = Jb_min, Jb_max
     do Jket = Jk_min, Jk_max
       KKmin = min(abs(Jbra - Jket), TENSOR_ORD)
@@ -1039,21 +1039,17 @@ do aa = 1, VSsh_dim
       ind_jm_b = angular_momentum_index(Jbra, 0, .FALSE.)
       ind_jm_k = angular_momentum_index(Jket, 0, .FALSE.)
 
-!      if ((delta_ab > TOL).OR.(delta_cd > TOL)) then
-!        phs_pnk0 = (-1)**(Jbra)
-!        endif
-
       do KK = KKmin, KKmax
         if (all_zero(KK)) cycle
         !! Write line
         if (KK > 0) then
           write(300+KK,fmt='(2I4)',advance='no')Jbra, Jket
         end if
-        do t = 1, 4
 
+        do t = 1, 4
           aux_1 = auxHamilRed(t,KK,ind_jm_b,ind_jm_k)
 
-          if (KK == 0) then
+          if (KK .EQ. 0) then
             if (.NOT.valid_scalar) cycle
             !! select the import hamil 2B J-scheme
             select case(t)
@@ -1066,8 +1062,8 @@ do aa = 1, VSsh_dim
             endselect
 
 !            print "(A,4I3)", "    Nshell::", Na, Nb, Nc, Nd
-!              print "(A,2F15.9)","    In:",aux_3,hamil_H2cpd_DD(tt,Jbra,a,b,c,d)
-            if (t == 2) then ! print the permutations (for the pnpn)
+            print "(A,2F15.9)","    In:",aux_3,hamil_H2cpd_DD(tt,Jbra,a,b,c,d)
+            if (t .EQ. 2) then ! print the permutations (for the pnpn)
               aux_2 = auxHamilRed(2,KK,ind_jm_b,ind_jm_k)
               aux_3 = auxHamilRed(3,KK,ind_jm_b,ind_jm_k)
               write(299,fmt='(4F15.10)',advance='no') &
@@ -1079,7 +1075,6 @@ do aa = 1, VSsh_dim
               cycle
             else !(t = 1, 4)
               aux_4 = auxHamilRed(t,KK,ind_jm_b,ind_jm_k)
-              !! particle index function:: 5*(t-1)/3 =   5(t=4); 0(t=1)
               aux_4 = aux_4 + hamil_H2cpd_DD(tt, Jbra, a,b,c,d)
               write(299,fmt='(F15.10)',advance='no') aux_4
             endif
@@ -1094,13 +1089,12 @@ do aa = 1, VSsh_dim
             cycle
           else
             write(300+KK,fmt='(F15.10)',advance='no') aux_1
-
           !! Parts for the Hamil DD only -----------------------------------
           endif
         enddo ! t iter
 
         !write(300+KK,*) ''
-        if (KK==0) then
+        if (KK .EQ. 0) then
           if (.NOT.valid_scalar) cycle
           write(299,*) ''
           write(300,*) ''
