@@ -872,7 +872,6 @@ do aa = 1, VSsh_dim
     if (.NOT.kval_is_zero) all_zero(0) = .FALSE.
     !!!
   enddo
-  print "(A)", ""
 
   !!! EXPORT FOR THE SCALAR DD TERM.
   if (.NOT.kval_is_zero) then
