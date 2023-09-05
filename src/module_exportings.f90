@@ -909,8 +909,8 @@ do aa = 1, VSsh_dim
             if (abs(aux_val) .GT. 1.0d-9) kval_is_zero = .FALSE.
 
             ind_j0 = angular_momentum_index(Jbra, 0, .FALSE.)
-            auxHamilRed(t,Jbra, ind_j0, ind_j0) = &
-              auxHamilRed(t,Jbra, ind_j0, ind_j0) + aux_val
+            auxHamilRed(t,KK, ind_j0, ind_j0) = &
+              auxHamilRed(t,KK, ind_j0, ind_j0) + aux_val
           enddo
           if (all_zero(KK)) all_zero(KK) = kval_is_zero ! modify just if all was zero
 
