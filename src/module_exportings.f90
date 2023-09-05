@@ -3127,14 +3127,14 @@ open(utw, file=filename, status='replace', action='write',form=fileform)
 
 !!! Writes the wave function and model space
 
-write(utw,*) HOsh_dim
+write(utw,fmt="(I3)") HOsh_dim
 do i = 1, HOsh_dim
-  write(utw,*) HOsh_na(i)
+  write(utw,fmt="(I6)") HOsh_na(i)
 enddo
-write(utw,*) 1234567890
+write(utw,fmt="(I10)") 1234567890
 do i = 1, HOsp_dim
   do j = 1, HOsp_dim
-    write(utw,*) dreal(rearrang_field(j,i))
+    write(utw,fmt="(F20.15)") dreal(rearrang_field(j,i))
   enddo
 enddo
 
