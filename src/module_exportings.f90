@@ -858,7 +858,7 @@ do aa = 1, VSsh_dim
 !    end do
   enddo
   if (.NOT.kval_is_zero) then
-    write(298, fmt='(A,4I8,2I3)') ' 0 5', a_ant,b_ant,c_ant,d_ant, &
+    write(298, fmt='(A,4I6,2I3)') ' 0 5', a_ant,b_ant,c_ant,d_ant, &
                                     max(Jb_min,Jk_min), min(Jb_max,Jk_max)
 
     do Jbra = max(Jb_min, Jk_min), min(Jb_max, Jk_max)
@@ -878,15 +878,14 @@ do aa = 1, VSsh_dim
       aux_4 = auxHamilRed(4,0,ind_jm_b,ind_jm_b)
       write(298,fmt='(F15.10)', advance='no') &
         aux_4 !+ hamil_H2cpd_DD(5, Jbra, a,b,c,d)
-      write(298,*) ''
+      write(298,fmt='(A)') ''
     enddo
   endif
 
   !! ======= Evaluate the rearrange for tensor components on the D1S
-  !  print *, ""
-!  print "(A)", " ** begin recoupling."
-!  print "(A,4I5,2(A,2I3))", " abcd ", a_ant,b_ant,c_ant,d_ant, " lims bra:",&
-!    Jb_min,Jb_max, " ket:", Jk_min,Jk_max
+  !print *, ""
+  !print "(A,4I5,2(A,2I3))", " abcd ", a_ant,b_ant,c_ant,d_ant, " lims bra:",&
+  !  Jb_min,Jb_max, " ket:", Jk_min,Jk_max
   auxHamilRed = zero
   do Jbra = Jb_min, Jb_max
   do Mbra = -Jbra, Jbra
@@ -900,13 +899,13 @@ do aa = 1, VSsh_dim
         ind_jm_k = angular_momentum_index(Jket, Mket, .FALSE.)
 
         if (KK .EQ. 0) then  !! ------------------------------------
-!          print "(A,I3,4I5)", "     .. KK  scalar:", KK, Jbra,Mbra, Jket,Mket
           kval_is_zero = .TRUE.
           if (Mbra .NE. Mket) cycle
           if (Jbra .NE. Jket) cycle
 
           do t = 1, 4
             aux_val = hamilJM(t,ind_jm_b, ind_jm_k, ind_sab, ind_scd)
+            aux_val = aux_val / (2.0d0*Jbra + 1)
 
             if (abs(aux_val) .GT. 1.0d-9) kval_is_zero = .FALSE.
 
@@ -919,7 +918,6 @@ do aa = 1, VSsh_dim
           cycle
         end if !! ---------------------------------------------------
 
-!        print "(A,I3,4I5)", "     .. KK > 1:", KK, Jbra,Mbra, Jket,Mket
         !!! From this point for the tensor orders  KK >= 1  ---------
         do Sbra = 0, 1
           Lb_min = abs(Jbra - Sbra)
@@ -999,13 +997,13 @@ do aa = 1, VSsh_dim
       J2 = min(Jb_max , Jk_max)
       J1 = max(J3 - KK, min(Jb_min, Jk_min))
       J4 = min(J2 + KK, max(Jb_max, Jk_max))
-      write(300+KK, fmt='(A,4I8,4I3)') &
+      write(300+KK, fmt='(A,4I6,4I3)') &
         '0 5', a_ant, b_ant, c_ant, d_ant, J1, J2, J3, J4
     else
-      if (.NOT.valid_scalar) cycle
-      write(300, fmt='(A,4I8,2I3)') ' 0 5', a_ant, b_ant, c_ant, d_ant, &
+      !if (.NOT.valid_scalar) cycle
+      write(300, fmt='(A,4I6,2I3)') ' 0 5', a_ant, b_ant, c_ant, d_ant, &
          max(Jb_min, Jk_min), min(Jb_max, Jk_max)
-      write(299, fmt='(A,4I8,2I3)') ' 0 5', a_ant, b_ant, c_ant, d_ant, &
+      write(299, fmt='(A,4I6,2I3)') ' 0 5', a_ant, b_ant, c_ant, d_ant, &
          max(Jb_min, Jk_min), min(Jb_max, Jk_max)
     endif
   enddo
