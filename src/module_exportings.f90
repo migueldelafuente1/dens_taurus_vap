@@ -466,12 +466,12 @@ print "(/,A,F15.6)", "  E_core=", E_core
 
 !! WRITE IN THE 1 BODY FILES
 open (297, file="D1S_vs_scalar.sho")
-open (298, file="D1S_vs_scalar.01b")
+open (296, file="D1S_vs_scalar.01b")
 write(297, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2I5)') &
   'Density 2BME on explicit HFB wf from taurus, Scalar', &
   ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=', x0_DD_FACTOR, ' ALPHA=', alpha_DD, &
   '  CORE(n,p):', CORE_NUMBER, CORE_NUMBER
-write(298, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2I5)') &
+write(296, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2I5)') &
   'Density 2BME on explicit HFB wf from taurus, Scalar', &
   ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=', x0_DD_FACTOR, ' ALPHA=', alpha_DD, &
   '  CORE(n,p):', CORE_NUMBER, CORE_NUMBER
@@ -488,14 +488,14 @@ write(297, fmt="(2I4,F12.6)") INT(CORE_NUMBER), INT(CORE_NUMBER)!, E_core
 write(297, fmt="(I2,F15.9)") 2, HO_hw
 
 !! ZERO BODY / 1-BODY FILE
-write(298, fmt="(F12.6)") E_core
+write(296, fmt="(F12.6)") E_core
 do a_sh_vs = 1, VSsh_dim
-  write(298, fmt="(2I7,2F12.6)") &
+  write(296, fmt="(2I7,2F12.6)") &
     VSsh_list(a_sh_vs), VSsh_list(a_sh_vs), ep_sp_vs(a_sh_vs), en_sp_vs(a_sh_vs)
 enddo
 
 close(297)
-close(298)
+close(296)
 
 deallocate(T_core, V_core, ep_sp_vs, en_sp_vs, t_sp_vs)
 deallocate(hamil_DDcpd)
@@ -916,8 +916,8 @@ do aa = 1, VSsh_dim
           if (all_zero(KK)) all_zero(KK) = kval_is_zero ! modify just if all was zero
 
           cycle
-        end if !! ---------------------------------------------------
-
+!        end if !! ---------------------------------------------------
+        else
         !!! From this point for the tensor orders  KK >= 1  ---------
         do Sbra = 0, 1
           Lb_min = abs(Jbra - Sbra)
@@ -977,6 +977,8 @@ do aa = 1, VSsh_dim
             enddo ! S ket_ loop
           enddo ! L bra_ loop
         enddo ! Sbra_ loop
+
+        endif !! K selector
 
       enddo
       enddo ! J ket_ loop
@@ -1044,10 +1046,6 @@ do aa = 1, VSsh_dim
             end select
 
 !            print "(A,4I3)", "    Nshell::", Na, Nb, Nc, Nd
-            aux_4 = aux_1
-            if (implement_H2cpd_DD) then
-              aux_4 = aux_4 + hamil_H2cpd_DD(tt, Jbra, a,b,c,d)
-            endif
 !              print "(A,2F15.9)","    In:",aux_3,hamil_H2cpd_DD(tt,Jbra,a,b,c,d)
             if (t == 2) then ! print the permutations (for the pnpn)
               aux_2 = auxHamilRed(2,KK,ind_jm_b,ind_jm_k)
@@ -1059,22 +1057,25 @@ do aa = 1, VSsh_dim
                 aux_2 + hamil_H2cpd_DD(4, Jbra, a,b,c,d)
             else if (t .EQ. 3) then
               cycle
-            else
+            else !(t = 1, 4)
+              aux_4 = auxHamilRed(t,KK,ind_jm_b,ind_jm_k)
+              !! particle index function:: 5*(t-1)/3 =   5(t=4); 0(t=1)
+              aux_4 = aux_4 + hamil_H2cpd_DD(5*(t-1)/3, Jbra, a,b,c,d)
               write(299,fmt='(F15.10)',advance='no') aux_4
             endif
+          endif
 
-          else !! KK >= 1 for tensor componets
-            !! Parts for the Hamil DD only -----------------------------------
-            if (t .EQ. 2) then ! print the permutations (for the pnpn)
-              aux_2 = auxHamilRed(2,KK,ind_jm_b,ind_jm_k)
-              aux_3 = auxHamilRed(3,KK,ind_jm_b,ind_jm_k)
-              write(300+KK,fmt='(4F15.10)',advance='no')aux_2,aux_3,aux_3,aux_2
-            else if (t .EQ. 3) then
-              cycle
-            else
-              write(300+KK,fmt='(F15.10)',advance='no') aux_1
-            endif
-            !! Parts for the Hamil DD only -----------------------------------
+          !! Parts for the Hamil DD only -----------------------------------
+          if (t .EQ. 2) then ! print the permutations (for the pnpn)
+            aux_2 = auxHamilRed(2,KK,ind_jm_b,ind_jm_k)
+            aux_3 = auxHamilRed(3,KK,ind_jm_b,ind_jm_k)
+            write(300+KK,fmt='(4F15.10)',advance='no')aux_2,aux_3,aux_3,aux_2
+          else if (t .EQ. 3) then
+            cycle
+          else
+            write(300+KK,fmt='(F15.10)',advance='no') aux_1
+
+          !! Parts for the Hamil DD only -----------------------------------
           endif
         enddo ! t iter
 
