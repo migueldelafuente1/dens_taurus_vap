@@ -888,15 +888,34 @@ do aa = 1, VSsh_dim
 !    Jb_min,Jb_max, " ket:", Jk_min,Jk_max
   auxHamilRed = zero
   do Jbra = Jb_min, Jb_max
-    Mbra = 0 !! TODO !!ma + mb !!
+  do Mbra = -Jbra, Jbra
+    !Mbra = 0 !! TODO !!ma + mb !! no se puede distinguir las componentes a/b sp
     ind_jm_b = angular_momentum_index(Jbra, Mbra, .FALSE.)
-    J1 = angular_momentum_index(Jbra, 0, .FALSE.)
 
     do KK = 0, TENSOR_ORD
       do Jket = Jk_min, Jk_max
-        Mket = 0 !!mc + md !!
+      do Mket = -Mket, Mket
+        !Mket = 0 !!mc + md !!
         ind_jm_k = angular_momentum_index(Jket, Mket, .FALSE.)
-        J2 = angular_momentum_index(Jket, 0, .FALSE.)
+
+        if (KK .EQ. 0) then  !! ------------------------------------
+          kval_is_zero = .TRUE.
+          if (Mbra .NE. Mket) cycle
+          if (Jbra .NE. Jket) cycle
+
+          do t = 1, 4
+            aux_val = hamilJM(t,ind_jm_b, ind_jm_k, ind_sab, ind_scd)
+
+            if (abs(aux_val) .GT. 1.0d-9) kval_is_zero = .FALSE.
+
+            auxHamilRed(t,Jbra, ind_jm_b, ind_jm_k) = &
+              auxHamilRed(t,Jbra, ind_jm_b,i nd_jm_k) + aux_val
+          enddo
+          if (all_zero(KK)) all_zero(KK) = kval_is_zero ! modify just if all was zero
+
+          cycle
+        end if !! ---------------------------------------------------
+
 
         do Sbra = 0, 1
           Lb_min = abs(Jbra - Sbra)
@@ -911,6 +930,7 @@ do aa = 1, VSsh_dim
               Lk_max = min(    Jket + Sket ,     Jbra + Sket ,     Lbra - KK )
 
               do Lket = Lk_min, Lk_max
+
                 !!! Calculate the 6j coeffs LS-J to k on bra and ket
                 call Wigner6JCoeff(2*Lbra, 2*Sbra, 2*Jbra, &
                                    2*Sket, 2*Lket, 2*KK  , aux_1)
@@ -955,9 +975,12 @@ do aa = 1, VSsh_dim
             enddo ! S ket_ loop
           enddo ! L bra_ loop
         enddo ! Sbra_ loop
+
+      enddo
       enddo ! J ket_ loop
 
     enddo ! k loop
+  enddo
   enddo ! Jbra loop
 
 !  print "(A)", "END LOOP JLS <ab cd> rearrange for tensor components"
