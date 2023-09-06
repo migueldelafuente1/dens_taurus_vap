@@ -1083,7 +1083,7 @@ do aa = 1, VSsh_dim
           if (t .EQ. 2) then ! print the permutations (for the pnpn)
             aux_2 = auxHamilRed(2,KK,ind_jm_b,ind_jm_k)
             aux_3 = auxHamilRed(3,KK,ind_jm_b,ind_jm_k)
-            write(300+KK,fmt='(4F15.10)',advance='no')aux_2,aux_3,aux_3,aux_2
+            write(300+KK,fmt='(4F15.10)',advance='no') aux_2,aux_3,aux_3,aux_2
           else if (t .EQ. 3) then
             cycle
           else
@@ -1095,10 +1095,10 @@ do aa = 1, VSsh_dim
         !write(300+KK,*) ''
         if (KK .EQ. 0) then
           if (.NOT.valid_scalar) cycle
-          write(299,*) ''
-          write(300,*) ''
+          write(299,"(A)") ''
+          write(300,"(A)") ''
         else
-          write(300+KK,*) ''
+          write(300+KK,"(A)") ''
         endif
 
       enddo ! K tensor Loop
