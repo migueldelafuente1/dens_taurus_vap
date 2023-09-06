@@ -687,7 +687,7 @@ write(299, fmt="(A,A,F9.3,A,F10.5,A,F5.3,A,2F5.2)") &
     '  CORE(n,p):', valence_N, valence_Z
 
 !! allocate the big JM, Jm', ab, cd array for the matrix elements
-dim_jm = angular_momentum_index(2*HO_2jmax,2*HO_2jmax,.FALSE.)
+dim_jm = angular_momentum_index(HO_2jmax,HO_2jmax,.FALSE.)
 dim_sh = two_shell_states_index(maxval(HOsp_sh),minval(HOsp_sh))
 
 print *, " ----------------------------------------------- "
