@@ -690,15 +690,16 @@ write(299, fmt="(A,A,F9.3,A,F10.5,A,F5.3,A,2F5.2)") &
 dim_jm = angular_momentum_index(2*HO_2jmax,2*HO_2jmax,.FALSE.)
 dim_sh = two_shell_states_index(maxval(HOsp_sh),minval(HOsp_sh))
 
-allocate(hamilJM(4, dim_jm,dim_jm, dim_sh,dim_sh))
-hamilJM = zzero
-allocate(auxHamilRed(4,0:TENSOR_ORD, dim_jm,dim_jm))
-
 print *, " ----------------------------------------------- "
 print "(A,2I5)"," * Max vals: 2sh, 2jmax", maxval(HOsp_sh), 2*HO_2jmax
 print "(A,2I5)","Dimensions hamilJM [4] [jm,]2 [dim_sh,]2 :", dim_jm, dim_sh
 print "(A,3I5)","Dimensions auxHamilRed [4] [k] [jm,]2    :", TENSOR_ORD,dim_jm
 print *, " ----------------------------------------------- "
+
+allocate(hamilJM(4, dim_jm,dim_jm, dim_sh,dim_sh))
+hamilJM = zzero
+allocate(auxHamilRed(4,0:TENSOR_ORD, dim_jm,dim_jm))
+
 !! define the reciprocal shells (j=l+1/2 -> j'=l-1/2) -----------------------
 allocate(reciprocal_nlj_shell(VSsh_dim))
 !print "(A)", "[TEST] Reciprocal shells"
@@ -1118,10 +1119,11 @@ close(299)
 close(298)
 
 print "(/,A)", " * [OK] Printing 2B Matrix elements DD from WF_HFB"
-print "(/,A,7(/,A))", " Exported 2-body DD matrix elements from the WF_HFB: ", &
+print "(/,A,9(/,A))", " Exported 2-body DD matrix elements from the WF_HFB: ", &
   "--------------------------------------------",   "   D1S_vs_red.2b", &
+  "   D1S_vs_scalar.sho (hamil_type=4)", "   D1S_vs_scalar.01b", &
   "   D1S_vs_scalar.2b", "   onlyDD_D1S_scalar.2b", "   onlyDD_D1S_k1.2b", &
-  "   onlyDD_D1S_k2.2b", "   final_rearrangement.txt"
+  "   onlyDD_D1S_k2.2b", "   rearrangement_final.txt"
 
 end subroutine print_DD_matrix_elements
 
