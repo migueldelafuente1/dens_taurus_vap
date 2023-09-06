@@ -299,9 +299,14 @@ if (exportValSpace)then
   !!! Exclude core for Full space M.E. exportings
   !!! NHO_co = 0 -> a 4He core, if the current nucleus is not N=Z=2, omit core.
   if (NHO_co .EQ. 0) then
-  if ((dabs(valence_Z-2).GT.1.0d-6) .OR. (dabs(valence_N-2).GT.1.0d-6)) then
-    NHO_co = -1
-  endif
+    if ((dabs(valence_Z-2).GT.1.0d-6) .OR. (dabs(valence_N-2).GT.1.0d-6)) then
+      NHO_co = -1
+    else
+      !! case where we have 4He but we don't want the core (0s_ state present)
+      do aa = 1, VSsh_dim
+        if (VSsh_list(aa) .EQ. 1) NHO_co = -1
+      enddo
+    endif
   endif
 
   print "(A,2I6)", '    ... N-shell HO for core(max)/vs(max):',NHO_co,NHO_vs
