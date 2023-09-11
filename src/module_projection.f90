@@ -277,10 +277,10 @@ do nangle = nangle_min, nangle_max
 !cmpi  if ( nangle_max == 0 ) exit
 !cmpi  if ( paral_myteamrank > 0 ) cycle
   !!! [CALCULATE PROJECTED DENSITY]
-  if (eval_density_dependent) then
+  if (EVAL_DENSITY_DEPENDENT) then
     call calculate_expectval_density(dens_rhoLR, dens_kappaLR, dens_kappaRL, &
                                      rot_over*weip*wein, ndim, iopt)
-    if (eval_explicit_fieldsDD) then
+    if (EVAL_EXPLICIT_FIELDS_DD) then
 	    call calculate_densityDep_hamiltonian(dens_rhoLR, &
 	                                          dens_kappaLR, dens_kappaRL, ndim)
       call calculate_fields_DD_explicit(dens_rhoLR, dens_kappaLR, dens_kappaRL,&

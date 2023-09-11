@@ -25,9 +25,9 @@ use Lebedev
 implicit none
 PUBLIC
 
-logical   :: eval_density_dependent = .TRUE.
-logical   :: eval_rearrangement     = .FALSE.
-logical   :: eval_explicit_fieldsDD = .FALSE.
+logical   :: EVAL_DENSITY_DEPENDENT = .TRUE.
+logical   :: EVAL_REARRANGEMENT     = .FALSE.
+logical   :: EVAL_EXPLICIT_FIELDS_DD= .FALSE.
 real(r64) :: t3_DD_CONST  = 0.0!= 1350.00d+00    ! constant of the DD term [MeV]
 real(r64) :: x0_DD_FACTOR = 0.0!= 1.0d+00        ! exchange factor of DD term
 real(r64) :: alpha_DD     = 0.0!=  0.33333d+00   ! power of the DD term
@@ -160,7 +160,7 @@ if ( is_exist ) then
 else
   print "(a,a)", "The DD file (input_DD_PARAMS.txt) can not be found. ", &
     "The module density dependent will be skipped."
-  eval_density_dependent = .FALSE.
+  EVAL_DENSITY_DEPENDENT = .FALSE.
   export_density = .FALSE.
   return
 endif
@@ -168,11 +168,11 @@ endif
 !! Reads the input parameters
 read(runit,formatST) str_
 read(runit,formatI1) str_, aux_int
-eval_density_dependent = aux_int.EQ.1
+EVAL_DENSITY_DEPENDENT = aux_int.EQ.1
 read(runit,formatI1) str_, aux_int
-eval_rearrangement = aux_int.EQ.1
+EVAL_REARRANGEMENT = aux_int.EQ.1
 read(runit,formatI1) str_, aux_int
-eval_explicit_fieldsDD = aux_int.EQ.1
+EVAL_EXPLICIT_FIELDS_DD = aux_int.EQ.1
 
 read(runit,formatEE) str_, t3_DD_CONST
 read(runit,formatEE) str_, x0_DD_FACTOR
@@ -248,9 +248,9 @@ allocate(r(r_dim))
 allocate(r_export(r_dim))
 print *,           '   Density dep. Interaction values  '
 print *,           '-----------------------------------------------'
-print '(A,L10)',   'eval_density_dependent =', eval_density_dependent
-print '(A,L10)',   'eval_rearrangement     =', eval_rearrangement
-print '(A,L10)',   'eval_explicit_fieldsDD =', eval_explicit_fieldsDD
+print '(A,L10)',   'eval_density_dependent =', EVAL_DENSITY_DEPENDENT
+print '(A,L10)',   'eval_rearrangement     =', EVAL_REARRANGEMENT
+print '(A,L10)',   'eval_explicit_fieldsDD =', EVAL_EXPLICIT_FIELDS_DD
 print '(A,F10.4)', 't3_DD_CONST (MeV fm-4) =', t3_DD_CONST
 print '(A,F10.6)', 'x0_DD_FACTOR           =', x0_DD_FACTOR
 print '(A,F10.6)', 'alpha_DD               =', alpha_DD
@@ -311,7 +311,7 @@ if (exportValSpace)then
 
   print "(A,2I6)", '    ... N-shell HO for core(max)/vs(max):',NHO_co,NHO_vs
 endif
-if (eval_explicit_fieldsDD) then
+if (EVAL_EXPLICIT_FIELDS_DD) then
   print '(A,3L10)', " [Explicit DD Field Eval.] Compute Full Valence Space =",&
     evalFullSPSpace
 endif
@@ -543,7 +543,7 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
   call import_DD_parameters
   call import_Rearrange_field_if_exist
 
-  if (.NOT.eval_density_dependent) then
+  if (.NOT.EVAL_DENSITY_DEPENDENT) then
     print "(A)", " * DD module is TURNED OFF, skip DD array setting."
     return
   endif
@@ -1349,7 +1349,7 @@ integer :: i_r, i_ang, ind_km, spO2
 real(r64)    :: radial
 complex(r64) :: ang_rea
 
-if (.NOT.eval_rearrangement) then
+if (.NOT.EVAL_REARRANGEMENT) then
   return
 endif
 rea_common_RadAng = zero
@@ -1799,7 +1799,7 @@ do i_r = 1, r_dim
       end if
 
       !! Loop for the Rearrangement term
-      if ((eval_rearrangement).AND.(eval_explicit_fieldsDD)) then
+      if ((EVAL_REARRANGEMENT).AND.(EVAL_EXPLICIT_FIELDS_DD)) then
         !!!! if (dreal(aux)**2 + dimag(aux)**2 < 1.0d-15) cycle
         !! NOTE: don't put a skip for the |aux|<1e-15, afect the tolerance of
         !! the sum, it doesn't match exactly with the field calculation.
@@ -1820,7 +1820,7 @@ do i_r = 1, r_dim
    enddo ! angular iter_
 enddo    ! radial  iter_
 
-if (eval_explicit_fieldsDD) then
+if (EVAL_EXPLICIT_FIELDS_DD) then
   TOP = abs(maxval(real(rearrangement_me)))
   LOW = abs(minval(real(rearrangement_me)))
   if (TOP > 1.0D+10) then !((TOP < 1.0D+10).AND.(LOW > 1.E-10)) then
@@ -1859,8 +1859,8 @@ end function matrix_element_v_DD
 !     MAJOR CHANGES ( cannot be used directly )                               !
 ! * Update May 10/23, modification of the hamiltonian evaluation for the      !
 ! valence space for exporting is used, the rearrangement part will not be     !
-! evaluated if it is not calculated both (eval_explicit_fieldsDD = TRUE) and  !
-! (eval_rearrangement = TRUE)                                                 !
+! evaluated if it is not calculated both (EVAL_EXPLICIT_FIELDS_DD = TRUE) and !
+! (EVAL_REARRANGEMENT = TRUE)                                                 !
 !-----------------------------------------------------------------------------!
 subroutine calculate_densityDep_hamiltonian(dens_rhoLR, dens_kappaLR, &
                                             dens_kappaRL, ndim)
@@ -1881,7 +1881,7 @@ real(r64), dimension(:), allocatable :: hamil_temp
 character(len=25) :: filename
 logical   :: ALL_ISOS
 
-ALL_ISOS = (.NOT.eval_explicit_fieldsDD)
+ALL_ISOS = (.NOT.EVAL_EXPLICIT_FIELDS_DD)
 !! NOTE: if not explicit evaluation of fields, the process was called to export v_DD
 !! if ALL_ISOS = .TRUE., this subroutine can only be called once !!
 
@@ -1989,7 +1989,7 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
               hamil_DD_H2(kk) = Vdec
             endif
 
-            if ((eval_rearrangement).AND.(eval_explicit_fieldsDD)) then
+            if ((EVAL_REARRANGEMENT).AND.(EVAL_EXPLICIT_FIELDS_DD)) then
               call calculate_rearrang_field_explicit(a, b, c, d, Vdec,&
                                                      dens_rhoLR, dens_kappaLR,&
                                                      dens_kappaRL, ndim)
@@ -2000,7 +2000,7 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
       enddo  !end loop d
     enddo  !end loop c
   enddo  !end loop b
-  if (.NOT.eval_explicit_fieldsDD) call progress_bar_iteration(aa, WBsp_dim/2)
+  if (.NOT.EVAL_EXPLICIT_FIELDS_DD) call progress_bar_iteration(aa, WBsp_dim/2)
 enddo  !end loop a
 
 !!! At the first iteration, the values of the hamiltonian are saved via file
@@ -2033,7 +2033,7 @@ if (ALL_ISOS) then
 
 else if (iteration < CONVERG_ITER) then !!! Normal Gradient DD dep. process ****
 
-  if ((iteration > 1).AND.(eval_explicit_fieldsDD)) then
+  if ((iteration > 1).AND.(EVAL_EXPLICIT_FIELDS_DD)) then
     deallocate(hamil_DD_H2, hamil_DD_abcd, hamil_DD_trperm)
   end if
 
@@ -2799,7 +2799,7 @@ do i = 1, HOsp_dim
     deltaRL(i,j) = deltaRL(i,j) + deltaRL_DD(i,j)
     !
     !! end
-    if (eval_rearrangement) then
+    if (EVAL_REARRANGEMENT) then
         hspLR(i,j) = hspLR(i,j) + gammaLR_DD(i,j)
         write(620, fmt='(A,F12.6)', advance='no') ' ',real(hspLR(i,j))
         hspLR(i,j) = hspLR(i,j) + (0.25d+00 * rearrang_field(i,j))
@@ -2847,7 +2847,7 @@ complex(r64) :: aux_d, aux_e, aux_p, aux_pnp, aux1, aux2, aux3, aux4
 real         :: X0M1
 
 REACommonFields = zero
-if (.NOT.eval_rearrangement) return
+if (.NOT.EVAL_REARRANGEMENT) return
 if (PRINT_GUTS) then
   open(665, file='BulkREA_elements.gut')
   write(665,fmt='(3A)') &
@@ -2989,7 +2989,7 @@ do Tac = 1, 4
   endif
 
   ! do rearrangement for pp, nn if proceeds
-  if((eval_rearrangement).AND.(Tac.LT.3)) then
+  if((EVAL_REARRANGEMENT).AND.(Tac.LT.3)) then
     hspLR(aa,cc) = hspLR(aa,cc) + rearrang_field(aa,cc)
     field_rearrRR_DD(aa,cc) = dreal(rearrang_field(aa,cc))
     ! this step is just to complete the matrix, the rearrangement is aa,cc as well
@@ -3066,7 +3066,7 @@ integral_factor = 4.0d0 * pi * t3_DD_CONST * integral_factor
 X0M1 = 1.0d0 - x0_DD_FACTOR
 
 !! Get the rad-ang function from the current densities for rearrangement
-if (eval_rearrangement) then
+if (EVAL_REARRANGEMENT) then
   call calculate_common_rearrang_bulkFields
 endif
 if (PRNT_) then
@@ -3165,7 +3165,7 @@ do a = 1, spO2
         enddo
 
         auxRea = zzero
-        if (eval_rearrangement) then
+        if (EVAL_REARRANGEMENT) then
           auxRea  = REACommonFields(i_r,i_ang) * dens_alpm1(i_r,i_ang)
           auxRea  = auxRea * rea_common_RadAng(a,c, i_r, i_ang)
           auxRea  = auxRea * dexp( (2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)

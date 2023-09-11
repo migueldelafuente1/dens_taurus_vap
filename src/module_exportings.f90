@@ -72,7 +72,7 @@ real(r64),    dimension(ndim,ndim), intent(in) :: dens_rhoRR, dens_kappaRR
 complex(r64), dimension(ndim,ndim) :: dens_rhoRRc, dens_kappaRRc
 integer  :: i, j
 
-if (.NOT.eval_density_dependent) return
+if (.NOT.EVAL_DENSITY_DEPENDENT) return
 print *, ""
 print "(A)", " [  SR] Exporting Hamiltonian and/or spatial density on the&
              & integration grid."
@@ -2859,7 +2859,7 @@ real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0, bogo_V0
 real(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR, dens_kappaRR
 real(r64), dimension(ndim,ndim) :: hspRR_eigenvect, U_trans, V_trans
 
-if (.NOT.eval_density_dependent) return
+if (.NOT.EVAL_DENSITY_DEPENDENT) return
 print "(A)", "  1[  ] print_quasipartile_DD_matrix_elements"
 
 call diagonalize_H11_with_jz(dens_rhoRR, dens_kappaRR, bogo_U0, bogo_V0, ndim)
