@@ -2171,9 +2171,14 @@ integer, dimension(4) :: sh_curr
 logical :: found
 integer, dimension(:,:,:,:), allocatable:: registered_h2b ! test which m.e. is registered
 
+print "(A)", "[  ] EXPORT Hamiltonian (uncoupled) for current interaction."
+if (floor(log10(HOsp_dim + 0.0d0)) + 1 .GE. 6) then
+  print "(2A)", "[NO]  EXPORT sorting, method unavailable for sp_dim > 5. PASS"
+  return
+end if
+
 allocate(registered_h2b(HOsp_dim,HOsp_dim,HOsp_dim,HOsp_dim))
 
-print "(A)", "[  ] EXPORT Hamiltonian (uncoupled) for current interaction."
 open  (uth6, status='scratch', action='readwrite', access='stream', &
              form='unformatted')
 open  (uth7, status='scratch', action='readwrite', access='stream', &
@@ -2366,29 +2371,7 @@ do kk = 1, ndim
 enddo
 close(3333)
 
-!OPEN(3334, file="test_reconstruction_BBhamil.gut")
-!do i1 = 1, HOsp_dim
-!  do i2 = 1, HOsp_dim
-!    do i3 = 1, HOsp_dim
-!      do i4 = 1, HOsp_dim
-!
-!  if ((-1)**(HOsp_l(i1)+HOsp_l(i2)) /= (-1)**(HOsp_l(i3)+HOsp_l(i4))) then
-!    registered_h2b(i1,i2,i3,i4) = 3
-!  end if
-!  if ((HOsp_2mj(i1)+HOsp_2mj(i2)) /= HOsp_2mj(i3)+HOsp_2mj(i4)) then
-!    registered_h2b(i1,i2,i3,i4) = 3
-!  end if
-!  if ((HOsp_2mt(i1)+HOsp_2mt(i2)) /= HOsp_2mt(i3)+HOsp_2mt(i4)) then
-!    registered_h2b(i1,i2,i3,i4) = 3
-!  end if
-!
-!  !WRITE(3334, fmt="(5i4)") i1,i2,i3,i4, registered_h2b(i1,i2,i3,i4)
-!      end do
-!    end do
-!  end do
-!end do
-!!CLOSE(3334)
-!deallocate(registered_h2b)
+deallocate(registered_h2b)
 
 allocate(temp_hamil_byT(4, red_dim), &
          red_abcd(WBsp_dim , WBsp_dim , WBsp_dim , WBsp_dim))
