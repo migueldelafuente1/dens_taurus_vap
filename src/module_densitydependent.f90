@@ -2171,8 +2171,9 @@ integer, dimension(4) :: sh_curr
 logical :: found
 integer, dimension(:,:,:,:), allocatable:: registered_h2b ! test which m.e. is registered
 
-print "(A)", "[  ] EXPORT Hamiltonian (uncoupled) for current interaction."
-if (floor(log10(HOsp_dim + 0.0d0)) + 1 .GE. 5) then
+print "(A,I3)", "[  ] EXPORT Hamiltonian (uncoupled) for current interaction.&
+                 & sorting_dim (<5)=", floor(log10(HOsp_dim + 0.0d0)) + 1
+if ((floor(log10(HOsp_dim + 0.0d0)) + 1) .GE. 5) then
   print "(A)", "[NO]  EXPORT sorting, method unavailable for sp_dim > 5. PASS"
   return
 end if
