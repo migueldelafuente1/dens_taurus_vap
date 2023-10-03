@@ -2028,8 +2028,8 @@ if (ALL_ISOS) then
   enddo
   deallocate(hamil_temp)
 
-  call print_uncoupled_hamiltonian_DD(ALL_ISOS)
-  call print_uncoupled_hamiltonian_H2
+!  call print_uncoupled_hamiltonian_DD(ALL_ISOS)
+!  call print_uncoupled_hamiltonian_H2
 
 else if (iteration < CONVERG_ITER) then !!! Normal Gradient DD dep. process ****
 
