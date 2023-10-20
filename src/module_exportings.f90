@@ -646,7 +646,7 @@ integer      :: a_ant,b_ant,c_ant,d_ant, t, tt, &
                 ind_jm_b, ind_jm_k, ind_sab, ind_scd, delta_ab, delta_cd,&
                 TENSOR_ORD = 2, KK, MM, KKmin, KKmax, &
                 a_eq_b, a_eq_c, c_eq_d, b_eq_d, J1,J2,J3,J4, &
-                aa, bb, cc, dd, ind_j0, &
+                aa, bb, cc, dd, dd_lim, ind_j0, &
                 Sbra,Sket,Lbra,Lket,Lb_min,Lk_min,Lb_max,Lk_max,Sk_min,Sk_max,&
                 a_con,b_con,c_con,d_con, dim_jm,dim_sh
 logical      :: kval_is_zero, valid_scalar
@@ -818,7 +818,14 @@ do aa = 1, VSsh_dim
       c  = VStoHOsh_index(cc)
       jc = HOsh_2j(c)
       c_ant = VSsh_list(cc)
-      do dd = cc, VSsh_dim
+
+      !! This limit ensures the m.e. as a 2 by 2 combination without repetition
+      !! of the states.
+      !!   dim_2st= VSsh_dim*(VSsh_dim+1)/2 :: dim_me = dim_2st(dim_2st+1)/2
+      dd_lim = cc
+      if (aa == cc) dd_lim = max(bb, cc)
+
+      do dd = dd_lim, VSsh_dim
         d  = VStoHOsh_index(dd)
         jd = HOsh_2j(d)
         d_ant = VSsh_list(dd)
@@ -2652,9 +2659,10 @@ subroutine recouple_QuasiParticle_Hamiltonian_H22(ndim)
 
 integer, intent(in) :: ndim
 integer :: q1,q2,q3,q4, qq1,qq2,qq3,qq4, i1,i2,i3,i4, sh1,sh2,sh3,sh4, &
-          J, M, M1, Jmax, Jmin, Jmax_1, Jmin_1, tt1, tt2, tt, kk
+          J, M, M1, Jmax, Jmin, Jmax_1, Jmin_1, tt1, tt2, tt, kk,  &
+          sh2_min, sh3_min, sh4_min
 real(r64) :: aux1, aux2, h2b, aux_val
-logical :: all_zero
+logical :: all_zero, TEST_PRINT_ALL_ME = .TRUE.
 logical, dimension(:,:,:,:), allocatable :: all_zeroReduced_sh
 real(r64), dimension(:,:), allocatable   :: H11_qp2print
 
@@ -2770,13 +2778,26 @@ WRITE(3300, fmt="(A)") "4"
 WRITE(3301, fmt="(F15.9)") last_HFB_energy
 print "(A,2F15.4)", " [  ] Printing the shell states for 2b, ", &
   minval(reduced_H22_VS), maxval(reduced_H22_VS)
+
 do sh1 = 1, VSsh_dim
   kk = VStoHOsh_index(sh1)
   WRITE(3301, fmt="(2i6,2f15.6)") &
     HOsh_na(kk), HOsh_na(kk), H11_qp2print(1,sh1), H11_qp2print(2,sh1)
-  do sh2 = 1, VSsh_dim !sh1, VSsh_dim
-    do sh3 = 1, VSsh_dim !sh1, VSsh_dim
-      do sh4 = 1, VSsh_dim!sh3, VSsh_dim
+
+  sh2_min = sh1
+  if (TEST_PRINT_ALL_ME) sh2_min = 1
+
+  do sh2 = sh2_min, VSsh_dim
+    sh3_min = sh1
+    if (TEST_PRINT_ALL_ME) sh3_min = 1
+
+    do sh3 = sh3_min, VSsh_dim
+
+      sh4_min = sh3
+      if (sh1 == sh3) sh4_min = MAX(sh2, sh3)
+      if (TEST_PRINT_ALL_ME) sh4_min = 1
+
+      do sh4 = sh4_min, VSsh_dim!sh3, VSsh_dim
 
         i1 = VStoHOsh_index(sh1)
         i2 = VStoHOsh_index(sh2)
