@@ -672,6 +672,11 @@ open(300, file="onlyDD_D1S_scalar.2b")
 open(301, file="onlyDD_D1S_k1.2b")
 open(302, file="onlyDD_D1S_k2.2b")
 
+!! Export an empty com file
+open(295, file="D1S_vs_scalar.com")
+write(295, fmt="(A)") "Generated for D1S_scalar (2 body com already in .2b)"
+close(295)
+
 do KK = 0, TENSOR_ORD
   write(300+KK, fmt="(A,I3,A,F10.5,A,F10.5,A,F6.4)") &
     'Density 2BME on explicit HFB wf from taurus, Tensor=',KK, &
@@ -2769,10 +2774,13 @@ CLOSE(2999)
 OPEN(3300, file="hamilQPD1S.sho")
 OPEN(3301, file="hamilQPD1S.01b")
 OPEN(3302, file="hamilQPD1S.2b")
+OPEN(3303, file="hamilQPD1S.com")
 
 WRITE(3300, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
 WRITE(3301, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
 WRITE(3302, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
+WRITE(3303, fmt="(A)") "QUASIPARTICLE HAMILTONIAN GENERATED IN REDUCED SPACE"
+CLOSE(3303)
 
 WRITE(3300, fmt="(A)") "4"
 WRITE(3301, fmt="(F15.9)") last_HFB_energy
