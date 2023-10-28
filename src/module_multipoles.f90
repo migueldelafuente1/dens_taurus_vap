@@ -11,12 +11,12 @@ MODULE Multipoles
 
 use Basis
 
-implicit none 
+implicit none
 
 !!! Qlm(i,j,k) with i=number matrix elem, j=isospin (1=p,2=n), k=0...m
 real(r64), dimension(:,:,:), allocatable :: multipole_Q1m, & ! Dipoles
                                             multipole_Q2m, & ! Quadrupoles
-                                            multipole_Q3m, & ! Octupoles  
+                                            multipole_Q3m, & ! Octupoles
                                             multipole_Q4m    ! Hexadecapoles
 
 real(r64) :: coeff_betalm(4,4) ! Factor to convert from beta_lm to Qlm
@@ -40,7 +40,7 @@ CONTAINS
 !                                                                              !
 ! The operators are vectorized (for the calculation of constraints).           !
 !------------------------------------------------------------------------------!
-subroutine set_multipoles    
+subroutine set_multipoles
 
 integer :: i, j, incr, ia, ib, la, lb, ja, jb, mja, mla, mlb, mjb, mta, mtb, &
            ms, lambda, mu, mt, mq, ialloc=0
@@ -58,10 +58,10 @@ do j = 1, 4
       numbpart = nucleus_Z
     elseif ( i == 2 ) then
       numbpart = nucleus_N
-    else 
+    else
       numbpart = nucleus_A
     endif
-    
+
     coeff_1 = (4.d0 * pi) / (3.d0 * numbpart)
     coeff_2 = 1.d0 / (radius_r0 * numbpart**(1.d0/3.d0))
 
@@ -69,8 +69,9 @@ do j = 1, 4
   enddo
 enddo
 
-!!! Matrix elements                             
+!!! Matrix elements
 incr = 0
+open(1111, file="test_multipoles.gut")
 
 do ia = 1, HOsp_dim
   la = HOsp_l(ia) * 2
@@ -92,9 +93,9 @@ do ia = 1, HOsp_dim
             sqrt( ((lb+1)*(lambda+1)) / (4*pi*(la+1)) )
       do mu = -lambda, lambda, 2
         sumcb = zzero
-        do ms = -1, 1, 2    
-          do mla = -la, la, 2    
-            do mlb = -lb, lb, 2    
+        do ms = -1, 1, 2
+          do mla = -la, la, 2
+            do mlb = -lb, lb, 2
               call ClebschGordan (la,1,ja,mla,ms,mja,cb1)
               call ClebschGordan (lb,1,jb,mlb,ms,mjb,cb2)
               call ClebschGordan (lb,lambda,la,mlb,mu,mla,cb3)
@@ -103,29 +104,36 @@ do ia = 1, HOsp_dim
           enddo
         enddo
 
+if (mta .EQ. -1) then
+write(1111,fmt="(10I3,2I6,3F15.9)")HOsp_sh(ia), HOsp_n(ia), la, ja, mja, &
+                                   HOsp_sh(ib), HOsp_n(ib), lb, jb, mjb, &
+                                   lambda, mu,   fac, sumcb, sumcb * fac
+endif
+
         sumcb = sumcb * fac
         if ( mu < 0 ) sumcb = (-1)**(mu/2) * sumcb
         if ( mu /= 0 ) sumcb = sumcb * 0.5d0
-       
+
         mt = (mta + 3)/2
-        mq = abs(mu/2) 
-       
+        mq = abs(mu/2)
+
         if ( lambda == 2 ) then
-          multipole_Q1m(incr,mt,mq) = multipole_Q1m(incr,mt,mq) + sumcb 
-        elseif ( lambda == 4 ) then                        
-          multipole_Q2m(incr,mt,mq) = multipole_Q2m(incr,mt,mq) + sumcb 
-        elseif ( lambda == 6 ) then                        
-          multipole_Q3m(incr,mt,mq) = multipole_Q3m(incr,mt,mq) + sumcb 
-        else                                               
-          multipole_Q4m(incr,mt,mq) = multipole_Q4m(incr,mt,mq) + sumcb 
+          multipole_Q1m(incr,mt,mq) = multipole_Q1m(incr,mt,mq) + sumcb
+        elseif ( lambda == 4 ) then
+          multipole_Q2m(incr,mt,mq) = multipole_Q2m(incr,mt,mq) + sumcb
+        elseif ( lambda == 6 ) then
+          multipole_Q3m(incr,mt,mq) = multipole_Q3m(incr,mt,mq) + sumcb
+        else
+          multipole_Q4m(incr,mt,mq) = multipole_Q4m(incr,mt,mq) + sumcb
         endif
       enddo
-    enddo 
+    enddo
 
   enddo
 enddo
+close(1111)
 
-end subroutine set_multipoles 
+end subroutine set_multipoles
 
 END MODULE Multipoles
 !==============================================================================!
