@@ -1197,14 +1197,13 @@ complex(r64), intent(in) :: overlap
 integer      :: spO2, par_ind,    ms,ms2, a_n, b_n
 complex(r64) :: roP, roN, rPN, rNP, kaP,kaN,kaCcP, kaCcN,kPN,kNP,kCcNP,kCcPN, &
                 roPt, roNt, rPNt, rNPt, kaPt,kaNt,kaCcPt, kaCcNt,kPNt,kNPt, &
-                kCcNPt,kCcPNt, A_part,B1_part,B2_part, aux, sum_
-real(r64)    :: radial_ab
+                kCcNPt,kCcPNt, A_part,B1_part,B2_part, aux, sum_, radial_ab
 logical      :: aNeQb
 spO2 = HOsp_dim / 2
 
 ! assertion, a, b only from pp space:
 if ((a > spO2).OR.(b > spO2)) then
-   print *, " [ASS. ERROR] compute_bulkDens4Fields a,b (sp) in neutron space"
+   print *, "[ASSERT. ERROR] compute_bulkDens4Fields a,b (sp) in neutron space"
    STOP
 endif
 aNeQb = kdelta(a, b).ne.1
