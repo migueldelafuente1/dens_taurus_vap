@@ -31,7 +31,7 @@ logical   :: EVAL_EXPLICIT_FIELDS_DD= .FALSE.
 real(r64) :: t3_DD_CONST  = 0.0!= 1350.00d+00    ! constant of the DD term [MeV]
 real(r64) :: x0_DD_FACTOR = 0.0!= 1.0d+00        ! exchange factor of DD term
 real(r64) :: alpha_DD     = 0.0!=  0.33333d+00   ! power of the DD term
-
+integer, dimension(2) ::   alpha_DD_frac         ! fraction (num, den) of the power
 ! 0 trapezoidal, 1 Gauss-Legendre, 2 Gauss-Laguerre(r)/Legendre (t,p), 3 Laguerre-Lebedev
 logical   :: export_density      = .FALSE. ! .TRUE. !
 
@@ -237,8 +237,21 @@ read(runit,formatST) str_
 rewind(runit)
 close(runit)
 
-!! set alpha more exact 1/3 double precission
+!! set alpha more exact 1/3 double precision, and the fraction (is always dimensional)
 if (abs(alpha_DD - (1.0/3.0)) < 1.0D-4) alpha_DD = 0.333333333333333
+
+alpha_DD_frac = 0
+if (abs(alpha_DD - (1.0/3.0)) < 1.0D-4) then
+  alpha_DD_frac = (/1, 3/)
+else if ((abs(alpha_DD - (1.0)) < 1.0D-4) .OR. (abs(alpha_DD) < 1.0D-4)) then
+  alpha_DD_frac = (/ int(alpha_DD), 1/)
+else if (abs(alpha_DD - (2.0/3.0)) < 1.0D-4) then
+  alpha_DD_frac = (/2, 3/)
+else if (abs(alpha_DD - (1.0/6.0)) < 1.0D-4) then
+  alpha_DD_frac = (/1, 6/)
+else
+  print '(A,F9.5)', "[WARGNING] Awkward ALPHA constant for DD-EDF: ", alpha_DD
+endif
 
 d_r = R_MAX / (r_dim - 1)
 
@@ -1404,8 +1417,89 @@ end subroutine set_rearrangement_RadAng_fucntions
 !-----------------------------------------------------------------------------!
 ! subroutine calculate_expectval_density                                      !
 !                                                                             !
-! iopt = optimal iteration (=1 when gradient has converged)                   !
+!   Choose the correct density power when it is a complex number,             !
+! the criteria is to choose the root such as: (z)^alpha = (z*)^alpha          !
+!                                                                             !
+!-----------------------------------------------------------------------------!
+subroutine choose_riemann_fold_density(i_r, i_an)
+
+integer, intent(in) :: i_r, i_an
+integer      :: i, j
+real(r64)    :: dens_R, dens_A, dens_Aa, dens_Ra, x1, x2, y1, y2, th1, th2
+complex(r64) :: x
+
+if (abs(alpha_DD - 0.3333333) .GE. 1.0d-6) then
+  print "(A)", " [WARNING] If using alpha_DD /= 1/3 rethink this method 1mdd5c"
+endif
+
+dens_R = dreal(density(i_r,i_an))**2 + dimag(density(i_r,i_an))**2
+dens_R = dsqrt(dens_R)
+dens_A = dacos(dreal(density(i_r, i_an)) / max(dens_R, 1.0d-30))
+
+dens_Ra = dens_R ** alpha_DD
+do i = 0, alpha_DD_frac(2) - 1
+  th1 = (dens_A + 2 * pi * i) * alpha_DD
+  x1  = dcos(th1)
+  y1  = dsin(th1)
+
+  do j = 0, alpha_DD_frac(2) - 1
+    th2 = (dens_A + 2 * pi * j) * alpha_DD
+    x2  = dcos(th2)
+    y2  = -1.0d0 * dsin(th2)
+
+    if (abs(x1 - x2) + abs(y1 - y2) .LT. 1.0d-6) then
+
+      dens_alpha(i_r,i_an) = dCMPLX(dens_Ra * x1, dens_Ra * y1)
+
+      th1 = (dens_A + 2 * pi * i) * (alpha_DD - 1.0d0)
+      x1  = dcos(th1)
+      y1  = dsin(th1)
+      dens_Ra = dens_Ra / dens_R
+
+      x = dCMPLX(dens_Ra * x1, dens_Ra * y1)
+      if (dreal(x)**2 + dimag(x)**2 .gt. 1.0D+30) then
+        x = dCMPLX(1.0D+30*x1, 1.0D+30*y1)
+      endif
+      dens_alpm1(i_r,i_an) = x
+
+      return
+    endif
+
+  enddo
+enddo
+
+print "(A,2I5,2F15.9)", "[ERROR] Could not find z^for density (ir,ia)=", &
+                i_r, i_an, dreal(density(i_r,i_an)), dimag(density(i_r,i_an))
+
+! Fold the density to the 1st quadrant. (VERSION 1 - REMOVE)
+!dens_R = dreal(density(i_r,i_an))**2 + dimag((density(i_r,i_an)))**2
+!dens_R = dsqrt(dens_R)
+!dens_A = dacos(dreal(density(i_r, i_an)) / max(dens_R, 1.0d-30))
+!if (dsin(dens_A) .lt.  zero ) then
+!  dens_A = dens_A + 2*(pi - dens_A)
+!endif
 !
+!dens_Aa = dens_A *  alpha_DD
+!dens_Ra = dens_R ** alpha_DD
+!
+!dens_alpha(i_r,i_an) = dCMPLX(dens_Ra * (dcos(dens_Aa)), &
+!                              dens_Ra * (dsin(dens_Aa)) )
+!dens_Aa = dens_A *  (alpha_DD - 1)
+!dens_Ra = dens_R ** (alpha_DD - 1)
+!x       = dCMPLX(dens_Ra * (dcos(dens_Aa)), &
+!                 dens_Ra * (dsin(dens_Aa)) )
+!if (dreal(x)**2 + dimag(x)**2 .gt. 1.0D+30) then
+!  x = dCMPLX(1.0D+30*cos(dens_A), 1.0D+30*sin(dens_A))
+!endif
+!dens_alpm1(i_r,i_an) = x
+
+end subroutine choose_riemann_fold_density
+
+!-----------------------------------------------------------------------------!
+! subroutine calculate_expectval_density                                      !
+!                                                                             !
+! iopt = optimal iteration (=1 when gradient has converged)                   !
+!                                                                             !
 !-----------------------------------------------------------------------------!
 subroutine calculate_expectval_density(rhoLR, kappaLR, kappaRL, overlap,&
                                        ndim, iopt)
@@ -1476,31 +1570,13 @@ do i_r = 1, r_dim
     if (dabs(imag(density(i_r, i_an))) > 1.0e-10) then
       !! This part must not be executed for Mean Field D1S (projections yield
       !! larger values for the imaginary part), put the limit in 1E-13 precision
-      !!  to prompt an abnormal numerical error (r64 must have 13 decimals)
+      !! to prompt an abnormal numerical error (r64 must have 13 decimals)
       if (.NOT.DOING_PROJECTION) then
         print *, " !!! [WARNING] density is imaginary=",imag(density(i_r,i_an))
       endif
-      ! Fold the density to the 1st quadrant.
-      dens_R = dreal(density(i_r,i_an))**2 + dimag((density(i_r,i_an)))**2
-      dens_R = dsqrt(dens_R)
-      dens_A = dacos(dreal(density(i_r, i_an)) / max(dens_R, 1.0d-30))
-      if (dsin(dens_A) .lt. zero) then
-        dens_A = dens_A + 2*(pi - dens_A)
-      endif
 
-      dens_Aa = dens_A *  alpha_DD
-      dens_Ra = dens_R ** alpha_DD
+      call choose_riemann_fold_density(i_r, i_an)
 
-      dens_alpha(i_r,i_an) = dCMPLX(dens_Ra * (dcos(dens_Aa)), &
-                                    dens_Ra * (dsin(dens_Aa)) )
-      dens_Aa = dens_A *  (alpha_DD - 1)
-      dens_Ra = dens_R ** (alpha_DD - 1)
-      x       = dCMPLX(dens_Ra * (dcos(dens_Aa)), &
-                       dens_Ra * (dsin(dens_Aa)) )
-      if (dreal(x)**2 + dimag(x)**2 .gt. 1.0D+30) then
-        x = dCMPLX(1.0D+30*cos(dens_A), 1.0D+30*sin(dens_A))
-      endif
-      dens_alpm1(i_r,i_an) = x
     else
       dens_alpha(i_r,i_an) = dreal(density(i_r,i_an)) ** alpha_DD
       dens_alpm1(i_r,i_an) = dens_alpha(i_r,i_an) / density(i_r,i_an)
