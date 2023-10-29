@@ -1469,7 +1469,7 @@ do i = 0, alpha_DD_frac(2) - 1
   enddo
 enddo
 
-print "(A,2I5,2F15.9)", "[ERROR] Could not find z^for density (ir,ia)=", &
+print "(A,2I5,2E16.9)", "[ERROR] Could not find z^for density (ir,ia)=", &
                 i_r, i_an, dreal(density(i_r,i_an)), dimag(density(i_r,i_an))
 print "(A)", ""
 ! Fold the density to the 1st quadrant. (VERSION 1 - REMOVE)
