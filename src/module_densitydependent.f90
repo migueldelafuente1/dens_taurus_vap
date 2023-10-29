@@ -1446,7 +1446,9 @@ do i = 0, alpha_DD_frac(2) - 1
     x2  = dcos(th2)
     y2  = -1.0d0 * dsin(th2)
 
-    if (abs(x1 - x2) + abs(y1 - y2) .LT. 1.0d-6) then
+    print "(2(A,3F12.6))", "    ** ", th1, x1, y1, " ?= ", th2, x2, y2
+
+    if (abs(x1 - x2) + abs(y1 - y2) .LT. 1.0d-4) then
 
       dens_alpha(i_r,i_an) = dCMPLX(dens_Ra * x1, dens_Ra * y1)
 
@@ -1469,7 +1471,7 @@ enddo
 
 print "(A,2I5,2F15.9)", "[ERROR] Could not find z^for density (ir,ia)=", &
                 i_r, i_an, dreal(density(i_r,i_an)), dimag(density(i_r,i_an))
-
+print "(A)", ""
 ! Fold the density to the 1st quadrant. (VERSION 1 - REMOVE)
 !dens_R = dreal(density(i_r,i_an))**2 + dimag((density(i_r,i_an)))**2
 !dens_R = dsqrt(dens_R)
