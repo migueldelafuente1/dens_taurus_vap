@@ -104,15 +104,15 @@ do ia = 1, HOsp_dim
           enddo
         enddo
 
-if (mta .EQ. -1) then
-write(1111,fmt="(10I3,2I6,3F15.9)")HOsp_sh(ia), HOsp_n(ia), la, ja, mja, &
-                                   HOsp_sh(ib), HOsp_n(ib), lb, jb, mjb, &
-                                   lambda, mu,   fac, sumcb, sumcb * fac
-endif
-
         sumcb = sumcb * fac
         if ( mu < 0 ) sumcb = (-1)**(mu/2) * sumcb
         if ( mu /= 0 ) sumcb = sumcb * 0.5d0
+
+if ((mta .EQ. -1) .AND. (abs(sumcb) .GE. 1.0d-06)) then
+  write(1111,fmt="(10I3,2I6,3F15.9)")HOsp_sh(ia), HOsp_n(ia), la/2, ja, mja, &
+                                     HOsp_sh(ib), HOsp_n(ib), lb/2, jb, mjb, &
+                                     lambda, mu,   fac, sumcb, sumcb * fac
+endif
 
         mt = (mta + 3)/2
         mq = abs(mu/2)
