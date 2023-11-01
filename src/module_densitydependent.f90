@@ -1433,7 +1433,8 @@ endif
 
 dens_R = dreal(density(i_r,i_an))**2 + dimag(density(i_r,i_an))**2
 dens_R = dsqrt(dens_R)
-dens_A = dacos(dreal(density(i_r, i_an)) / max(dens_R, 1.0d-30))
+!dens_A = dacos(dreal(density(i_r, i_an)) / max(dens_R, 1.0d-30))
+dens_A = datan2(dreal(density(i_r,i_an)), dimag(density(i_r,i_an)))
 
 dens_Ra = dens_R ** alpha_DD
 do i = 0, alpha_DD_frac(2) - 1
