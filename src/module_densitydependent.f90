@@ -1446,7 +1446,7 @@ do i = 0, alpha_DD_frac(2) - 1
     x2  = dcos(th2)
     y2  = -1.0d0 * dsin(th2)
 
-    print "(2(A,3F12.6))", "    ** ", th1, x1, y1, " ?= ", th2, x2, y2
+!    print "(2(A,3F12.6))", "    ** ", th1, x1, y1, " ?= ", th2, x2, y2
 
     if ((abs(x1*x2) > 0) .AND. (abs(y1*y2) > 0)) then
       !! condition z* be in the same sector (first coincidence))
