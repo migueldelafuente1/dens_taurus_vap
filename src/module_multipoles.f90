@@ -72,8 +72,8 @@ enddo
 !!! Matrix elements
 incr = 0
 open(1111, file="test_multipoles.gut")
-write(1111,fmt="(A)") "  a na la ja ma  b nb lb jb mb  lambda  mu         &
-                &rad_coeff         ang_coeff        mat.elem.Q"
+write(1111,fmt="(A)") "  a sa na la ja ma  b sb nb lb jb mb  lambda  mu&
+                &         rad_coeff         ang_coeff        mat.elem.Q"
 
 do ia = 1, HOsp_dim
   la = HOsp_l(ia) * 2
@@ -111,8 +111,8 @@ do ia = 1, HOsp_dim
         if ( mu /= 0 ) sumcb = sumcb * 0.5d0
 
 if ((mta .EQ. -1) .AND. (abs(sumcb) .GE. 1.0d-06)) then
-  write(1111,fmt="(10I3,2I6,3F18.9)")HOsp_sh(ia), HOsp_n(ia), la/2, ja, mja, &
-                                     HOsp_sh(ib), HOsp_n(ib), lb/2, jb, mjb, &
+  write(1111,fmt="(12I3,2I6,3F18.9)")ia, HOsp_sh(ia), HOsp_n(ia), la/2, ja,mja,&
+                                     ib, HOsp_sh(ib), HOsp_n(ib), lb/2, jb,mjb,&
                                      lambda/2, mu/2,   fac, sumcb/fac, sumcb
 endif
 
