@@ -72,6 +72,8 @@ enddo
 !!! Matrix elements
 incr = 0
 open(1111, file="test_multipoles.gut")
+write(1111,fmt="(A)") "  a na la ja ma  b nb lb jb mb  lambda  mu         &
+                &rad_coeff         ang_coeff        mat.elem.Q"
 
 do ia = 1, HOsp_dim
   la = HOsp_l(ia) * 2
