@@ -1462,10 +1462,8 @@ do i = 0, alpha_DD_frac(2) - 1
         x = dCMPLX(1.0D+30*x1, 1.0D+30*y1)
       endif
       dens_alpm1(i_r,i_an) = x
+      return
     end if
-    dens_alpm1(i_r,i_an) = x
-
-    return
 
     !! condition for z*=z mathch (impossible)
 !    if (abs(x1 - x2) + abs(y1 - y2) .LT. 1.0d-4) then
