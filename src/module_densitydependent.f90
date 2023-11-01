@@ -1437,19 +1437,19 @@ dens_A = dacos(dreal(density(i_r, i_an)) / max(dens_R, 1.0d-30))
 
 dens_Ra = dens_R ** alpha_DD
 do i = 0, alpha_DD_frac(2) - 1
-  th1 = (dens_A + 2 * pi * i) * alpha_DD
+  th1 = (dens_A + (2 * pi * i)) * alpha_DD
   x1  = dcos(th1)
   y1  = dsin(th1)
 
   do j = 0, alpha_DD_frac(2) - 1
-    th2 = (dens_A + 2 * pi * j) * alpha_DD
+    th2 = (dens_A + (2 * pi * j)) * alpha_DD
     x2  = dcos(th2)
     y2  = -1.0d0 * dsin(th2)
 
     print "(2(A,3F12.6))", "    ** ", th1, x1, y1, " ?= ", th2, x2, y2
 
-    if (abs(x1 - x2) + abs(y1 - y2) .LT. 1.0d-4) then
-
+    if ((abs(x1*x2) > 0) .AND. (abs(y1*y2) > 0)) then
+      !! condition z* be in the same sector (first coincidence))
       dens_alpha(i_r,i_an) = dCMPLX(dens_Ra * x1, dens_Ra * y1)
 
       th1 = (dens_A + 2 * pi * i) * (alpha_DD - 1.0d0)
@@ -1462,9 +1462,29 @@ do i = 0, alpha_DD_frac(2) - 1
         x = dCMPLX(1.0D+30*x1, 1.0D+30*y1)
       endif
       dens_alpm1(i_r,i_an) = x
+    end if
+    dens_alpm1(i_r,i_an) = x
 
-      return
-    endif
+    return
+
+    !! condition for z*=z mathch (impossible)
+!    if (abs(x1 - x2) + abs(y1 - y2) .LT. 1.0d-4) then
+!
+!      dens_alpha(i_r,i_an) = dCMPLX(dens_Ra * x1, dens_Ra * y1)
+!
+!      th1 = (dens_A + 2 * pi * i) * (alpha_DD - 1.0d0)
+!      x1  = dcos(th1)
+!      y1  = dsin(th1)
+!      dens_Ra = dens_Ra / dens_R
+!
+!      x = dCMPLX(dens_Ra * x1, dens_Ra * y1)
+!      if (dreal(x)**2 + dimag(x)**2 .gt. 1.0D+30) then
+!        x = dCMPLX(1.0D+30*x1, 1.0D+30*y1)
+!      endif
+!      dens_alpm1(i_r,i_an) = x
+!
+!      return
+!    endif
 
   enddo
 enddo
