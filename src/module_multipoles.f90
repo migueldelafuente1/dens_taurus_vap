@@ -71,10 +71,6 @@ enddo
 
 !!! Matrix elements
 incr = 0
-open(1111, file="test_multipoles.gut")
-write(1111,fmt="(A)") "  a sa na la ja ma  b sb nb lb jb mb  lambda  mu&
-                &         rad_coeff         ang_coeff        mat.elem.Q"
-
 do ia = 1, HOsp_dim
   la = HOsp_l(ia) * 2
   ja = HOsp_2j(ia)
@@ -94,8 +90,6 @@ do ia = 1, HOsp_dim
       fac = cb1 * radial_integral_even(ia,ib,lambda/2) * &
             sqrt( ((lb+1)*(lambda+1)) / (4*pi*(la+1)) )
 
-print "(A,5i3,3F15.6)", "  lmb_ab", lambda/2, HOsp_n(ia),la/2,HOsp_n(ib),lb/2,&
-   cb1, radial_integral_even(ia,ib,lambda/2), fac
       do mu = -lambda, lambda, 2
         sumcb = zzero
         do ms = -1, 1, 2
@@ -112,13 +106,6 @@ print "(A,5i3,3F15.6)", "  lmb_ab", lambda/2, HOsp_n(ia),la/2,HOsp_n(ib),lb/2,&
         sumcb = sumcb * fac
         if ( mu < 0 ) sumcb = (-1)**(mu/2) * sumcb
         if ( mu /= 0 ) sumcb = sumcb * 0.5d0
-
-if ((mta .EQ. -1) .AND. (abs(sumcb) .GE. 1.0d-06)) then
-write(1111,fmt="(12I3,2I6,4F15.6)") ia, HOsp_sh(ia), HOsp_n(ia), la/2, ja,mja,&
-                                    ib, HOsp_sh(ib), HOsp_n(ib), lb/2, jb,mjb,&
-                                    lambda/2, mu/2,   fac, sumcb/fac, sumcb, &
-                                    radial_integral_even(ia,ib,lambda/2)
-endif
 
         mt = (mta + 3)/2
         mq = abs(mu/2)
@@ -137,7 +124,6 @@ endif
 
   enddo
 enddo
-close(1111)
 
 end subroutine set_multipoles
 
