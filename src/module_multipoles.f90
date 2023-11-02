@@ -111,9 +111,10 @@ do ia = 1, HOsp_dim
         if ( mu /= 0 ) sumcb = sumcb * 0.5d0
 
 if ((mta .EQ. -1) .AND. (abs(sumcb) .GE. 1.0d-06)) then
-  write(1111,fmt="(12I3,2I6,3F18.9)")ia, HOsp_sh(ia), HOsp_n(ia), la/2, ja,mja,&
+  write(1111,fmt="(12I3,2I6,4F18.9)")ia, HOsp_sh(ia), HOsp_n(ia), la/2, ja,mja,&
                                      ib, HOsp_sh(ib), HOsp_n(ib), lb/2, jb,mjb,&
-                                     lambda/2, mu/2,   fac, sumcb/fac, sumcb
+                                     lambda/2, mu/2,   fac, sumcb/fac, sumcb, &
+                                     radial_integral_even(ia,ib,lambda/2)
 endif
 
         mt = (mta + 3)/2
