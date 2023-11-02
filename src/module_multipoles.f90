@@ -94,8 +94,8 @@ do ia = 1, HOsp_dim
       fac = cb1 * radial_integral_even(ia,ib,lambda/2) * &
             sqrt( ((lb+1)*(lambda+1)) / (4*pi*(la+1)) )
 
-print "(A,5i3,3F15.6)", "  lmb_ab", lambda/2, na,la/2, nb,lb/2, cb1, &
-  radial_integral_even(ia,ib,lambda/2), fac
+print "(A,5i3,3F15.6)", "  lmb_ab", lambda/2, HOsp_n(ia),la/2,HOsp_n(ib),lb/2,&
+   cb1, radial_integral_even(ia,ib,lambda/2), fac
       do mu = -lambda, lambda, 2
         sumcb = zzero
         do ms = -1, 1, 2
