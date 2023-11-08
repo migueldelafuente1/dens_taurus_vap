@@ -279,8 +279,10 @@ print *,           '-----------------------------------------------'
 print *, ''
 
 if ((.NOT.exportValSpace).AND.(implement_H2cpd_DD)) then
-  deallocate(hamil_H2cpd_DD) ! It wont be used
-  print "(A)", "  I did the hamiltonian cpd cause not used!"
+  if (hamil_read .EQ. 0) then
+    deallocate(hamil_H2cpd_DD) ! It wont be used
+    print "(A)", "  I did the hamiltonian cpd cause not used!"
+  endif
 else if ((exportValSpace).AND.(.NOT.implement_H2cpd_DD)) then
   print "(2A)", " ERROR, do not export the matrix elements with hamiltonian",&
                 " of type=1 or 2, program stops"

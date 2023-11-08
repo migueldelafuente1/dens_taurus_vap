@@ -71,6 +71,7 @@ enddo
 
 !!! Matrix elements
 incr = 0
+
 do ia = 1, HOsp_dim
   la = HOsp_l(ia) * 2
   ja = HOsp_2j(ia)
@@ -124,6 +125,7 @@ do ia = 1, HOsp_dim
 
   enddo
 enddo
+close(1111)
 
 end subroutine set_multipoles
 
