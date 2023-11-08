@@ -287,6 +287,11 @@ else if ((exportValSpace).AND.(.NOT.implement_H2cpd_DD)) then
   print "(2A)", " ERROR, do not export the matrix elements with hamiltonian",&
                 " of type=1 or 2, program stops"
   STOP
+else if (((exportValSpace).OR.(evalQuasiParticleVSpace)) &
+         .AND.(hamil_read.EQ.0)) then
+  print "(2A)", " ERROR, do not export the matrix elements when importing ",&
+        " the reduced matrix elements (set hamil_read=0), program stops"
+  STOP
 endif
 if (exportValSpace)then
   print '(A,2I4)', '    ... sh states to export DIM(sh/sp):',VSsh_dim,VSsp_dim
