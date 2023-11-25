@@ -3663,8 +3663,8 @@ write(111, fmt="(A)") "%%%  MAT. ELEMS (a, b) ::  %%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 
 print "(A)", " [    ] Exporting of DD non-zero PN matrix elements."
 
-do a=1, nO2
-  do b=1, nO2
+do a = 1, nO2
+  do b = a, nO2
 
     non_zero = 0
 
@@ -3686,7 +3686,7 @@ do a=1, nO2
       end do
     end do
 
-    if (non_zero .LT. 0) write(111,fmt="(A)") ""
+    if (non_zero .GT. 0) write(111,fmt="(A)") ""
 
   end do
   print "(2(A,I6),I9)", "   progress ... ", a, "/", b, non_zero
