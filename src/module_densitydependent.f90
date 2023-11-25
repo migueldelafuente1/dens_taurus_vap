@@ -118,7 +118,7 @@ logical   :: evalQuasiParticleVSpace = .FALSE. ! Export for the QP sp states, no
 
 integer   :: NHO_vs, NHO_co !! Major Shell number of the Valence. Sp to be exported
 logical   :: NOT_DEL_FILE
-logical   :: PRINT_GUTS = .FALSE.
+logical   :: PRINT_GUTS = .TRUE.
 logical   :: DOING_PROJECTION = .FALSE.
 logical   :: USING_FIXED_REARRANGEMENT = .FALSE.
 
