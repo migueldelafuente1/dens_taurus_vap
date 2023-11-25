@@ -291,7 +291,7 @@ do nangle = nangle_min, nangle_max
                                field_gammaLR, field_hspLR, &
                                field_deltaLR, field_deltaRL, ndim)
     endif
-
+    if (iopt) call test_export_pnpn_mmee_uncoupled(ndim) !! TODO: RM test
 	  call test_printDesityKappaWF(dens_rhoLR, dens_kappaLR, dens_kappaRL, ndim)
   elseif (USING_FIXED_REARRANGEMENT) then
     field_hspLR = field_hspLR + fixed_rearrang_field

@@ -1755,8 +1755,10 @@ end function step_reconstruct_2body_timerev
 ! Computes density dependent two body matrix elements over the density average!
 !    all_isos (logical) Compute 3 combinations p/n instead of the current     !
 !                       ta,tb,tc,td of the sp-state.                          !
+!                       v_dd_val_Real !! pppp(1), pnpn(2), pnnp(3), nnnn(4)   !
 !-----------------------------------------------------------------------------!
 function matrix_element_v_DD(a,b, c,d, ALL_ISOS) result (v_dd_val_Real)
+
 integer(i32), intent(in) :: a,b,c,d
 logical, intent(in) :: ALL_ISOS     !! compute 3 combinations p/n instead of the
 real(r64), dimension(4) :: v_dd_val_Real !! pppp(1), pnpn(2), pnnp(3), nnnn(4)
@@ -3638,6 +3640,62 @@ close(321) !!! ---------------------------------------------------------------
 
 end subroutine test_integrate_bulk_densities
 
+
+subroutine test_export_pnpn_mmee_uncoupled(ndim)
+integer, intent(in)     :: ndim
+integer                 :: a, b, c, d, nO2, non_zero
+real(r64), dimension(4) :: me_val
+
+nO2 = ndim / 2
+
+open(111, file="dd_pnpn_me.gut")
+
+!! index introduction
+write(111, fmt="(A)") "%%%  MAT. ELEMS (p, n) ::  %%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+write(111, fmt="(I4)") ndim
+write(111, fmt="(A)") "i_sp ant_inx sh  n  l  j mj"
+do a=1, nO2:
+  write(111, fmt="(I4,I8,4I3,I4)") a, HOsp_ant(a), HOsp_sh(a), HOsp_n(a), &
+                                   HOsp_l(a), HOsp_2j(a), HOsp_2mj(a)
+end do
+
+write(111, fmt="(A)") "%%%  MAT. ELEMS (a, b) ::  %%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+
+print "(A)", " [    ] Exporting of DD non-zero PN matrix elements."
+
+do a=1, nO2
+  do b=1, nO2
+
+    non_zero = 0
+
+    do c=1, no2
+      do d=1, no2
+
+        me_val = matrix_element_v_DD(a,b,c,d, .TRUE.)
+
+        !! just check pnpn channel
+        if (dabs(me_val(2)) .LT. 1.0d-06) cycle
+
+        if (non_zero .EQ. 0) then !! include the header
+          write(111, fmt="(2I4,A)", advance='no') a, b, " // "
+        end if
+        write(111, fmt="(2I4,D15.6,A)", advance='no') c, d, me_val(2), ", "
+
+        non_zero = non_zero + 1
+
+      end do
+    end do
+
+    if (non_zero .LT. 0) write(111,fmt="(A)") ""
+
+  end do
+  print "(2(A,I6),I9)", "   progress ... ", a, "/", b, non_zero
+end do
+close(111)
+
+print "(A)", " [DONE] Exporting of DD non-zero PN matrix elements."
+
+end subroutine test_exportmme_uncoupled_pair
 
 END MODULE DensityDep
 !==============================================================================!
