@@ -3654,7 +3654,7 @@ open(111, file="dd_pnpn_me.gut")
 write(111, fmt="(A)") "%%%  MAT. ELEMS (p, n) ::  %%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 write(111, fmt="(I4)") ndim
 write(111, fmt="(A)") "i_sp ant_inx sh  n  l  j mj"
-do a=1, nO2:
+do a=1, nO2
   write(111, fmt="(I4,I8,4I3,I4)") a, HOsp_ant(a), HOsp_sh(a), HOsp_n(a), &
                                    HOsp_l(a), HOsp_2j(a), HOsp_2mj(a)
 end do
@@ -3695,7 +3695,7 @@ close(111)
 
 print "(A)", " [DONE] Exporting of DD non-zero PN matrix elements."
 
-end subroutine test_exportmme_uncoupled_pair
+end subroutine test_export_pnpn_mmee_uncoupled
 
 END MODULE DensityDep
 !==============================================================================!
