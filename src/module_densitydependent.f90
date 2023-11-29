@@ -3682,6 +3682,9 @@ real(r64), dimension(4) :: me_val
 
 nO2 = ndim / 2
 
+print "(A)", "  [WARNING] Not gonna do the exporting of matrix elements"
+return
+
 open(111, file="dd_pnpn_me.gut")
 
 !! index introduction
