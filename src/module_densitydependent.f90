@@ -3296,12 +3296,14 @@ do a = 1, spO2
 
     if (PRNT_) then
       do ms = 1, 4
+        int_test_PE(Tac,ms,a,c) = int_test_PE(Tac,ms,a,c) * integral_factor
         write(558, fmt="(3I4,A)", advance='no') a,c,ms, " %%"
         do Tac = 1, 4
           write(558,fmt="(F20.15)",advance='no') dreal(int_test_PE(Tac,ms,a,c))
         enddo
         write(558, fmt='(A)') ""
       enddo
+
       if (a.NE.c) then
         do ms = 1, 4
         write(558, fmt="(3I4,A)", advance='no') c,a,ms, " %%"
