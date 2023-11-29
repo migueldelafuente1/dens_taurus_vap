@@ -3118,7 +3118,7 @@ real(r64) :: rad_ac, X0M1, integral_factor
 complex(r64), dimension(4) :: int_hf, int_pa, &
             auxHfD, auxHfE, aux_PE, aux_pair, aux_hf ! all arrays are for (pp, nn, pn, np)
 
-complex(r46), dimension(4,4,ndim/2, ndim/2):: int_test_PE ! (tt)(msms')(a)(b)
+complex(r64), dimension(4,4,ndim/2, ndim/2):: int_test_PE ! (tt)(msms')(a)(b)
 complex(r64) :: sumD_ang, auxRea, int_rea, testaux,del_aux, t_rea_sum,t_gam_sum
 complex(r64), dimension(4) :: aux
 logical :: PRNT_, doTraceTest_
@@ -3170,7 +3170,7 @@ if (PRNT_) then
     "real(pp)  imagn(pp), nn, pn, Rearrange  I_r,I_ang=", R_PRINT, ANG_PRINT
   write(557, fmt='(2A,2I4)')"[aux  Pair] a   c  ir  ia  ms   %% ", &
     "real(pp)  imagn(pp), nn, pn    I_r,I_ang=", R_PRINT, ANG_PRINT
-  write(558. fmt='(A)') "[] a  c  ms  %%  I_real(pp)  nn   pn  np"
+  write(558, fmt='(A)') "[pair integrals] a  c  ms  %%  I_real(pp)  nn   pn  np"
 endif
 
 do a = 1, spO2
@@ -3296,12 +3296,18 @@ do a = 1, spO2
 
     if (PRNT_) then
       do ms = 1, 4
-        write(558, fmt="(3I4,A,4F20.15)") a,c,ms, "%%",int_test_PE(1,ms,a,c),&
-          int_test_PE(2,ms,a,c), int_test_PE(3,ms,a,c), int_test_PE(4,ms,a,c)
+        write(558, fmt="(3I4,A)", advance='no') a,c,ms, "%%"
+        do Tac = 1, 4
+          write(558,fmt="(F20.15)",advance='no') dreal(int_test_PE(Tac,ms,a,c))
+        end do
+        write(558, fmt='(A)') ""
       end do
       if (a.NE.c) then
-        write(558, fmt="(3I4,A,4F20.15)") c,a,ms, "%%",-int_test_PE(1,ms,a,c),&
-          -int_test_PE(2,ms,a,c), -int_test_PE(3,ms,a,c), -int_test_PE(4,ms,a,c)
+        write(558, fmt="(3I4,A)", advance='no') a,c,ms, "%%"
+        do Tac = 1, 4
+          write(558,fmt="(F20.15)",advance='no') -dreal(int_test_PE(Tac,ms,a,c))
+        end do
+        write(558, fmt='(A)') ""
       end if
     end if
 
