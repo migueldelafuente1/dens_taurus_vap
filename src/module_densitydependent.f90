@@ -3062,7 +3062,7 @@ do Tac = 1, 4
   hspLR  (aa,cc) = hspLR  (aa,cc) + gammaLR_DD(aa,cc)
 
   !! copy to the off-diagonal values and sum to the main fields
-  if(a.NE.c) then ! all off-diagonal for all (diagonal is already done)
+  if (a.NE.c) then ! all off-diagonal for all (diagonal is already done)
     gammaLR_DD(cc,aa) =  gammaLR_DD(aa,cc)
     deltaLR_DD(cc,aa) = -deltaLR_DD(aa,cc)
     deltaRL_DD(cc,aa) = -deltaRL_DD(aa,cc)
@@ -3118,9 +3118,9 @@ real(r64) :: rad_ac, X0M1, integral_factor
 complex(r64), dimension(4) :: int_hf, int_pa, &
             auxHfD, auxHfE, aux_PE, aux_pair, aux_hf ! all arrays are for (pp, nn, pn, np)
 
+complex(r46), dimension(4,4,ndim/2, ndim/2):: int_test_PE ! (tt)(msms')(a)(b)
 complex(r64) :: sumD_ang, auxRea, int_rea, testaux,del_aux, t_rea_sum,t_gam_sum
 complex(r64), dimension(4) :: aux
-complex(r64), dimension(10) :: intgama, auxgama
 logical :: PRNT_, doTraceTest_
 
 PRNT_ = (PRINT_GUTS).OR.(.FALSE.)
@@ -3162,6 +3162,7 @@ if (PRNT_) then
   open(555, file='BulkHF_elements_Exch.gut')
   open(556, file='BulkHF_elements_Dire.gut')
   open(557, file='BulkPA_elements_Exch.gut')
+  open(558, file='BulkPA_comp_integrals.gut')
 
   write(555, fmt='(2A,2I4)')"[auxHf Exc] a   c  ir  ia   %% ", &
     "real(pp)  imagn(pp), nn, pn    I_r,I_ang=", R_PRINT, ANG_PRINT
@@ -3169,6 +3170,7 @@ if (PRNT_) then
     "real(pp)  imagn(pp), nn, pn, Rearrange  I_r,I_ang=", R_PRINT, ANG_PRINT
   write(557, fmt='(2A,2I4)')"[aux  Pair] a   c  ir  ia  ms   %% ", &
     "real(pp)  imagn(pp), nn, pn    I_r,I_ang=", R_PRINT, ANG_PRINT
+  write(558. fmt='(A)') "[] a  c  ms  %%  I_real(pp)  nn   pn  np"
 endif
 
 do a = 1, spO2
@@ -3182,7 +3184,7 @@ do a = 1, spO2
     int_pa = zzero
     int_rea= zzero
 
-    intgama = zzero
+    int_test_PE = zzero
 
     do i_r = 1, r_dim
       rad_ac = weight_R(i_r) * radial_2b_sho_memo(a_sh, c_sh, i_r)
@@ -3232,11 +3234,22 @@ do a = 1, spO2
           aux(ms) = AngFunctDUAL_P2(ms,a,c, i_ang) * BulkP1(4,ms, i_r,i_ang) !np
           aux_PE(4)  = aux_PE(4)  + aux(ms)
 
-          if ((PRNT_).AND.(i_r == R_PRINT).AND.(i_ang == ANG_PRINT)) then
-            write(555, fmt='(5I4,A,4(F20.15,SP,F20.15,"j"))') a,c,i_r,i_ang,ms,&
-              "%%", auxHfE(1),auxHfE(2),auxHfE(3),auxHfE(4)
-            write(557, fmt='(5I4,A,4(F20.15,SP,F20.15,"j"))') a,c,i_r,i_ang,ms,&
-              "%%", aux_PE(1),aux_PE(2),aux_PE(3),aux_PE(4)
+          !! TEST -----------------------------------------------------------
+          if (PRNT_)then
+            !! Integrals for the Pairing Independently
+            do Tac = 1, 4
+            aux(ms) = AngFunctDUAL_P2(ms,a,c,i_ang) * BulkP1(Tac,ms,i_r,i_ang)
+            if ((Tac .EQ. 1).OR.(Tac .EQ. 2)) aux(ms) = aux(ms) * X0M1
+            int_test_PE(Tac,ms,a,c) = int_test_PE(Tac,ms,a,c) + &
+              (weight_LEB(i_ang) * rad_ac * dens_alpha(i_r,i_ang) * aux(ms))
+            end do
+
+            if ((i_r == R_PRINT).AND.(i_ang == ANG_PRINT)) then
+              write(555, fmt='(5I4,A,4(F20.15,SP,F20.15,"j"))') &
+                a,c,i_r,i_ang,ms,"%%", auxHfE(1),auxHfE(2),auxHfE(3),auxHfE(4)
+              write(557, fmt='(5I4,A,4(F20.15,SP,F20.15,"j"))') &
+                a,c,i_r,i_ang,ms,"%%", aux_PE(1),aux_PE(2),aux_PE(3),aux_PE(4)
+            endif
           endif
           !! TEST -----------------------------------------------------------
 
@@ -3280,6 +3293,18 @@ do a = 1, spO2
     call complete_DD_fields(int_hf, int_pa, int_rea, gammaLR, deltaLR,deltaRL,&
                             hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, &
                             a, c, spO2, ndim)
+
+    if (PRNT_) then
+      do ms = 1, 4
+        write(558, fmt="(3I4,A,4F20.15)") a,c,ms, "%%",int_test_PE(1,ms,a,c),&
+          int_test_PE(2,ms,a,c), int_test_PE(3,ms,a,c), int_test_PE(4,ms,a,c)
+      end do
+      if (a.NE.c) then
+        write(558, fmt="(3I4,A,4F20.15)") c,a,ms, "%%",-int_test_PE(1,ms,a,c),&
+          -int_test_PE(2,ms,a,c), -int_test_PE(3,ms,a,c), -int_test_PE(4,ms,a,c)
+      end if
+    end if
+
     if (.not.DOING_PROJECTION) then
     if ((dabs(imag(int_hf(1)))> 1.0d-9).OR.(dabs(imag(int_hf(2)))> 1.0d-9).OR.&
         (dabs(imag(int_hf(3)))> 1.0d-9).OR.(dabs(imag(int_hf(4)))> 1.0d-9))then
@@ -3318,6 +3343,7 @@ if (PRNT_) then
   close(555)
   close(556)
   close(557)
+  close(558)
 endif
 
 !! do the trace-test and printing of fields each 10 steps
