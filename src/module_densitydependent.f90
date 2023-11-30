@@ -3118,7 +3118,7 @@ real(r64) :: rad_ac, X0M1, integral_factor
 complex(r64), dimension(4) :: int_hf, int_pa, &
             auxHfD, auxHfE, aux_PE, aux_pair, aux_hf ! all arrays are for (pp, nn, pn, np)
 
-complex(r64), dimension(4,4,ndim/2, ndim/2):: int_test_PE ! (tt)(msms')(a)(b)
+complex(r64), dimension(4,4,ndim, ndim) :: int_test_PE ! (tt)(msms')(a)(b)
 complex(r64) :: sumD_ang, auxRea, int_rea, testaux,del_aux, t_rea_sum,t_gam_sum
 complex(r64), dimension(4) :: aux
 logical :: PRNT_, doTraceTest_
@@ -3358,6 +3358,7 @@ if (PRNT_) then
   close(557)
   close(558)
 endif
+print "(A)", "Here 4"
 
 !! do the trace-test and printing of fields each 10 steps
 if (doTraceTest_) then
@@ -3406,7 +3407,7 @@ if (doTraceTest_) then
   if (PRNT_) close(620)
   if (PRNT_) close(621)
 endif
-print "(A)", "Here 4"
+print "(A)", "Here 5"
 
 
 end subroutine calculate_fields_DD
