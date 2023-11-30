@@ -3173,7 +3173,6 @@ if (PRNT_) then
   write(558, fmt='(A)') "[pair integrals] a  c  ms  %%  I_real(pp)  nn   pn  np"
 endif
 
-print "(A)", "Here 1"
 do a = 1, spO2
   !! HF field
   a_sh = HOsp_sh(a)
@@ -3338,8 +3337,6 @@ do a = 1, spO2
   enddo
 enddo
 
-print "(A)", "Here 3"
-
 !! save the last EDF HFB of the DD term
 last_HFB_energy = zero
 if (evalQuasiParticleVSpace .OR. exportValSpace) then
@@ -3358,7 +3355,6 @@ if (PRNT_) then
   close(557)
   close(558)
 endif
-print "(A)", "Here 4"
 
 !! do the trace-test and printing of fields each 10 steps
 if (doTraceTest_) then
@@ -3407,8 +3403,6 @@ if (doTraceTest_) then
   if (PRNT_) close(620)
   if (PRNT_) close(621)
 endif
-print "(A)", "Here 5"
-
 
 end subroutine calculate_fields_DD
 
