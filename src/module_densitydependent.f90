@@ -3173,6 +3173,7 @@ if (PRNT_) then
   write(558, fmt='(A)') "[pair integrals] a  c  ms  %%  I_real(pp)  nn   pn  np"
 endif
 
+print "(A)", "Here 1"
 do a = 1, spO2
   !! HF field
   a_sh = HOsp_sh(a)
@@ -3290,6 +3291,7 @@ do a = 1, spO2
     end do
     int_rea = int_rea * 0.25d+0 * integral_factor * alpha_DD
 
+    print "(A)", "Here 2"
     call complete_DD_fields(int_hf, int_pa, int_rea, gammaLR, deltaLR,deltaRL,&
                             hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, &
                             a, c, spO2, ndim)
@@ -3336,6 +3338,8 @@ do a = 1, spO2
 
   enddo
 enddo
+
+print "(A)", "Here 3"
 
 !! save the last EDF HFB of the DD term
 last_HFB_energy = zero
