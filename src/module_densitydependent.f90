@@ -2952,7 +2952,7 @@ do i_r = 1, r_dim
     aux_d =  dens_pnt(5,i_r,i_a)**2
     aux1  = (dens_pnt(1,i_r,i_a)**2) + (dens_pnt(2,i_r,i_a)**2)
       ! pn np part
-    aux2  = 2 * dens_pnt(3,i_r,i_a) * dens_pnt(4,i_r,i_a)
+    aux2  = 2.0d0 * dens_pnt(3,i_r,i_a) * dens_pnt(4,i_r,i_a)
     !! dens_pnt are complex, a test is to verify aux2 with the following to be Real
     !aux2 = 2.0d0*(dreal(dens_pnt(3,i_r,i_a))**2 - dimag(dens_pnt(3,i_r,i_a))**2)
 
@@ -2988,14 +2988,15 @@ do i_r = 1, r_dim
         aux_p = aux_p + (aux1 + aux2)
       endif
       !pn np part (remember the 1Bpn + x0*1Bpn - 1Bnp - x0*1Bnp was done already)
-      aux1   = BulkP2(3,ms, i_r,i_a) * BulkP1(3,ms, i_r,i_a) !pn*np
-      aux2   = BulkP2(4,ms, i_r,i_a) * BulkP1(4,ms, i_r,i_a) !np*pn
+      aux1   = BulkP2(3,ms, i_r,i_a) * BulkP1(3,ms, i_r,i_a) !pn*pn
+      aux2   = BulkP2(4,ms, i_r,i_a) * BulkP1(4,ms, i_r,i_a) !np*np
       aux_pnp = aux_pnp + (aux1 + aux2)
 
     enddo ! loop ms
     !! change 11/11/22 + sings of pairing changed to - (from -k*_ab k_cd)
     !! since (K_RL)* is the definition of the contraction, the sign is + for pairing
     aux1 = (2.0d+0*(aux_d - aux_e)) + (X0M1*aux_p) + aux_pnp
+
     if ((.FALSE.).AND.(dimag(aux1) > 1.0e-12)) then
       print '(A,2I4,5F20.15)',"Error!! Rearr. funct. is imaginary: ",i_r,i_a,&
         dimag(aux1), dimag(aux_d), dimag(aux_e), dimag(aux_p), dimag(aux_pnp)
@@ -3683,8 +3684,8 @@ real(r64), dimension(4) :: me_val
 
 nO2 = ndim / 2
 
-print "(A)", "  [WARNING] Not gonna do the exporting of matrix elements"
-return
+!print "(A)", "  [WARNING] Not gonna do the exporting of matrix elements"
+!return
 
 open(111, file="dd_pnpn_me.gut")
 
