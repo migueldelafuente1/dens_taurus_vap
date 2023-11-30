@@ -3291,7 +3291,6 @@ do a = 1, spO2
     end do
     int_rea = int_rea * 0.25d+0 * integral_factor * alpha_DD
 
-    print "(A)", "Here 2"
     call complete_DD_fields(int_hf, int_pa, int_rea, gammaLR, deltaLR,deltaRL,&
                             hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, &
                             a, c, spO2, ndim)
@@ -3407,6 +3406,7 @@ if (doTraceTest_) then
   if (PRNT_) close(620)
   if (PRNT_) close(621)
 endif
+print "(A)", "Here 4"
 
 
 end subroutine calculate_fields_DD
