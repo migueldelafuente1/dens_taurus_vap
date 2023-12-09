@@ -66,7 +66,6 @@ real(r64), dimension(:), allocatable  :: phi, phi_export
 complex(r64), dimension(:,:), allocatable :: density, density_export !(ir, iang)
 complex(r64), dimension(:,:), allocatable :: dens_alpha, dens_alpm1
 complex(r64), dimension(:,:,:), allocatable :: dens_pnt   !(pp, nn, pn, np, total;i_r,iang)
-!complex(r64), dimension(:,:,:), allocatable :: dens_pnmix !(pn-Odd,pn-Even,np-O,np-E; i_r,iang)
 complex(r64), dimension(:,:), allocatable :: density_export_p, density_export_n
 complex(r64), dimension(:,:), allocatable :: pairdens_export
 complex(r64), dimension(:,:), allocatable :: pairdens_export_n,pairdens_export_p
@@ -1210,9 +1209,13 @@ spO2 = HOsp_dim / 2
 
 ! assertion, a, b only from pp space:
 if ((a > spO2).OR.(b > spO2)) then
-   print *, "[ASSERT. ERROR] compute_bulkDens4Fields a,b (sp) in neutron space"
-   STOP
+  print *, "[ASSERT. ERROR] compute_bulkDens4Fields a,b (sp) in neutron space"
+  STOP
 endif
+if (b < a) then
+  print *, "[ASSERT. ERROR] compute_bulkDens4Fields a <= b!, but b < a"
+  STOP
+end if
 aNeQb = kdelta(a, b).ne.1
 a_n   = a + spO2
 b_n   = b + spO2
@@ -3358,7 +3361,7 @@ if (PRNT_) then
 endif
 
 !! do the trace-test and printing of fields each 10 steps
-if (doTraceTest_) then
+if (PRNT_.OR.doTraceTest_) then
   t_rea_sum = zzero
   t_gam_sum = zzero
 
@@ -3387,19 +3390,24 @@ if (doTraceTest_) then
       endif
       !! TEST: Tr(dens * Gamma) = Tr(dens * Rearrange) * alpha
       !if ((i > spO2).AND.(j > spO2)) cycle
-      t_rea_sum = t_rea_sum + (rhoLR(i,j) * rearrang_field(j,i))
-      t_gam_sum = t_gam_sum + (rhoLR(i,j) * gammaLR_DD(j,i))
-      t_gam_sum = t_gam_sum - 0.5d00 * (kappaRL(i,j) * deltaLR_DD(j,i))
+      if (doTraceTest_) then
+        t_rea_sum = t_rea_sum + (rhoLR(i,j) * rearrang_field(j,i))
+        t_gam_sum = t_gam_sum + (rhoLR(i,j) * gammaLR_DD(j,i))
+        t_gam_sum = t_gam_sum - 0.5d00 * (kappaRL(i,j) * deltaLR_DD(j,i))
+      endif
     enddo
   enddo
-  !!
-  !t_rea_sum = (0.25d00 / alpha_DD) * t_rea_sum
-  del_aux = (t_gam_sum / t_rea_sum) - (alpha_DD / 2.0d00)
-  if (abs(dreal(del_aux)) > 1.0D-8) then
-    print '(A,2F15.6,A,F15.6)', "[Warning] Tr(rho*Gam)/= 2a*Tr(rho*Rea) =",&
-      dreal(t_gam_sum),dreal(t_rea_sum), &
-      ":: rhoGam/rhoRea ::", dreal(t_gam_sum / t_rea_sum)
-  endif !!! *********************************************************** DELETE
+
+  if (doTraceTest_) then
+    !!
+    !t_rea_sum = (0.25d00 / alpha_DD) * t_rea_sum
+    del_aux = (t_gam_sum / t_rea_sum) - (alpha_DD / 2.0d00)
+    if (abs(dreal(del_aux)) > 1.0D-8) then
+      print '(A,2F15.6,A,F15.6)', "[Warning] Tr(rho*Gam)/= 2a*Tr(rho*Rea) =",&
+        dreal(t_gam_sum),dreal(t_rea_sum), &
+        ":: rhoGam/rhoRea ::", dreal(t_gam_sum / t_rea_sum)
+    endif !!! ********************************************************* DELETE
+  endif
 
   if (PRNT_) close(620)
   if (PRNT_) close(621)
@@ -3703,7 +3711,7 @@ write(111, fmt="(A)") "%%%  MAT. ELEMS (a, b) ::  %%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 print "(A)", " [    ] Exporting of DD non-zero PN matrix elements."
 
 do a = 1, nO2
-  do b = a, nO2
+  do b = 1, nO2
 
     non_zero = 0
 
@@ -3719,6 +3727,7 @@ do a = 1, nO2
           write(111, fmt="(2I4,A)", advance='no') a, b, " // "
         end if
         write(111, fmt="(2I4,D15.6,A)", advance='no') c, d, me_val(2), ", "
+!        write(111, fmt="(2I4,D15.6,A)", advance='no') c, d, me_val(3), ", "
 
         non_zero = non_zero + 1
 
