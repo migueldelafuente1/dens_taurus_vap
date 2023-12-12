@@ -3685,28 +3685,108 @@ close(321) !!! ---------------------------------------------------------------
 end subroutine test_integrate_bulk_densities
 
 
+
+
 subroutine test_export_pnpn_mmee_uncoupled(ndim)
+
 integer, intent(in)     :: ndim
-integer                 :: a, b, c, d, nO2, non_zero
+integer                 :: a, b, c, d, nO2, kk,i1,i2,i3,i4, &
+                           ab_indx, cd_indx, it, perm, ii1,ii2,ii3,ii4, tt, sg_
+real(r64) :: h2b
 real(r64), dimension(4) :: me_val
+integer,   dimension(2) :: non_zero
+real(r64), dimension(:,:), allocatable :: registered_h2b
 
 nO2 = ndim / 2
 
 !print "(A)", "  [WARNING] Not gonna do the exporting of matrix elements"
 !return
 
-open(111, file="dd_pnpn_me.gut")
+!!! Obtain the pnpn part as an (a,b) vs (c,d) matrix:
+allocate(registered_h2b(nO2*nO2, nO2*nO2))
+registered_h2b = zero
 
+do kk = 1, hamil_H2dim
+
+  i1 = hamil_abcd(1+4*(kk-1))
+  i2 = hamil_abcd(2+4*(kk-1))
+  i3 = hamil_abcd(3+4*(kk-1))
+  i4 = hamil_abcd(4+4*(kk-1))
+
+  if (.NOT.((HOsp_2mt(i1).NE.-1) .AND. (HOsp_2mt(i1).NE. 1))) cycle
+  if (.NOT.((HOsp_2mt(i3).NE.-1) .AND. (HOsp_2mt(i4).NE. 1))) cycle ! unnecessary
+
+  h2b  = hamil_H2(kk)
+  perm = hamil_trperm(kk)
+
+  !!! Loop on time reversal
+  do it = 1, 2
+
+    if ( it == 2 ) then
+      if ( HOsp_2mj(i1) + HOsp_2mj(i2) == 0 ) cycle
+      call find_timerev(perm,i1,i2,i3,i4)
+      h2b = sign(one,perm*one) * h2b
+    endif
+
+    ii1 = i1
+    ii2 = i2
+    ii3 = i3
+    ii4 = i4
+    if (i1 > nO2) ii1 = ii1 - nO2
+    if (i2 > nO2) ii2 = ii2 - nO2
+    if (i3 > nO2) ii3 = ii3 - nO2
+    if (i4 > nO2) ii4 = ii4 - nO2
+
+    ab_indx = ((ii1 - 1) * nO2) + ii2
+    cd_indx = ((ii3 - 1) * nO2) + ii4
+    sg_ = 1
+
+    !! 1. Criteria from module_fields.calculate_fields (general)
+    if (((i1 .GT. nO2).AND.(i2 .GT. nO2)) .OR. &
+        ((i1 .LE. nO2).AND.(i2 .LE. nO2))) then
+      cycle    ! nn_ nn_ or ! pp_ pp_
+    else
+      tt = 4*HOsp_2mt(i1) + 2*(HOsp_2mt(i2) + HOsp_2mt(i3)) + HOsp_2mt(i4) - 1
+      tt = 3 + (tt / 2)
+      if ((tt.EQ.1) .OR. (tt.EQ.4)) then
+        tt = 2  ! pn_ pn_
+      else
+        tt = 3  ! pn_ np_
+        cd_indx = ((ii4 - 1) * nO2) + ii3
+        sg_ = -1
+      end if
+    endif
+
+    registered_h2b(ab_indx, cd_indx) = sg_ * h2b
+    if ((kdelta(i1,i3) * kdelta(i2,i4)) .NE. 1) then
+      registered_h2b(cd_indx, ab_indx) = sg_ * h2b
+    endif
+
+  enddo
+end do !! kk loop
+
+
+
+
+open(111, file="dd_pnpn_me.gut")
+open(112, file="bb_pnpn_me.gut")
 !! index introduction
 write(111, fmt="(A)") "%%%  MAT. ELEMS (p, n) ::  %%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 write(111, fmt="(I4)") ndim
 write(111, fmt="(A)") "i_sp ant_inx sh  n  l  j mj"
+write(112, fmt="(A)") "%%%  MAT. ELEMS (p, n) ::  %%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+write(112, fmt="(I4)") ndim
+write(112, fmt="(A)") "i_sp ant_inx sh  n  l  j mj"
 do a=1, nO2
   write(111, fmt="(I4,I8,4I3,I4)") a, HOsp_ant(a), HOsp_sh(a), HOsp_n(a), &
+                                   HOsp_l(a), HOsp_2j(a), HOsp_2mj(a)
+  write(112, fmt="(I4,I8,4I3,I4)") a, HOsp_ant(a), HOsp_sh(a), HOsp_n(a), &
                                    HOsp_l(a), HOsp_2j(a), HOsp_2mj(a)
 end do
 
 write(111, fmt="(A)") "%%%  MAT. ELEMS (a, b) ::  %%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+write(112, fmt="(A)") "%%%  MAT. ELEMS (a, b) ::  %%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+
 
 print "(A)", " [    ] Exporting of DD non-zero PN matrix elements."
 
@@ -3714,32 +3794,54 @@ do a = 1, nO2
   do b = 1, nO2
 
     non_zero = 0
-
+    !! Density-Dependent part
     do c=1, no2
       do d=1, no2
 
         me_val = matrix_element_v_DD(a,b,c,d, .TRUE.)
 
         !! just check pnpn channel
-        if (dabs(me_val(2)) .LT. 1.0d-06) cycle
+        if (dabs(me_val(2)) .LT. 1.0d-09) cycle
 
-        if (non_zero .EQ. 0) then !! include the header
+        if (non_zero(1) .EQ. 0) then !! include the header
           write(111, fmt="(2I4,A)", advance='no') a, b, " // "
         end if
         write(111, fmt="(2I4,D15.6,A)", advance='no') c, d, me_val(2), ", "
-!        write(111, fmt="(2I4,D15.6,A)", advance='no') c, d, me_val(3), ", "
 
-        non_zero = non_zero + 1
+        non_zero(1) = non_zero(1) + 1
+
+      end do
+    end do
+    if (non_zero(1) .GT. 0) write(111,fmt="(A)") ""
+
+    ab_indx = ((a - 1) * nO2) + b
+    !! Hamiltonian part
+    do c=1, no2
+      do d=1, no2
+
+        cd_indx = ((c - 1) * nO2) + d
+        h2b = registered_h2b(ab_indx, cd_indx)
+
+        !! just check pnpn channel
+        if (dabs(h2b) .LT. 1.0d-09) cycle
+
+        if (non_zero(2) .EQ. 0) then !! include the header
+          write(112, fmt="(2I4,A)", advance='no') a, b, " // "
+        end if
+        write(112, fmt="(2I4,D15.6,A)", advance='no') c, d, h2b, ", "
+
+        non_zero(2) = non_zero(2) + 1
 
       end do
     end do
 
-    if (non_zero .GT. 0) write(111,fmt="(A)") ""
+    if (non_zero(2) .GT. 0) write(112,fmt="(A)") ""
 
   end do
-  print "(2(A,I6),I9)", "   progress ... ", a, "/", b, non_zero
+  print "(2(A,I6),2I9)", "   progress ... ", a,"/",b, non_zero(1),non_zero(2)
 end do
 close(111)
+close(112)
 
 print "(A)", " [DONE] Exporting of DD non-zero PN matrix elements."
 
