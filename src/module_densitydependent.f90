@@ -3706,6 +3706,7 @@ nO2 = ndim / 2
 allocate(registered_h2b(nO2*nO2, nO2*nO2))
 registered_h2b = zero
 
+open(111, file='hamil_bb_init.gut')
 do kk = 1, hamil_H2dim
 
   i1 = hamil_abcd(1+4*(kk-1))
@@ -3727,6 +3728,7 @@ do kk = 1, hamil_H2dim
       call find_timerev(perm,i1,i2,i3,i4)
       h2b = sign(one,perm*one) * h2b
     endif
+    write(111, fmt='(4I3,I2,F15.6)') i1, i2, i3, i4, it, h2b
 
     ii1 = i1
     ii2 = i2
@@ -3764,7 +3766,7 @@ do kk = 1, hamil_H2dim
 
   enddo
 end do !! kk loop
-
+close(111)
 
 
 
