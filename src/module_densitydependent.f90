@@ -3714,12 +3714,15 @@ do kk = 1, hamil_H2dim
   i3 = hamil_abcd(3+4*(kk-1))
   i4 = hamil_abcd(4+4*(kk-1))
 
-  print '(4L3,A,2L3)', (HOsp_2mt(i1).NE.-1), (HOsp_2mt(i2).NE.-1), &
-                  (HOsp_2mt(i3).NE.-1), (HOsp_2mt(i4).NE.-1), "  -> ", &
-                 ((HOsp_2mt(i1).NE.-1) .OR. (HOsp_2mt(i1).NE. 1)), &
-                 ((HOsp_2mt(i3).NE.-1) .OR. (HOsp_2mt(i4).NE. 1))
-  if (((HOsp_2mt(i1).NE.-1) .OR. (HOsp_2mt(i1).NE. 1))) cycle
-  if (((HOsp_2mt(i3).NE.-1) .OR. (HOsp_2mt(i4).NE. 1))) cycle ! unnecessary
+!  print '(4L3,A,2L3)', (HOsp_2mt(i1).NE.-1), (HOsp_2mt(i2).NE.-1), &
+!                  (HOsp_2mt(i3).NE.-1), (HOsp_2mt(i4).NE.-1), "  -> ", &
+!                 ((HOsp_2mt(i1).NE.-1) .OR. (HOsp_2mt(i1).NE. 1)), &
+!                 ((HOsp_2mt(i3).NE.-1) .OR. (HOsp_2mt(i4).NE. 1))
+  if (((HOsp_2mt(i1).EQ.-1) .AND. (HOsp_2mt(i2).EQ.-1))) cycle
+  if (((HOsp_2mt(i1).EQ. 1) .AND. (HOsp_2mt(i2).EQ. 1))) cycle
+  if (((HOsp_2mt(i1).EQ. 1) .AND. (HOsp_2mt(i2).EQ.-1))) cycle
+  if (((HOsp_2mt(i3).EQ. 1) .AND. (HOsp_2mt(i4).EQ.-1))) cycle
+!  if (((HOsp_2mt(i3).NE.-1) .OR. (HOsp_2mt(i4).NE. 1))) cycle ! unnecessary
 
   h2b  = hamil_H2(kk)
   perm = hamil_trperm(kk)
