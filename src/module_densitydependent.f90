@@ -3142,6 +3142,11 @@ if(doTraceTest_) then !! copy the Fields to plot in the case of printing.
   enddo
 endif
 
+!!!  TEST: Anulates Delta field (Remove step.)
+delta_LR = zzero
+delta_RL = zzero
+!!!
+
 spO2 = HOsp_dim / 2
 
 gammaLR_DD = zzero
