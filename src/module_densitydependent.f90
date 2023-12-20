@@ -3834,7 +3834,7 @@ do a = 1, nO2
         h2b = registered_h2b(ab_indx, cd_indx)
 
         !! just check pnpn channel
-        if (dabs(h2b) .LT. 1.0d-09) cycle
+        if (abs(h2b) .LT. 1.0d-09) cycle
 
         if (non_zero(2) .EQ. 0) then !! include the header
           write(112, fmt="(2I4,A)", advance='no') a, b, " // "
