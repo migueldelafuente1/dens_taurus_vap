@@ -3462,6 +3462,207 @@ print "(A)", bar
 !end if
 end subroutine progress_bar_iteration
 
+
+!-----------------------------------------------------------------------------!
+! function matrix_element_v_gradientDD                                        !
+!                                                                             !
+! Computes density dependent two body matrix elements over the density average!
+!    all_isos (logical) Compute 3 combinations p/n instead of the current     !
+!                       ta,tb,tc,td of the sp-state.                          !
+!                       v_dd_val_Real !! pppp(1), pnpn(2), pnnp(3), nnnn(4)   !
+!-----------------------------------------------------------------------------!
+function matrix_element_v_gradientDD(a,b, c,d, ALL_ISOS) result (v_dd_val_Real)
+
+integer(i32), intent(in) :: a,b,c,d
+logical, intent(in) :: ALL_ISOS     !! compute 3 combinations p/n instead of the
+real(r64), dimension(4) :: v_dd_val_Real !! pppp(1), pnpn(2), pnnp(3), nnnn(4)
+
+complex(r64) :: aux, radial, aux_dir, aux_exch, ang_rea, rea,aux_rea
+complex(r64), dimension(4) :: v_dd_value
+real(r64)    :: delta_dir, delta_exch, angular, integral_factor,TOP, LOW
+integer(i32) :: la, ja, ma, a_sh, ta, lb, jb, mb, b_sh, tb, bmax, &
+                lc, jc, mc, c_sh, tc, ld, jd, md, d_sh, td,&
+                i_r, i_th, i_phi, i_ang, &
+                K,M, K2,M2, ind_km, ind_km_q, &
+                kk1,kk2, kk1N,kk2N, l1,l2,j1,j2, mj1,mj2, ind_jm_1, ind_jm_2, &
+                ind_jm_a, ind_jm_b, ind_jm_c, ind_jm_d, delta_ac_bd, delta_ad_bc
+integer :: print_element = 0, HOspO2, skpd
+real(r64) :: v_re_1, v_re_2
+
+HOspO2 = HOsp_dim/2
+
+v_dd_value = zzero
+v_dd_val_Real = zero
+
+ja = HOsp_2j(a)
+ma = HOsp_2mj(a)
+la = HOsp_l(a)
+a_sh = HOsp_sh(a)
+ind_jm_a = angular_momentum_index(ja, ma, .TRUE.)
+jb = HOsp_2j(b)
+mb = HOsp_2mj(b)
+lb = HOsp_l(b)
+b_sh = HOsp_sh(b)
+ind_jm_b = angular_momentum_index(jb, mb, .TRUE.)
+jc = HOsp_2j(c)
+mc = HOsp_2mj(c)
+lc = HOsp_l(c)
+c_sh = HOsp_sh(c)
+ind_jm_c = angular_momentum_index(jc, mc, .TRUE.)
+jd = HOsp_2j(d)
+md = HOsp_2mj(d)
+ld = HOsp_l(d)
+d_sh = HOsp_sh(d)
+ind_jm_d = angular_momentum_index(jd, md, .TRUE.)
+
+delta_dir  = one
+delta_exch = one
+if (.NOT.ALL_ISOS) then ! compute the
+  !else ! evaluate the element isospin directly
+  ta = HOsp_2mt(a)
+  tb = HOsp_2mt(b)
+  tc = HOsp_2mt(c)
+  td = HOsp_2mt(d)
+
+  delta_ac_bd = abs((ta + tc) * (tb + td) / 4)  ! a+c = (2, 0)
+  delta_ad_bc = abs((ta + td) * (tb + tc) / 4)
+
+  delta_dir  = delta_ac_bd - (x0_DD_FACTOR * delta_ad_bc)
+  delta_exch = delta_ad_bc - (x0_DD_FACTOR * delta_ac_bd)
+
+  !! Tested (abs(delta_dir)+abs(delta_exch) > 2.0d-8) & pppp/nnnn non Skipped
+  if (abs(delta_dir)+abs(delta_exch) < 1.0d-6) return
+endif
+
+
+integral_factor = t3_DD_CONST
+!! NOTE :: Remember that radial functions already have the factor 1/b**3
+integral_factor = integral_factor * 0.5d0 * (HO_b**3)
+integral_factor = integral_factor  / ((2.0d0 + alpha_DD)**1.5d0)
+integral_factor = integral_factor * 4 * pi  ! add Lebedev norm factor
+
+
+do i_r = 1, r_dim
+
+  radial = weight_R(i_r) * radial_2b_sho_memo(a_sh, c_sh, i_r) &
+                         * radial_2b_sho_memo(b_sh, d_sh, i_r) &
+                         * exp((2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
+  !! NOTE: the inclusion of the exponential part is necessary due the form of
+  !! of the density and radial functions with the exp(-r/b^2) for stability
+  !! requirement in larger shells.
+
+  do i_ang = 1, angular_dim
+      !! ====================================================================
+      aux_dir  = zzero
+      if (abs(delta_dir) > 1.0d-15) then
+        do K = abs(ja - jc) / 2, (ja + jc) / 2
+          M = (mc - ma)/2
+          if ((MOD(K + la + lc, 2) == 1).OR.(abs(M) > K)) cycle
+
+          do K2 = abs(jb - jd) / 2, (jb + jd) / 2
+            !! NOTE:: in DD Hamiltonian loop, condition ma+mb=mc+md -> M=M2
+            M2 = (md - mb)/2
+            if ((MOD(K2 + lb + ld, 2) == 1).OR.(abs(M2) > K2)) cycle
+
+            ind_km   = angular_momentum_index(K,  M,  .FALSE.)
+            ind_km_q = angular_momentum_index(K2, M2, .FALSE.)
+
+            aux_dir = aux_dir + (dens_Y_KM_me(ind_jm_a, ind_jm_c, ind_km)  * &
+                                 dens_Y_KM_me(ind_jm_b, ind_jm_d, ind_km_q)* &
+                                 sph_harmonics_memo(ind_km,   i_ang) * &
+                                 sph_harmonics_memo(ind_km_q, i_ang))
+          enddo
+        enddo
+      endif
+      !! ====================================================================
+      aux_exch = zzero
+      if (abs(delta_exch) > 1.0d-15) then
+        do K = abs(ja - jd) / 2, (ja + jd) / 2
+          M = (md - ma)/2
+          if ((MOD(K + la + ld, 2) == 1).OR.(abs(M) > K)) cycle
+
+          do K2 = abs(jb - jc) / 2, (jb + jc) / 2
+            M2 = (mc - mb)/2
+            if ((MOD(K2 + lb + lc, 2) == 1).OR.(abs(M2) > K2)) cycle
+
+            ind_km   = angular_momentum_index(K,  M,  .FALSE.)
+            ind_km_q = angular_momentum_index(K2, M2, .FALSE.)
+
+            aux_exch = aux_exch + (dens_Y_KM_me(ind_jm_a, ind_jm_d, ind_km)  *&
+                                   dens_Y_KM_me(ind_jm_b, ind_jm_c, ind_km_q)*&
+                                   sph_harmonics_memo(ind_km,   i_ang) *&
+                                   sph_harmonics_memo(ind_km_q, i_ang))
+          enddo
+        enddo
+      endif
+      !! ====================================================================
+
+      angular = weight_LEB(i_ang)
+
+      if (ALL_ISOS) then
+        !v_nnnn = v_pppp
+        aux = radial * angular * (1-x0_DD_FACTOR) * ((aux_dir) - (aux_exch))
+        v_dd_value(1) = v_dd_value(1) + (aux * dens_alpha(i_r, i_ang))
+        v_dd_value(4) = v_dd_value(1)
+
+        ! pn pn
+        aux = radial * angular * (aux_dir + (x0_DD_FACTOR*aux_exch))
+        v_dd_value(2) = v_dd_value(2) + (aux * dens_alpha(i_r, i_ang))
+        ! pn np
+        aux = radial * angular * ((x0_DD_FACTOR*aux_dir) + aux_exch)
+        v_dd_value(3) = v_dd_value(3) - (aux * dens_alpha(i_r, i_ang))
+      else
+        ! first element is the one calculated (rest remain at zero))
+        aux = radial * angular * ((delta_dir*aux_dir) - (delta_exch*aux_exch))
+        v_dd_value(1) = v_dd_value(1) + (aux * dens_alpha(i_r, i_ang))
+      end if
+
+      !! Loop for the Rearrangement term
+      if ((EVAL_REARRANGEMENT).AND.(EVAL_EXPLICIT_FIELDS_DD)) then
+        !!!! if (dreal(aux)**2 + dimag(aux)**2 < 1.0d-15) cycle
+        !! NOTE: don't put a skip for the |aux|<1e-15, afect the tolerance of
+        !! the sum, it doesn't match exactly with the field calculation.
+        aux_rea = alpha_DD * integral_factor * aux * dens_alpm1(i_r, i_ang)
+
+        do kk1 = 1, HOspO2
+          kk1N = kk1 + HOspO2
+          do kk2 = 1, HOspO2
+            kk2N = kk2 +HOspO2
+
+            rea = aux_rea  * rea_common_RadAng(kk1,kk2, i_r, i_ang)
+            rearrangement_me(kk1,kk2)   = rearrangement_me(kk1,kk2)   + rea
+            rearrangement_me(kk1N,kk2N) = rearrangement_me(kk1N,kk2N) + rea
+            enddo
+        enddo
+      endif
+
+   enddo ! angular iter_
+enddo    ! radial  iter_
+
+if (EVAL_EXPLICIT_FIELDS_DD) then
+  TOP = abs(maxval(real(rearrangement_me)))
+  LOW = abs(minval(real(rearrangement_me)))
+  if (TOP > 1.0D+10) then !((TOP < 1.0D+10).AND.(LOW > 1.E-10)) then
+      print "(A,4I3,2F20.10)", "!! REA", a,b,c,d, &
+          minval(real(rearrangement_me)), maxval(real(rearrangement_me))
+  endif
+endif
+
+v_dd_val_Real(1) = real(v_dd_value(1), r64) * integral_factor
+v_dd_val_Real(2) = real(v_dd_value(2), r64) * integral_factor
+v_dd_val_Real(3) = real(v_dd_value(3), r64) * integral_factor
+v_dd_val_Real(4) = real(v_dd_value(4), r64) * integral_factor
+
+if (abs(imag(v_dd_value(1))) > 1.0d-15 ) then
+    print "(A,F10.8,A,F18.15)", "  [FAIL] v_DD_abcd is not Real =", &
+        real(v_dd_value(1)), " +j ", imag(v_dd_value(1))
+endif
+
+return
+
+end function matrix_element_v_gradientDD
+
+
 !-----------------------------------------------------------------------------!
 ! subroutine TESTS FOR THE DENSITY, SPHERICAL HARMONICS AND FUNCTIONS         !
 !                                                                             !
@@ -3753,7 +3954,7 @@ do kk = 1, hamil_H2dim
     ab_indx = ((ii1 - 1) * nO2) + ii2
     cd_indx = ((ii3 - 1) * nO2) + ii4
     sg_ = 1
-    write(111, fmt='(4I3,I2,F15.6)') ii1, ii2, ii3, ii4, h2b
+    write(111, fmt='(4I3,D15.6)') ii1, ii2, ii3, ii4, h2b
 
     !! 1. Criteria from module_fields.calculate_fields (general)
     if (((i1 .GT. nO2).AND.(i2 .GT. nO2)) .OR. &
@@ -3804,7 +4005,7 @@ write(111, fmt="(A)") "%%%  MAT. ELEMS (a, b) ::  %%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 write(112, fmt="(A)") "%%%  MAT. ELEMS (a, b) ::  %%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 
 if (.NOT.REGISTER_BB) write(112, fmt="(A)") &
-  "For MZ>7 this file is not available, generate it from [hamil_bb_init.gut]"
+  "SKIP MZ>7 this file is not available, generate it from [hamil_bb_init.gut]"
 
 print "(A)", " [    ] Exporting of DD non-zero PN matrix elements."
 
