@@ -3954,7 +3954,7 @@ do kk = 1, hamil_H2dim
     ab_indx = ((ii1 - 1) * nO2) + ii2
     cd_indx = ((ii3 - 1) * nO2) + ii4
     sg_ = 1
-    write(111, fmt='(4I3,D15.6)') ii1, ii2, ii3, ii4, h2b
+    write(111, fmt='(4I5,D15.6)') ii1, ii2, ii3, ii4, h2b
 
     !! 1. Criteria from module_fields.calculate_fields (general)
     if (((i1 .GT. nO2).AND.(i2 .GT. nO2)) .OR. &
