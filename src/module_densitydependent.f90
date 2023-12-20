@@ -3697,15 +3697,18 @@ real(r32) :: h2b
 real(r64), dimension(4) :: me_val
 integer,   dimension(2) :: non_zero
 real(r32), dimension(:,:), allocatable :: registered_h2b
-
+logical :: REGISTER_BB
 nO2 = ndim / 2
 
 !print "(A)", "  [WARNING] Not gonna do the exporting of matrix elements"
 !return
+REGISTER_BB = HO_Nmax .LT. 7    !!! MZ=8 -> 88GB,  MZ=7 -> 25GB, MZ=6 -> 0.4GB
 
 !!! Obtain the pnpn part as an (a,b) vs (c,d) matrix:
-allocate(registered_h2b(nO2*nO2, nO2*nO2))
-registered_h2b = zero
+if (REGISTER_BB) then
+  allocate(registered_h2b(nO2*nO2, nO2*nO2))
+  registered_h2b = zero
+endif
 
 open(111, file='hamil_bb_init.gut')
 do kk = 1, hamil_H2dim
@@ -3737,7 +3740,6 @@ do kk = 1, hamil_H2dim
       call find_timerev(perm,i1,i2,i3,i4)
       h2b = sign(one,perm*one) * h2b
     endif
-    write(111, fmt='(4I3,I2,F15.6)') i1, i2, i3, i4, it, h2b
 
     ii1 = i1
     ii2 = i2
@@ -3751,6 +3753,7 @@ do kk = 1, hamil_H2dim
     ab_indx = ((ii1 - 1) * nO2) + ii2
     cd_indx = ((ii3 - 1) * nO2) + ii4
     sg_ = 1
+    write(111, fmt='(4I3,I2,F15.6)') ii1, ii2, ii3, ii4, h2b
 
     !! 1. Criteria from module_fields.calculate_fields (general)
     if (((i1 .GT. nO2).AND.(i2 .GT. nO2)) .OR. &
@@ -3768,9 +3771,11 @@ do kk = 1, hamil_H2dim
       end if
     endif
 
-    registered_h2b(ab_indx, cd_indx) = sg_ * h2b
-    if ((kdelta(i1,i3) * kdelta(i2,i4)) .NE. 1) then
-      registered_h2b(cd_indx, ab_indx) = sg_ * h2b
+    if (REGISTER_BB) then
+      registered_h2b(ab_indx, cd_indx) = sg_ * h2b
+      if ((kdelta(i1,i3) * kdelta(i2,i4)) .NE. 1) then
+        registered_h2b(cd_indx, ab_indx) = sg_ * h2b
+      endif
     endif
 
   enddo
@@ -3798,6 +3803,8 @@ end do
 write(111, fmt="(A)") "%%%  MAT. ELEMS (a, b) ::  %%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 write(112, fmt="(A)") "%%%  MAT. ELEMS (a, b) ::  %%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 
+if (.NOT.REGISTER_BB) write(112, fmt="(A)") &
+  "For MZ>7 this file is not available, generate it from [hamil_bb_init.gut]"
 
 print "(A)", " [    ] Exporting of DD non-zero PN matrix elements."
 
@@ -3826,27 +3833,29 @@ do a = 1, nO2
     if (non_zero(1) .GT. 0) write(111,fmt="(A)") ""
 
     ab_indx = ((a - 1) * nO2) + b
-    !! Hamiltonian part
-    do c=1, no2
-      do d=1, no2
+    if (REGISTER_BB) then
+      !! Hamiltonian part
+      do c=1, no2
+        do d=1, no2
 
-        cd_indx = ((c - 1) * nO2) + d
-        h2b = registered_h2b(ab_indx, cd_indx)
+          cd_indx = ((c - 1) * nO2) + d
+          h2b = registered_h2b(ab_indx, cd_indx)
 
-        !! just check pnpn channel
-        if (abs(h2b) .LT. 1.0d-09) cycle
+          !! just check pnpn channel
+          if (abs(h2b) .LT. 1.0d-09) cycle
 
-        if (non_zero(2) .EQ. 0) then !! include the header
-          write(112, fmt="(2I4,A)", advance='no') a, b, " // "
-        end if
-        write(112, fmt="(2I4,D15.6,A)", advance='no') c, d, h2b, ", "
+          if (non_zero(2) .EQ. 0) then !! include the header
+            write(112, fmt="(2I4,A)", advance='no') a, b, " // "
+          end if
+          write(112, fmt="(2I4,D15.6,A)", advance='no') c, d, h2b, ", "
 
-        non_zero(2) = non_zero(2) + 1
+          non_zero(2) = non_zero(2) + 1
 
+        end do
       end do
-    end do
 
-    if (non_zero(2) .GT. 0) write(112,fmt="(A)") ""
+      if (non_zero(2) .GT. 0) write(112,fmt="(A)") ""
+    endif
 
   end do
   print "(2(A,I6),2I9)", "   progress ... ", a,"/",b, non_zero(1),non_zero(2)
@@ -3854,7 +3863,7 @@ end do
 close(111)
 close(112)
 
-deallocate(registered_h2b)
+if (REGISTER_BB) deallocate(registered_h2b)
 
 print "(A)", " [DONE] Exporting of DD non-zero PN matrix elements."
 
