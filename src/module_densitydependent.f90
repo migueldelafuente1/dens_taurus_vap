@@ -3692,10 +3692,11 @@ subroutine test_export_pnpn_mmee_uncoupled(ndim)
 integer, intent(in)     :: ndim
 integer                 :: a, b, c, d, nO2, kk,i1,i2,i3,i4, &
                            ab_indx, cd_indx, it, perm, ii1,ii2,ii3,ii4, tt, sg_
-real(r64) :: h2b
+real(r64) :: h2b_64
+real(r32) :: h2b
 real(r64), dimension(4) :: me_val
 integer,   dimension(2) :: non_zero
-real(r64), dimension(:,:), allocatable :: registered_h2b
+real(r32), dimension(:,:), allocatable :: registered_h2b
 
 nO2 = ndim / 2
 
@@ -3724,8 +3725,9 @@ do kk = 1, hamil_H2dim
   if (((HOsp_2mt(i3).EQ. 1) .AND. (HOsp_2mt(i4).EQ.-1))) cycle
 !  if (((HOsp_2mt(i3).NE.-1) .OR. (HOsp_2mt(i4).NE. 1))) cycle ! unnecessary
 
-  h2b  = hamil_H2(kk)
+  h2b_64  = hamil_H2(kk)
   perm = hamil_trperm(kk)
+  h2b = real(h2b_64, r32)
 
   !!! Loop on time reversal
   do it = 1, 2
@@ -3851,6 +3853,8 @@ do a = 1, nO2
 end do
 close(111)
 close(112)
+
+deallocate(registered_h2b)
 
 print "(A)", " [DONE] Exporting of DD non-zero PN matrix elements."
 
