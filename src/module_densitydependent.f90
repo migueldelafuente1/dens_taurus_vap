@@ -3532,7 +3532,7 @@ end subroutine set_Radial1b_derivates
 subroutine calculate_density_laplacian(dens_rhoRR, ndim)
 
 integer, intent(in) :: ndim
-complex(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR
+real(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR
 
 integer   :: a, b, i_r,i_an, na,la,ja,mja, nb,lb,jb,mjb, a_sh, b_sh
 integer   :: mla, mlb, ms, K1, M1, K2, M2, mu_, ADK2, indxa
@@ -3675,7 +3675,7 @@ end subroutine calculate_density_laplacian
 subroutine set_derivative_density_dependent(dens_rhoRR, ndim)
 
 integer, intent(in) :: ndim
-complex(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR
+real(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR
 
 ! 1. Set up the radial functions for cross n,l Radial functions
 call set_Radial1b_derivates
