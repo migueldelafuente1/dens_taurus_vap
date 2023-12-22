@@ -2061,7 +2061,7 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
         rearrangement_me = zero
 
         me_Vdec = matrix_element_v_DD(a,b, c,d, ALL_ISOS)
-        me_VGRc = matrix_element_v_gradientDD(a,b, c,d, ALL_ISOS)
+        me_VGRc = matrix_element_v_gradientDD(a,b, c,d)
 
         !!! Select only matrix elements above a given cutoff to reduce the
         !!! CPU time and storage
@@ -3558,20 +3558,20 @@ do a = 1, HOsp_dim
     !! evaluate the radial parts for the last step
     rad_diffs = zero
     do i_r = 1, i_r
-      rad_diffs(i_r) = rad_diffs(i_r) + (sqrt(na + la + 0.5) * &
+      rad_diffs(i_r) = rad_diffs(i_r) + (sqrt(na + la + 0.5d0) * &
                                    radial_1b_diff_memo(a_sh, 0,-1,i_r) * &
                                    radial_1b_diff_memo(b_sh, 0, 0,i_r))
-      rad_diffs(i_r) = rad_diffs(i_r) + (sqrt(nb + lb + 0.5)&
+      rad_diffs(i_r) = rad_diffs(i_r) + (sqrt(nb + lb + 0.5d0) * &
                                    radial_1b_diff_memo(a_sh, 0, 0,i_r) * &
                                    radial_1b_diff_memo(b_sh, 0,-1,i_r))
       rad_diffs(i_r) = rad_diffs(i_r) + (&
                                    radial_1b_diff_memo(a_sh, 0, 0,i_r) * &
                                    radial_1b_diff_memo(b_sh,-1,+1,i_r) / &
-                                   sqrt(nb + 1))
+                                   sqrt(nb + 1.0d0))
       rad_diffs(i_r) = rad_diffs(i_r) + (&
                                    radial_1b_diff_memo(a_sh,-1,+1,i_r) * &
                                    radial_1b_diff_memo(b_sh, 0, 0,i_r) / &
-                                   sqrt(na + 1))
+                                   sqrt(na + 1.0d0))
       rad_diffs(i_r) = rad_diffs(i_r) / HO_b
     enddo
 
