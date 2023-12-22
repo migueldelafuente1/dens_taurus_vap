@@ -105,6 +105,8 @@ if (exportValSpace) then !-----------------------------------------------------
     print "(A,/,A)","        For full space, Be patient ...",""
   endif
 
+  if (EXPORT_GRAD_DD) call set_derivative_density_dependent
+
   call calculate_densityDep_hamiltonian(dens_rhoRRc, &
                                         dens_kappaRRc, dens_kappaRRc, ndim)
   print "(A,/,A)", "", " [DONE] Evaluating the Hamiltonian."
@@ -116,7 +118,10 @@ if (exportValSpace) then !-----------------------------------------------------
     deallocate(rearrangement_me, rearrang_field, &
                rea_common_RadAng, REACommonFields)
 
-    call print_DD_matrix_elements
+    if (EXPORT_GRAD_DD) then
+      call print_DD_matrix_elements(2)  !! Case for exporting the Gradient DD
+    endif
+    call print_DD_matrix_elements(1) !! Case for exporting the DD
   endif
 endif
 
@@ -638,7 +643,9 @@ end subroutine recouple_jjLSConjugatedME
 ! subroutine print_DD_matrix_elements                                          !
 !  Export of the DD + Hamil Matrix elements for a Valence space after process  !
 !------------------------------------------------------------------------------!
-subroutine print_DD_matrix_elements
+subroutine print_DD_matrix_elements(option)
+integer, intent(in) :: option
+
 integer(i32) :: a, b, c, d
 integer      :: a_ant,b_ant,c_ant,d_ant, t, tt, &
                 Jbra, Jket, Jb_min, Jb_max,Jk_min, Jk_max, Mbra, Mket,&
@@ -660,17 +667,29 @@ logical,   dimension(:), allocatable :: all_zero            ! all_zero(K)
 real(r64), dimension(:,:,:,:,:), allocatable :: hamilJM     ! H2JM(T,JMbra, JMket, jajb, jcjd))
 real(r64), dimension(:,:,:,:),   allocatable :: auxHamilRed ! H2JM(T, K, JMbra, JMket)
 
-
+print *, ""
+if (option.EQ.1) then
+  print "(A)", "[START] print_DD_matrix_elements for DD: [D1S_vs_scalar.2b]"
+  open(298, file="D1S_vs_red.2b")
+  open(299, file="D1S_vs_scalar.2b")
+  open(300, file="onlyDD_D1S_scalar.2b")
+  open(301, file="onlyDD_D1S_k1.2b")
+  open(302, file="onlyDD_D1S_k2.2b")
+else if (option.EQ.2) then
+  print "(A)", "[START] print_DD_matrix_e for Gradient DD: [GDD_vs_scalar.2b]"
+  open(298, file="GDD_vs_red.2b")
+  open(299, file="GDD_vs_scalar.2b")
+  open(300, file="onlyDD_GDD_scalar.2b")
+  open(301, file="onlyDD_GDD_k1.2b")
+  open(302, file="onlyDD_GDD_k2.2b")
+else
+  print "(A)", "[ERROR] print_DD_mat. option must be 1(DD) or 2(gradDD), stop"
+  return
+end if
 
 print *, ""
 print "(A,I5)", "* [  ] Printing 2B Mat Elements DD from WF_HFB /dim H2_DD:", &
     hamil_DD_H2dim
-
-open(298, file="D1S_vs_red.2b")
-open(299, file="D1S_vs_scalar.2b")
-open(300, file="onlyDD_D1S_scalar.2b")
-open(301, file="onlyDD_D1S_k1.2b")
-open(302, file="onlyDD_D1S_k2.2b")
 
 !! Export an empty com file
 open(295, file="D1S_vs_scalar.com")
@@ -734,7 +753,13 @@ do KK = 1, hamil_DD_H2dim
   c = hamil_DD_abcd(3+4*(KK-1))
   d = hamil_DD_abcd(4+4*(KK-1))
   do tt=1,4
-    h2b(tt) = hamil_DD_H2_byT(tt, KK)
+    select case(option)
+      case (1)
+        h2b(tt) = hamil_DD_H2_byT(tt, KK)
+      case (2)
+        h2b(tt) = hamil_GradDD_H2_byT(tt, KK)
+    end select
+
   enddo
 
   ! jump elements under another additional tolerace
