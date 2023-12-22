@@ -105,7 +105,7 @@ if (exportValSpace) then !-----------------------------------------------------
     print "(A,/,A)","        For full space, Be patient ...",""
   endif
 
-  if (EXPORT_GRAD_DD) call set_derivative_density_dependent
+  if (EXPORT_GRAD_DD) call set_derivative_density_dependent(dens_rhoRR, ndim)
 
   call calculate_densityDep_hamiltonian(dens_rhoRRc, &
                                         dens_kappaRRc, dens_kappaRRc, ndim)

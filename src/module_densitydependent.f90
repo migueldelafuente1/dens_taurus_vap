@@ -3529,24 +3529,27 @@ end subroutine set_Radial1b_derivates
 !                                                                             !
 ! Evaluate the gradients Grad(rho (t,ang)) and the scalar product             !
 !-----------------------------------------------------------------------------!
-subroutine calculate_density_laplacian
+subroutine calculate_density_laplacian(dens_rhoRR, ndim)
+
+integer, intent(in) :: ndim
+complex(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR
 
 integer   :: a, b, i_r,i_an, na,la,ja,mja, nb,lb,jb,mjb, a_sh, b_sh
-integer   :: mla, mlb, K1, M1, K2, M2, mu_, ADK2, indxa
+integer   :: mla, mlb, ms, K1, M1, K2, M2, mu_, ADK2, indxa
 real(r64) :: aux1, aux2, aux3, cgc1, cgc2, cgc3, g_kl, xikl, rad
 real(r64), dimension(:), allocatable :: rad_diffs
 !! Angular part is a Y_KM, up to l_max+1 (sph_harmonics_memo is up to 2*l_max)
 
-allocate(radial_diffs(r_dim), partial_dens(-1:2,r_dim,angular_dim))
+allocate(rad_diffs(r_dim), partial_dens(-1:2,r_dim,angular_dim))
 !!
-do a = 1, ndim
+do a = 1, HOsp_dim
   a_sh = HOsp_sh(a)
   la = HOsp_l(a)
   na = HOsp_n(a)
   ja = HOsp_2j(a)
   mja = HOsp_2mj(a)
 
-  do b = 1, ndim !! optimize with transposition b >= a
+  do b = 1, HOsp_dim  !! optimize with transposition b >= a
     lb = HOsp_l(b)
     nb = HOsp_n(b)
     jb = HOsp_2j(b)
@@ -3583,7 +3586,7 @@ do a = 1, ndim
       call ClebschGordan(2*lb, 1,jb, mlb,ms,mjb, cgc2)
 
       aux1 = ((-1)**(mla/2)) * sqrt(((2*la) + 1)*((2*lb) + 1) / (4*pi))
-      aux1 = aux1 * cgc1 * cgc2
+      aux1 = aux1 * cgc1 * cgc2 * dens_rhoRR(a, b)
 
       M1 = (mjb - mja) / 2
       do K1 = abs(ja - jb)/2, (ja + jb)/2, 2
@@ -3646,14 +3649,14 @@ open(111, file='dens_differential.gut')
 do i_r = 1, r_dim
   do i_an = 1, angular_dim
 
-    write(111,fmt='(I5,A,I5))',advance='no') i_r, " ,", i_an
+    write(111,fmt='(I5,A,I5)',advance='no') i_r, " ,", i_an
     do mu_ = -1, 1
       partial_dens(2,i_r,i_an) = partial_dens(  2,i_r,i_an) + &
         ((-1)**mu_) * partial_dens(mu_,i_r,i_an) * partial_dens(-mu_,i_r,i_an)
-      write(111,fmt='(A,F15.9,A,F15.9,A))',advance='no') " ,", &
+      write(111,fmt='(A,F15.9,A,F15.9,A)',advance='no') " ,", &
     dreal(partial_dens(mu_,i_r,i_an)), " ",dimag(partial_dens(mu_,i_r,i_an)),"j"
     enddo
-    write(111,fmt='(A,F15.9,A,F15.9,A))') " ,", &
+    write(111,fmt='(A,F15.9,A,F15.9,A)') " ,", &
       dreal(partial_dens(2,i_r,i_an)), " ",dimag(partial_dens(2,i_r,i_an)),"j"
   end do
 end do
