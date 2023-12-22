@@ -3672,12 +3672,15 @@ end subroutine calculate_density_laplacian
 !                                                                             !
 ! Set up everything for the laplacian (Grad rho(r,ang))^2                     !
 !-----------------------------------------------------------------------------!
-subroutine set_derivative_density_dependent
+subroutine set_derivative_density_dependent(dens_rhoRR, ndim)
+
+integer, intent(in) :: ndim
+complex(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR
 
 ! 1. Set up the radial functions for cross n,l Radial functions
 call set_Radial1b_derivates
 ! 2. Calculate gradient of the last density
-call calculate_density_laplacian
+call calculate_density_laplacian(dens_rhoRR, ndim)
 
 
 end subroutine set_derivative_density_dependent
