@@ -3533,7 +3533,8 @@ real(r64) :: aux1, aux2, aux3, cgc1, cgc2, cgc3, g_kl, xikl, rad
 real(r64), dimension(:), allocatable :: rad_diffs
 !! Angular part is a Y_KM, up to l_max+1 (sph_harmonics_memo is up to 2*l_max)
 
-allocate(rad_diffs(r_dim), partial_dens(-1:2,r_dim,angular_dim))
+allocate(rad_diffs(r_dim))
+allocate(partial_dens(-1:2,r_dim,angular_dim))
 !!
 do a = 1, HOsp_dim
   a_sh = HOsp_sh(a)
@@ -3543,6 +3544,7 @@ do a = 1, HOsp_dim
   mja = HOsp_2mj(a)
 
   do b = 1, HOsp_dim  !! optimize with transposition b >= a
+    b_sh = HOsp_sh(b)
     lb = HOsp_l(b)
     nb = HOsp_n(b)
     jb = HOsp_2j(b)
