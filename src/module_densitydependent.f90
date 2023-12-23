@@ -3514,8 +3514,6 @@ do a_sh = 1, HOsh_dim
   end do
 
 enddo
-print "(A)", " [DONE] Setting Radial 1b."
-
 end subroutine set_Radial1b_derivates
 
 
@@ -3674,9 +3672,10 @@ real(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR
 
 ! 1. Set up the radial functions for cross n,l Radial functions
 call set_Radial1b_derivates
+print "(A)", " [DONE] Setting Radial 1b."
 ! 2. Calculate gradient of the last density
 call calculate_density_laplacian(dens_rhoRR, ndim)
-
+print "(A)", " [DONE] Calculated Laplacian of the density."
 
 end subroutine set_derivative_density_dependent
 
