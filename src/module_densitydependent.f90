@@ -287,14 +287,14 @@ print *, ''
 if ((.NOT.exportValSpace).AND.(implement_H2cpd_DD)) then
   if (hamil_read .EQ. 0) then
     deallocate(hamil_H2cpd_DD) ! It wont be used
-    print "(A)", "  I did the hamiltonian cpd cause not used!"
+    print "(A)", "  Hamiltonian cpd deallocated  because it will not be used!"
   endif
 else if ((exportValSpace).AND.(.NOT.implement_H2cpd_DD)) then
   print "(2A)", " ERROR, do not export the matrix elements with hamiltonian",&
                 " of type=1 or 2, program stops"
   STOP
 else if (((exportValSpace).OR.(evalQuasiParticleVSpace)) &
-         .AND.(hamil_read.EQ.0)) then
+         .AND.(hamil_read.EQ.1)) then
   print "(2A)", " ERROR, do not export the matrix elements when importing ",&
         " the reduced matrix elements (set hamil_read=0), program stops"
   STOP
@@ -1670,11 +1670,6 @@ if ((iteration.eq.0).OR.(MOD(iteration + 1, ITER_PRNT).EQ.0)) then
   integral_dens = integral_dens * 2 * pi * (HO_b**3) / ((2.0 + alpha_DD)**1.5)
   print "(A,F13.9,A)", "      *A* ", dreal(integral_dens), "  <dens(r)> approx"
 endif
-
-!if (export_density.AND.((iteration == 1).OR.(iopt == 1))) then
-!  call export_expectval_density(dens_rhoLR, ndim)
-!!  call test_integrate_density_me
-!end if
 
 end subroutine calculate_expectval_density
 

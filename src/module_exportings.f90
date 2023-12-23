@@ -89,7 +89,6 @@ if (.NOT. evalQuasiParticleVSpace) then
 endif
 
 if (exportValSpace) then !-----------------------------------------------------
-
   !! arguments for test printDensKappa must be Complex(8)
   do i = 1, ndim
     do j = 1, ndim
