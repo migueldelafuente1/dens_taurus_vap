@@ -3613,10 +3613,10 @@ do a = 1, HOsp_dim
             call ClebschGordan(2*K1,2*K2,2, 2*M2,2*M1,2*mu_, cgc3)
 
             !! g(K1,K2) coeff
-            if (ADK2 .EQ. -1) then
+            if (ADK2 .EQ. +1) then
               g_kl = dsqrt((K1 + 1.0d0) / ((2*K1) + 3.0d0))
               xikl = - K1
-            else !! (ADK2 .EQ. +1)
+            else !! (ADK2 .EQ. -1)
               g_kl = dsqrt( K1 / ((2*K1) - 1.0d0))
               xikl = K1 + 1.0d0
             end if
