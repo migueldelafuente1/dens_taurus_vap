@@ -3589,9 +3589,10 @@ do a = 1, HOsp_dim
       print "(A,3I4,F11.6)", "  1* ms,mla,b:",ms, mla,mlb, aux1
 
       M1 = (mjb - mja) / 2
-      do K1 = abs(ja - jb)/2, (ja + jb)/2, 2
+      do K1 = abs(ja - jb)/2, (ja + jb)/2
         !! the steps of K1 have to be even
         if (abs(M1).GT.K1) cycle
+        if (MOD(la+lb+K1, 2) == 1) cycle
 
         call ClebschGordan(2*la,2*lb,2*K1, 0,0,0, cgc1)
         call ClebschGordan(2*la,2*lb,2*K1, -mla,mlb,2*M1, cgc2)
