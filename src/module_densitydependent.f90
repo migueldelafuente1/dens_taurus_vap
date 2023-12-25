@@ -3702,6 +3702,8 @@ function matrix_element_v_gradientDD(a,b, c,d) result (v_dd_val_Real)
 integer(i32), intent(in) :: a,b,c,d
 real(r64), dimension(4) :: v_dd_val_Real !! pppp(1), pnpn(2), pnnp(3), nnnn(4)
 
+integer      :: K,K2,M,M2, ind_km, ind_km_q, ind_jm_a,ind_jm_b,ind_jm_c, &
+                ind_jm_d,la,lb,lc,ld, ja,jb,jc,jd, ma,mb,mc,md
 complex(r64) :: aux, radial, aux_dir, aux_exch
 complex(r64), dimension(4) :: v_dd_value
 real(r64)    :: angular, integral_factor
@@ -3721,10 +3723,26 @@ if ((a.GT.HOspO2).OR.(b.GT.HOspO2).OR.(c.GT.HOspO2).OR.(d.GT.HOspO2)) then
   return
 end if
 
+ja = HOsp_2j(a)
+ma = HOsp_2mj(a)
+la = HOsp_l(a)
 a_sh = HOsp_sh(a)
+ind_jm_a = angular_momentum_index(ja, ma, .TRUE.)
+jb = HOsp_2j(b)
+mb = HOsp_2mj(b)
+lb = HOsp_l(b)
 b_sh = HOsp_sh(b)
+ind_jm_b = angular_momentum_index(jb, mb, .TRUE.)
+jc = HOsp_2j(c)
+mc = HOsp_2mj(c)
+lc = HOsp_l(c)
 c_sh = HOsp_sh(c)
+ind_jm_c = angular_momentum_index(jc, mc, .TRUE.)
+jd = HOsp_2j(d)
+md = HOsp_2mj(d)
+ld = HOsp_l(d)
 d_sh = HOsp_sh(d)
+ind_jm_d = angular_momentum_index(jd, md, .TRUE.)
 
 integral_factor = 1.0d0 !t3_DD_CONST
 !! NOTE :: Remember that radial functions already have the factor 1/b**3
@@ -3743,10 +3761,50 @@ do i_r = 1, r_dim
   !! requirement in larger shells.
 
   do i_ang = 1, angular_dim
-      aux_dir  = (AngFunctDUAL_HF(1,a,c,i_ang) + AngFunctDUAL_HF(4,a,c,i_ang))&
-                *(AngFunctDUAL_HF(1,b,d,i_ang) + AngFunctDUAL_HF(4,b,d,i_ang))
-      aux_exch = (AngFunctDUAL_HF(1,a,d,i_ang) + AngFunctDUAL_HF(4,a,d,i_ang))&
-                *(AngFunctDUAL_HF(1,b,c,i_ang) + AngFunctDUAL_HF(4,b,c,i_ang))
+    !! Already deallocated
+!      aux_dir  = (AngFunctDUAL_HF(1,a,c,i_ang) + AngFunctDUAL_HF(4,a,c,i_ang))&
+!                *(AngFunctDUAL_HF(1,b,d,i_ang) + AngFunctDUAL_HF(4,b,d,i_ang))
+!      aux_exch = (AngFunctDUAL_HF(1,a,d,i_ang) + AngFunctDUAL_HF(4,a,d,i_ang))&
+!                *(AngFunctDUAL_HF(1,b,c,i_ang) + AngFunctDUAL_HF(4,b,c,i_ang))
+      aux_dir  = zzero
+      do K = abs(ja - jc) / 2, (ja + jc) / 2
+        M = (mc - ma)/2
+        if ((MOD(K + la + lc, 2) == 1).OR.(abs(M) > K)) cycle
+
+        do K2 = abs(jb - jd) / 2, (jb + jd) / 2
+          !! NOTE:: in DD Hamiltonian loop, condition ma+mb=mc+md -> M=M2
+          M2 = (md - mb)/2
+          if ((MOD(K2 + lb + ld, 2) == 1).OR.(abs(M2) > K2)) cycle
+
+          ind_km   = angular_momentum_index(K,  M,  .FALSE.)
+          ind_km_q = angular_momentum_index(K2, M2, .FALSE.)
+
+          aux_dir = aux_dir + (dens_Y_KM_me(ind_jm_a, ind_jm_c, ind_km)  * &
+                               dens_Y_KM_me(ind_jm_b, ind_jm_d, ind_km_q)* &
+                               sph_harmonics_memo(ind_km,   i_ang) * &
+                               sph_harmonics_memo(ind_km_q, i_ang))
+        enddo
+      enddo
+      !! ====================================================================
+      aux_exch = zzero
+      do K = abs(ja - jd) / 2, (ja + jd) / 2
+        M = (md - ma)/2
+        if ((MOD(K + la + ld, 2) == 1).OR.(abs(M) > K)) cycle
+
+        do K2 = abs(jb - jc) / 2, (jb + jc) / 2
+          M2 = (mc - mb)/2
+          if ((MOD(K2 + lb + lc, 2) == 1).OR.(abs(M2) > K2)) cycle
+
+          ind_km   = angular_momentum_index(K,  M,  .FALSE.)
+          ind_km_q = angular_momentum_index(K2, M2, .FALSE.)
+
+          aux_exch = aux_exch + (dens_Y_KM_me(ind_jm_a, ind_jm_d, ind_km)  *&
+                                 dens_Y_KM_me(ind_jm_b, ind_jm_c, ind_km_q)*&
+                                 sph_harmonics_memo(ind_km,   i_ang) *&
+                                 sph_harmonics_memo(ind_km_q, i_ang))
+        enddo
+      enddo
+      !! ====================================================================
 
       angular = weight_LEB(i_ang)
 
