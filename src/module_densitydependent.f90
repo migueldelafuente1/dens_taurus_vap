@@ -3550,6 +3550,8 @@ do a = 1, HOsp_dim
     jb = HOsp_2j(b)
     mjb = HOsp_2mj(b)
 
+    print "(A,6I6)"," iter(a,b) ", a,b, HOsh_ant(a_sh),HOsh_ant(b_sh), mja,mjb
+
     !! evaluate the radial parts for the last step
     rad_diffs = zero
     do i_r = 1, i_r
@@ -3583,6 +3585,8 @@ do a = 1, HOsp_dim
       aux1 = ((-1)**(mla/2)) * sqrt(((2*la) + 1)*((2*lb) + 1) / (4*pi))
       aux1 = aux1 * cgc1 * cgc2 * dens_rhoRR(a, b)
 
+      print "(A,3I4,F11.6)", "    1* ",ms, mla,mlb, aux1
+
       M1 = (mjb - mja) / 2
       do K1 = abs(ja - jb)/2, (ja + jb)/2, 2
         !! the steps of K1 have to be even
@@ -3598,9 +3602,11 @@ do a = 1, HOsp_dim
           M2 = (mjb - mja + 2*mu_) / 2
           do ADK2 = - 1,  1, 2
             K2 = K1 + ADK2
+            print "(A,6I4,F11.6)", "      2* ",K1,M1, K2,M2, mu_, ADK2, aux2
             if (K2.LT.0) cycle
             if (abs(M2).GT.K2) cycle
 
+            indxa = angular_momentum_index(K2,M2,.FALSE.)
             call ClebschGordan(2*K1,2*K2,2, 2*M2,2*M1,2*mu_, cgc3)
 
             !! g(K1,K2) coeff
@@ -3615,9 +3621,8 @@ do a = 1, HOsp_dim
             aux3 = aux1 * aux2 * g_kl * cgc3
             if (dabs(aux3) .LT. 1.0d-9) cycle
 
+            print "(A,I4,F11.6)", "      2*accepted ", indxa,aux3
             do i_an = 1, angular_dim
-              indxa = angular_momentum_index(K2,M2,.FALSE.)
-
               do i_r = 1, r_dim
                 !! radial  2b functions and diff parts precalculated.
                 rad = ((xikl-1.0d0) * HO_b / r(i_r)) - (2.0d0 * r(i_r)/HO_b)
