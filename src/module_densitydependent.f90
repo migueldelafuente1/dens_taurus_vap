@@ -114,8 +114,8 @@ integer   :: WBsh_dim = 0, WBsp_dim = 0
 integer, dimension(:), allocatable  :: VSsh_list, WBtoHOsp_index, VSsp_VSsh,&
                                        VStoHOsp_index, VStoHOsh_index
 
-integer   :: Mphip_DD= 0, & ! number of angles in the projection for protons
-             Mphin_DD = 0   !   "    "    "    "   "      "       "  neutrons
+integer   :: Mphip_DD = 0, & ! number of angles in the projection for protons
+             Mphin_DD = 0    !   "    "    "    "   "      "       "  neutrons
 integer   :: seed_type_sym  = 0        ! (UNDEFINED)
 logical   :: haveX0M1       = .FALSE.  ! |x0 - 1| > 1E-6
 logical   :: evalFullSPSpace= .TRUE.   ! compute the full a,b, c,d space for explicit DD fields (cannot be set)
@@ -3535,6 +3535,7 @@ real(r64), dimension(:), allocatable :: rad_diffs
 
 allocate(rad_diffs(r_dim))
 allocate(partial_dens(-1:2,r_dim,angular_dim))
+partial_dens = zzero
 !!
 do a = 1, HOsp_dim
   a_sh = HOsp_sh(a)
@@ -3649,7 +3650,7 @@ open(111, file='dens_differential.gut')
 do i_r = 1, r_dim
   do i_an = 1, angular_dim
 
-    write(111,fmt='(I5,A,I5)',advance='no') i_r, " ,", i_an
+    write(111,fmt='(2(I5,A),F6.3)',advance='no') i_r, " ,", i_an,",",r(i_r)
     do mu_ = -1, 1
       partial_dens(2,i_r,i_an) = partial_dens(  2,i_r,i_an) + &
         ((-1)**mu_) * partial_dens(mu_,i_r,i_an) * partial_dens(-mu_,i_r,i_an)
@@ -3662,7 +3663,6 @@ do i_r = 1, r_dim
       dreal(dens_pnt(5,i_r,i_an)), " ",dimag(dens_pnt(5,i_r,i_an)),"j"
   end do
 end do
-
 close(111)
 
 
