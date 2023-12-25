@@ -3554,7 +3554,7 @@ do a = 1, HOsp_dim
 
     !! evaluate the radial parts for the last step
     rad_diffs = zero
-    do i_r = 1, i_r
+    do i_r = 1, r_dim
       rad_diffs(i_r) = rad_diffs(i_r) + (sqrt(na + la + 0.5d0) * &
                                    radial_1b_diff_memo(a_sh, 0,-1,i_r) * &
                                    radial_1b_diff_memo(b_sh, 0, 0,i_r))
