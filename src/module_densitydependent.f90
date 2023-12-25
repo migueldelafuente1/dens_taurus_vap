@@ -3830,7 +3830,7 @@ if (abs(imag(v_dd_value(2))) > 1.0d-15 ) then
         real(v_dd_value(1)), " +j ", imag(v_dd_value(1))
 endif
 
-if (dabs(v_dd_val_Real(2).GT.1.0d-6)) then
+if (dabs(v_dd_val_Real(2)).GT.1.0d-6) then
   print "(A,4I5,A,2F15.9)", "   _Eval me(pp/pn):",a,b,c,d, "=", &
                             v_dd_val_Real(1), v_dd_val_Real(2)
 endif
