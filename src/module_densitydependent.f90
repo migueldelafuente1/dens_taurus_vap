@@ -3551,7 +3551,7 @@ do a = 1, HOsp_dim
     jb = HOsp_2j(b)
     mjb = HOsp_2mj(b)
 
-    !print "(A,6I6)"," iter(a,b) ", a,b, HOsh_ant(a_sh),HOsh_ant(b_sh), mja,mjb
+    print "(A,6I6)"," iter(a,b) ", a,b, HOsh_ant(a_sh),HOsh_ant(b_sh), mja,mjb
 
     !! evaluate the radial parts for the last step
     rad_diffs = zero
@@ -3586,7 +3586,7 @@ do a = 1, HOsp_dim
       aux1 = ((-1)**(mla/2)) * sqrt(((2*la) + 1)*((2*lb) + 1) / (4*pi))
       aux1 = aux1 * cgc1 * cgc2 * dens_rhoRR(a, b)
 
-      !print "(A,3I4,F11.6)", "    1* ",ms, mla,mlb, aux1
+      print "(A,3I4,F11.6)", "    1* ",ms, mla,mlb, aux1
 
       M1 = (mjb - mja) / 2
       do K1 = abs(ja - jb)/2, (ja + jb)/2, 2
@@ -3603,7 +3603,7 @@ do a = 1, HOsp_dim
           M2 = (mjb - mja + 2*mu_) / 2
           do ADK2 = - 1,  1, 2
             K2 = K1 + ADK2
-            !print "(A,6I4,F11.6)", "      2* ",K1,M1, K2,M2, mu_, ADK2, aux2
+            print "(A,6I4,F11.6)", "      2* ",K1,M1, K2,M2, mu_, ADK2, aux2
             if (K2.LT.0) cycle
             if (abs(M2).GT.K2) cycle
 
@@ -3622,7 +3622,7 @@ do a = 1, HOsp_dim
             aux3 = aux1 * aux2 * g_kl * cgc3
             if (dabs(aux3) .LT. 1.0d-9) cycle
 
-            !print "(A,I4,F11.6)", "      2*accepted ", indxa,aux3
+            print "(A,I4,F11.6)", "      2*accepted ", indxa,aux3
             do i_an = 1, angular_dim
               do i_r = 1, r_dim
                 !! radial  2b functions and diff parts precalculated.
@@ -3650,7 +3650,7 @@ open(111, file='dens_differential.gut')
 do i_r = 1, r_dim
   do i_an = 1, angular_dim
 
-    write(111,fmt='(2(I5,A),F6.3)',advance='no') i_r, " ,", i_an,",",r(i_r)
+    write(111,fmt='(2(I5,A),F4.2)',advance='no') i_r, ",", i_an, ",", r(i_r)
     do mu_ = -1, 1
       partial_dens(2,i_r,i_an) = partial_dens(  2,i_r,i_an) + &
         ((-1)**mu_) * partial_dens(mu_,i_r,i_an) * partial_dens(-mu_,i_r,i_an)
@@ -3714,8 +3714,6 @@ HOspO2 = HOsp_dim/2
 
 v_dd_value = zzero
 v_dd_val_Real = zero
-
-print "(A,4I5)","   _Eval me:",a,b,c,d
 
 if (.NOT.EXPORT_GRAD_DD) return
 if ((a.GT.HOspO2).OR.(b.GT.HOspO2).OR.(c.GT.HOspO2).OR.(d.GT.HOspO2)) then
@@ -3831,8 +3829,11 @@ if (abs(imag(v_dd_value(2))) > 1.0d-15 ) then
     print "(A,F10.8,A,F18.15)", "  [FAIL] v_DD_abcd is not Real =", &
         real(v_dd_value(1)), " +j ", imag(v_dd_value(1))
 endif
-print "(A,2F15.9)", "       =", v_dd_val_Real(1), v_dd_val_Real(2)
 
+if (dabs(v_dd_val_Real(2).GT.1.0d-6)) then
+  print "(A,4I5,A,2F15.9)", "   _Eval me(pp/pn):",a,b,c,d, "=", &
+                            v_dd_val_Real(1), v_dd_val_Real(2)
+endif
 return
 end function matrix_element_v_gradientDD
 
