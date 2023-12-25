@@ -3594,7 +3594,7 @@ do a = 1, HOsp_dim
         if (abs(M1).GT.K1) cycle
 
         call ClebschGordan(2*la,2*lb,2*K1, 0,0,0, cgc1)
-        call ClebschGordan(2*la,2*lb,2*K1, -mla,mlb,M1, cgc2)
+        call ClebschGordan(2*la,2*lb,2*K1, -mla,mlb,2*M1, cgc2)
 
         aux2 = cgc1 * cgc2
 
