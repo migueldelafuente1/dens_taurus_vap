@@ -3832,8 +3832,9 @@ if (abs(imag(v_dd_value(2))) > 1.0d-9 ) then
 endif
 
 if (dabs(v_dd_val_Real(2)).GT.1.0d-6) then
-  print "(2(A,4I6),A,2D20.9)", "   _Eval me(pp/pn):",a,b,c,d, " <", &
-                HOsp_ant(a), HOsp_ant(b),HOsp_ant(c),HOsp_ant(d), "> =", &
+  print "(3(A,4I6),A,2D20.9)", "   _Eval me(pp/pn):",a,b,c,d, " <", &
+                HOsp_ant(a), HOsp_ant(b), HOsp_ant(c), HOsp_ant(d), " mj(", &
+                HOsp_2mj(a), HOsp_2mj(b), HOsp_2mj(c), HOsp_2mj(d) ,")> =", &
                 v_dd_val_Real(1), v_dd_val_Real(2)
 endif
 return
