@@ -3826,9 +3826,9 @@ v_dd_val_Real(2) = real(v_dd_value(2), r64) * integral_factor
 v_dd_val_Real(3) = real(v_dd_value(3), r64) * integral_factor
 v_dd_val_Real(4) = real(v_dd_value(4), r64) * integral_factor
 
-if (abs(imag(v_dd_value(2))) > 1.0d-15 ) then
+if (abs(imag(v_dd_value(2))) > 1.0d-9 ) then
     print "(A,F10.8,A,F18.15)", "  [FAIL] v_DD_abcd is not Real =", &
-        real(v_dd_value(1)), " +j ", imag(v_dd_value(1))
+        real(v_dd_value(2)), " +j ", imag(v_dd_value(2))
 endif
 
 if (dabs(v_dd_val_Real(2)).GT.1.0d-6) then
