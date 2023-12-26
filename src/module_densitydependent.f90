@@ -3506,7 +3506,7 @@ do a_sh = 1, HOsh_dim
       if (l2.LT.0) cycle
 
       do i_r = 1, r_dim
-        radial = radial_function(n2, l2, r(i_r))
+        radial = radial_function(n2, l2, r(i_r))  ! r = b * sqrt(x/(alpha+2))
         radial_1b_diff_memo(a_sh, i_n, i_l, i_r) = radial
       enddo
 
@@ -3551,7 +3551,7 @@ do a = 1, HOsp_dim
     jb = HOsp_2j(b)
     mjb = HOsp_2mj(b)
 
-    print "(A,6I6)"," iter(a,b) ", a,b, HOsh_ant(a_sh),HOsh_ant(b_sh), mja,mjb
+!    print "(A,6I6)"," iter(a,b) ", a,b, HOsh_ant(a_sh),HOsh_ant(b_sh), mja,mjb
 
     !! evaluate the radial parts for the last step
     rad_diffs = zero
@@ -3586,7 +3586,7 @@ do a = 1, HOsp_dim
       aux1 = ((-1)**(mla/2)) * sqrt(((2*la) + 1)*((2*lb) + 1) / (4*pi))
       aux1 = aux1 * cgc1 * cgc2 * dens_rhoRR(a, b)
 
-      print "(A,3I4,F11.6)", "  1* ms,mla,b:",ms, mla,mlb, aux1
+!      print "(A,3I4,F11.6)", "  1* ms,mla,b:",ms, mla,mlb, aux1
 
       M1 = (mjb - mja) / 2
       do K1 = abs(ja - jb)/2, (ja + jb)/2
@@ -3604,13 +3604,13 @@ do a = 1, HOsp_dim
           M2 = (mjb - mja + 2*mu_) / 2
           do ADK2 = - 1,  1, 2
             K2 = K1 + ADK2
-            print "(A,6I4,F11.6)", "  2* KM(1,2),mu,ad:",K1,M1, K2,M2, mu_,&
-                                  ADK2, aux2
+!            print "(A,6I4,F11.6)", "  2* KM(1,2),mu,ad:",K1,M1, K2,M2, mu_,&
+!                                  ADK2, aux2
             if (K2.LT.0) cycle
             if (abs(M2).GT.K2) cycle
 
             indxa = angular_momentum_index(K2,M2,.FALSE.)
-            call ClebschGordan(2*K1,2*K2,2, 2*M2,2*M1,2*mu_, cgc3)
+            call ClebschGordan(2*K1,2,2*K2, 2*M1,2*mu_,2*M2, cgc3)
 
             !! g(K1,K2) coeff
             if (ADK2 .EQ. +1) then
@@ -3624,7 +3624,7 @@ do a = 1, HOsp_dim
             aux3 = aux1 * aux2 * g_kl * cgc3
             if (dabs(aux3) .LT. 1.0d-9) cycle
 
-            print "(A,I4,F11.6)", "ACCEPT  2.2 ", indxa,aux3
+!            print "(A,I4,F11.6)", "ACCEPT  2.2 ", indxa,aux3
             do i_an = 1, angular_dim
               do i_r = 1, r_dim
                 !! radial  2b functions and diff parts precalculated.
@@ -3754,8 +3754,7 @@ do i_r = 1, r_dim
 
   radial = weight_R(i_r) * radial_2b_sho_memo(a_sh, c_sh, i_r) &
                          * radial_2b_sho_memo(b_sh, d_sh, i_r) &
-                         * exp(4.0d0 * (r(i_r)/HO_b)**2) &
-                         * exp((alpha_DD - 2.0d0) * (r(i_r) / HO_b)**2)
+                         * exp((alpha_DD + 2.0d0 + 4.0d0) * (r(i_r) / HO_b)**2)
   !! NOTE: the inclusion of the exponential part is necessary due the form of
   !! of the density and radial functions with the exp(-r/b^2) for stability
   !! requirement in larger shells.
