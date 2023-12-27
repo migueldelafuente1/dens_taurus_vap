@@ -110,11 +110,11 @@ if (exportValSpace) then !-----------------------------------------------------
                                         dens_kappaRRc, dens_kappaRRc, ndim)
   print "(A,/,A)", "", " [DONE] Evaluating the Hamiltonian."
 
-  if (evalQuasiParticleVSpace) then
+  if (evalQuasiParticleVSpace .AND. export_density) then
     call print_quasipartile_DD_matrix_elements(bogo_U0, bogo_V0, &
                                                dens_rhoRR, dens_kappaRR, ndim)
   else
-    deallocate(rearrangement_me, rearrang_field, &
+    deallocate(rearrangement_me,  rearrang_field, &
                rea_common_RadAng, REACommonFields)
 
     if (EXPORT_GRAD_DD) then
@@ -687,7 +687,7 @@ else
 end if
 
 print *, ""
-print "(A,I5)", "* [  ] Printing 2B Mat Elements DD from WF_HFB /dim H2_DD:", &
+print "(A,I10)", "* [  ] Printing 2B Mat Elements DD from WF_HFB /dim H2_DD:",&
     hamil_DD_H2dim
 
 !! Export an empty com file
@@ -746,6 +746,7 @@ enddo      !!! --------------------------------------------------------------
 
 !! TODO: The HamilJM can be reduced to just Core + VS -Shells
 !        (saving the memory and time required by the outer shells)
+print *, "   *** Set up of output files and allocation. Now [step 1]"
 do KK = 1, hamil_DD_H2dim
   a = hamil_DD_abcd(1+4*(KK-1))
   b = hamil_DD_abcd(2+4*(KK-1))
@@ -758,7 +759,6 @@ do KK = 1, hamil_DD_H2dim
       case (2)
         h2b(tt) = hamil_GradDD_H2_byT(tt, KK)
     end select
-
   enddo
 
   ! jump elements under another additional tolerace
@@ -2912,9 +2912,7 @@ real(r64), dimension(ndim,ndim), intent(in) :: bogo_U0, bogo_V0
 real(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR, dens_kappaRR
 real(r64), dimension(ndim,ndim) :: hspRR_eigenvect, U_trans, V_trans
 
-if (.NOT.EVAL_DENSITY_DEPENDENT) return
 print "(A)", "  1[  ] print_quasipartile_DD_matrix_elements"
-
 call diagonalize_H11_with_jz(dens_rhoRR, dens_kappaRR, bogo_U0, bogo_V0, ndim)
 
 deallocate(sphharmDUAL_memo, AngFunctDUAL_HF, AngFunctDUAL_P1, &

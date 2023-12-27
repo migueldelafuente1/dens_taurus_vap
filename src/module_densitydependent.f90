@@ -3659,10 +3659,16 @@ do i_r = 1, r_dim
       write(111,fmt='(A,F15.9,A,F15.9,A)',advance='no') " ,", &
     dreal(partial_dens(mu_,i_r,i_an)), " ",dimag(partial_dens(mu_,i_r,i_an)),"j"
     enddo
+    if (dabs(dimag(partial_dens(2,i_r,i_an))).GT.1.0e-9) then
+      print "(A,2I4,D15.9,A)","[ERROR IMAG] grad diff imag > 1e-9:",&
+                              i_r, i_an, partial_dens(2,i_r,i_an)
+    endif
+
     write(111,fmt='(A,F15.9,A,F15.9,A)', advance='no') " ,", &
-      dreal(partial_dens(2,i_r,i_an)), " ",dimag(partial_dens(2,i_r,i_an)),"j"
+      dreal(partial_dens(2,i_r,i_an)), ",",&
+      dreal(partial_dens(2,i_r,i_an))**alpha_DD,","
     write(111,fmt='(A,F15.9,A,F15.9,A)') " ,", &
-      dreal(dens_pnt(5,i_r,i_an)), " ",dimag(dens_pnt(5,i_r,i_an)),"j"
+      dreal(dens_pnt(5,i_r,i_an)), ", ", dreal(dens_alpha(i_r, i_an))
   end do
 end do
 close(111)
@@ -3754,7 +3760,7 @@ do i_r = 1, r_dim
 
   radial = weight_R(i_r) * radial_2b_sho_memo(a_sh, c_sh, i_r) &
                          * radial_2b_sho_memo(b_sh, d_sh, i_r) &
-                         * exp((alpha_DD + 2.0d0 + 4.0d0) * (r(i_r) / HO_b)**2)
+                         * exp((alpha_DD + 2.0d0 + 2.0d0) * (r(i_r) / HO_b)**2)
   !! NOTE: the inclusion of the exponential part is necessary due the form of
   !! of the density and radial functions with the exp(-r/b^2) for stability
   !! requirement in larger shells.
@@ -3827,15 +3833,15 @@ v_dd_val_Real(3) = real(v_dd_value(3), r64) * integral_factor
 v_dd_val_Real(4) = real(v_dd_value(4), r64) * integral_factor
 
 if (abs(imag(v_dd_value(2))) > 1.0d-9 ) then
-    print "(A,F10.8,A,F18.15)", "  [FAIL] v_DD_abcd is not Real =", &
+    print "(A,D15.8,A,D20.8)", "[FAIL IMAG] v_grad_DD_abcd is not Real =", &
         real(v_dd_value(2)), " +j ", imag(v_dd_value(2))
 endif
 
 if (dabs(v_dd_val_Real(2)).GT.1.0d-6) then
-  print "(3(A,4I6),A,2D20.9)", "   _Eval me(pp/pn):",a,b,c,d, " <", &
-                HOsp_ant(a), HOsp_ant(b), HOsp_ant(c), HOsp_ant(d), " mj(", &
-                HOsp_2mj(a), HOsp_2mj(b), HOsp_2mj(c), HOsp_2mj(d) ,")> =", &
-                v_dd_val_Real(1), v_dd_val_Real(2)
+  print "(A,4I4,A,4(I6,A,I3,A),A,2D20.9)"," _Eval me(pp/pn):",a,b,c,d, " <",&
+    HOsp_ant(a), "(", HOsp_2mj(a), ")", HOsp_ant(b), "(", HOsp_2mj(b), ")", &
+    HOsp_ant(c), "(", HOsp_2mj(c), ")", HOsp_ant(d), "(", HOsp_2mj(d), ")", &
+    "> =", v_dd_val_Real(1), v_dd_val_Real(2)
 endif
 return
 end function matrix_element_v_gradientDD
