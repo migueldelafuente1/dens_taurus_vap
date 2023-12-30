@@ -134,8 +134,8 @@ end subroutine export_densityAndHamiltonian
 !   Evaluates the single particle energies and Core energy from a HFB energy   !
 ! done in a shell model fashion (summing all core levels as fully occupied).   !
 !------------------------------------------------------------------------------!
-subroutine calculate_valenceSpaceReduced(hamilJM, dim_jm, dim_sh)
-integer, intent(in) :: dim_sh, dim_jm
+subroutine calculate_valenceSpaceReduced(hamilJM, dim_jm, dim_sh, option)
+integer, intent(in) :: dim_sh, dim_jm, option
 real(r64), dimension(4,dim_jm,dim_jm,dim_sh,dim_sh), intent(in) :: hamilJM
 
 integer(i32) :: a, b, aa, a2, b2, a_min, a_max, b_min, b_max, ialloc=0
