@@ -3649,14 +3649,17 @@ enddo
 
 !! scalar product / export for test
 open(111, file='dens_differential.gut')
+write(111, fmt="(A)") " i_r i_an  r(ir)   grad_dens_-1     imag_grad_d-1   &
+            &grad_dens_0     imag_grad_d0     grad_den_+1   imag_grad_d+1  &
+            &  R(laplacian)   sqrt(R(laplac))  R(density(r,an))  R_dens_alpha "
 do i_r = 1, r_dim
   do i_an = 1, angular_dim
 
-    write(111,fmt='(2(I5,A),F4.2)',advance='no') i_r, ",", i_an, ",", r(i_r)
+    write(111,fmt='(2(I5,A),F5.2)',advance='no') i_r, ",", i_an, ",", r(i_r)
     do mu_ = -1, 1
       partial_dens(2,i_r,i_an) = partial_dens(  2,i_r,i_an) + &
         ((-1)**mu_) * partial_dens(mu_,i_r,i_an) * partial_dens(-mu_,i_r,i_an)
-      write(111,fmt='(A,F15.9,A,F15.9,A)',advance='no') " ,", &
+      write(111,fmt='(A,F15.9,A,F15.9,A)',advance='no') ",", &
     dreal(partial_dens(mu_,i_r,i_an)), " ",dimag(partial_dens(mu_,i_r,i_an)),"j"
     enddo
     if (dabs(dimag(partial_dens(2,i_r,i_an))).GT.1.0e-9) then
@@ -3664,10 +3667,9 @@ do i_r = 1, r_dim
                               i_r, i_an, partial_dens(2,i_r,i_an)
     endif
 
-    write(111,fmt='(A,F15.9,A,F15.9,A,F15.9)', advance='no') " ,", &
+    write(111,fmt='(A,F15.9,A,F15.9)', advance='no') " ,", &
       dreal(partial_dens(2,i_r,i_an)), ",",&
-      dreal(partial_dens(2,i_r,i_an))**alpha_DD,",", &
-      dreal(partial_dens(2,i_r,i_an))**(alpha_DD - 1.0d0)
+      dreal(partial_dens(2,i_r,i_an))**0.5d0
     write(111,fmt='(A,F15.9,A,F15.9)') ",", &
       dreal(dens_pnt(5,i_r,i_an)), ", ", dreal(dens_alpha(i_r, i_an))
   end do
