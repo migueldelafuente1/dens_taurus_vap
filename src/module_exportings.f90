@@ -121,6 +121,8 @@ if (exportValSpace) then !-----------------------------------------------------
       call print_DD_matrix_elements(2)  !! Case for exporting the Gradient DD
     endif
     call print_DD_matrix_elements(1) !! Case for exporting the DD
+
+    if (implement_H2cpd_DD) deallocate(hamil_H2cpd_DD)
   endif
 endif
 
@@ -469,8 +471,14 @@ enddo
 print "(/,A,F15.6)", "  E_core=", E_core
 
 !! WRITE IN THE 1 BODY FILES
-open (297, file="D1S_vs_scalar.sho")
-open (296, file="D1S_vs_scalar.01b")
+if (option.EQ.1) then
+  open (297, file="D1S_vs_scalar.sho")
+  open (296, file="D1S_vs_scalar.01b")
+else if (option.EQ.2) then
+  open (297, file="GDD_vs_scalar.sho")
+  open (296, file="GDD_vs_scalar.01b")
+endif
+
 write(297, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2I5)') &
   'Density 2BME on explicit HFB wf from taurus, Scalar', &
   ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=', x0_DD_FACTOR, ' ALPHA=', alpha_DD, &
@@ -826,7 +834,7 @@ print *, "   *** I have read the full uncoupled hamiltonian. Now [step 2]"
 
 ! -------------------------------------------------------------------------
 !! 2. Calculate SP-Energy and core energy from Global Hamil and DD hamil
-call calculate_valenceSpaceReduced(hamilJM,dim_jm,dim_sh)
+call calculate_valenceSpaceReduced(hamilJM,dim_jm,dim_sh, option)
 
 print *, "   *** I have evaluate the valence Space. Now [step 3]"
 !return
@@ -1147,7 +1155,6 @@ do aa = 1, VSsh_dim
 enddo
 
 deallocate(hamilJM, auxHamilRed, all_zero)!, J1,J2,J3,J4)
-if (implement_H2cpd_DD) deallocate(hamil_H2cpd_DD)
 do KK = 0, TENSOR_ORD
   close(300 + KK)
 end do
