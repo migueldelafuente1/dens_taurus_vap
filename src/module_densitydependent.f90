@@ -3583,7 +3583,7 @@ do a = 1, HOsp_dim
       call ClebschGordan(2*la, 1,ja, mla,ms,mja, cgc1)
       call ClebschGordan(2*lb, 1,jb, mlb,ms,mjb, cgc2)
 
-      aux1 = ((-1)**(mla/2)) * sqrt(((2*la) + 1)*((2*lb) + 1) / (4*pi))
+      aux1 = ((-1)**(mla/2)) * dsqrt(((2*la) + 1)*((2*lb) + 1) / (4*pi))
       aux1 = aux1 * cgc1 * cgc2 * dens_rhoRR(a, b)
 
 !      print "(A,3I4,F11.6)", "  1* ms,mla,b:",ms, mla,mlb, aux1
@@ -3597,12 +3597,12 @@ do a = 1, HOsp_dim
         call ClebschGordan(2*la,2*lb,2*K1, 0,0,0, cgc1)
         call ClebschGordan(2*la,2*lb,2*K1, -mla,mlb,2*M1, cgc2)
 
-        aux2 = cgc1 * cgc2
+        aux2 = cgc1 * cgc2 / dsqrt((2*K1) + 1.0d0)
 
         do mu_ = -1, 1, 1
           !! Components of the gradient
           M2 = (mjb - mja + 2*mu_) / 2
-          do ADK2 = - 1,  1, 2
+          do ADK2 = -1,  1, 2
             K2 = K1 + ADK2
 !            print "(A,6I4,F11.6)", "  2* KM(1,2),mu,ad:",K1,M1, K2,M2, mu_,&
 !                                  ADK2, aux2
@@ -3846,12 +3846,12 @@ if (abs(imag(v_dd_value(2))) > 1.0d-9 ) then
         real(v_dd_value(2)), " +j ", imag(v_dd_value(2))
 endif
 
-if (dabs(v_dd_val_Real(2)).GT.1.0d-6) then
-  print "(A,4I4,A,4(I6,A,I3,A),A,2D20.9)"," _Eval me(pp/pn):",a,b,c,d, " <",&
-    HOsp_ant(a), "(", HOsp_2mj(a), ")", HOsp_ant(b), "(", HOsp_2mj(b), ")", &
-    HOsp_ant(c), "(", HOsp_2mj(c), ")", HOsp_ant(d), "(", HOsp_2mj(d), ")", &
-    "> =", v_dd_val_Real(1), v_dd_val_Real(2)
-endif
+!if (dabs(v_dd_val_Real(2)).GT.1.0d-6) then
+!  print "(A,4I4,A,4(I6,A,I3,A),A,2D20.9)"," _Eval me(pp/pn):",a,b,c,d, " <",&
+!    HOsp_ant(a), "(", HOsp_2mj(a), ")", HOsp_ant(b), "(", HOsp_2mj(b), ")", &
+!    HOsp_ant(c), "(", HOsp_2mj(c), ")", HOsp_ant(d), "(", HOsp_2mj(d), ")", &
+!    "> =", v_dd_val_Real(1), v_dd_val_Real(2)
+!endif
 return
 end function matrix_element_v_gradientDD
 
