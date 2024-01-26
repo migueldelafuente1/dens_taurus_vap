@@ -3494,7 +3494,6 @@ real(r64) :: radial
 allocate(radial_1b_diff_memo(HOsh_dim, -1:1, -1:1, r_dim))
 radial_1b_diff_memo = zero
 
-open(111, file="radial_1b_deriv.gut")
 do a_sh = 1, HOsh_dim
   n = HOsh_n(a_sh)
   l = HOsh_l(a_sh)
@@ -3514,19 +3513,7 @@ do a_sh = 1, HOsh_dim
 
     end do
   end do
-
-  i_r = r_dim / 4
-  write(111, fmt="(3I4)", advance='no') a_sh, n, l
-  do i_n = -1, 1
-    do i_l = -1, 1
-      write(111, fmt="(A,F10.6)", advance='no') "  ", &
-        radial_1b_diff_memo(a_sh, i_n, i_l, i_r)
-    end do
-  end do
-  write(111, fmt="(A)") ""
-
 enddo
-close(111)
 end subroutine set_Radial1b_derivates
 
 
@@ -3586,15 +3573,18 @@ do a = 1, HOsp_dim
       !                             sqrt(na + 1.0d0))
       !rad_diffs(i_r) = rad_diffs(i_r) / HO_b
       !! ---------------------------------------------------------------------
-      rad_diffs(i_r) = rad_diffs(i_r) + (&
-                                   radial_1b_diff_memo(a_sh, 0, 0,i_r) * &
-                                   radial_1b_diff_memo(b_sh,-1,+1,i_r) / &
-                                   sqrt(nb + 0.0d0))
-      rad_diffs(i_r) = rad_diffs(i_r) + (&
-                                   radial_1b_diff_memo(a_sh,-1,+1,i_r) * &
-                                   radial_1b_diff_memo(b_sh, 0, 0,i_r) / &
-                                   sqrt(na + 0.0d0))
-      rad_diffs(i_r) = rad_diffs(i_r) / HO_b
+      if (na .GT. 0) then
+        rad_diffs(i_r) = rad_diffs(i_r) + (&
+                                     radial_1b_diff_memo(a_sh,-1,+1,i_r) * &
+                                     radial_1b_diff_memo(b_sh, 0, 0,i_r) / &
+                                     sqrt(na + 0.0d0))
+      endif
+      if (nb .GT. 0) then
+        rad_diffs(i_r) = rad_diffs(i_r) + (&
+                                     radial_1b_diff_memo(a_sh, 0, 0,i_r) * &
+                                     radial_1b_diff_memo(b_sh,-1,+1,i_r) / &
+                                     sqrt(nb + 0.0d0))
+      endif
     enddo
 
     !! sumatory over the angular indexes
@@ -3654,7 +3644,7 @@ do a = 1, HOsp_dim
                 !! radial  2b functions and diff parts precalculated.
                 rad = ((xikl+ (la+lb)) * HO_b / r(i_r)) - (2.0d0 * r(i_r)/HO_b)
                 rad = rad * radial_2b_sho_memo(a_sh, b_sh, i_r) / HO_b
-                rad = rad + rad_diffs(i_r)                 ! already over b_len
+                rad = rad + (rad_diffs(i_r) / HO_b)
 
                 partial_dens(mu_,i_r,i_an) = partial_dens(mu_,i_r,i_an) + &
                                   aux3 * rad * sph_harmonics_memo(indxa, i_an)
