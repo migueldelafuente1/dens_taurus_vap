@@ -3494,6 +3494,7 @@ real(r64) :: radial
 allocate(radial_1b_diff_memo(HOsh_dim, -1:1, -1:1, r_dim))
 radial_1b_diff_memo = zero
 
+open(111, file="radial_1b_deriv.gut")
 do a_sh = 1, HOsh_dim
   n = HOsh_n(a_sh)
   l = HOsh_l(a_sh)
@@ -3514,7 +3515,18 @@ do a_sh = 1, HOsh_dim
     end do
   end do
 
+  i_r = r_dim / 4
+  write(111, fmt="(I4)", advance='no') a_sh
+  do i_n = -1, 1
+    do i_l = -1, 1
+      write(111, fmt="(A,F10.6)", advance='no') "  ", &
+        radial_1b_diff_memo(a_sh, i_n, i_l, i_r)
+    end do
+  end do
+  write(111, fmt="(A)") ""
+
 enddo
+close(111)
 end subroutine set_Radial1b_derivates
 
 
