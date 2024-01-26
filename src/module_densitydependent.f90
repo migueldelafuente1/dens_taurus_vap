@@ -3577,11 +3577,11 @@ do a = 1, HOsp_dim
       rad_diffs(i_r) = rad_diffs(i_r) + (&
                                    radial_1b_diff_memo(a_sh, 0, 0,i_r) * &
                                    radial_1b_diff_memo(b_sh,-1,+1,i_r) / &
-                                   sqrt(nb))
+                                   sqrt(nb + 0.0d0))
       rad_diffs(i_r) = rad_diffs(i_r) + (&
                                    radial_1b_diff_memo(a_sh,-1,+1,i_r) * &
                                    radial_1b_diff_memo(b_sh, 0, 0,i_r) / &
-                                   sqrt(na))
+                                   sqrt(na + 0.0d0))
       rad_diffs(i_r) = -1 * rad_diffs(i_r) / HO_b
     enddo
 
