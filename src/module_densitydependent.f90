@@ -3507,6 +3507,7 @@ do a_sh = 1, HOsh_dim
 
       do i_r = 1, r_dim
         radial = radial_function(n2, l2, r(i_r))  ! r = b * sqrt(x/(alpha+2))
+                                                  ! already 1/b**3
         radial_1b_diff_memo(a_sh, i_n, i_l, i_r) = radial
       enddo
 
@@ -3556,21 +3557,32 @@ do a = 1, HOsp_dim
     !! evaluate the radial parts for the last step
     rad_diffs = zero
     do i_r = 1, r_dim
-      rad_diffs(i_r) = rad_diffs(i_r) + (sqrt(na + la + 0.5d0) * &
-                                   radial_1b_diff_memo(a_sh, 0,-1,i_r) * &
-                                   radial_1b_diff_memo(b_sh, 0, 0,i_r))
-      rad_diffs(i_r) = rad_diffs(i_r) + (sqrt(nb + lb + 0.5d0) * &
-                                   radial_1b_diff_memo(a_sh, 0, 0,i_r) * &
-                                   radial_1b_diff_memo(b_sh, 0,-1,i_r))
+      !! First Version, rm if works the other --------------------------------
+      !rad_diffs(i_r) = rad_diffs(i_r) + (sqrt(na + la + 0.5d0) * &
+      !                             radial_1b_diff_memo(a_sh, 0,-1,i_r) * &
+      !                             radial_1b_diff_memo(b_sh, 0, 0,i_r))
+      !rad_diffs(i_r) = rad_diffs(i_r) + (sqrt(nb + lb + 0.5d0) * &
+      !                             radial_1b_diff_memo(a_sh, 0, 0,i_r) * &
+      !                             radial_1b_diff_memo(b_sh, 0,-1,i_r))
+      !rad_diffs(i_r) = rad_diffs(i_r) + (&
+      !                             radial_1b_diff_memo(a_sh, 0, 0,i_r) * &
+      !                             radial_1b_diff_memo(b_sh,-1,+1,i_r) / &
+      !                             sqrt(nb + 1.0d0))
+      !rad_diffs(i_r) = rad_diffs(i_r) + (&
+      !                             radial_1b_diff_memo(a_sh,-1,+1,i_r) * &
+      !                             radial_1b_diff_memo(b_sh, 0, 0,i_r) / &
+      !                             sqrt(na + 1.0d0))
+      !rad_diffs(i_r) = rad_diffs(i_r) / HO_b
+      !! ---------------------------------------------------------------------
       rad_diffs(i_r) = rad_diffs(i_r) + (&
                                    radial_1b_diff_memo(a_sh, 0, 0,i_r) * &
                                    radial_1b_diff_memo(b_sh,-1,+1,i_r) / &
-                                   sqrt(nb + 1.0d0))
+                                   sqrt(nb))
       rad_diffs(i_r) = rad_diffs(i_r) + (&
                                    radial_1b_diff_memo(a_sh,-1,+1,i_r) * &
                                    radial_1b_diff_memo(b_sh, 0, 0,i_r) / &
-                                   sqrt(na + 1.0d0))
-      rad_diffs(i_r) = rad_diffs(i_r) / HO_b
+                                   sqrt(na))
+      rad_diffs(i_r) = -1 * rad_diffs(i_r) / HO_b
     enddo
 
     !! sumatory over the angular indexes
@@ -3628,7 +3640,7 @@ do a = 1, HOsp_dim
             do i_an = 1, angular_dim
               do i_r = 1, r_dim
                 !! radial  2b functions and diff parts precalculated.
-                rad = ((xikl-1.0d0) * HO_b / r(i_r)) - (2.0d0 * r(i_r)/HO_b)
+                rad = ((xikl+ (la+lb)) * HO_b / r(i_r)) - (2.0d0 * r(i_r)/HO_b)
                 rad = rad * radial_2b_sho_memo(a_sh, b_sh, i_r) / HO_b
                 rad = rad + rad_diffs(i_r)                 ! already over b_len
 

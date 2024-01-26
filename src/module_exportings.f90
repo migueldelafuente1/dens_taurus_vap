@@ -544,8 +544,8 @@ real(r64), dimension(4)   :: aux_r_ab, aux_r_cd
 logical,   dimension(4)   :: j_isitsconjugate
 
 j_isitsconjugate = (/ a.EQ.a_con, b.EQ.b_con, c.EQ.c_con, d.EQ.d_con /)
-ind_jm_b  = angular_momentum_index(Jbra, Mbra, .FALSE.)
-ind_jm_k  = angular_momentum_index(Jket, Mket, .FALSE.)
+ind_jm_b = angular_momentum_index(Jbra, Mbra, .FALSE.)
+ind_jm_k = angular_momentum_index(Jket, Mket, .FALSE.)
 aux_r_ab = zero
 aux_r_cd = zero
 kval_is_zero = .TRUE.
