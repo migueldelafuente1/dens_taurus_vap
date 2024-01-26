@@ -3516,7 +3516,7 @@ do a_sh = 1, HOsh_dim
   end do
 
   i_r = r_dim / 4
-  write(111, fmt="(I4)", advance='no') a_sh
+  write(111, fmt="(3I4)", advance='no') a_sh, n, l
   do i_n = -1, 1
     do i_l = -1, 1
       write(111, fmt="(A,F10.6)", advance='no') "  ", &
