@@ -3672,7 +3672,6 @@ do a = 1, HOsp_dim
   la = HOsp_l(a)
   ma = HOsp_2mj(a)
   indx_a = angular_momentum_index(ja, ma, .TRUE.)
-  print "(A,2I4)", " .iter Rearrangement density/sp_dim: ", a, HOsp_dim
   do b = 1, HOsp_dim
     jb = HOsp_2j(b)
     lb = HOsp_l(b)
@@ -3703,7 +3702,6 @@ do K1 = max(0, abs(ja - jc) / 2), (ja + jc) / 2
   indx_km1 = angular_momentum_index(K1, M1, .FALSE.)
   cgc1 = dens_Y_KM_me(indx_a,indx_c,indx_km1)
   if (dabs(cgc1) .LT. 1.0e-6) cycle
-!  print "(A)", "here1"
   do K2 = max(0, abs(jb - jd) / 2), (jb + jd) / 2
     M2 = (md - mb) /2 !! (Suhonen_Vasr)
     if (abs(M2) > K2) cycle
@@ -3712,15 +3710,12 @@ do K1 = max(0, abs(ja - jc) / 2), (ja + jc) / 2
     indx_km2 = angular_momentum_index(K2, M2, .FALSE.)
     cgc2 = dens_Y_KM_me(indx_b,indx_d,indx_km2)
     if (dabs(cgc2) .LT. 1.0e-6) cycle
-!    print "(A)", " here2"
 do i_r = 1, r_dim
   rad = radial_2b_sho_memo(HOsp_sh(a), HOsp_sh(c), i_r) * &
         radial_2b_sho_memo(HOsp_sh(b), HOsp_sh(d), i_r)
-!  print "(A)", "   r here3"
   do i_an = 1, angular_dim
     ang = cgc1 * cgc2 * sph_harmonics_memo(indx_km1,i_an) * &
                         sph_harmonics_memo(indx_km2,i_an)
-!    print "(A)", "    ang here4"
     rea_dens(i_r, i_an) = rea_dens(i_r, i_an) + (rad * ang * dd_prod)
   enddo
 enddo !! radial - angular loop
@@ -3763,7 +3758,7 @@ do i_r = 1, r_dim
       dreal(dens_pnt(5,i_r,i_an)), ", ", dreal(dens_alpha(i_r, i_an))
     !!! export the test for the rea_density
     write(111,fmt='(A,F15.9,A,F15.9)') ",", &
-      dreal(rea_dens(i_r,i_an)), ", ", dimag(rea_dens(i_r, i_an))
+      dreal(rea_dens(i_r,i_an)), " ", dimag(rea_dens(i_r, i_an))
   end do
 end do
 close(111)
