@@ -3534,7 +3534,7 @@ real(r64) :: aux1, aux2, aux3, cgc1, cgc2, cgc3, g_kl, xikl, rad, dd_prod
 real(r64), dimension(:), allocatable :: rad_diffs
 complex(r64), dimension(:,:), allocatable :: rea_dens
 complex(r64) :: ang
-integer   :: c,lc,jc,mc, d,ld,jd,md, indx_a,indx_b,indx_c,indx_d, &
+integer   :: ma,mb, c,lc,jc,mc, d,ld,jd,md, indx_a,indx_b,indx_c,indx_d, &
              indx_km1,indx_km2
 !! Angular part is a Y_KM, up to l_max+1 (sph_harmonics_memo is up to 2*l_max)
 
@@ -3666,7 +3666,6 @@ enddo
 
 !! test to evaluate the rearrangement density
 allocate(rea_dens(r_dim, angular_dim))
-test_rea = zzero
 do a = 1, HOsp_dim
   ja = HOsp_2j(a)
   la = HOsp_l(a)
