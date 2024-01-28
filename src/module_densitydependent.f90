@@ -3754,7 +3754,7 @@ do i_r = 1, r_dim
     write(111,fmt='(A,F15.9,A,F15.9)', advance='no') ",", &
       dreal(partial_dens(2,i_r,i_an)), ",",&
       dreal(partial_dens(2,i_r,i_an))**0.5d0
-    write(111,fmt='(A,F15.9,A,F15.9)') ",", &
+    write(111,fmt='(A,F15.9,A,F15.9)', advance='no') ",", &
       dreal(dens_pnt(5,i_r,i_an)), ", ", dreal(dens_alpha(i_r, i_an))
     !!! export the test for the rea_density
     write(111,fmt='(A,F15.9,A,F15.9)') ",", &
