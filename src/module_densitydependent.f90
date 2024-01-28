@@ -76,7 +76,7 @@ real(r64), dimension(:, :, :), allocatable, save :: radial_2b_sho_export_memo !(
 
 complex(r64), dimension(:,:), allocatable,   save :: sph_harmonics_memo ! Y_(km_indx, i_ang)
 complex(r64), dimension(:,:,:), allocatable, save :: sphharmDUAL_memo   ! Y*(a) Y(b)
-real(r64), dimension(:,:,:), allocatable,    save :: dens_Y_KM_me
+real(r64), dimension(:,:,:), allocatable,    save :: dens_Y_KM_me       ! <a|Y_kb|b>(jm_a, jm_b, KM indx)
 
 complex(r64), dimension(:,:,:,:), allocatable, save :: AngFunctDUAL_HF ! CGa CGb Y*(a) Y (b)
 complex(r64), dimension(:,:,:,:), allocatable, save :: AngFunctDUAL_P1 ! CGa CGb Y (a) Y (b)
@@ -3522,15 +3522,20 @@ end subroutine set_Radial1b_derivates
 !                                                                             !
 ! Evaluate the gradients Grad(rho (t,ang)) and the scalar product             !
 !-----------------------------------------------------------------------------!
-subroutine calculate_density_laplacian(dens_rhoRR, ndim)
+subroutine calculate_density_laplacian(dens_rhoRR, dens_kappaRR, ndim)
 
 integer, intent(in) :: ndim
-real(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR
+real(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR, dens_kappaRR
 
 integer   :: a, b, i_r,i_an, na,la,ja,mja, nb,lb,jb,mjb, a_sh, b_sh
 integer   :: mla, mlb, ms, K1, M1, K2, M2, mu_, ADK2, indxa
-real(r64) :: aux1, aux2, aux3, cgc1, cgc2, cgc3, g_kl, xikl, rad
+
+real(r64) :: aux1, aux2, aux3, cgc1, cgc2, cgc3, g_kl, xikl, rad, dd_prod
 real(r64), dimension(:), allocatable :: rad_diffs
+complex(r64), dimension(:,:), allocatable :: rea_dens
+complex(r64) :: ang
+integer   :: c,lc,jc,mc, d,ld,jd,md, indx_a,indx_b,indx_c,indx_d, &
+             indx_km1,indx_km2
 !! Angular part is a Y_KM, up to l_max+1 (sph_harmonics_memo is up to 2*l_max)
 
 allocate(rad_diffs(r_dim))
@@ -3544,15 +3549,12 @@ do a = 1, HOsp_dim
   ja = HOsp_2j(a)
   mja = HOsp_2mj(a)
 
-  do b = 1, HOsp_dim  !! optimize with transposition b >= a
+  do b = 1, HOsp_dim
     b_sh = HOsp_sh(b)
     lb = HOsp_l(b)
     nb = HOsp_n(b)
     jb = HOsp_2j(b)
     mjb = HOsp_2mj(b)
-
-!    print "(A,6I6)"," iter(a,b) ", a,b, HOsh_ant(a_sh),HOsh_ant(b_sh), mja,mjb
-
     !! evaluate the radial parts for the last step
     rad_diffs = zero
     do i_r = 1, r_dim
@@ -3661,11 +3663,80 @@ do a = 1, HOsp_dim
   enddo
 enddo
 
+
+!! test to evaluate the rearrangement density
+allocate(rea_dens(r_dim, angular_dim))
+test_rea = zzero
+do a = 1, HOsp_dim
+  ja = HOsp_2j(a)
+  la = HOsp_l(a)
+  ma = HOsp_2mj(a)
+  indx_a = angular_momentum_index(ja, ma, .TRUE.)
+  print "(A,2I4)", " .iter Rearrangement density/sp_dim: ", a, HOsp_dim
+  do b = 1, HOsp_dim
+    jb = HOsp_2j(b)
+    lb = HOsp_l(b)
+    mb = HOsp_2mj(b)
+    indx_b = angular_momentum_index(jb, mb, .TRUE.)
+    do c = 1, HOsp_dim
+      jc = HOsp_2j(c)
+      lc = HOsp_l(c)
+      mc = HOsp_2mj(c)
+      indx_c = angular_momentum_index(jc, mc, .TRUE.)
+      if (dabs(dens_rhoRR(d,b)) .LT. 1.0e-6) cycle
+
+      do d = 1, HOsp_dim
+        jd = HOsp_2j(d)
+        ld = HOsp_l(d)
+        md = HOsp_2mj(d)
+        indx_d = angular_momentum_index(jd, md, .TRUE.)
+        if (dabs(dens_rhoRR(c,a)) .LT. 1.0e-6) cycle
+
+dd_prod = (2 * dens_rhoRR(d,b) * dens_rhoRR(c,a)) &
+            - (dens_kappaRR(c,d) * dens_kappaRR(a,b))
+!!! -------------------------------------------------------------------------
+do K1 = max(0, abs(ja - jc) / 2), (ja + jc) / 2
+  M1 = (mc - ma) /2 !! (Suhonen_Vasr)
+  if (abs(M1) > K1) cycle
+  if (MOD(la + lc + K1, 2) == 1) cycle
+
+  indx_km1 = angular_momentum_index(K1, M1, .FALSE.)
+  cgc1 = dens_Y_KM_me(indx_a,indx_c,indx_km1)
+  if (dabs(cgc1) .LT. 1.0e-6) cycle
+  do K2 = max(0, abs(jb - jd) / 2), (jb + jd) / 2
+    M2 = (md - mb) /2 !! (Suhonen_Vasr)
+    if (abs(M2) > K2) cycle
+    if (MOD(lb + ld + K2, 2) == 1) cycle
+
+    indx_km2 = angular_momentum_index(K2, M2, .FALSE.)
+    cgc2 = dens_Y_KM_me(indx_b,indx_d,indx_km2)
+    if (dabs(cgc2) .LT. 1.0e-6) cycle
+do i_r = 1, r_dim
+  rad = radial_2b_sho_memo(HOsp_sh(a), HOsp_sh(c), i_r) * &
+        radial_2b_sho_memo(HOsp_sh(b), HOsp_sh(d), i_r)
+  do i_an = 1, angular_dim
+    ang = cgc1 * cgc2 * sph_harmonics_memo(indx_km1,i_an) * &
+                        sph_harmonics_memo(indx_km2,i_an)
+    rea_dens(i_r, i_an) = rea_dens(i_r, i_an) + (rad * ang * dd_prod)
+  enddo
+enddo !! radial - angular loop
+
+  enddo
+enddo
+!!! -------------------------------------------------------------------------
+      end do
+    end do
+  end do
+end do
+
+
+
 !! scalar product / export for test
 open(111, file='dens_differential.gut')
 write(111, fmt="(A)") "  i_r i_an r(ir)    grad_den_-1     imag(grad_-1)     &
            &grad_den_0      imag(grad_0)     grad_den_+1    imag(grad_+1)    &
-           &R(Laplacian)   sqrt(R(Laplac))       R(dens)   R(dens_alpha)"
+           &R(Laplacian)   sqrt(R(Laplac))       R(dens)   R(dens_alpha)     &
+           &rea_dens        imag(rea_dens)"
 do i_r = 1, r_dim
   do i_an = 1, angular_dim
 
@@ -3686,6 +3757,9 @@ do i_r = 1, r_dim
       dreal(partial_dens(2,i_r,i_an))**0.5d0
     write(111,fmt='(A,F15.9,A,F15.9)') ",", &
       dreal(dens_pnt(5,i_r,i_an)), ", ", dreal(dens_alpha(i_r, i_an))
+    !!! export the test for the rea_density
+    write(111,fmt='(A,F15.9,A,F15.9)') ",", &
+      dreal(rea_dens(i_r,i_an)), ", ", dimag(rea_dens(i_r, i_an))
   end do
 end do
 close(111)
@@ -3699,16 +3773,16 @@ end subroutine calculate_density_laplacian
 !                                                                             !
 ! Set up everything for the laplacian (Grad rho(r,ang))^2                     !
 !-----------------------------------------------------------------------------!
-subroutine set_derivative_density_dependent(dens_rhoRR, ndim)
+subroutine set_derivative_density_dependent(dens_rhoRR, dens_kappaRR, ndim)
 
 integer, intent(in) :: ndim
-real(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR
+real(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR, dens_kappaRR
 
 ! 1. Set up the radial functions for cross n,l Radial functions
 call set_Radial1b_derivates
 print "(A)", " [DONE] Setting Radial 1b."
 ! 2. Calculate gradient of the last density
-call calculate_density_laplacian(dens_rhoRR, ndim)
+call calculate_density_laplacian(dens_rhoRR, dens_kappaRR, ndim)
 print "(A)", " [DONE] Calculated Laplacian of the density."
 
 end subroutine set_derivative_density_dependent
@@ -4110,7 +4184,7 @@ nO2 = ndim / 2
 
 !print "(A)", "  [WARNING] Not gonna do the exporting of matrix elements"
 !return
-REGISTER_BB = HO_Nmax .LT. 7    !!! MZ=8 -> 88GB,  MZ=7 -> 25GB, MZ=6 -> 0.4GB
+REGISTER_BB = HO_Nmax .LT. 8    !!! MZ=8 -> 88GB,  MZ=7 -> 25GB, MZ=6 -> 0.4GB
 
 !!! Obtain the pnpn part as an (a,b) vs (c,d) matrix:
 if (REGISTER_BB) then
@@ -4212,7 +4286,7 @@ write(111, fmt="(A)") "%%%  MAT. ELEMS (a, b) ::  %%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 write(112, fmt="(A)") "%%%  MAT. ELEMS (a, b) ::  %%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 
 if (.NOT.REGISTER_BB) write(112, fmt="(A)") &
-  "SKIP MZ>7 this file is not available, generate it from [hamil_bb_init.gut]"
+  "SKIP MZ>8 this file is not available, generate it from [hamil_bb_init.gut]"
 
 print "(A)", " [    ] Exporting of DD non-zero PN matrix elements."
 
@@ -4221,6 +4295,7 @@ do a = 1, nO2
 
     non_zero = 0
     !! Density-Dependent part
+    if (dabs(t3_DD_CONST) .LT. 0.001) then ! skip it dd term is fixed to 0
     do c=1, no2
       do d=1, no2
 
@@ -4239,6 +4314,7 @@ do a = 1, nO2
       end do
     end do
     if (non_zero(1) .GT. 0) write(111,fmt="(A)") ""
+    endif
 
     ab_indx = ((a - 1) * nO2) + b
     if (REGISTER_BB) then
