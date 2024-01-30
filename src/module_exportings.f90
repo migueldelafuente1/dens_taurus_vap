@@ -706,6 +706,9 @@ print "(A,I10)", "* [  ] Printing 2B Mat Elements DD from WF_HFB /dim H2_DD:",&
 open(295, file="D1S_vs_scalar.com")
 write(295, fmt="(A)") "Generated for D1S_scalar (2 body com already in .2b)"
 close(295)
+open(295, file="GDD_vs_scalar.com")
+write(295, fmt="(A)") "Generated for GD1S_scalar (2 body com already in .2b)"
+close(295)
 
 do KK = 0, TENSOR_ORD
   write(300+KK, fmt="(A,I3,A,F10.5,A,F10.5,A,F6.4)") &
