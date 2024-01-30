@@ -84,8 +84,10 @@ call export_rearrangement_field
 
 !! deallocate HF arrays from D1S to increase memory
 if (.NOT. evalQuasiParticleVSpace) then
-  deallocate(sphharmDUAL_memo, AngFunctDUAL_HF, AngFunctDUAL_P1, &
-             AngFunctDUAL_P2, BulkHF, BulkP1, BulkP2)
+  deallocate(sphharmDUAL_memo, AngFunctDUAL_P1,AngFunctDUAL_P2, BulkP1, BulkP2)
+  if (.NOT. EXPORT_GRAD_DD) then
+    deallocate(AngFunctDUAL_HF, BulkHF)
+  end if
 endif
 
 if (exportValSpace) then !-----------------------------------------------------
@@ -461,8 +463,13 @@ do a_sh = 1, HOsh_dim
     print "(A,2I6,A,3F15.6)", "VS_spe  a/j(a)",HOsh_ant(a_sh), ja, " t,v=", &
         t_sp_vs(a_sh_vs), ep_sp_vs(a_sh_vs), en_sp_vs(a_sh_vs)
 
-    ep_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (ep_sp_vs(a_sh_vs)/(ja+1.0d0))
-    en_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (en_sp_vs(a_sh_vs)/(ja+1.0d0))
+    if (option .EQ. 1) then
+      ep_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (ep_sp_vs(a_sh_vs)/(ja+1.0d0))
+      en_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (en_sp_vs(a_sh_vs)/(ja+1.0d0))
+    else
+      ep_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs)
+      en_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs)
+    endif
   endif
 
 enddo
@@ -472,6 +479,12 @@ do tt = 1, 3
   print "(I2,A,2F15.6)",tt," Tcore/Vcore=",T_core(tt), V_core(tt)
   E_core  = E_core + T_core(tt) + (1.0d0 * V_core(tt)) !! we sum all
 enddo
+
+if (option .EQ. 2) then
+  call calculate_energy_field_laplacian(E_core)
+  E_core = -1 * E_core ! This must be canceled
+endif
+
 print "(/,A,F15.6)", "  E_core=", E_core
 
 !! WRITE IN THE 1 BODY FILES

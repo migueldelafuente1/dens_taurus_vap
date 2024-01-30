@@ -900,24 +900,6 @@ do i = 1, spO2
     ! Sect. define uncoupled angular coefficients to precalculate fields. ==
     call set_sphhDual_precalcFields(i, ja, la, ma,  j, jb, lb, mb)
 
-!!!  (OLD treatment that complete the Ang. func to directly use the full space !
-!    ! == ( also fill the space for nn, pn, np space) ==
-!    do i_an = 1, angular_dim
-!      do ms = 1, 4
-!        AngFunctDUAL_HF(ms,i+spO2,j     ,i_an) = AngFunctDUAL_HF(ms,i,j,i_an)
-!        AngFunctDUAL_HF(ms,i     ,j+spO2,i_an) = AngFunctDUAL_HF(ms,i,j,i_an)
-!        AngFunctDUAL_HF(ms,i+spO2,j+spO2,i_an) = AngFunctDUAL_HF(ms,i,j,i_an)
-!
-!        AngFunctDUAL_P1(ms,i+spO2,j     ,i_an) = AngFunctDUAL_P1(ms,i,j,i_an)
-!        AngFunctDUAL_P1(ms,i     ,j+spO2,i_an) = AngFunctDUAL_P1(ms,i,j,i_an)
-!        AngFunctDUAL_P1(ms,i+spO2,j+spO2,i_an) = AngFunctDUAL_P1(ms,i,j,i_an)
-!
-!        AngFunctDUAL_P2(ms,i+spO2,j     ,i_an) = AngFunctDUAL_P2(ms,i,j,i_an)
-!        AngFunctDUAL_P2(ms,i     ,j+spO2,i_an) = AngFunctDUAL_P2(ms,i,j,i_an)
-!        AngFunctDUAL_P2(ms,i+spO2,j+spO2,i_an) = AngFunctDUAL_P2(ms,i,j,i_an)
-!      enddo
-!    enddo !! ---------------------------------------------------------------- !
-
   enddo
 enddo
 
@@ -3532,7 +3514,7 @@ integer   :: mla, mlb, ms, K1, M1, K2, M2, mu_, ADK2, indxa
 
 real(r64) :: aux1, aux2, aux3, cgc1, cgc2, cgc3, g_kl, xikl, rad, dd_prod
 real(r64), dimension(:), allocatable :: rad_diffs
-complex(r64), dimension(:,:), allocatable :: rea_dens
+complex(r64), dimension(:,:), allocatable :: rea_dens, rea_d_test
 complex(r64) :: ang
 integer   :: ma,mb, c,lc,jc,mc, d,ld,jd,md, indx_a,indx_b,indx_c,indx_d, &
              indx_km1,indx_km2
@@ -3665,8 +3647,9 @@ enddo
 
 
 !! test to evaluate the rearrangement density
-allocate(rea_dens(r_dim, angular_dim))
+allocate(rea_dens(r_dim, angular_dim), rea_d_test(r_dim, angular_dim))
 rea_dens = zzero
+rea_d_test = zzero
 do a = 1, HOsp_dim
   ja = HOsp_2j(a)
   la = HOsp_l(a)
@@ -3716,18 +3699,82 @@ do i_r = 1, r_dim
   do i_an = 1, angular_dim
     ang = cgc1 * cgc2 * sph_harmonics_memo(indx_km1,i_an) * &
                         sph_harmonics_memo(indx_km2,i_an)
-    rea_dens(i_r, i_an) = rea_dens(i_r, i_an) + (rad * ang * dd_prod)
+    rea_dens(i_r, i_an) = rea_dens(i_r, i_an) + (rad*ang*dd_prod)
+  enddo
+enddo !! radial - angular loop
+enddo
+enddo
+
+do i_r = 1, r_dim
+  rad = radial_2b_sho_memo(HOsp_sh(a), HOsp_sh(c), i_r) * &
+        radial_2b_sho_memo(HOsp_sh(b), HOsp_sh(d), i_r)
+  do i_an = 1, angular_dim
+    cgc1 = AngFunctDUAL_HF(1, a,c, i_an) + AngFunctDUAL_HF(4, a,c, i_an)
+    cgc2 = AngFunctDUAL_HF(1, b,d, i_an) + AngFunctDUAL_HF(4, b,d, i_an)
+    ang = cgc1 * cgc2
+    rea_d_test(i_r, i_an) = rea_d_test(i_r, i_an) + (rad*ang*dd_prod)
   enddo
 enddo !! radial - angular loop
 
+!!! -- EXCHANGE LOOP --------------------------------------------------------
+
+do K1 = max(0, abs(ja - jd) / 2), (ja + jd) / 2
+  M1 = (md - ma) /2 !! (Suhonen_Vasr)
+  if (abs(M1) > K1) cycle
+  if (MOD(la + ld + K1, 2) == 1) cycle
+
+  indx_km1 = angular_momentum_index(K1, M1, .FALSE.)
+  cgc1 = dens_Y_KM_me(indx_a,indx_d,indx_km1)
+  if (dabs(cgc1) .LT. 1.0e-6) cycle
+  do K2 = max(0, abs(jb - jc) / 2), (jb + jc) / 2
+    M2 = (mc - mb) /2 !! (Suhonen_Vasr)
+    if (abs(M2) > K2) cycle
+    if (MOD(lb + lc + K2, 2) == 1) cycle
+
+    indx_km2 = angular_momentum_index(K2, M2, .FALSE.)
+    cgc2 = dens_Y_KM_me(indx_b,indx_c,indx_km2)
+    if (dabs(cgc2) .LT. 1.0e-6) cycle
+do i_r = 1, r_dim
+  rad = radial_2b_sho_memo(HOsp_sh(a), HOsp_sh(c), i_r) * &
+        radial_2b_sho_memo(HOsp_sh(b), HOsp_sh(d), i_r)
+  do i_an = 1, angular_dim
+    ang = cgc1 * cgc2 * sph_harmonics_memo(indx_km1,i_an) * &
+                        sph_harmonics_memo(indx_km2,i_an)
+    rea_dens(i_r, i_an) = rea_dens(i_r, i_an) + (x0_DD_FACTOR*rad*ang*dd_prod)
   enddo
+enddo !! radial - angular loop
 enddo
+enddo
+
+do i_r = 1, r_dim
+  rad = radial_2b_sho_memo(HOsp_sh(a), HOsp_sh(c), i_r) * &
+        radial_2b_sho_memo(HOsp_sh(b), HOsp_sh(d), i_r)
+  do i_an = 1, angular_dim
+    cgc1 = AngFunctDUAL_HF(1, a,d, i_an) + AngFunctDUAL_HF(4, a,d, i_an)
+    cgc2 = AngFunctDUAL_HF(1, b,c, i_an) + AngFunctDUAL_HF(4, b,c, i_an)
+    ang = cgc1 * cgc2
+    rea_d_test(i_r,i_an) = rea_d_test(i_r,i_an) +(x0_DD_FACTOR*rad*ang*dd_prod)
+  enddo
+enddo !! radial - angular loop
 !!! -------------------------------------------------------------------------
       end do
     end do
   end do
 end do
 
+!! Verify if the second expression is correct:
+do i_r = 1, r_dim
+  do i_an = 1, angular_dim
+if(dabs(dreal(rea_dens(i_r, i_an))-dreal(rea_d_test(i_r,i_an))).GT.1.d-6) then
+  print "(A,2I5,2F15.6)", "[ERROR GDD] Invalid real part: ", i_r, i_an, &
+    dreal(rea_dens(i_r, i_an)), dreal(rea_d_test(i_r,i_an))
+endif
+if(dabs(dimag(rea_dens(i_r, i_an))-dimag(rea_d_test(i_r,i_an))).GT.1.d-6) then
+  print "(A,2I5,2F15.6)", "[ERROR GDD] Invalid real part: ", i_r, i_an, &
+    dimag(rea_dens(i_r, i_an)), dimag(rea_d_test(i_r,i_an))
+endif
+  end do
+end do
 
 
 !! scalar product / export for test
@@ -3943,6 +3990,73 @@ return
 end function matrix_element_v_gradientDD
 
 
+
+!-----------------------------------------------------------------------------!
+! This subroutine evaluates the energy associated to the pseudo-rearrangement !
+!-----------------------------------------------------------------------------!
+subroutine calculate_energy_field_laplacian(E_core)
+
+real(r64), intent(out) :: E_core
+complex(r64), dimension(:,:), allocatable :: psrea_field
+integer :: a,c, spO2, ms, i_r, i_an, a_sh, c_sh
+complex(r64), dimension(2) :: auxD, auxE
+complex(r64) :: sumD_an
+real(r64) :: int_const
+
+spO2 = HOsp_dim / 2
+
+!! compute the field for the pseudo-rearrangement
+allocate(psrea_field(HOsp_dim, HOsp_dim))
+psrea_field = zzero
+int_const = 0.5d0 * (HO_b**3) / ((2.0d0 + alpha_DD)**1.5d0)
+int_const = 4.0d0 * pi * t3_DD_CONST * int_const
+do a = 1, spO2
+  a_sh = HOsp_sh(a)
+  do c = 1, spO2
+    c_sh = HOsp_sh(c)
+    auxD = zzero
+    auxE = zzero
+
+    do i_r = 1, r_dim
+      rad_ac = weight_R(i_r) * radial_2b_sho_memo(a_sh, c_sh, i_r)
+      rad_ac = rad_ac * dexp((2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
+      do i_an = 1, angular_dim
+        sumD_an = AngFunctDUAL_HF(1,a,c,i_an) + AngFunctDUAL_HF(4,a,c,i_an)
+        auxD(1) = auxD(1) + sumD_an*(dens_pnt(5, i_r, i_an) - &
+                                     x0_DD_FACTOR * dens_pnt(1, i_r, i_an))
+        auxD(2) = auxD(2) + sumD_an*(dens_pnt(5, i_r, i_an) - &
+                                     x0_DD_FACTOR * dens_pnt(2, i_r, i_an))
+        !! exchange
+        do ms = 1, 4
+          sumD_an = AngFunctDUAL_HF(ms, a,c, i_an)
+          auxE(1) = auxE(1) + sumD_an*(BulkHF(1, ms, i_r,i_an) - &
+                                       x0_DD_FACTOR * BulkHF(5, ms, i_r,i_an))
+          auxE(2) = auxE(2) + sumD_an*(BulkHF(2, ms, i_r,i_an) - &
+                                       x0_DD_FACTOR * BulkHF(5, ms, i_r,i_an))
+        enddo
+
+        psrea_field(a,c) = psrea_field(a,c) + &
+            (int_const * weight_LEB(i_ang) * rad_ac * dens_alpm1(i_r,i_an) * &
+            (dreal(partial_dens(2,i_r,i_an))**0.5d0)* (auxD(1) - auxE(1)))
+        psrea_field(a+spO2,c+spO2) = psrea_field(a+spO2,c+spO2) + &
+            (int_const * weight_LEB(i_ang) * rad_ac * dens_alpm1(i_r,i_an) * &
+            (dreal(partial_dens(2,i_r,i_an))**0.5d0)* (auxD(2) - auxE(2)))
+      enddo
+    enddo
+
+  end do
+end do
+
+!! Do the trace for the energy
+E_core = 0.0
+
+do a = 1, HOsp_dim
+  do c = 1, HOsp_dim
+    E_core = E_core + dreal(psrea_field(a,c)) * dens_rhoRR(c, a)
+  end do
+end do
+
+end subroutine
 !-----------------------------------------------------------------------------!
 ! subroutine TESTS FOR THE DENSITY, SPHERICAL HARMONICS AND FUNCTIONS         !
 !                                                                             !
