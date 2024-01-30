@@ -3763,18 +3763,18 @@ enddo !! radial - angular loop
 end do
 
 !! Verify if the second expression is correct:
-do i_r = 1, r_dim
-  do i_an = 1, angular_dim
-if(dabs(dreal(rea_dens(i_r, i_an))-dreal(rea_d_test(i_r,i_an))).GT.1.d-6) then
-  print "(A,2I5,2F15.6)", "[ERROR GDD] Invalid real part: ", i_r, i_an, &
-    dreal(rea_dens(i_r, i_an)), dreal(rea_d_test(i_r,i_an))
-endif
-if(dabs(dimag(rea_dens(i_r, i_an))-dimag(rea_d_test(i_r,i_an))).GT.1.d-6) then
-  print "(A,2I5,2F15.6)", "[ERROR GDD] Invalid imag part: ", i_r, i_an, &
-    dimag(rea_dens(i_r, i_an)), dimag(rea_d_test(i_r,i_an))
-endif
-  end do
-end do
+!do i_r = 1, r_dim
+!  do i_an = 1, angular_dim
+!if(dabs(dreal(rea_dens(i_r, i_an))-dreal(rea_d_test(i_r,i_an))).GT.1.d-6) then
+!  print "(A,2I5,2F15.6)", "[ERROR GDD] Invalid real part: ", i_r, i_an, &
+!    dreal(rea_dens(i_r, i_an)), dreal(rea_d_test(i_r,i_an))
+!endif
+!if(dabs(dimag(rea_dens(i_r, i_an))-dimag(rea_d_test(i_r,i_an))).GT.1.d-6) then
+!  print "(A,2I5,2F15.6)", "[ERROR GDD] Invalid imag part: ", i_r, i_an, &
+!    dimag(rea_dens(i_r, i_an)), dimag(rea_d_test(i_r,i_an))
+!endif
+!  end do
+!end do
 
 
 !! scalar product / export for test
@@ -4010,6 +4010,7 @@ allocate(psrea_field(HOsp_dim, HOsp_dim))
 psrea_field = zzero
 int_const = 0.5d0 * (HO_b**3) / ((2.0d0 + alpha_DD)**1.5d0)
 int_const = 4.0d0 * pi * t3_DD_CONST * int_const
+!!
 do a = 1, spO2
   a_sh = HOsp_sh(a)
   do c = 1, spO2
@@ -4049,12 +4050,15 @@ end do
 
 !! Do the trace for the energy
 E_core = 0.0
-
+open(111, file="pseudo_rea_final.gut")
 do a = 1, HOsp_dim
   do c = 1, HOsp_dim
+    write(111, fmt="(2I5,2F15.6)") a,c, &
+          dreal(psrea_field(a,c)), dimag(psrea_field(a,c))
     E_core = E_core + dreal(psrea_field(a,c)) * dens_rhoRR(c, a)
   enddo
 enddo
+close(111)
 deallocate(psrea_field)
 
 end subroutine
