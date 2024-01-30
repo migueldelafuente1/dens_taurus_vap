@@ -3770,7 +3770,7 @@ if(dabs(dreal(rea_dens(i_r, i_an))-dreal(rea_d_test(i_r,i_an))).GT.1.d-6) then
     dreal(rea_dens(i_r, i_an)), dreal(rea_d_test(i_r,i_an))
 endif
 if(dabs(dimag(rea_dens(i_r, i_an))-dimag(rea_d_test(i_r,i_an))).GT.1.d-6) then
-  print "(A,2I5,2F15.6)", "[ERROR GDD] Invalid real part: ", i_r, i_an, &
+  print "(A,2I5,2F15.6)", "[ERROR GDD] Invalid imag part: ", i_r, i_an, &
     dimag(rea_dens(i_r, i_an)), dimag(rea_d_test(i_r,i_an))
 endif
   end do
