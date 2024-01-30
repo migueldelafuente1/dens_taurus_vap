@@ -118,10 +118,13 @@ if (exportValSpace) then !-----------------------------------------------------
     deallocate(rearrangement_me,  rearrang_field, &
                rea_common_RadAng, REACommonFields)
 
+    call print_DD_matrix_elements(1) !! Case for exporting the DD
     if (EXPORT_GRAD_DD) then
+      !! Note 30/01/23: the exporting of the Laplacian_ is adjusted to t3 and
+      !!   added to the D1S matrix elements (stored in hamil_H2cpd_DD).
+      !!   Warning, the elements after option 1 include the DD contribution. !!
       call print_DD_matrix_elements(2)  !! Case for exporting the Gradient DD
     endif
-    call print_DD_matrix_elements(1) !! Case for exporting the DD
 
     if (implement_H2cpd_DD) deallocate(hamil_H2cpd_DD)
   endif
@@ -766,7 +769,7 @@ do KK = 1, hamil_DD_H2dim
       case (1)
         h2b(tt) = hamil_DD_H2_byT(tt, KK)
       case (2)
-        h2b(tt) = hamil_GradDD_H2_byT(tt, KK)
+        h2b(tt) = hamil_GradDD_H2_byT(tt, KK) * t3_DD_CONST
     end select
   enddo
 
@@ -1115,12 +1118,25 @@ do aa = 1, VSsh_dim
                 aux_3 + hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
                 aux_3 + hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
                 aux_2 + hamil_H2cpd_DD(4, Jbra, a,b,c,d)
+
+    if (option .EQ. 1) then !! This appends to the D1S_vs_scalar 4 gdd_vs_scalar
+      hamil_H2cpd_DD(1, Jbra, a,b,c,d) = &
+        hamil_H2cpd_DD(1, Jbra, a,b,c,d) + auxHamilRed(2,KK,ind_jm_b,ind_jm_k)
+      hamil_H2cpd_DD(2, Jbra, a,b,c,d) = &
+        hamil_H2cpd_DD(2, Jbra, a,b,c,d) + auxHamilRed(3,KK,ind_jm_b,ind_jm_k)
+      hamil_H2cpd_DD(3, Jbra, a,b,c,d) = hamil_H2cpd_DD(2, Jbra, a,b,c,d)
+      hamil_H2cpd_DD(4, Jbra, a,b,c,d) = hamil_H2cpd_DD(1, Jbra, a,b,c,d)
+    endif !! -------------------------------------------------------
             else if (t .EQ. 3) then
               cycle
             else !(t = 1, 4)
               aux_4 = auxHamilRed(t,KK,ind_jm_b,ind_jm_k)
               aux_4 = aux_4 + hamil_H2cpd_DD(tt, Jbra, a,b,c,d)
               write(299,fmt='(F15.10)',advance='no') aux_4
+    if (option .EQ. 1) then !! This appends to the D1S_vs_scalar 4 gdd_vs_scalar
+      hamil_H2cpd_DD(tt, Jbra, a,b,c,d) = &
+        hamil_H2cpd_DD(tt, Jbra, a,b,c,d) + auxHamilRed(t,KK,ind_jm_b,ind_jm_k)
+    endif !! -------------------------------------------------------
             endif
           endif
 
