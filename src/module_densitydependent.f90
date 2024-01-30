@@ -4001,7 +4001,7 @@ complex(r64), dimension(:,:), allocatable :: psrea_field
 integer :: a,c, spO2, ms, i_r, i_an, a_sh, c_sh
 complex(r64), dimension(2) :: auxD, auxE
 complex(r64) :: sumD_an
-real(r64) :: int_const
+real(r64) :: int_const, rad_ac
 
 spO2 = HOsp_dim / 2
 
@@ -4036,10 +4036,10 @@ do a = 1, spO2
         enddo
 
         psrea_field(a,c) = psrea_field(a,c) + &
-            (int_const * weight_LEB(i_ang) * rad_ac * dens_alpm1(i_r,i_an) * &
+            (int_const * weight_LEB(i_an) * rad_ac * dens_alpm1(i_r,i_an) * &
             (dreal(partial_dens(2,i_r,i_an))**0.5d0)* (auxD(1) - auxE(1)))
         psrea_field(a+spO2,c+spO2) = psrea_field(a+spO2,c+spO2) + &
-            (int_const * weight_LEB(i_ang) * rad_ac * dens_alpm1(i_r,i_an) * &
+            (int_const * weight_LEB(i_an) * rad_ac * dens_alpm1(i_r,i_an) * &
             (dreal(partial_dens(2,i_r,i_an))**0.5d0)* (auxD(2) - auxE(2)))
       enddo
     enddo
@@ -4053,8 +4053,9 @@ E_core = 0.0
 do a = 1, HOsp_dim
   do c = 1, HOsp_dim
     E_core = E_core + dreal(psrea_field(a,c)) * dens_rhoRR(c, a)
-  end do
-end do
+  enddo
+enddo
+deallocate(psrea_field)
 
 end subroutine
 !-----------------------------------------------------------------------------!
