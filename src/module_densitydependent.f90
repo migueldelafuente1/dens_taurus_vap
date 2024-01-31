@@ -3737,12 +3737,14 @@ do i_r = 1, r_dim
         ((-1)**mu_) * partial_dens(mu_,i_r,i_an) * partial_dens(-mu_,i_r,i_an)
     enddo
     do t=1, 2
-    prea_dir(t,i_r,i_an) = prea_dir(t,i_r,i_an) + (partial_dens(2,i_r,i_an)*&
+    prea_dir(t,i_r,i_an) = prea_dir(t,i_r,i_an) + ( &
+                  (partial_dens(2,i_r,i_an)**0.5d0) * &
                   (dens_pnt(5,i_r,i_an) - x0_DD_FACTOR*dens_pnt(t,i_r,i_an)))
     !! Equivalent to the effect of all exchange bulk densities (does not
     !! contribute equally for each 2-body function, it depends on msms')
     do ms = 1, 4
-    prea_exc(t,i_r,i_an) = prea_exc(t,i_r,i_an) - (partial_dens(2,i_r,i_an)*&
+    prea_exc(t,i_r,i_an) = prea_exc(t,i_r,i_an) - ( &
+                  (partial_dens(2,i_r,i_an)**0.5d0) * &
                   (BulkHF(t,ms,i_r,i_an) - x0_DD_FACTOR*BulkHF(5,ms,i_r,i_an)))
     enddo
 
@@ -3753,9 +3755,9 @@ enddo
 !! scalar product / export for test
 open(111, file='dens_differential.gut')
 write(111, fmt="(A)") "  i_r i_an r(ir)    grad_den_-1     imag(grad_-1)     &
-           &grad_den_0      imag(grad_0)     grad_den_+1    imag(grad_+1)    &
-           &R(Laplacian)   sqrt(R(Laplac))       R(dens)   R(dens_alpha)     &
-           &rea_dens        pseudorea_d_dir(p/n) pseudorea_d_exch(p/n)"
+        &grad_den_0      imag(grad_0)     grad_den_+1    imag(grad_+1)    &
+        &R(Laplacian)   sqrt(R(Laplac))       R(dens)   R(dens_alpha)     &
+        &rea_dens        pseudorea_d_dir(p/n)            pseudorea_d_exch(p/n)"
 do i_r = 1, r_dim
   do i_an = 1, angular_dim
 
@@ -3777,8 +3779,8 @@ do i_r = 1, r_dim
     !!! export the test for the rea_density
     write(111,fmt='(5(A,F15.9))') &
       ",", dreal(rea_dens(i_r,i_an)), &
-      ",", dreal(prea_dir(1,i_r, i_an)), " ", dreal(prea_exc(1,i_r, i_an)),&
-      ",", dreal(prea_dir(2,i_r, i_an)), " ", dreal(prea_exc(2,i_r, i_an))
+      ",", dreal(prea_dir(1,i_r, i_an)), " ", dreal(prea_dir(2,i_r, i_an)),&
+      ",", dreal(prea_exc(1,i_r, i_an)), " ", dreal(prea_exc(2,i_r, i_an))
   end do
 end do
 close(111)
