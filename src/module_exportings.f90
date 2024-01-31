@@ -84,9 +84,9 @@ call export_rearrangement_field
 
 !! deallocate HF arrays from D1S to increase memory
 if (.NOT. evalQuasiParticleVSpace) then
-  deallocate(sphharmDUAL_memo, AngFunctDUAL_P1,AngFunctDUAL_P2, BulkP1, BulkP2)
+  deallocate(sphharmDUAL_memo, AngFunctDUAL_P1,AngFunctDUAL_P2)
   if (.NOT. EXPORT_GRAD_DD) then
-    deallocate(AngFunctDUAL_HF, BulkHF)
+    deallocate(AngFunctDUAL_HF, BulkHF, BulkP1, BulkP2)
   end if
 endif
 

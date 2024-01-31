@@ -3727,14 +3727,14 @@ enddo
     end do
   end do
 end do
-allocate(REACommonFields(r_dim, angular_dim))
-allocate(BulkP1(5,4,r_dim, angular_dim), BulkP2(5,4,r_dim, angular_dim))
-BulkP1 = zzero
-BulkP2 = zzero
+!allocate(REACommonFields(r_dim, angular_dim))
+!allocate(BulkP1(5,4,r_dim, angular_dim), BulkP2(5,4,r_dim, angular_dim))
+!BulkP1 = zzero
+!BulkP2 = zzero
 
 call calculate_common_rearrang_bulkFields
 
-deallocate(BulkP1, BulkP2)
+!deallocate(BulkP1, BulkP2)
 
 
 !! Evaluate the laplacian-derived density associated to the direct and exchange
@@ -3793,7 +3793,7 @@ do i_r = 1, r_dim
   end do
 end do
 close(111)
-deallocate(REACommonFields)
+!deallocate(REACommonFields)
 
 end subroutine calculate_density_laplacian
 
