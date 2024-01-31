@@ -4019,10 +4019,10 @@ do a = 1, spO2
     do i_r = 1, r_dim
       rad_ac = weight_R(i_r) * radial_2b_sho_memo(a_sh, c_sh, i_r)
       rad_ac = rad_ac * dexp((2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
-
-      auxD = zzero
-      auxE = zzero
       do i_a = 1, angular_dim
+        auxD = zzero
+        auxE = zzero
+
         sumD_a1 = AngFunctDUAL_HF(1,a,c,i_a) + AngFunctDUAL_HF(4,a,c,i_a)
         do t = 1, 2
           auxD(t) = auxD(t) + sumD_a1*(dens_pnt(5, i_r, i_a) - &
