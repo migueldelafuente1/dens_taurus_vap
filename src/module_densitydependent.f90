@@ -3737,16 +3737,16 @@ do i_r = 1, r_dim
         ((-1)**mu_) * partial_dens(mu_,i_r,i_an) * partial_dens(-mu_,i_r,i_an)
     enddo
     do t=1, 2
-    prea_dir(t,i_r,i_an) = prea_dir(t,i_r,i_an) + ( &
-                  (partial_dens(2,i_r,i_an)**0.5d0) * &
+      prea_dir(t,i_r,i_an) = prea_dir(t,i_r,i_an) + ( &
+                  (dreal(partial_dens(2,i_r,i_an))**0.5d0) * &
                   (dens_pnt(5,i_r,i_an) - x0_DD_FACTOR*dens_pnt(t,i_r,i_an)))
-    !! Equivalent to the effect of all exchange bulk densities (does not
-    !! contribute equally for each 2-body function, it depends on msms')
-    do ms = 1, 4
-    prea_exc(t,i_r,i_an) = prea_exc(t,i_r,i_an) - ( &
-                  (partial_dens(2,i_r,i_an)**0.5d0) * &
+      !! Equivalent to the effect of all exchange bulk densities (does not
+      !! contribute equally for each 2-body function, it depends on msms')
+      do ms = 1, 4
+        prea_exc(t,i_r,i_an) = prea_exc(t,i_r,i_an) - ( &
+                  (dreal(partial_dens(2,i_r,i_an))**0.5d0) * &
                   (BulkHF(t,ms,i_r,i_an) - x0_DD_FACTOR*BulkHF(5,ms,i_r,i_an)))
-    enddo
+      enddo
 
     enddo
   enddo
