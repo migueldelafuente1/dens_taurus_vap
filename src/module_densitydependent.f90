@@ -3766,7 +3766,8 @@ open (111, file='dens_differential.gut')
 write(111, fmt="(A)") "  i_r i_an r(ir)    grad_den_-1     imag(grad_-1)     &
         &grad_den_0      imag(grad_0)     grad_den_+1    imag(grad_+1)    &
         &R(Laplacian)   sqrt(R(Laplac))       R(dens)   R(dens_alpha)     &
-        &rea_dens        pseudorea_d_dir(p/n)            pseudorea_d_exch(p/n)"
+        &rea_dens *     common_rea      pseudorea_d_dir(p/n)            &
+        &pseudorea_d_exch(p/n)"
 do i_r = 1, r_dim
   do i_an = 1, angular_dim
 
@@ -3786,7 +3787,7 @@ do i_r = 1, r_dim
     write(111,fmt='(A,F15.9,A,F15.9)', advance='no') ",", &
       dreal(dens_pnt(5,i_r,i_an)), ", ", dreal(dens_alpha(i_r, i_an))
     !!! export the test for the rea_density
-    write(111,fmt='(5(A,F15.9))') &
+    write(111,fmt='(6(A,F15.9))') &
       ",", dreal(rea_dens(i_r,i_an)), " ", dreal(REACommonFields(i_r,i_an)),&
       ",", dreal(prea_dir(1,i_r, i_an)), " ", dreal(prea_dir(2,i_r, i_an)),&
       ",", dreal(prea_exc(1,i_r, i_an)), " ", dreal(prea_exc(2,i_r, i_an))
