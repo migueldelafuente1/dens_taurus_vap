@@ -150,6 +150,8 @@ integer      :: a_ant,b_ant, t, tt, a_sh, b_sh, a_sh_vs, la,lb,&
                 ja,jb, ma,mb,ta,tb, ma2,mb2,mta2,mtb2, ja_prev, jb_prev,&
                 i_jm, i_sab, Na, Nb, spO2, NormAB, delta_ab, CORE_NUMBER
 real(r64) :: aux_t, aux_v, E_core, cgc1, cgc2, cgc_t1, cgc_t2, h2int
+complex(r64) :: fachw, faccom, fackin, factor_1com
+
 real(r64), dimension(:), allocatable :: ep_sp_vs, en_sp_vs, t_sp_vs, &
                                         T_core, V_core
 real(r64), dimension(4) :: Vdd_dec, v_temp
@@ -172,6 +174,13 @@ ep_sp_vs = zero
 en_sp_vs = zero
 t_sp_vs  = zero
 
+!! Warning, the 1 body COM is present in the H1 hamil, export without it.
+!! Otherwise, when importing and using the COM=1 will apply it twice
+fackin = kdelta(hamil_type,4) * zone
+faccom = hamil_com * zone / nucleus_A
+fachw = 0.5d0 * HO_hw * zone
+factor_1com = fackin / (fackin - faccom)
+
 !! Get the reduced matrix Elements for the DD term
 do a = 1, spO2
   Na = 2*HOsp_n(a) + HOsp_l(a)
@@ -185,7 +194,7 @@ do a = 1, spO2
       a_sh_vs = aa
     endif
   enddo
-  aux_t = hamil_H1(a, a)
+  aux_t = hamil_H1(a, a) * factor_1com
   if (Na .GT. NHO_vs) then  ! outer vs outer are neglected/ useless ------------
     cycle
   else if (Na .LE. NHO_co) then    !! Kinetic Energy Core -----------------
