@@ -3510,11 +3510,13 @@ integer, intent(in) :: ndim
 real(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR, dens_kappaRR
 
 integer   :: a, b, i_r,i_an, na,la,ja,mja, nb,lb,jb,mjb, a_sh, b_sh
-integer   :: mla, mlb, ms, K1, M1, K2, M2, mu_, ADK2, indxa
+integer   :: mla, mlb, ms, K1, M1, K2, M2, mu_, ADK2, indxa, t
 
 real(r64) :: aux1, aux2, aux3, cgc1, cgc2, cgc3, g_kl, xikl, rad, dd_prod
 real(r64), dimension(:), allocatable :: rad_diffs
-complex(r64), dimension(:,:), allocatable :: rea_dens, rea_d_test
+complex(r64), dimension(:,:), allocatable :: rea_dens
+complex(r64), dimension(:,:,:), allocatable :: prea_dir, prea_exc
+
 complex(r64) :: ang
 integer   :: ma,mb, c,lc,jc,mc, d,ld,jd,md, indx_a,indx_b,indx_c,indx_d, &
              indx_km1,indx_km2
@@ -3540,23 +3542,6 @@ do a = 1, HOsp_dim
     !! evaluate the radial parts for the last step
     rad_diffs = zero
     do i_r = 1, r_dim
-      !! First Version, rm if works the other --------------------------------
-      !rad_diffs(i_r) = rad_diffs(i_r) + (sqrt(na + la + 0.5d0) * &
-      !                             radial_1b_diff_memo(a_sh, 0,-1,i_r) * &
-      !                             radial_1b_diff_memo(b_sh, 0, 0,i_r))
-      !rad_diffs(i_r) = rad_diffs(i_r) + (sqrt(nb + lb + 0.5d0) * &
-      !                             radial_1b_diff_memo(a_sh, 0, 0,i_r) * &
-      !                             radial_1b_diff_memo(b_sh, 0,-1,i_r))
-      !rad_diffs(i_r) = rad_diffs(i_r) + (&
-      !                             radial_1b_diff_memo(a_sh, 0, 0,i_r) * &
-      !                             radial_1b_diff_memo(b_sh,-1,+1,i_r) / &
-      !                             sqrt(nb + 1.0d0))
-      !rad_diffs(i_r) = rad_diffs(i_r) + (&
-      !                             radial_1b_diff_memo(a_sh,-1,+1,i_r) * &
-      !                             radial_1b_diff_memo(b_sh, 0, 0,i_r) / &
-      !                             sqrt(na + 1.0d0))
-      !rad_diffs(i_r) = rad_diffs(i_r) / HO_b
-      !! ---------------------------------------------------------------------
       if (na .GT. 0) then
         rad_diffs(i_r) = rad_diffs(i_r) + (&
                                      radial_1b_diff_memo(a_sh,-1,+1,i_r) * &
@@ -3647,9 +3632,11 @@ enddo
 
 
 !! test to evaluate the rearrangement density
-allocate(rea_dens(r_dim, angular_dim), rea_d_test(r_dim, angular_dim))
+allocate(rea_dens(r_dim, angular_dim), &
+         prea_dir(2,r_dim, angular_dim), prea_exc(2,r_dim, angular_dim))
 rea_dens = zzero
-rea_d_test = zzero
+prea_dir = zzero
+prea_exc = zzero
 do a = 1, HOsp_dim
   ja = HOsp_2j(a)
   la = HOsp_l(a)
@@ -3705,17 +3692,6 @@ enddo !! radial - angular loop
 enddo
 enddo
 
-do i_r = 1, r_dim
-  rad = radial_2b_sho_memo(HOsp_sh(a), HOsp_sh(c), i_r) * &
-        radial_2b_sho_memo(HOsp_sh(b), HOsp_sh(d), i_r)
-  do i_an = 1, angular_dim
-    cgc1 = AngFunctDUAL_HF(1, a,c, i_an) + AngFunctDUAL_HF(4, a,c, i_an)
-    cgc2 = AngFunctDUAL_HF(1, b,d, i_an) + AngFunctDUAL_HF(4, b,d, i_an)
-    ang = cgc1 * cgc2
-    rea_d_test(i_r, i_an) = rea_d_test(i_r, i_an) + (rad*ang*dd_prod)
-  enddo
-enddo !! radial - angular loop
-
 !!! -- EXCHANGE LOOP --------------------------------------------------------
 
 do K1 = max(0, abs(ja - jd) / 2), (ja + jd) / 2
@@ -3746,50 +3722,45 @@ enddo !! radial - angular loop
 enddo
 enddo
 
-do i_r = 1, r_dim
-  rad = radial_2b_sho_memo(HOsp_sh(a), HOsp_sh(c), i_r) * &
-        radial_2b_sho_memo(HOsp_sh(b), HOsp_sh(d), i_r)
-  do i_an = 1, angular_dim
-    cgc1 = AngFunctDUAL_HF(1, a,d, i_an) + AngFunctDUAL_HF(4, a,d, i_an)
-    cgc2 = AngFunctDUAL_HF(1, b,c, i_an) + AngFunctDUAL_HF(4, b,c, i_an)
-    ang = cgc1 * cgc2
-    rea_d_test(i_r,i_an) = rea_d_test(i_r,i_an) +(x0_DD_FACTOR*rad*ang*dd_prod)
-  enddo
-enddo !! radial - angular loop
 !!! -------------------------------------------------------------------------
       end do
     end do
   end do
 end do
 
-!! Verify if the second expression is correct:
-!do i_r = 1, r_dim
-!  do i_an = 1, angular_dim
-!if(dabs(dreal(rea_dens(i_r, i_an))-dreal(rea_d_test(i_r,i_an))).GT.1.d-6) then
-!  print "(A,2I5,2F15.6)", "[ERROR GDD] Invalid real part: ", i_r, i_an, &
-!    dreal(rea_dens(i_r, i_an)), dreal(rea_d_test(i_r,i_an))
-!endif
-!if(dabs(dimag(rea_dens(i_r, i_an))-dimag(rea_d_test(i_r,i_an))).GT.1.d-6) then
-!  print "(A,2I5,2F15.6)", "[ERROR GDD] Invalid imag part: ", i_r, i_an, &
-!    dimag(rea_dens(i_r, i_an)), dimag(rea_d_test(i_r,i_an))
-!endif
-!  end do
-!end do
+!! Evaluate the laplacian-derived density associated to the direct and exchange
+!! functions from definition
+do i_r = 1, r_dim
+  do i_an = 1, angular_dim
+    do mu_ = -1, 1
+      partial_dens(2,i_r,i_an) = partial_dens(  2,i_r,i_an) + &
+        ((-1)**mu_) * partial_dens(mu_,i_r,i_an) * partial_dens(-mu_,i_r,i_an)
+    enddo
+    do t=1, 2
+    prea_dir(t,i_r,i_an) = prea_dir(t,i_r,i_an) + (partial_dens(2,i_r,i_an)*&
+                  (dens_pnt(5,i_r,i_an) - x0_DD_FACTOR*dens_pnt(t,i_r,i_an)))
+    !! Equivalent to the effect of all exchange bulk densities (does not
+    !! contribute equally for each 2-body function, it depends on msms')
+    do ms = 1, 4
+    prea_exc(t,i_r,i_an) = prea_exc(t,i_r,i_an) - (partial_dens(2,i_r,i_an)*&
+                  (BulkHF(t,i_r,i_an) - x0_DD_FACTOR*BulkHF(5,i_r,i_an)))
+    enddo
 
+    enddo
+  enddo
+enddo
 
 !! scalar product / export for test
 open(111, file='dens_differential.gut')
 write(111, fmt="(A)") "  i_r i_an r(ir)    grad_den_-1     imag(grad_-1)     &
            &grad_den_0      imag(grad_0)     grad_den_+1    imag(grad_+1)    &
            &R(Laplacian)   sqrt(R(Laplac))       R(dens)   R(dens_alpha)     &
-           &rea_dens        imag(rea_dens)"
+           &rea_dens        pseudorea_d_dir(p/n) pseudorea_d_exch(p/n)"
 do i_r = 1, r_dim
   do i_an = 1, angular_dim
 
     write(111,fmt='(2(I4,A),F5.2)',advance='no') i_r, ",", i_an, ",", r(i_r)
     do mu_ = -1, 1
-      partial_dens(2,i_r,i_an) = partial_dens(  2,i_r,i_an) + &
-        ((-1)**mu_) * partial_dens(mu_,i_r,i_an) * partial_dens(-mu_,i_r,i_an)
       write(111,fmt='(A,F15.9,A,F15.9,A)',advance='no') ",", &
     dreal(partial_dens(mu_,i_r,i_an)), " ",dimag(partial_dens(mu_,i_r,i_an)),"j"
     enddo
@@ -3804,8 +3775,10 @@ do i_r = 1, r_dim
     write(111,fmt='(A,F15.9,A,F15.9)', advance='no') ",", &
       dreal(dens_pnt(5,i_r,i_an)), ", ", dreal(dens_alpha(i_r, i_an))
     !!! export the test for the rea_density
-    write(111,fmt='(A,F15.9,A,F15.9)') ",", &
-      dreal(rea_dens(i_r,i_an)), " ", dimag(rea_dens(i_r, i_an))
+    write(111,fmt='(5(A,F15.9))') &
+      ",", dreal(rea_dens(i_r,i_an)), &
+      ",", dreal(prea_dir(1,i_r, i_an)), " ", dreal(prea_exc(1,i_r, i_an)),&
+      ",", dreal(prea_dir(2,i_r, i_an)), " ", dreal(prea_exc(2,i_r, i_an))
   end do
 end do
 close(111)
@@ -4009,7 +3982,7 @@ spO2 = HOsp_dim / 2
 allocate(psrea_field(HOsp_dim, HOsp_dim))
 psrea_field = zzero
 int_const = 0.5d0 * (HO_b**3) / ((2.0d0 + alpha_DD)**1.5d0)
-int_const = 4.0d0 * pi * t3_DD_CONST * int_const
+int_const = 4.0d0 * pi * (alpha_DD * t3_DD_CONST) * int_const
 !!
 do a = 1, spO2
   a_sh = HOsp_sh(a)
@@ -4059,7 +4032,7 @@ enddo
 close(111)
 deallocate(psrea_field)
 
-end subroutine
+end subroutine calculate_energy_field_laplacian
 !-----------------------------------------------------------------------------!
 ! subroutine TESTS FOR THE DENSITY, SPHERICAL HARMONICS AND FUNCTIONS         !
 !                                                                             !
