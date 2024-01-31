@@ -113,13 +113,12 @@ if (exportValSpace) then !-----------------------------------------------------
                                         dens_kappaRRc, dens_kappaRRc, ndim)
   print "(A,/,A)", "", " [DONE] Evaluating the Hamiltonian."
 
+  deallocate(rearrangement_me,  rearrang_field, &
+             rea_common_RadAng, REACommonFields)
   if (evalQuasiParticleVSpace .AND. export_density) then
     call print_quasipartile_DD_matrix_elements(bogo_U0, bogo_V0, &
                                                dens_rhoRR, dens_kappaRR, ndim)
   else
-    deallocate(rearrangement_me,  rearrang_field, &
-               rea_common_RadAng, REACommonFields)
-
     call print_DD_matrix_elements(1) !! Case for exporting the DD
     if (EXPORT_GRAD_DD) then
       !! Note 30/01/23: the exporting of the Laplacian_ is adjusted to t3 and
@@ -2966,7 +2965,6 @@ call diagonalize_H11_with_jz(dens_rhoRR, dens_kappaRR, bogo_U0, bogo_V0, ndim)
 
 deallocate(sphharmDUAL_memo, AngFunctDUAL_HF, AngFunctDUAL_P1, &
            AngFunctDUAL_P2, BulkHF, BulkP1, BulkP2)
-deallocate(rearrangement_me, rearrang_field, rea_common_RadAng, REACommonFields)
 
 print "(A)", "  1[OK] H11 is in diagonal with Jz."
 print "(A)", "  2[  ] Sorting the QP states for the Valence sp. identification"

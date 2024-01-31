@@ -3727,6 +3727,15 @@ enddo
     end do
   end do
 end do
+allocate(REACommonFields(r_dim, angular_dim))
+allocate(BulkP1(5,4,r_dim, angular_dim), BulkP2(5,4,r_dim, angular_dim))
+BulkP1 = zzero
+BulkP2 = zzero
+
+call calculate_common_rearrang_bulkFields
+
+deallocate(BulkP1, BulkP2)
+
 
 !! Evaluate the laplacian-derived density associated to the direct and exchange
 !! functions from definition
@@ -3753,7 +3762,7 @@ do i_r = 1, r_dim
 enddo
 
 !! scalar product / export for test
-open(111, file='dens_differential.gut')
+open (111, file='dens_differential.gut')
 write(111, fmt="(A)") "  i_r i_an r(ir)    grad_den_-1     imag(grad_-1)     &
         &grad_den_0      imag(grad_0)     grad_den_+1    imag(grad_+1)    &
         &R(Laplacian)   sqrt(R(Laplac))       R(dens)   R(dens_alpha)     &
@@ -3778,13 +3787,13 @@ do i_r = 1, r_dim
       dreal(dens_pnt(5,i_r,i_an)), ", ", dreal(dens_alpha(i_r, i_an))
     !!! export the test for the rea_density
     write(111,fmt='(5(A,F15.9))') &
-      ",", dreal(rea_dens(i_r,i_an)), &
+      ",", dreal(rea_dens(i_r,i_an)), " ", dreal(REACommonFields(i_r,i_an)),&
       ",", dreal(prea_dir(1,i_r, i_an)), " ", dreal(prea_dir(2,i_r, i_an)),&
       ",", dreal(prea_exc(1,i_r, i_an)), " ", dreal(prea_exc(2,i_r, i_an))
   end do
 end do
 close(111)
-
+deallocate(REACommonFields)
 
 end subroutine calculate_density_laplacian
 
