@@ -3998,9 +3998,9 @@ subroutine calculate_energy_field_laplacian(E_core)
 
 real(r64), intent(out) :: E_core
 complex(r64), dimension(:,:), allocatable :: psrea_field
-integer :: a,c, spO2, ms, i_r, i_an, a_sh, c_sh
+integer :: a,c, spO2, ms, i_r, i_a, a_sh, c_sh, aa, cc, t
 complex(r64), dimension(2) :: auxD, auxE
-complex(r64) :: sumD_an
+complex(r64) :: sumD_a1, sumD_a2
 real(r64) :: int_const, rad_ac
 
 spO2 = HOsp_dim / 2
@@ -4015,38 +4015,36 @@ do a = 1, spO2
   a_sh = HOsp_sh(a)
   do c = 1, spO2
     c_sh = HOsp_sh(c)
-    auxD = zzero
-    auxE = zzero
 
     do i_r = 1, r_dim
       rad_ac = weight_R(i_r) * radial_2b_sho_memo(a_sh, c_sh, i_r)
       rad_ac = rad_ac * dexp((2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
-      do i_an = 1, angular_dim
-        sumD_an = AngFunctDUAL_HF(1,a,c,i_an) + AngFunctDUAL_HF(4,a,c,i_an)
-        auxD(1) = auxD(1) + sumD_an*(dens_pnt(5, i_r, i_an) - &
-                                     x0_DD_FACTOR * dens_pnt(1, i_r, i_an))
-        auxD(2) = auxD(2) + sumD_an*(dens_pnt(5, i_r, i_an) - &
-                                     x0_DD_FACTOR * dens_pnt(2, i_r, i_an))
-        !! exchange
-        do ms = 1, 4
-          sumD_an = AngFunctDUAL_HF(ms, a,c, i_an)
-          auxE(1) = auxE(1) + sumD_an*(BulkHF(1, ms, i_r,i_an) - &
-                                       x0_DD_FACTOR * BulkHF(5, ms, i_r,i_an))
-          auxE(2) = auxE(2) + sumD_an*(BulkHF(2, ms, i_r,i_an) - &
-                                       x0_DD_FACTOR * BulkHF(5, ms, i_r,i_an))
-        enddo
 
-        psrea_field(a,c) = psrea_field(a,c) + &
-            (int_const * weight_LEB(i_an) * rad_ac * dens_alpm1(i_r,i_an) * &
-            (dreal(partial_dens(2,i_r,i_an))**0.5d0)* (auxD(1) - auxE(1)))
-        psrea_field(a+spO2,c+spO2) = psrea_field(a+spO2,c+spO2) + &
-            (int_const * weight_LEB(i_an) * rad_ac * dens_alpm1(i_r,i_an) * &
-            (dreal(partial_dens(2,i_r,i_an))**0.5d0)* (auxD(2) - auxE(2)))
+      auxD = zzero
+      auxE = zzero
+      do i_a = 1, angular_dim
+        sumD_a1 = AngFunctDUAL_HF(1,a,c,i_a) + AngFunctDUAL_HF(4,a,c,i_a)
+        do t = 1, 2
+          auxD(t) = auxD(t) + sumD_a1*(dens_pnt(5, i_r, i_a) - &
+                                       x0_DD_FACTOR * dens_pnt(t, i_r, i_a))
+          !! exchange
+          do ms = 1, 4
+            sumD_a2 = AngFunctDUAL_HF(ms, a,c, i_a)
+            auxE(t) = auxE(t) + sumD_a2*(BulkHF(t, ms, i_r,i_a) - &
+                                         x0_DD_FACTOR * BulkHF(5, ms, i_r,i_a))
+          enddo
+          aa = a + ((t - 1)*spO2)
+          cc = c + ((t - 1)*spO2)
+          psrea_field(aa,cc) = psrea_field(aa,cc) + &
+            (int_const * weight_LEB(i_a) * rad_ac * dens_alpm1(i_r,i_a) * &
+            (dreal(partial_dens(2,i_r,i_a))**0.5d0)* (auxD(t) - auxE(t)))
+        end do
+
       enddo
     enddo
 
-  end do
-end do
+  enddo
+enddo
 
 !! Do the trace for the energy
 E_core = 0.0
