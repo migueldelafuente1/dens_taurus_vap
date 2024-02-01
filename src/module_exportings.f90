@@ -793,7 +793,7 @@ do KK = 1, hamil_DD_H2dim
       case (1)
         h2b(tt) = hamil_DD_H2_byT(tt, KK)
       case (2)
-        h2b(tt) = hamil_GradDD_H2_byT(tt, KK) * t3_DD_CONST
+        h2b(tt) = hamil_GradDD_H2_byT(tt, KK)
     end select
   enddo
 

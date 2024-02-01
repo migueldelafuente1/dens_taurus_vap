@@ -2038,7 +2038,7 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
         rearrangement_me = zero
 
         me_Vdec = matrix_element_v_DD(a,b, c,d, ALL_ISOS)
-        me_VGRc = matrix_element_v_gradientDD(a,b, c,d)
+        if (EXPORT_GRAD_DD) me_VGRc = matrix_element_v_gradientDD(a,b, c,d)
 
         !!! Select only matrix elements above a given cutoff to reduce the
         !!! CPU time and storage
@@ -2052,7 +2052,9 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
             dred = int(d,i16)
             write(uth6) ared, bred, cred, dred
             write(uth7) me_Vdec(1), me_Vdec(2), me_Vdec(3), me_Vdec(4)
-            write(uth8) me_VGRc(1), me_VGRc(2), me_VGRc(3), me_VGRc(4)
+            if (EXPORT_GRAD_DD) then
+              write(uth8) me_VGRc(1), me_VGRc(2), me_VGRc(3), me_VGRc(4)
+            endif
           endif
 
         else !! normal case, the element is the 1st one (isospin_ form abcd)
@@ -3870,7 +3872,7 @@ ld = HOsp_l(d)
 d_sh = HOsp_sh(d)
 ind_jm_d = angular_momentum_index(jd, md, .TRUE.)
 
-integral_factor = 1.0d0 !t3_DD_CONST
+integral_factor = 2.0d+0 * alpha_DD * t3_DD_CONST
 !! NOTE :: Remember that radial functions already have the factor 1/b**3
 integral_factor = integral_factor * 0.5d0 * (HO_b**3)
 integral_factor = integral_factor  / ((2.0d0 + alpha_DD)**1.5d0)
@@ -3992,7 +3994,9 @@ spO2 = HOsp_dim / 2
 allocate(psrea_field(HOsp_dim, HOsp_dim))
 psrea_field = zzero
 int_const = 0.5d0 * (HO_b**3) / ((2.0d0 + alpha_DD)**1.5d0)
-int_const = 4.0d0 * pi * (alpha_DD * t3_DD_CONST) * int_const
+int_const = 4.0d0 * pi * int_const
+!!
+int_const = (2.0d0 * alpha_DD * t3_DD_CONST) * int_const
 !!
 do a = 1, spO2
   a_sh = HOsp_sh(a)
