@@ -4046,6 +4046,8 @@ enddo
 close(111)
 deallocate(psrea_field)
 
+E_core = 0.5d+00 * E_core  !! the energy should be 1/2 Tr(Gamma * rho)
+
 end subroutine calculate_energy_field_laplacian
 !-----------------------------------------------------------------------------!
 ! subroutine TESTS FOR THE DENSITY, SPHERICAL HARMONICS AND FUNCTIONS         !
