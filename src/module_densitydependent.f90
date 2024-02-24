@@ -4035,18 +4035,14 @@ enddo
 
 !! Do the trace for the energy
 E_core = 0.0
-open(111, file="pseudo_rea_final.gut")
 do a = 1, HOsp_dim
   do c = 1, HOsp_dim
-    write(111, fmt="(2I5,2F15.6)") a,c, &
-          dreal(psrea_field(a,c)), dimag(psrea_field(a,c))
     E_core = E_core + dreal(psrea_field(a,c)) * dens_rhoRR(c, a)
   enddo
 enddo
-close(111)
 deallocate(psrea_field)
 
-E_core = 0.5d+00 * E_core  !! the energy should be 1/2 Tr(Gamma * rho)
+!E_core = 0.5d0 * E_core  !! the energy should be 1/2 Tr(Gamma * rho) - DEPRECATED
 
 end subroutine calculate_energy_field_laplacian
 !-----------------------------------------------------------------------------!
