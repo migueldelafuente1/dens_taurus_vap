@@ -138,21 +138,22 @@ end subroutine export_densityAndHamiltonian
 ! subroutine  calculate_valenceSpaceReduced                                    !
 !   Evaluates the single particle energies and Core energy from a HFB energy   !
 ! done in a shell model fashion (summing all core levels as fully occupied).   !
+!   option = 1 is D1S sho valence space,  = 2 for grad-dd                      !
 !------------------------------------------------------------------------------!
 subroutine calculate_valenceSpaceReduced(hamilJM, dim_jm, dim_sh, option)
 integer, intent(in) :: dim_sh, dim_jm, option
 real(r64), dimension(4,dim_jm,dim_jm,dim_sh,dim_sh), intent(in) :: hamilJM
 
 integer(i32) :: a, b, aa, a2, b2, a_min, a_max, b_min, b_max, ialloc=0
-integer      :: a_ant,b_ant, t, tt, a_sh, b_sh, a_sh_vs, la,lb,&
+integer      :: a_ant,b_ant, t, tt, a_sh, b_sh, a_sh_vs, la,lb,b_sh_vs,&
                 J, J_min, J_max, M,&
                 ja,jb, ma,mb,ta,tb, ma2,mb2,mta2,mtb2, ja_prev, jb_prev,&
                 i_jm, i_sab, Na, Nb, spO2, NormAB, delta_ab, CORE_NUMBER
 real(r64) :: aux_t, aux_v, E_core, cgc1, cgc2, cgc_t1, cgc_t2, h2int
 complex(r64) :: fachw, faccom, fackin, factor_1com
 
-real(r64), dimension(:), allocatable :: ep_sp_vs, en_sp_vs, t_sp_vs, &
-                                        T_core, V_core
+real(r64), dimension(:,:), allocatable :: ep_sp_vs, en_sp_vs, t_sp_vs
+real(r64), dimension(:),   allocatable :: T_core, V_core
 real(r64), dimension(4) :: Vdd_dec, v_temp
 real(r64), dimension(:,:,:,:,:,:), allocatable :: hamil_DDcpd
 
@@ -168,16 +169,41 @@ allocate(T_core(3), V_core(3))
 T_core  = zero
 V_core  = zero
 ! assuming different sp.energies for p-n
-allocate(ep_sp_vs(VSsh_dim), en_sp_vs(VSsh_dim), t_sp_vs(VSsh_dim))
+allocate(ep_sp_vs(VSsh_dim, VSsh_dim), en_sp_vs(VSsh_dim, VSsh_dim), &
+         t_sp_vs (VSsh_dim, VSsh_dim))
 ep_sp_vs = zero
 en_sp_vs = zero
 t_sp_vs  = zero
+
+!! WRITE IN THE 1 BODY FILES
+if (option.EQ.1) then
+  open (297, file="D1S_vs_scalar.sho")
+  open (296, file="D1S_vs_scalar.01b")
+else if (option.EQ.2) then
+  open (297, file="GDD_vs_scalar.sho")
+  open (296, file="GDD_vs_scalar.01b")
+endif
+
+write(297, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2I5)') &
+  'Density 2BME on explicit HFB wf from taurus, Scalar', &
+  ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=', x0_DD_FACTOR, ' ALPHA=', alpha_DD, &
+  '  CORE(n,p):', CORE_NUMBER, CORE_NUMBER
+write(296, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2I5)') &
+  'Density 2BME on explicit HFB wf from taurus, Scalar', &
+  ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=', x0_DD_FACTOR, ' ALPHA=', alpha_DD, &
+  '  CORE(n,p):', CORE_NUMBER, CORE_NUMBER
+
+!! SHO FILE
+if (option.EQ.1) then
+  write(297, fmt="(I3)") 4
+else
+  write(297, fmt="(I3)") 3
+endif
 
 !! Warning, the 1 body COM is present in the H1 hamil, export without it.
 !! Otherwise, when importing and using the COM=1 will apply it twice
 fackin = kdelta(hamil_type,4) * zone
 faccom = hamil_com * zone / nucleus_A
-fachw = 0.5d0 * HO_hw * zone
 factor_1com = fackin / (fackin - faccom)
 
 !! Get the reduced matrix Elements for the DD term
@@ -200,7 +226,7 @@ do a = 1, spO2
     T_core(1) = T_core(1) + aux_t
     T_core(3) = T_core(3) + aux_t
   else if ((Na .LE. NHO_vs).AND.(a_sh_vs.NE.0)) then  !! Valence Space ----
-    t_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + aux_t / (ja + 1.0d0)
+    t_sp_vs(a_sh_vs,a_sh_vs) = t_sp_vs(a_sh_vs,a_sh_vs) + aux_t / (ja + 1.0d0)
   endif   !!    --------
 
   do b = 1, spO2
@@ -451,7 +477,8 @@ do a_sh = 1, HOsh_dim
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(1) = V_core(1) + (aux_v * h2int)! * (jb + 1.0d0))
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
-        ep_sp_vs(a_sh_vs) = ep_sp_vs(a_sh_vs) + (aux_v * h2int)! * (jb + 1.0d0))
+        ep_sp_vs(a_sh_vs,a_sh_vs) = ep_sp_vs(a_sh_vs,a_sh_vs) + (aux_v * h2int)
+                                                              ! * (jb + 1.0d0))
       endif
 
       h2int = hamil_H2cpd_DD(5, J, a_sh, b_sh, a_sh, b_sh) + &
@@ -460,7 +487,8 @@ do a_sh = 1, HOsh_dim
       if (Nb .LE. NHO_co) then !! CORE PART :
         V_core(3) = V_core(3) + (aux_v * h2int)! * (jb + 1.0d0))
       else if (a_sh_vs.NE.0) then  ! --------- !! VALENCE SPACE SP Energies :
-        en_sp_vs(a_sh_vs) = en_sp_vs(a_sh_vs) +  (aux_v * h2int)! * (jb + 1.0d0))
+        en_sp_vs(a_sh_vs,a_sh_vs) = en_sp_vs(a_sh_vs,a_sh_vs) +  (aux_v * h2int)
+                                                              ! * (jb + 1.0d0))
       endif
 
     enddo ! sum J
@@ -469,14 +497,14 @@ do a_sh = 1, HOsh_dim
 
   if (a_sh_vs.NE.0) then
     print "(A,2I6,A,3F15.6)", "VS_spe  a/j(a)",HOsh_ant(a_sh), ja, " t,v=", &
-        t_sp_vs(a_sh_vs), ep_sp_vs(a_sh_vs), en_sp_vs(a_sh_vs)
+        t_sp_vs (a_sh_vs,a_sh_vs), ep_sp_vs(a_sh_vs,a_sh_vs), &
+        en_sp_vs(a_sh_vs,a_sh_vs)
 
     if (option .EQ. 1) then
-      ep_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (ep_sp_vs(a_sh_vs)/(ja+1.0d0))
-      en_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (en_sp_vs(a_sh_vs)/(ja+1.0d0))
-    else
-      ep_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs)
-      en_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs)
+      ep_sp_vs(a_sh_vs,a_sh_vs) = t_sp_vs (a_sh_vs,a_sh_vs) + &
+                                 (ep_sp_vs(a_sh_vs,a_sh_vs)/(ja+1.0d0))
+      en_sp_vs(a_sh_vs,a_sh_vs) = t_sp_vs (a_sh_vs,a_sh_vs) + &
+                                 (en_sp_vs(a_sh_vs,a_sh_vs)/(ja+1.0d0))
     endif
   endif
 
@@ -488,38 +516,50 @@ do tt = 1, 3
   E_core  = E_core + T_core(tt) + (1.0d0 * V_core(tt)) !! we sum all
 enddo
 
-if (option .EQ. 2) then
+if (option .EQ. 1) then
+  !! ZERO BODY / 1-BODY FILE
+  write(296, fmt="(F12.6)") E_core
+  do a_sh_vs = 1, VSsh_dim
+    write(296, fmt="(2I7,2F12.6)") &
+      VSsh_list(a_sh_vs), VSsh_list(a_sh_vs), &
+      ep_sp_vs(a_sh_vs,a_sh_vs), en_sp_vs(a_sh_vs,a_sh_vs)
+  enddo
+else if (option .EQ. 2) then
   call calculate_energy_field_laplacian(E_core)
   E_core = -1 * E_core ! This must be canceled
+  write(296, fmt="(F12.6)") E_core
+
+  fachw = 0.5d0 * HO_hw * zone
+  do a_sh_vs = 1, VSsh_dim
+    Na = HOsh_n (VStoHOsh_index(a_sh_vs))
+    la = HOsh_l (VStoHOsh_index(a_sh_vs))
+    ja = HOsh_2j(VStoHOsh_index(a_sh_vs))
+    do b_sh_vs = a_sh_vs, VSsh_dim
+      Nb = HOsh_n (VStoHOsh_index(b_sh_vs))
+      lb = HOsh_l (VStoHOsh_index(b_sh_vs))
+      jb = HOsh_2j(VStoHOsh_index(b_sh_vs))
+      if ((ja .NE. jb) .OR. (la .NE. lb)) cycle
+
+      aux_t = 0.0d0
+      if      (Na .EQ. Nb) then
+        aux_t = fachw * (2.d0 * Nb + lb + 1.5d0)
+      else if (Na .EQ. Nb-1) then
+        aux_t = fachw * sqrt(Nb * (Nb + lb + 0.5d0))
+      else if (Na .EQ. Nb+1) then
+        aux_t = fachw *sqrt(Nb * (Nb + la + 0.5d0))
+      end if
+
+      write(296, fmt="(2I7,2F12.6)") &
+        VSsh_list(a_sh_vs), VSsh_list(a_sh_vs), aux_t, aux_t
+    end do
+  end do
+
+
 endif
 
 print "(/,A,F15.6)", "  E_core=", E_core
 
-!! WRITE IN THE 1 BODY FILES
-if (option.EQ.1) then
-  open (297, file="D1S_vs_scalar.sho")
-  open (296, file="D1S_vs_scalar.01b")
-else if (option.EQ.2) then
-  open (297, file="GDD_vs_scalar.sho")
-  open (296, file="GDD_vs_scalar.01b")
-endif
-
-write(297, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2I5)') &
-  'Density 2BME on explicit HFB wf from taurus, Scalar', &
-  ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=', x0_DD_FACTOR, ' ALPHA=', alpha_DD, &
-  '  CORE(n,p):', CORE_NUMBER, CORE_NUMBER
-write(296, fmt='(2A,F9.3,A,F10.5,A,F5.3,A,2I5)') &
-  'Density 2BME on explicit HFB wf from taurus, Scalar', &
-  ' PARAMS:: t3=',t3_DD_CONST,' MeV  X0=', x0_DD_FACTOR, ' ALPHA=', alpha_DD, &
-  '  CORE(n,p):', CORE_NUMBER, CORE_NUMBER
-
-!! SHO FILE
-if (option.EQ.1) then
-  write(297, fmt="(I3)") 4
-else
-  write(297, fmt="(I3)") 3
-endif
-
+! SHO rest of data: sh states, core isotope, 2 hbar-omega (common for options)
 write(297, fmt="(I3)", advance='no') VSsh_dim
 do a_sh_vs = 1, VSsh_dim
   a_ant = VSsh_list(a_sh_vs)
@@ -528,13 +568,6 @@ enddo
 write(297,*) ""
 write(297, fmt="(2I4,F12.6)") INT(CORE_NUMBER), INT(CORE_NUMBER)!, E_core
 write(297, fmt="(I2,F15.9)") 2, HO_hw
-
-!! ZERO BODY / 1-BODY FILE
-write(296, fmt="(F12.6)") E_core
-do a_sh_vs = 1, VSsh_dim
-  write(296, fmt="(2I7,2F12.6)") &
-    VSsh_list(a_sh_vs), VSsh_list(a_sh_vs), ep_sp_vs(a_sh_vs), en_sp_vs(a_sh_vs)
-enddo
 
 close(297)
 close(296)
