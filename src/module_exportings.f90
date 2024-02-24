@@ -550,7 +550,7 @@ else if (option .EQ. 2) then
       end if
 
       write(296, fmt="(2I7,2F12.6)") &
-        VSsh_list(a_sh_vs), VSsh_list(a_sh_vs), aux_t, aux_t
+        VSsh_list(a_sh_vs), VSsh_list(b_sh_vs), aux_t, aux_t
     end do
   end do
 
