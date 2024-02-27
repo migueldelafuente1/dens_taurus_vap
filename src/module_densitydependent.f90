@@ -4042,7 +4042,7 @@ do a = 1, HOsp_dim
 enddo
 deallocate(psrea_field)
 
-!E_core = 0.5d0 * E_core  !! the energy should be 1/2 Tr(Gamma * rho) - DEPRECATED
+E_core = 0.5d0 * E_core  !! the energy should be 1/2 Tr(Gamma * rho)
 
 end subroutine calculate_energy_field_laplacian
 !-----------------------------------------------------------------------------!
