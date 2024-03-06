@@ -3918,48 +3918,48 @@ do i_r = 1, r_dim
 
   do i_ang = 1, angular_dim
     !! Already deallocated
-!      aux_dir  = (AngFunctDUAL_HF(1,a,c,i_ang) + AngFunctDUAL_HF(4,a,c,i_ang))&
-!                *(AngFunctDUAL_HF(1,b,d,i_ang) + AngFunctDUAL_HF(4,b,d,i_ang))
-!      aux_exch = (AngFunctDUAL_HF(1,a,d,i_ang) + AngFunctDUAL_HF(4,a,d,i_ang))&
-!                *(AngFunctDUAL_HF(1,b,c,i_ang) + AngFunctDUAL_HF(4,b,c,i_ang))
-      aux_dir  = zzero
-      do K = abs(ja - jc) / 2, (ja + jc) / 2
-        M = (mc - ma)/2
-        if ((MOD(K + la + lc, 2) == 1).OR.(abs(M) > K)) cycle
-
-        do K2 = abs(jb - jd) / 2, (jb + jd) / 2
-          !! NOTE:: in DD Hamiltonian loop, condition ma+mb=mc+md -> M=M2
-          M2 = (md - mb)/2
-          if ((MOD(K2 + lb + ld, 2) == 1).OR.(abs(M2) > K2)) cycle
-
-          ind_km   = angular_momentum_index(K,  M,  .FALSE.)
-          ind_km_q = angular_momentum_index(K2, M2, .FALSE.)
-
-          aux_dir = aux_dir + (dens_Y_KM_me(ind_jm_a, ind_jm_c, ind_km)  * &
-                               dens_Y_KM_me(ind_jm_b, ind_jm_d, ind_km_q)* &
-                               sph_harmonics_memo(ind_km,   i_ang) * &
-                               sph_harmonics_memo(ind_km_q, i_ang))
-        enddo
-      enddo
-      !! ====================================================================
-      aux_exch = zzero
-      do K = abs(ja - jd) / 2, (ja + jd) / 2
-        M = (md - ma)/2
-        if ((MOD(K + la + ld, 2) == 1).OR.(abs(M) > K)) cycle
-
-        do K2 = abs(jb - jc) / 2, (jb + jc) / 2
-          M2 = (mc - mb)/2
-          if ((MOD(K2 + lb + lc, 2) == 1).OR.(abs(M2) > K2)) cycle
-
-          ind_km   = angular_momentum_index(K,  M,  .FALSE.)
-          ind_km_q = angular_momentum_index(K2, M2, .FALSE.)
-
-          aux_exch = aux_exch + (dens_Y_KM_me(ind_jm_a, ind_jm_d, ind_km)  *&
-                                 dens_Y_KM_me(ind_jm_b, ind_jm_c, ind_km_q)*&
-                                 sph_harmonics_memo(ind_km,   i_ang) *&
-                                 sph_harmonics_memo(ind_km_q, i_ang))
-        enddo
-      enddo
+      aux_dir  = (AngFunctDUAL_HF(1,a,c,i_ang) + AngFunctDUAL_HF(4,a,c,i_ang))&
+                *(AngFunctDUAL_HF(1,b,d,i_ang) + AngFunctDUAL_HF(4,b,d,i_ang))
+      aux_exch = (AngFunctDUAL_HF(1,a,d,i_ang) + AngFunctDUAL_HF(4,a,d,i_ang))&
+                *(AngFunctDUAL_HF(1,b,c,i_ang) + AngFunctDUAL_HF(4,b,c,i_ang))
+!      aux_dir  = zzero
+!      do K = abs(ja - jc) / 2, (ja + jc) / 2
+!        M = (mc - ma)/2
+!        if ((MOD(K + la + lc, 2) == 1).OR.(abs(M) > K)) cycle
+!
+!        do K2 = abs(jb - jd) / 2, (jb + jd) / 2
+!          !! NOTE:: in DD Hamiltonian loop, condition ma+mb=mc+md -> M=M2
+!          M2 = (md - mb)/2
+!          if ((MOD(K2 + lb + ld, 2) == 1).OR.(abs(M2) > K2)) cycle
+!
+!          ind_km   = angular_momentum_index(K,  M,  .FALSE.)
+!          ind_km_q = angular_momentum_index(K2, M2, .FALSE.)
+!
+!          aux_dir = aux_dir + (dens_Y_KM_me(ind_jm_a, ind_jm_c, ind_km)  * &
+!                               dens_Y_KM_me(ind_jm_b, ind_jm_d, ind_km_q)* &
+!                               sph_harmonics_memo(ind_km,   i_ang) * &
+!                               sph_harmonics_memo(ind_km_q, i_ang))
+!        enddo
+!      enddo
+!      !! ====================================================================
+!      aux_exch = zzero
+!      do K = abs(ja - jd) / 2, (ja + jd) / 2
+!        M = (md - ma)/2
+!        if ((MOD(K + la + ld, 2) == 1).OR.(abs(M) > K)) cycle
+!
+!        do K2 = abs(jb - jc) / 2, (jb + jc) / 2
+!          M2 = (mc - mb)/2
+!          if ((MOD(K2 + lb + lc, 2) == 1).OR.(abs(M2) > K2)) cycle
+!
+!          ind_km   = angular_momentum_index(K,  M,  .FALSE.)
+!          ind_km_q = angular_momentum_index(K2, M2, .FALSE.)
+!
+!          aux_exch = aux_exch + (dens_Y_KM_me(ind_jm_a, ind_jm_d, ind_km)  *&
+!                                 dens_Y_KM_me(ind_jm_b, ind_jm_c, ind_km_q)*&
+!                                 sph_harmonics_memo(ind_km,   i_ang) *&
+!                                 sph_harmonics_memo(ind_km_q, i_ang))
+!        enddo
+!      enddo
       !! ====================================================================
 
       angular = weight_LEB(i_ang)
