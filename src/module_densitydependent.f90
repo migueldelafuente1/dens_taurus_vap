@@ -1746,18 +1746,6 @@ end function step_reconstruct_2body_timerev
 !                       ta,tb,tc,td of the sp-state.                          !
 !                       v_dd_val_Real !! pppp(1), pnpn(2), pnnp(3), nnnn(4)   !
 !-----------------------------------------------------------------------------!
-function matrix_element_pseudoRearrangement(a,b, c,d) result (v_dd_val_Real)
-
-end function matrix_element_pseudoRearrangement
-
-!-----------------------------------------------------------------------------!
-! function matrix_element_v_DD                                                !
-!                                                                             !
-! Computes density dependent two body matrix elements over the density average!
-!    all_isos (logical) Compute 3 combinations p/n instead of the current     !
-!                       ta,tb,tc,td of the sp-state.                          !
-!                       v_dd_val_Real !! pppp(1), pnpn(2), pnnp(3), nnnn(4)   !
-!-----------------------------------------------------------------------------!
 function matrix_element_v_DD(a,b, c,d, ALL_ISOS) result (v_dd_val_Real)
 
 integer(i32), intent(in) :: a,b,c,d
