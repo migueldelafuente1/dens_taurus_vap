@@ -84,10 +84,10 @@ call export_rearrangement_field
 
 !! deallocate HF arrays from D1S to increase memory
 if (.NOT. evalQuasiParticleVSpace) then
-  deallocate(sphharmDUAL_memo, AngFunctDUAL_P1,AngFunctDUAL_P2)
-  if (.NOT. EXPORT_GRAD_DD) then
+  deallocate(sphharmDUAL_memo, AngFunctDUAL_P1, AngFunctDUAL_P2)
+  if (.NOT. (EXPORT_GRAD_DD .OR. EXPORT_PREA_DD)) then
     deallocate(AngFunctDUAL_HF, BulkHF, BulkP1, BulkP2)
-  end if
+  endif
 endif
 
 if (exportValSpace) then !-----------------------------------------------------
@@ -106,21 +106,26 @@ if (exportValSpace) then !-----------------------------------------------------
     print "(A,/,A)","        For full space, Be patient ...",""
   endif
 
-  if (EXPORT_GRAD_DD) call set_derivative_density_dependent(dens_rhoRR, &
-                                                            dens_kappaRR, ndim)
+  if     (EXPORT_GRAD_DD) then
+    call set_derivative_density_dependent(dens_rhoRR, dens_kappaRR, ndim)
+  elseif (EXPORT_PREA_DD) then
+    continue !!! NOT NECESSARY,
+  endif
 
   call calculate_densityDep_hamiltonian(dens_rhoRRc, &
                                         dens_kappaRRc, dens_kappaRRc, ndim)
   print "(A,/,A)", "", " [DONE] Evaluating the Hamiltonian."
+  if (.NOT. (EXPORT_PREA_DD)) then
+    deallocate(rearrangement_me,  rearrang_field, &
+               rea_common_RadAng, REACommonFields)
+  endif
 
-  deallocate(rearrangement_me,  rearrang_field, &
-             rea_common_RadAng, REACommonFields)
   if (evalQuasiParticleVSpace .AND. export_density) then
     call print_quasipartile_DD_matrix_elements(bogo_U0, bogo_V0, &
                                                dens_rhoRR, dens_kappaRR, ndim)
   else
     call print_DD_matrix_elements(1) !! Case for exporting the DD
-    if (EXPORT_GRAD_DD) then
+    if (EXPORT_GRAD_DD .OR. EXPORT_PREA_DD) then
       !! Note 30/01/23: the exporting of the Laplacian_ is adjusted to t3 and
       !!   added to the D1S matrix elements (stored in hamil_H2cpd_DD).
       !!   Warning, the elements after option 1 include the DD contribution. !!
@@ -288,112 +293,6 @@ do a = 1, spO2
 
   end do
 end do
-
-
-!a_min   = 0
-!a_max   = 0
-!ja_prev = 0
-!b_min   = 0
-!b_max   = 0
-!jb_prev = 0
-!
-!do a = 1, spO2
-!
-!  Na = 2*HOsp_n(a) + HOsp_l(a)
-!  ja = HOsp_2j (a)
-!  ma = HOsp_2mj(a)
-!  a_sh = HOsp_sh(a)
-!  ta = HOsp_2mt(a)
-!
-!  if ((a_min.EQ.0).OR.(ja.NE.ja_prev)) then ! update the first mj to evaluate b
-!    a_min = a
-!    a_max = a + ja
-!    ja_prev = ja
-!
-!    a_sh_vs = 0 ! if it's 0, then we do not add up to the VS energy
-!    do aa = 1, VSsh_dim ! find the index in the VS
-!      if (VSsh_list(aa).EQ.HOsh_ant(a_sh)) a_sh_vs = aa
-!    enddo
-!  endif
-!
-!  aux_t = hamil_H1(a, a)
-!  if (Na .GT. NHO_vs) then  ! outer vs outer are neglected/ useless ------------
-!    cycle
-!  else if (Na .LE. NHO_co) then    !! Kinetic Energy Core -----------------
-!    T_core(2+ta) = T_core(2+ta) + (aux_t / sqrt(2*ja + 1.0))
-!  else if ((Na .LE. NHO_vs).AND.(a_sh_vs.NE.0)) then  !! Valence Space ----
-!    t_sp_vs(a_sh_vs) = t_sp_vs(a_sh_vs) + (aux_t / sqrt(2*ja + 1.0))
-!  endif   !!    --------
-!
-!  !! Calculate the 2Body Interaction for the CORE and the VALENCE
-!  do b = a_min, spO2
-!    Nb = 2*HOsp_n(b) + HOsp_l(b)
-!    jb = HOsp_2j (b)
-!    mb = HOsp_2mj(b)
-!
-!    delta_ab = 0
-!    if ((ja.EQ.jb).AND.(la.EQ.lb).AND.(HOsp_n(a).EQ.HOsp_n(b))) delta_ab = 1
-!
-!    if (Nb .GT. NHO_vs) cycle ! outer vs outer are neglected/ useless
-!    if ((b_min.EQ.0).OR.(jb.NE.jb_prev)) then ! update the first mj to evaluate b
-!      b_min = b
-!      b_max = b + jb
-!      jb_prev = jb
-!    endif
-!
-!    M = (ma + mb) / 2
-!    J_min = max(M, max(abs(ja - jb)/2, 0))  ! i.e. cannot have J=1, M=+-3
-!    J_max = (ja + jb) / 2
-!
-!    do J = J_min, J_max
-!      call ClebschGordan(ja,jb,2*J, ma,mb,2*M, cgc1)
-!
-!      do a2 = a_min, a_max ! loop for the second CG
-!        ma2 = HOsp_2mj(a2)
-!        mb2 = 2*M - HOsp_2mj(a2)
-!        b2  = b_min + (jb - mb2) / 2
-!        if ((b2 .LT. b_min).OR.(b2 .GT. b_max)) cycle ! INVALID mb2 value
-!
-!        call ClebschGordan(ja,jb,2*J, ma2, mb2,2*M, cgc2)
-!
-!        Vdd_dec = matrix_element_v_DD(a, b, a2, b2, .TRUE.)
-!
-!        !! T = 0
-!        if (delta_ab.EQ.0) NormAB = one
-!        if (delta_ab.EQ.1) then
-!          NormAB = one / 2
-!          if (MOD(J, 2).EQ.0) NormAB = zero
-!        endif
-!        aux_v = NormAB * cgc1 * cgc2  !* sqrt(2*J + 1.0)
-!        if (Nb .LE. NHO_co) then !! CORE PART :
-!          V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) - Vdd_dec(3)))
-!        else if (a_sh_vs.NE.0) then ! -------- !! VALENCE SPACE SP Energies :
-!          aux_v = aux_v * (Vdd_dec(2) - Vdd_dec(3))
-!          e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v
-!        endif
-!
-!        !! T = 1
-!        if (delta_ab.EQ.1) then
-!          NormAB = one / 2
-!          if (MOD(J, 2).EQ.1) NormAB = zero
-!        endif
-!
-!        aux_v = NormAB * cgc1 * cgc2  !* sqrt((2*J + 1.0) * 3)
-!        if (Nb .LE. NHO_co) then !! CORE PART :
-!          V_core(1) = V_core(1) + (aux_v *  Vdd_dec(1))
-!          V_core(2) = V_core(2) + (aux_v * (Vdd_dec(2) + Vdd_dec(3)))
-!          V_core(3) = V_core(3) + (aux_v *  Vdd_dec(4))
-!        else if (a_sh_vs.NE.0) then ! ---------- !! VALENCE SPACE SP Energies :
-!          e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v * Vdd_dec(1)
-!          e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v *(Vdd_dec(2) + Vdd_dec(3))
-!          e_sp_vs(a_sh_vs) = e_sp_vs(a_sh_vs) + aux_v * Vdd_dec(4)
-!        endif
-!
-!      enddo ! loop the other m_j
-!    enddo ! loop J
-!
-!  enddo
-!enddo
 
 !! SUM the DENSITY INDEPENDENT HAMILTONIAN (shell indexes)
 CORE_NUMBER = 0

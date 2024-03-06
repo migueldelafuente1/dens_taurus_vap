@@ -92,7 +92,8 @@ complex(r64), dimension(:,:), allocatable     :: REACommonFields   !(ir, iang))
 complex(r64), dimension(:,:), allocatable     :: fixed_rearrang_field
 
 !!! Arrays related to Differentiated density.
-logical   :: EXPORT_GRAD_DD = .TRUE.
+logical   :: EXPORT_GRAD_DD = .TRUE.  ! export the Laplacian-approximation of the Rearrangement
+logical   :: EXPORT_PREA_DD = .FALSE. ! export the Field-derivation of the rearrange m.e.
 real(r64), dimension(:,:,:,:), allocatable  :: radial_1b_diff_memo ! (ish, i_n[-1:1], j_l[-1:1], ir)
 complex(r64), dimension(:,:,:), allocatable :: partial_dens        ! (-1,0,1,2:total ,ir,iang)
 real(r64), dimension(:,:), allocatable      :: hamil_GradDD_H2_byT ! 2-body grad Dens  (pppp,pnpn,pnnp,nnnn)
@@ -1736,6 +1737,19 @@ if ( phase < 0.d0 ) perm = perm - int(8,i8)
 
 return
 end function step_reconstruct_2body_timerev
+
+!-----------------------------------------------------------------------------!
+! function matrix_element_v_DD                                                !
+!                                                                             !
+! Computes density dependent two body matrix elements over the density average!
+!    all_isos (logical) Compute 3 combinations p/n instead of the current     !
+!                       ta,tb,tc,td of the sp-state.                          !
+!                       v_dd_val_Real !! pppp(1), pnpn(2), pnnp(3), nnnn(4)   !
+!-----------------------------------------------------------------------------!
+function matrix_element_pseudoRearrangement(a,b, c,d) result (v_dd_val_Real)
+
+end function matrix_element_pseudoRearrangement
+
 !-----------------------------------------------------------------------------!
 ! function matrix_element_v_DD                                                !
 !                                                                             !
@@ -1935,7 +1949,6 @@ return
 
 end function matrix_element_v_DD
 
-
 !-----------------------------------------------------------------------------!
 ! subroutine calculate_densityDep_hamiltonian                                 !
 !                                                                             !
@@ -2037,8 +2050,12 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
 
         rearrangement_me = zero
 
-        me_Vdec = matrix_element_v_DD(a,b, c,d, ALL_ISOS)
-        if (EXPORT_GRAD_DD) me_VGRc = matrix_element_v_gradientDD(a,b, c,d)
+        me_Vdec   = matrix_element_v_DD(a,b, c,d, ALL_ISOS)
+        if      (EXPORT_GRAD_DD) then
+          me_VGRc = matrix_element_v_gradientDD(a,b, c,d)
+        else if (EXPORT_PREA_DD) then
+          me_VGRc = matrix_element_pseudoRearrangement(a,b, c,d)
+        endif
 
         !!! Select only matrix elements above a given cutoff to reduce the
         !!! CPU time and storage
@@ -2052,7 +2069,7 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
             dred = int(d,i16)
             write(uth6) ared, bred, cred, dred
             write(uth7) me_Vdec(1), me_Vdec(2), me_Vdec(3), me_Vdec(4)
-            if (EXPORT_GRAD_DD) then
+            if (EXPORT_GRAD_DD .OR. EXPORT_PREA_DD) then
               write(uth8) me_VGRc(1), me_VGRc(2), me_VGRc(3), me_VGRc(4)
             endif
           endif
@@ -2136,7 +2153,7 @@ if (ALL_ISOS) then
   enddo
 
   deallocate(hamil_temp, hamil_temp_2)
-  if (.NOT.EXPORT_GRAD_DD) deallocate(hamil_GradDD_H2_byT)
+  if (.NOT.(EXPORT_GRAD_DD .OR. EXPORT_PREA_DD)) deallocate(hamil_GradDD_H2_byT)
 
 !  call print_uncoupled_hamiltonian_DD(ALL_ISOS)
 !  call print_uncoupled_hamiltonian_H2
@@ -3818,6 +3835,26 @@ print "(A)", " [DONE] Calculated Laplacian of the density."
 
 end subroutine set_derivative_density_dependent
 
+
+!-----------------------------------------------------------------------------!
+! function matrix_element_pseudoRearrangement                                 !
+!                                                                             !
+! Computes density dependent two body matrix elements over the density average!
+! The derivation of the matrix element is derived from the Fields derivation  !
+!                       v_dd_val_Real !! pppp(1), pnpn(2), pnnp(3), nnnn(4)   !
+!             in this case, a,b,c,d are <= HOsp_dim / 2                       !
+!-----------------------------------------------------------------------------!
+function matrix_element_pseudoRearrangement(a,b, c,d) result (v_dd_val_Real)
+
+integer(i32), intent(in) :: a,b,c,d
+real(r64), dimension(4) :: v_dd_val_Real !! pppp(1), pnpn(2), pnnp(3), nnnn(4)
+
+
+
+return
+
+end function matrix_element_pseudoRearrangement
+
 !-----------------------------------------------------------------------------!
 ! function matrix_element_v_gradientDD                                        !
 !                                                                             !
@@ -4045,6 +4082,9 @@ deallocate(psrea_field)
 E_core = 0.5d0 * E_core  !! the energy should be 1/2 Tr(Gamma * rho)
 
 end subroutine calculate_energy_field_laplacian
+
+
+
 !-----------------------------------------------------------------------------!
 ! subroutine TESTS FOR THE DENSITY, SPHERICAL HARMONICS AND FUNCTIONS         !
 !                                                                             !
