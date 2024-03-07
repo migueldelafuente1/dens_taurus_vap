@@ -425,7 +425,11 @@ if (option .EQ. 1) then
       ep_sp_vs(a_sh_vs,a_sh_vs), en_sp_vs(a_sh_vs,a_sh_vs)
   enddo
 else if (option .EQ. 2) then
-  call calculate_energy_field_laplacian(E_core)
+  if (EXPORT_GRAD_DD) then
+    call calculate_energy_field_laplacian(E_core)
+  else
+    call calculate_energy_field_rearrangement(E_core)
+  endif
   E_core = -1 * E_core ! This must be canceled
   write(296, fmt="(F12.6)") E_core
 
