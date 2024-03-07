@@ -3893,11 +3893,11 @@ do i_r = 1, r_dim
       aux1(tt) = aux1(tt) * rea_common_RadAng(c,d, i_r, i_a)
 
       do ms = 1, 4
-        aux2(tt) = aux2(tt) + ((x0_DD_FACTOR * BulkHF(5, ms, i_r, i_a) * &
-                                AngFunctDUAL_HF(ms, b, d, i_a)) - &
-                               (BulkHF(tt,ms,i_r,i_a) * &
-                                AngFunctDUAL_HF(ms, b, d, i_a)) * &
-                              radial_2b_sho_memo(b_sh, d_sh, i_r)
+        aux2(tt) = aux2(tt) + (((x0_DD_FACTOR * BulkHF(5, ms, i_r, i_a) * &
+                                 AngFunctDUAL_HF(ms, b, d, i_a)) - &
+                                (BulkHF(tt,ms,i_r,i_a) * &
+                                 AngFunctDUAL_HF(ms, b, d, i_a))) * &
+                               radial_2b_sho_memo(b_sh, d_sh, i_r) )
       enddo
 
       aux3(tt) = (aux1(tt) + aux2(tt)) * rea_common_RadAng(a,c, i_r, i_a)
