@@ -679,7 +679,7 @@ real(r64), intent(in) :: a, b, tolerance
 logical :: bool_true
 
 bool_true = .FALSE.
-if (dabs(a - b) .LE. tolerance) then
+if (dabs(a - b) .LT. tolerance) then
   bool_true = .TRUE.
 endif
 

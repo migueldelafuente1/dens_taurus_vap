@@ -2055,18 +2055,18 @@ me_VGRc3 = matrix_element_pseudoRearrangement(b,a, d,c)
 
 tmax = 0
 do t = 1, 4
-  if (almost_equal(me_VGRc(t), 0.0d0, 1.0d-9)) cycle
+  if (almost_equal(me_VGRc(t), zero, 1.0d-9)) cycle
 
-  if (almost_equal(me_VGRc(t), -1.0d0 * me_VGRc1(t), 1.0d-6)) then
-  print "(A,I3,2F15.6)"," AntySym-ERR 1 -(ab,dc)t:",t,me_VGRc(t),me_VGRc1(t)
+  if (almost_equal(me_VGRc(t), -one * me_VGRc1(t), 1.0d-6)) then
+  print "(A,I3,2F15.8)"," AntySym-ERR 1 -(ab,dc)t:",t,me_VGRc(t),me_VGRc1(t)
   tmax = tmax + 1
   end if
-  if (almost_equal(me_VGRc(t), -1.0d0 * me_VGRc2(t), 1.0d-6)) then
-  print "(A,I3,2F15.6)"," AntySym-ERR 2 -(ba,cd)t:",t,me_VGRc(t),me_VGRc2(t)
+  if (almost_equal(me_VGRc(t), -one * me_VGRc2(t), 1.0d-6)) then
+  print "(A,I3,2F15.8)"," AntySym-ERR 2 -(ba,cd)t:",t,me_VGRc(t),me_VGRc2(t)
   tmax = tmax + 1
   end if
-  if (almost_equal(me_VGRc(t),  1.0d0 * me_VGRc3(t), 1.0d-6)) then
-  print "(A,I3,2F15.6)"," AntySym-ERR 3 +(ba,dc)t:",t,me_VGRc(t),me_VGRc3(t)
+  if (almost_equal(me_VGRc(t),        me_VGRc3(t), 1.0d-6)) then
+  print "(A,I3,2F15.8)"," AntySym-ERR 3 +(ba,dc)t:",t,me_VGRc(t),me_VGRc3(t)
   tmax = tmax + 1
   end if
 end do
