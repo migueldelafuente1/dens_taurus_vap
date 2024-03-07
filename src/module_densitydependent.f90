@@ -1969,7 +1969,7 @@ integer(i64) :: kk, i, kkk
 integer, parameter :: CONVERG_ITER = 10000
 real(r64) :: xja, xjb, xjc, xjd, xjtot, xttot, phasab, phascd, Vtmp, &
              Vcut, Vdec, Vred
-real(r64), dimension(4) :: me_Vdec, me_VGRc
+real(r64), dimension(4) :: me_Vdec, me_VGRc, me_VGRc1, me_VGRc2, me_VGRc3
 real(r64), dimension(:), allocatable :: hamil_temp, hamil_temp_2
 character(len=25) :: filename
 logical   :: ALL_ISOS
@@ -2047,6 +2047,31 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
           me_VGRc = matrix_element_v_gradientDD(a,b, c,d)
         else if (EXPORT_PREA_DD) then
           me_VGRc = matrix_element_pseudoRearrangement(a,b, c,d)
+
+          !! test ANTISYMMETRY  ===================
+me_VGRc1 = matrix_element_pseudoRearrangement(a,b, d,c)
+me_VGRc2 = matrix_element_pseudoRearrangement(b,a, c,d)
+me_VGRc3 = matrix_element_pseudoRearrangement(b,a, d,c)
+
+tmax = 0
+do t = 1, 4
+  if (almost_equal(me_VGRc(t), -1.0d0 * me_VGRc1(t), 1.0d-6)) then
+  print "(A,I3,2F15.6)"," AntySym-ERR 1 -(ab,dc)t:",t,me_VGRc(t),me_VGRc1(t)
+  tmax = tmax + 1
+  end if
+  if (almost_equal(me_VGRc(t), -1.0d0 * me_VGRc2(t), 1.0d-6)) then
+  print "(A,I3,2F15.6)"," AntySym-ERR 2 -(ba,cd)t:",t,me_VGRc(t),me_VGRc2(t)
+  tmax = tmax + 1
+  end if
+  if (almost_equal(me_VGRc(t),  1.0d0 * me_VGRc3(t), 1.0d-6)) then
+  print "(A,I3,2F15.6)"," AntySym-ERR 3 +(ba,dc)t:",t,me_VGRc(t),me_VGRc3(t)
+  tmax = tmax + 1
+  end if
+end do
+
+if (tmax .GT. 0) print "(A,I3,A,4I5)", "   [ERROR]s:[",tmax,"] a,b,c,d",a,b,c,d
+
+          !! ======================================
         endif
 
         !!! Select only matrix elements above a given cutoff to reduce the

@@ -3169,7 +3169,7 @@ fileform = 'formatted'
 if (opt_rea .EQ. 0) then
   filename = 'rearrangement_final.txt'
 else
-  filename = 'pseudo_rearrangement_field.txt'
+  filename = 'pseudo_rearrangemnt.txt'
 endif
 
 open(utw, file=filename, status='replace', action='write',form=fileform)

@@ -671,6 +671,23 @@ return
 end subroutine jacobi_srt
 
 !------------------------------------------------------------------------------!
+! almost_equal (a, b, tolerance)        |a - b| < TOL                          !
+!------------------------------------------------------------------------------!
+function almost_equal(a, b, tolerance) result (bool_true)
+
+real(r64), intent(in) :: a, b, tolerance
+logical :: bool_true
+
+bool_true = .FALSE.
+if (dabs(a - b) .LE. tolerance) then
+  bool_true = .TRUE.
+endif
+
+return
+end function almost_equal
+
+
+!------------------------------------------------------------------------------!
 ! function lapack_sel                                                          !
 !                                                                              !
 ! Dummy logical function "select" for LAPACK (used for Schur decomposition).   !
