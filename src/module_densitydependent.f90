@@ -2057,17 +2057,17 @@ tmax = 0
 do t = 1, 4
   if (almost_equal(me_VGRc(t), zero, 1.0d-9)) cycle
 
-  if (almost_equal(me_VGRc(t), -one * me_VGRc1(t), 1.0d-6)) then
-  print "(A,I3,2F15.8)"," AntySym-ERR 1 -(ab,dc)t:",t,me_VGRc(t),me_VGRc1(t)
-  tmax = tmax + 1
+  if (.NOT. almost_equal(me_VGRc(t), -one * me_VGRc1(t), 1.0d-6)) then
+    print "(A,I3,2F15.8)"," AntySym-ERR 1 -(ab,dc)t:",t,me_VGRc(t),me_VGRc1(t)
+    tmax = tmax + 1
   end if
-  if (almost_equal(me_VGRc(t), -one * me_VGRc2(t), 1.0d-6)) then
-  print "(A,I3,2F15.8)"," AntySym-ERR 2 -(ba,cd)t:",t,me_VGRc(t),me_VGRc2(t)
-  tmax = tmax + 1
+  if (.NOT. almost_equal(me_VGRc(t), -one * me_VGRc2(t), 1.0d-6)) then
+    print "(A,I3,2F15.8)"," AntySym-ERR 2 -(ba,cd)t:",t,me_VGRc(t),me_VGRc2(t)
+    tmax = tmax + 1
   end if
-  if (almost_equal(me_VGRc(t),        me_VGRc3(t), 1.0d-6)) then
-  print "(A,I3,2F15.8)"," AntySym-ERR 3 +(ba,dc)t:",t,me_VGRc(t),me_VGRc3(t)
-  tmax = tmax + 1
+  if (.NOT. almost_equal(me_VGRc(t), me_VGRc3(t), 1.0d-6)) then
+    print "(A,I3,2F15.8)"," AntySym-ERR 3 +(ba,dc)t:",t,me_VGRc(t),me_VGRc3(t)
+    tmax = tmax + 1
   end if
 end do
 
