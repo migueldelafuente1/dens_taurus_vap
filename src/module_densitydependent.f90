@@ -92,8 +92,8 @@ complex(r64), dimension(:,:), allocatable     :: REACommonFields   !(ir, iang))
 complex(r64), dimension(:,:), allocatable     :: fixed_rearrang_field
 
 !!! Arrays related to Differentiated density.
-logical   :: EXPORT_GRAD_DD = .TRUE.  ! export the Laplacian-approximation of the Rearrangement
-logical   :: EXPORT_PREA_DD = .FALSE. ! export the Field-derivation of the rearrange m.e.
+logical   :: EXPORT_GRAD_DD = .FALSE. ! export the Laplacian-approximation of the Rearrangement
+logical   :: EXPORT_PREA_DD = .TRUE.  ! export the Field-derivation of the rearrange m.e.
 real(r64), dimension(:,:,:,:), allocatable  :: radial_1b_diff_memo ! (ish, i_n[-1:1], j_l[-1:1], ir)
 complex(r64), dimension(:,:,:), allocatable :: partial_dens        ! (-1,0,1,2:total ,ir,iang)
 real(r64), dimension(:,:), allocatable      :: hamil_GradDD_H2_byT ! 2-body grad Dens  (pppp,pnpn,pnnp,nnnn)
@@ -1964,7 +1964,7 @@ complex(r64), dimension(ndim,ndim), intent(in) :: dens_kappaLR, dens_kappaRL
 integer(i16) :: ared, bred, cred, dred
 integer(i32) :: ht, j, t, tmax, uth6=uth+8, uth7=uth+9, uth8=uth+10, ialloc=0,&
                 a, ma, la, ta, b, mb, lb, tb, dmax, bmax,  bmin, cmin, dmin,&
-                c, mc, lc, tc, d, md, ld, td, aa, bb, cc, dd
+                c, mc, lc, tc, d, md, ld, td, aa, bb, cc, dd, an, bn, cn, dn
 integer(i64) :: kk, i, kkk
 integer, parameter :: CONVERG_ITER = 10000
 real(r64) :: xja, xjb, xjc, xjd, xjtot, xttot, phasab, phascd, Vtmp, &
@@ -2000,6 +2000,7 @@ rearrang_field = zero
 
 do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
   a  = WBtoHOsp_index(aa) !VStoHOsp_index(aa)
+  an = a + (ndim / 2)
   la = HOsp_l(a)
   ma = HOsp_2mj(a)
   ta = HOsp_2mt(a)
@@ -2008,6 +2009,7 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
   if (evalFullSPSpace) bmin = 1
   do bb = bmin, WBsp_dim / 2 ! (prev = HOsp_dim)
     b  = WBtoHOsp_index(bb)
+    bn = b  + (ndim / 2)
     lb = HOsp_l(b)
     mb = HOsp_2mj(b)
     tb = HOsp_2mt(b)
@@ -2018,6 +2020,7 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
     if (evalFullSPSpace) cmin = 1
     do cc = cmin, WBsp_dim / 2 ! (prev = HOsp_dim)
       c  = WBtoHOsp_index(cc)
+      cn = c + (ndim / 2)
       lc = HOsp_l(c)
       mc = HOsp_2mj(c)
       tc = HOsp_2mt(c)
@@ -2030,6 +2033,7 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
       endif
       do dd = dmin, dmax
         d  = WBtoHOsp_index(dd)
+        dn = d + (ndim / 2)
         ld = HOsp_l(d)
         md = HOsp_2mj(d)
         td = HOsp_2mt(d)
@@ -2059,6 +2063,15 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
             write(uth7) me_Vdec(1), me_Vdec(2), me_Vdec(3), me_Vdec(4)
             if (EXPORT_GRAD_DD .OR. EXPORT_PREA_DD) then
               write(uth8) me_VGRc(1), me_VGRc(2), me_VGRc(3), me_VGRc(4)
+              !! evaluate the rearrangement
+              rearrang_field(a ,c ) = rearrang_field(a ,c ) + &
+                  (me_VGRc(1)*dens_rhoLR(d ,b ) + me_VGRc(2)*dens_rhoLR(dn,bn))
+              rearrang_field(an,cn) = rearrang_field(an,cn) + &
+                  (me_VGRc(2)*dens_rhoLR(d ,b ) + me_VGRc(4)*dens_rhoLR(dn,bn))
+              rearrang_field(a ,cn) = rearrang_field(a ,cn) + &
+                  (me_VGRc(3)*dens_rhoLR(d ,bn))
+              rearrang_field(an,c ) = rearrang_field(an,c ) + &
+                  (me_VGRc(3)*dens_rhoLR(dn,b ))
             endif
           endif
 
@@ -3837,10 +3850,90 @@ function matrix_element_pseudoRearrangement(a,b, c,d) result (v_dd_val_Real)
 integer(i32), intent(in) :: a,b,c,d
 real(r64), dimension(4) :: v_dd_val_Real !! pppp(1), pnpn(2), pnnp(3), nnnn(4)
 
+integer      :: ms, tt
+complex(r64) :: aux, radial, aux_dir, aux_exch, dens_part, aux4
+complex(r64), dimension(4) :: v_dd_value, term1, term2, aux1, aux2, aux3
+real(r64)    :: angular, integral_factor, const_1, const_4
+integer(i32) :: a_sh, b_sh, c_sh, d_sh, i_r, i_a
+integer      :: HOspO2
 
+HOspO2 = HOsp_dim/2
+
+v_dd_value = zzero
+v_dd_val_Real = zero
+term1 = zzero
+term2 = zzero
+
+if (.NOT.EXPORT_PREA_DD) return
+if ((a.GT.HOspO2).OR.(b.GT.HOspO2).OR.(c.GT.HOspO2).OR.(d.GT.HOspO2)) then
+  print "(A)", " [ERROR] (m.e. Rea ME), a,b,c,d > HO_sp dim /2 !!!"
+  return
+endif
+
+integral_factor = t3_DD_CONST
+!! NOTE :: Remember that radial functions already have the factor 1/b**3
+integral_factor = integral_factor * 0.5d0 * (HO_b**3)
+integral_factor = integral_factor  / ((2.0d0 + alpha_DD)**1.5d0)
+integral_factor = integral_factor * 4 * pi  ! add Lebedev norm factor
+
+const_1 = 4.0d0
+const_4 = alpha_DD * (alpha_DD - 1.0d0)
+
+do i_r = 1, r_dim
+  radial = weight_R(i_r) * exp((alpha_DD + 2.0d0) * (r(i_r) / HO_b)**2)
+  do i_a = 1, angular_dim
+
+    !! first term, (derivative of each rho_matrix)
+    aux1 = zzero
+    aux2 = zzero
+    aux3 = zzero
+    do tt = 1, 3 !! pnnp = 0, tt=4
+
+      aux1(tt) = dens_pnt(5,i_r,i_a) - (x0_DD_FACTOR * dens_pnt(tt,i_r,i_a))
+      aux1(tt) = aux1(tt) * rea_common_RadAng(c,d, i_r, i_a)
+
+      do ms = 1, 4
+        aux2(tt) = aux2(tt) + ((x0_DD_FACTOR * BulkHF(5, ms, i_r, i_a) * &
+                                AngFunctDUAL_HF(ms, b, d, i_a)) - &
+                               (BulkHF(tt,ms,i_r,i_a) * &
+                                AngFunctDUAL_HF(ms, b, d, i_a)) * &
+                              radial_2b_sho_memo(b_sh, d_sh, i_r)
+      enddo
+
+      aux3(tt) = (aux1(tt) + aux2(tt)) * rea_common_RadAng(a,c, i_r, i_a)
+      aux3(tt) = aux3(tt) * const_1 * dens_alpm1(i_r, i_a)
+
+    enddo
+    !! second term. (derivative of the inner rho^(alpha-1) )
+    aux4 = rea_common_RadAng(b,d, i_r, i_a) * rea_common_RadAng(a,c, i_r, i_a)
+    aux4 = aux4 * REACommonFields(i_r, i_a)
+    aux4 = aux4 * dens_alpm1(i_r, i_a) / dens_pnt(5, i_r, i_a)
+    aux4 = aux4 * const_4
+
+    angular = weight_LEB(i_a)
+
+    !v_nnnn = v_pppp
+    v_dd_value(1) = v_dd_value(1) + (radial * angular * (aux3(1) + aux4))
+    v_dd_value(4) = v_dd_value(4) + (radial * angular * (aux3(2) + aux4))
+    ! pn pn
+    v_dd_value(2) = v_dd_value(2) + (radial * angular * (aux3(3) + aux4))
+    ! pn np
+    v_dd_value(3) = v_dd_value(3) + 0.0d0
+
+  enddo  ! angular iter_
+enddo    ! radial  iter_
+
+v_dd_val_Real(1) = real(v_dd_value(1), r64) * integral_factor
+v_dd_val_Real(2) = real(v_dd_value(2), r64) * integral_factor
+v_dd_val_Real(3) = real(v_dd_value(3), r64) * integral_factor
+v_dd_val_Real(4) = real(v_dd_value(4), r64) * integral_factor
+
+if (abs(imag(v_dd_value(2))) > 1.0d-9 ) then
+    print "(A,D15.8,A,D20.8)", "[FAIL IMAG] v_prea_DD_abcd is not Real =", &
+          real(v_dd_value(2)), " +j ", imag(v_dd_value(2))
+endif
 
 return
-
 end function matrix_element_pseudoRearrangement
 
 !-----------------------------------------------------------------------------!
@@ -3922,45 +4015,6 @@ do i_r = 1, r_dim
                 *(AngFunctDUAL_HF(1,b,d,i_ang) + AngFunctDUAL_HF(4,b,d,i_ang))
       aux_exch = (AngFunctDUAL_HF(1,a,d,i_ang) + AngFunctDUAL_HF(4,a,d,i_ang))&
                 *(AngFunctDUAL_HF(1,b,c,i_ang) + AngFunctDUAL_HF(4,b,c,i_ang))
-!      aux_dir  = zzero
-!      do K = abs(ja - jc) / 2, (ja + jc) / 2
-!        M = (mc - ma)/2
-!        if ((MOD(K + la + lc, 2) == 1).OR.(abs(M) > K)) cycle
-!
-!        do K2 = abs(jb - jd) / 2, (jb + jd) / 2
-!          !! NOTE:: in DD Hamiltonian loop, condition ma+mb=mc+md -> M=M2
-!          M2 = (md - mb)/2
-!          if ((MOD(K2 + lb + ld, 2) == 1).OR.(abs(M2) > K2)) cycle
-!
-!          ind_km   = angular_momentum_index(K,  M,  .FALSE.)
-!          ind_km_q = angular_momentum_index(K2, M2, .FALSE.)
-!
-!          aux_dir = aux_dir + (dens_Y_KM_me(ind_jm_a, ind_jm_c, ind_km)  * &
-!                               dens_Y_KM_me(ind_jm_b, ind_jm_d, ind_km_q)* &
-!                               sph_harmonics_memo(ind_km,   i_ang) * &
-!                               sph_harmonics_memo(ind_km_q, i_ang))
-!        enddo
-!      enddo
-!      !! ====================================================================
-!      aux_exch = zzero
-!      do K = abs(ja - jd) / 2, (ja + jd) / 2
-!        M = (md - ma)/2
-!        if ((MOD(K + la + ld, 2) == 1).OR.(abs(M) > K)) cycle
-!
-!        do K2 = abs(jb - jc) / 2, (jb + jc) / 2
-!          M2 = (mc - mb)/2
-!          if ((MOD(K2 + lb + lc, 2) == 1).OR.(abs(M2) > K2)) cycle
-!
-!          ind_km   = angular_momentum_index(K,  M,  .FALSE.)
-!          ind_km_q = angular_momentum_index(K2, M2, .FALSE.)
-!
-!          aux_exch = aux_exch + (dens_Y_KM_me(ind_jm_a, ind_jm_d, ind_km)  *&
-!                                 dens_Y_KM_me(ind_jm_b, ind_jm_c, ind_km_q)*&
-!                                 sph_harmonics_memo(ind_km,   i_ang) *&
-!                                 sph_harmonics_memo(ind_km_q, i_ang))
-!        enddo
-!      enddo
-      !! ====================================================================
 
       angular = weight_LEB(i_ang)
       dens_part = dens_alpm1(i_r,i_ang) * &
@@ -3977,7 +4031,7 @@ do i_r = 1, r_dim
       aux = radial * angular * ((x0_DD_FACTOR*aux_dir) + aux_exch)
       v_dd_value(3) = v_dd_value(3) - (aux * dens_part)
 
-   enddo ! angular iter_
+  enddo  ! angular iter_
 enddo    ! radial  iter_
 
 v_dd_val_Real(1) = real(v_dd_value(1), r64) * integral_factor

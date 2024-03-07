@@ -80,7 +80,7 @@ print "(A)", " [  SR] Exporting Hamiltonian and/or spatial density on the&
 if (export_density) then
   call export_expectval_density(dens_rhoRR, dens_kappaRR, dens_kappaRR, ndim)
 endif
-call export_rearrangement_field
+call export_rearrangement_field(0)
 
 !! deallocate HF arrays from D1S to increase memory
 if (.NOT. evalQuasiParticleVSpace) then
@@ -114,6 +114,7 @@ if (exportValSpace) then !-----------------------------------------------------
 
   call calculate_densityDep_hamiltonian(dens_rhoRRc, &
                                         dens_kappaRRc, dens_kappaRRc, ndim)
+  call export_rearrangement_field(1)
   print "(A,/,A)", "", " [DONE] Evaluating the Hamiltonian."
   if (.NOT. (EXPORT_PREA_DD)) then
     deallocate(rearrangement_me,  rearrang_field, &
@@ -3149,8 +3150,11 @@ end subroutine export_expectval_density
 ! subroutine export_rearrangement_field                                        !
 ! Export the final rearrangement field (rearrangement_final.txt) to be imported!
 ! as (rearrangement_initial.txt).                                              !
+!     opt_rea(int)  = 0 (export exact EDF rearrang_field),                     !
+!                  /= 0 (export hamilt. calculated rearrangement)              !
 !==============================================================================!
-subroutine export_rearrangement_field
+subroutine export_rearrangement_field(opt_rea)
+integer, intent(in) :: opt_rea
 
 integer :: i, j
 character(11) :: fileform
@@ -3158,7 +3162,11 @@ character(24) :: filename
 logical :: is_binary
 
 fileform = 'formatted'
-filename = 'rearrangement_final.txt'
+if (opt_rea .EQ. 0) then
+  filename = 'rearrangement_final.txt'
+else
+  filename = 'pseudo_rea_field.txt'
+endif
 
 open(utw, file=filename, status='replace', action='write',form=fileform)
 
