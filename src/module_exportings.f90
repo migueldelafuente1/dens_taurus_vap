@@ -902,11 +902,19 @@ do aa = 1, VSsh_dim
         aux_1 !+ hamil_H2cpd_DD(0, Jbra, a,b,c,d)
       aux_2 = auxHamilRed(2,0,ind_jm_b,ind_jm_b)
       aux_3 = auxHamilRed(3,0,ind_jm_b,ind_jm_b)
-      write(298,fmt='(4F15.10)',advance='no') &
-        aux_2 ,&! + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
-        aux_3 ,&!+ hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
-        aux_3 ,&!+ hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
-        aux_2   !+ hamil_H2cpd_DD(4, Jbra, a,b,c,d)
+      if ((option .EQ. 2) .AND. (EXPORT_PREA_DD)) then
+        write(298,fmt='(4F15.10)',advance='no') &
+          aux_2 ,&! + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
+          -aux_2 ,&!+ hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
+          -aux_3 ,&!+ hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
+          aux_3   !+ hamil_H2cpd_DD(4, Jbra, a,b,c,d
+      else
+        write(298,fmt='(4F15.10)',advance='no') &
+          aux_2 ,&! + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
+          aux_3 ,&!+ hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
+          aux_3 ,&!+ hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
+          aux_2   !+ hamil_H2cpd_DD(4, Jbra, a,b,c,d)
+      endif
       aux_4 = auxHamilRed(4,0,ind_jm_b,ind_jm_b)
       write(298,fmt='(F15.10)', advance='no') &
         aux_4 !+ hamil_H2cpd_DD(5, Jbra, a,b,c,d)
@@ -1079,11 +1087,19 @@ do aa = 1, VSsh_dim
             if (t .EQ. 2) then ! print the permutations (for the pnpn)
               aux_2 = auxHamilRed(2,KK,ind_jm_b,ind_jm_k)
               aux_3 = auxHamilRed(3,KK,ind_jm_b,ind_jm_k)
-              write(299,fmt='(4F15.10)',advance='no') &
-                aux_2 + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
-                aux_3 + hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
-                aux_3 + hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
-                aux_2 + hamil_H2cpd_DD(4, Jbra, a,b,c,d)
+              if ((option .EQ. 2) .AND. (EXPORT_PREA_DD)) then
+                write(299,fmt='(4F15.10)',advance='no') &
+                  aux_2 + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
+                 -aux_2 + hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
+                 -aux_3 + hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
+                  aux_3 + hamil_H2cpd_DD(4, Jbra, a,b,c,d)
+              else
+                write(299,fmt='(4F15.10)',advance='no') &
+                  aux_2 + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
+                  aux_3 + hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
+                  aux_3 + hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
+                  aux_2 + hamil_H2cpd_DD(4, Jbra, a,b,c,d)
+              endif
 
     if (option .EQ. 1) then !! This appends to the D1S_vs_scalar 4 gdd_vs_scalar
       hamil_H2cpd_DD(1, Jbra, a,b,c,d) = &
@@ -1106,17 +1122,23 @@ do aa = 1, VSsh_dim
             endif
           endif
 
-          !! Parts for the Hamil DD only -----------------------------------
-          if (t .EQ. 2) then ! print the permutations (for the pnpn)
-            aux_2 = auxHamilRed(2,KK,ind_jm_b,ind_jm_k)
-            aux_3 = auxHamilRed(3,KK,ind_jm_b,ind_jm_k)
-            write(300+KK,fmt='(4F15.10)',advance='no') aux_2,aux_3,aux_3,aux_2
-          else if (t .EQ. 3) then
-            cycle
+        !! Parts for the Hamil DD only -----------------------------------
+        if (t .EQ. 2) then ! print the permutations (for the pnpn)
+          aux_2 = auxHamilRed(2,KK,ind_jm_b,ind_jm_k)
+          aux_3 = auxHamilRed(3,KK,ind_jm_b,ind_jm_k)
+          if ((option .EQ. 2) .AND. (EXPORT_PREA_DD)) then
+            write(300+KK,fmt='(4F15.10)',advance='no') aux_2,-aux_2,-aux_3,aux_3
           else
-            write(300+KK,fmt='(F15.10)',advance='no') aux_1
-          !! Parts for the Hamil DD only -----------------------------------
-          endif
+            write(300+KK,fmt='(4F15.10)',advance='no') aux_2,aux_3,aux_3,aux_2
+          end if
+
+        else if (t .EQ. 3) then
+          cycle
+        else
+          write(300+KK,fmt='(F15.10)',advance='no') aux_1
+        !! Parts for the Hamil DD only -----------------------------------
+        endif
+
         enddo ! t iter
 
         !write(300+KK,*) ''

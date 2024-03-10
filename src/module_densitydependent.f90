@@ -4062,7 +4062,7 @@ end subroutine calculate_energy_field_laplacian
 !                       v_dd_val_Real !! pppp(1), pnpn(2), pnnp(3), nnnn(4)   !
 !             in this case, a,b,c,d are <= HOsp_dim / 2                       !
 !-----------------------------------------------------------------------------!
-function matrix_element_pseudoRearrangement(a,b, c,d) result (v_dd_val_Real)
+function matrix_element_pseudoRearrangement_v1(a,b, c,d) result (v_dd_val_Real)
 
 integer(i32), intent(in) :: a,b,c,d
 real(r64), dimension(4) :: v_dd_val_Real !! pppp(1), pnpn(2), pnnp(3), nnnn(4)
@@ -4136,6 +4136,141 @@ do i_r = 1, r_dim
     v_dd_value(2) = v_dd_value(2) + (radial * angular * (aux3(3) + aux4))
     ! pn np
     v_dd_value(3) = v_dd_value(3) + 0.0d0
+
+  enddo  ! angular iter_
+enddo    ! radial  iter_
+
+v_dd_val_Real(1) = real(v_dd_value(1), r64) * integral_factor
+v_dd_val_Real(2) = real(v_dd_value(2), r64) * integral_factor
+v_dd_val_Real(3) = real(v_dd_value(3), r64) * integral_factor
+v_dd_val_Real(4) = real(v_dd_value(4), r64) * integral_factor
+
+if (abs(imag(v_dd_value(2))) > 1.0d-9 ) then
+    print "(A,D15.8,A,D20.8)", "[FAIL IMAG] v_prea_DD_abcd is not Real =", &
+          real(v_dd_value(2)), " +j ", imag(v_dd_value(2))
+endif
+
+return
+end function matrix_element_pseudoRearrangement_v1
+
+!-----------------------------------------------------------------------------!
+! function matrix_element_pseudoRearrangement                                 !
+!                                                                             !
+! Computes density dependent two body matrix elements over the density average!
+! The derivation of the matrix element is derived from the Fields derivation  !
+!                       v_dd_val_Real !! pppp(1), pnpn(2), npnp(3), nnnn(4)   !
+! ## NOTE     pnnp = - pnpn(2)  and nppn = - npnp(3)
+!             in this case, a,b,c,d are <= HOsp_dim / 2                       !
+!-----------------------------------------------------------------------------!
+function matrix_element_pseudoRearrangement(a,b, c,d) result (v_dd_val_Real)
+
+integer(i32), intent(in) :: a,b,c,d
+real(r64), dimension(4) :: v_dd_val_Real !! pppp(1), pnpn(2), npnp(3), nnnn(4)
+
+integer      :: ms, tt, t2
+complex(r64) :: aux, radial, dens_part, aux5pp, aux5pn, aux5
+complex(r64), dimension(4) :: v_dd_value, term1, term2, aux1, aux2, aux3, aux4
+real(r64)    :: angular, integral_factor, const_1, const_5
+integer(i32) :: a_sh, b_sh, c_sh, d_sh, i_r, i_a
+integer      :: HOspO2
+
+HOspO2 = HOsp_dim/2
+
+v_dd_value = zzero
+v_dd_val_Real = zero
+term1 = zzero
+term2 = zzero
+
+if (.NOT.EXPORT_PREA_DD) return
+if ((a.GT.HOspO2).OR.(b.GT.HOspO2).OR.(c.GT.HOspO2).OR.(d.GT.HOspO2)) then
+  print "(A)", " [ERROR] (m.e. Rea ME), a,b,c,d > HO_sp dim /2 !!!"
+  return
+endif
+
+integral_factor = t3_DD_CONST
+!! NOTE :: Remember that radial functions already have the factor 1/b**3
+integral_factor = integral_factor * 0.5d0 * (HO_b**3)
+integral_factor = integral_factor  / ((2.0d0 + alpha_DD)**1.5d0)
+integral_factor = integral_factor * 4 * pi  ! add Lebedev norm factor
+
+const_1 = 4.0d0 * alpha_DD
+const_5 = alpha_DD * (alpha_DD - 1.0d0)
+
+do i_r = 1, r_dim
+  radial = weight_R(i_r) * exp((alpha_DD + 2.0d0) * (r(i_r) / HO_b)**2)
+  do i_a = 1, angular_dim
+    angular = weight_LEB(i_a)
+    !! first term, (derivative of each rho_matrix)
+    aux1 = zzero
+    aux2 = zzero
+    aux3 = zzero
+    aux4 = zzero
+
+    !! second term, share functions for the direct term
+    aux5pn = (rea_common_RadAng(a,c,i_r,i_a) * rea_common_RadAng(b,d,i_r,i_a))
+    aux5pp = aux5pn - (rea_common_RadAng(a,d, i_r,i_a) * &
+                       rea_common_RadAng(b,c, i_r,i_a))
+
+    do tt = 1, 4  !! pppp  pnpn npnp nnnn
+      select case(tt)
+      case (1,4)
+        aux1(tt) = aux5pp * dens_pnt(5, i_r, i_a)
+        t2 = 1 + ((tt - 1) / 3)
+        aux3(tt) = - x0_DD_FACTOR * dens_pnt(t2, i_r,i_a) * aux5pp
+        aux5 = aux5pp
+      case (2,3) ! pnpn, npnp
+        aux1(tt) = dens_pnt(5, i_r, i_a) * aux5pn
+        t2 = 4  - tt
+        aux3(tt) = - x0_DD_FACTOR * dens_pnt(t2, i_r,i_a) * aux5pn
+        aux5 = aux5pn
+      end select
+
+      !! exchange parts -----
+      do ms = 1, 4
+        select case (tt) ! ------------------
+          case (1,4)
+            aux = ((rea_common_RadAng(a,c, i_r,i_a) * &
+                    AngFunctDUAL_HF(ms, b, d, i_a) * &
+                    radial_2b_sho_memo(b_sh, d_sh, i_r)) - &
+                   (rea_common_RadAng(a,d, i_r,i_a) * &
+                    AngFunctDUAL_HF(ms, b, c, i_a) * &
+                    radial_2b_sho_memo(b_sh, c_sh, i_r)))
+
+            aux2(tt) = aux2(tt) + (x0_DD_FACTOR * BulkHF(5, ms, i_r, i_a) * aux)
+
+            aux = ((rea_common_RadAng(a,c, i_r,i_a) * &
+                    AngFunctDUAL_HF(ms, b, d, i_a) * &
+                    radial_2b_sho_memo(b_sh, d_sh, i_r)) - &
+                   (rea_common_RadAng(a,d, i_r,i_a) * &
+                    AngFunctDUAL_HF(ms, b, c, i_a) * &
+                    radial_2b_sho_memo(b_sh, c_sh, i_r)))
+            t2 = 1 + ((tt - 1) / 3)
+            aux4(tt) = aux2(tt) - (x0_DD_FACTOR * BulkHF(t2,ms, i_r, i_a) * aux)
+          case (2,3)
+            aux = (rea_common_RadAng(a,c, i_r,i_a) * &
+                   AngFunctDUAL_HF(ms, b, d, i_a) * &
+                   radial_2b_sho_memo(b_sh, d_sh, i_r))
+
+            aux2(tt) = aux2(tt) + (x0_DD_FACTOR * BulkHF(5, ms, i_r, i_a) * aux)
+
+            aux = (rea_common_RadAng(a,c, i_r,i_a) * &
+                   AngFunctDUAL_HF(ms, b, d, i_a) * &
+                   radial_2b_sho_memo(b_sh, d_sh, i_r))
+            t2 = 4  - tt
+            aux4(tt) = aux4(tt) - (BulkHF(t2,ms, i_r, i_a) * aux)
+        end select ! ------------------
+      enddo ! ms
+
+      term1(tt) = const_1 * dens_alpm1(i_r, i_a) * &
+                  (aux1(tt) + aux2(tt) + aux3(tt) + aux4(tt))
+      !! second term. (derivative of the inner rho^(alpha-1) )
+      term2(tt) = const_5 * aux5 * REACommonFields(i_r,i_a)&
+                   * dens_alpm1(i_r,i_a) / dens_pnt(5, i_r,i_a)
+
+      !! Final integral
+      v_dd_value(tt) = v_dd_value(tt) + (radial * angular &
+                                         * (term1(tt) + term2(tt)))
+    enddo !tt
 
   enddo  ! angular iter_
 enddo    ! radial  iter_
