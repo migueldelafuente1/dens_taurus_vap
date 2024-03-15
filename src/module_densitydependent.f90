@@ -2049,29 +2049,29 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
           me_VGRc = matrix_element_pseudoRearrangement(a,b, c,d)
 
           !! test ANTISYMMETRY  ===================
-me_VGRc1 = matrix_element_pseudoRearrangement(a,b, d,c)
-me_VGRc2 = matrix_element_pseudoRearrangement(b,a, c,d)
-me_VGRc3 = matrix_element_pseudoRearrangement(b,a, d,c)
-
-tmax = 0
-do t = 1, 4
-  if (almost_equal(me_VGRc(t), zero, 1.0d-9)) cycle
-
-  if (.NOT. almost_equal(me_VGRc(t), -one * me_VGRc1(t), 1.0d-6)) then
-    print "(A,I3,2F15.8)"," AntySym-ERR 1 -(ab,dc)t:",t,me_VGRc(t),me_VGRc1(t)
-    tmax = tmax + 1
-  end if
-  if (.NOT. almost_equal(me_VGRc(t), -one * me_VGRc2(t), 1.0d-6)) then
-    print "(A,I3,2F15.8)"," AntySym-ERR 2 -(ba,cd)t:",t,me_VGRc(t),me_VGRc2(t)
-    tmax = tmax + 1
-  end if
-  if (.NOT. almost_equal(me_VGRc(t), me_VGRc3(t), 1.0d-6)) then
-    print "(A,I3,2F15.8)"," AntySym-ERR 3 +(ba,dc)t:",t,me_VGRc(t),me_VGRc3(t)
-    tmax = tmax + 1
-  end if
-end do
-
-if (tmax .GT. 0) print "(A,I3,A,4I5)", "   [ERROR]s:[",tmax,"] a,b,c,d",a,b,c,d
+!me_VGRc1 = matrix_element_pseudoRearrangement(a,b, d,c)
+!me_VGRc2 = matrix_element_pseudoRearrangement(b,a, c,d)
+!me_VGRc3 = matrix_element_pseudoRearrangement(b,a, d,c)
+!
+!tmax = 0
+!do t = 1, 4
+!  if (almost_equal(me_VGRc(t), zero, 1.0d-9)) cycle
+!
+!  if (.NOT. almost_equal(me_VGRc(t), -one * me_VGRc1(t), 1.0d-6)) then
+!    print "(A,I3,2F15.8)"," AntySym-ERR 1 -(ab,dc)t:",t,me_VGRc(t),me_VGRc1(t)
+!    tmax = tmax + 1
+!  end if
+!  if (.NOT. almost_equal(me_VGRc(t), -one * me_VGRc2(t), 1.0d-6)) then
+!    print "(A,I3,2F15.8)"," AntySym-ERR 2 -(ba,cd)t:",t,me_VGRc(t),me_VGRc2(t)
+!    tmax = tmax + 1
+!  end if
+!  if (.NOT. almost_equal(me_VGRc(t), me_VGRc3(t), 1.0d-6)) then
+!    print "(A,I3,2F15.8)"," AntySym-ERR 3 +(ba,dc)t:",t,me_VGRc(t),me_VGRc3(t)
+!    tmax = tmax + 1
+!  end if
+!end do
+!
+!if (tmax .GT. 0) print "(A,I3,A,4I5)", "   [ERROR]s:[",tmax,"] a,b,c,d",a,b,c,d
 
           !! ======================================
         endif
