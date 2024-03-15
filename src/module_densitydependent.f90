@@ -4329,7 +4329,7 @@ integral_factor = integral_factor  / ((2.0d0 + alpha_DD)**1.5d0)
 integral_factor = integral_factor * 4 * pi  ! add Lebedev norm factor
 
 const_1 = 4.0d0 * alpha_DD
-const_4 = alpha_DD * (alpha_DD - 1.0d0)
+const_4 = alpha_DD !* (alpha_DD - 1.0d0)
 
 do i_r = 1, r_dim
   radial = weight_R(i_r) * exp((alpha_DD + 2.0d0) * (r(i_r) / HO_b)**2)
