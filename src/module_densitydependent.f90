@@ -4162,7 +4162,7 @@ end function matrix_element_pseudoRearrangement_v1
 ! ## NOTE     pnnp = - pnpn(2)  and nppn = - npnp(3)
 !             in this case, a,b,c,d are <= HOsp_dim / 2                       !
 !-----------------------------------------------------------------------------!
-function matrix_element_pseudoRearrangement(a,b, c,d) result (v_dd_val_Real)
+function matrix_element_pseudoRearrangement_v2(a,b, c,d) result (v_dd_val_Real)
 
 integer(i32), intent(in) :: a,b,c,d
 real(r64), dimension(4) :: v_dd_val_Real !! pppp(1), pnpn(2), npnp(3), nnnn(4)
@@ -4271,6 +4271,90 @@ do i_r = 1, r_dim
       v_dd_value(tt) = v_dd_value(tt) + (radial * angular &
                                          * (term1(tt) + term2(tt)))
     enddo !tt
+
+  enddo  ! angular iter_
+enddo    ! radial  iter_
+
+v_dd_val_Real(1) = real(v_dd_value(1), r64) * integral_factor
+v_dd_val_Real(2) = real(v_dd_value(2), r64) * integral_factor
+v_dd_val_Real(3) = real(v_dd_value(3), r64) * integral_factor
+v_dd_val_Real(4) = real(v_dd_value(4), r64) * integral_factor
+
+if (abs(imag(v_dd_value(2))) > 1.0d-9 ) then
+    print "(A,D15.8,A,D20.8)", "[FAIL IMAG] v_prea_DD_abcd is not Real =", &
+          real(v_dd_value(2)), " +j ", imag(v_dd_value(2))
+endif
+
+return
+end function matrix_element_pseudoRearrangement_v2
+
+!-----------------------------------------------------------------------------!
+! function matrix_element_pseudoRearrangement                                 !
+!                                                                             !
+! Computes density dependent two body matrix elements over the density average!
+! The derivation of the matrix element is derived from the Fields derivation  !
+!                       v_dd_val_Real !! pppp(1), pnpn(2), npnp(3), nnnn(4)   !
+! ## NOTE     pnnp = - pnpn(2)  and nppn = - npnp(3)
+!             in this case, a,b,c,d are <= HOsp_dim / 2                       !
+!-----------------------------------------------------------------------------!
+function matrix_element_pseudoRearrangement(a,b, c,d) result (v_dd_val_Real)
+
+integer(i32), intent(in) :: a,b,c,d
+real(r64), dimension(4) :: v_dd_val_Real !! pppp(1), pnpn(2), pnnp(3), nnnn(4)
+
+integer      :: ms, tt
+complex(r64) :: aux, radial, aux_dir, aux_exch, dens_part, aux4
+complex(r64), dimension(4) :: v_dd_value, term1, term2, aux1, aux2, aux3
+real(r64)    :: angular, integral_factor, const_1, const_4
+integer(i32) :: a_sh, b_sh, c_sh, d_sh, i_r, i_a
+integer      :: HOspO2
+
+HOspO2 = HOsp_dim/2
+
+v_dd_value = zzero
+v_dd_val_Real = zero
+term1 = zzero
+term2 = zzero
+
+if (.NOT.EXPORT_PREA_DD) return
+if ((a.GT.HOspO2).OR.(b.GT.HOspO2).OR.(c.GT.HOspO2).OR.(d.GT.HOspO2)) then
+  print "(A)", " [ERROR] (m.e. Rea ME), a,b,c,d > HO_sp dim /2 !!!"
+  return
+endif
+
+integral_factor = t3_DD_CONST
+!! NOTE :: Remember that radial functions already have the factor 1/b**3
+integral_factor = integral_factor * 0.5d0 * (HO_b**3)
+integral_factor = integral_factor  / ((2.0d0 + alpha_DD)**1.5d0)
+integral_factor = integral_factor * 4 * pi  ! add Lebedev norm factor
+
+const_1 = 4.0d0 * alpha_DD
+const_4 = alpha_DD * (alpha_DD - 1.0d0)
+
+do i_r = 1, r_dim
+  radial = weight_R(i_r) * exp((alpha_DD + 2.0d0) * (r(i_r) / HO_b)**2)
+  do i_a = 1, angular_dim
+
+    !! first term, (derivative of each rho_matrix)
+    aux1 = zzero
+    aux2 = zzero
+    aux3 = zzero
+
+    !! second term. (derivative of the inner rho^(alpha-1) )
+    aux4 = rea_common_RadAng(b,d, i_r, i_a) * rea_common_RadAng(a,c, i_r, i_a)
+    aux4 = aux4 * REACommonFields(i_r, i_a)
+    aux4 = aux4 * dens_alpm1(i_r, i_a) / dens_pnt(5, i_r, i_a)
+    aux4 = aux4 * const_4
+
+    angular = weight_LEB(i_a)
+
+    !v_nnnn = v_pppp
+    v_dd_value(1) = v_dd_value(1) + (radial * angular * (aux3(1) + aux4))
+    v_dd_value(4) = v_dd_value(4) + (radial * angular * (aux3(2) + aux4))
+    ! pn pn
+    v_dd_value(2) = v_dd_value(2) + (radial * angular * (aux3(3) + aux4))
+    ! pn np
+    v_dd_value(3) = v_dd_value(3) + 0.0d0
 
   enddo  ! angular iter_
 enddo    ! radial  iter_

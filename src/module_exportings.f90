@@ -905,9 +905,14 @@ do aa = 1, VSsh_dim
       if ((option .EQ. 2) .AND. (EXPORT_PREA_DD)) then
         write(298,fmt='(4F15.10)',advance='no') &
           aux_2 ,&! + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
-          -aux_2 ,&!+ hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
-          -aux_3 ,&!+ hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
-          aux_3   !+ hamil_H2cpd_DD(4, Jbra, a,b,c,d
+          aux_3 ,&!+ hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
+          aux_3 ,&!+ hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
+          aux_2   !+ hamil_H2cpd_DD(4, Jbra, a,b,c,d)
+
+!          aux_2 ,&! + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
+!          -aux_2 ,&!+ hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
+!          -aux_3 ,&!+ hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
+!          aux_3   !+ hamil_H2cpd_DD(4, Jbra, a,b,c,d
       else
         write(298,fmt='(4F15.10)',advance='no') &
           aux_2 ,&! + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
@@ -1090,9 +1095,14 @@ do aa = 1, VSsh_dim
               if ((option .EQ. 2) .AND. (EXPORT_PREA_DD)) then
                 write(299,fmt='(4F15.10)',advance='no') &
                   aux_2 + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
-                 -aux_2 + hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
-                 -aux_3 + hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
-                  aux_3 + hamil_H2cpd_DD(4, Jbra, a,b,c,d)
+                  aux_3 + hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
+                  aux_3 + hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
+                  aux_2 + hamil_H2cpd_DD(4, Jbra, a,b,c,d)
+!                  aux_2 + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
+!                 -aux_2 + hamil_H2cpd_DD(2, Jbra, a,b,c,d), &
+!                 -aux_3 + hamil_H2cpd_DD(3, Jbra, a,b,c,d), &
+!                  aux_3 + hamil_H2cpd_DD(4, Jbra, a,b,c,d)
+
               else
                 write(299,fmt='(4F15.10)',advance='no') &
                   aux_2 + hamil_H2cpd_DD(1, Jbra, a,b,c,d), &
@@ -1127,7 +1137,8 @@ do aa = 1, VSsh_dim
           aux_2 = auxHamilRed(2,KK,ind_jm_b,ind_jm_k)
           aux_3 = auxHamilRed(3,KK,ind_jm_b,ind_jm_k)
           if ((option .EQ. 2) .AND. (EXPORT_PREA_DD)) then
-            write(300+KK,fmt='(4F15.10)',advance='no') aux_2,-aux_2,-aux_3,aux_3
+            write(300+KK,fmt='(4F15.10)',advance='no') aux_2,aux_3,aux_3,aux_2
+!            write(300+KK,fmt='(4F15.10)',advance='no') aux_2,-aux_2,-aux_3,aux_3
           else
             write(300+KK,fmt='(4F15.10)',advance='no') aux_2,aux_3,aux_3,aux_2
           end if
