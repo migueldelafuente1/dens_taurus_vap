@@ -74,7 +74,6 @@ endif
 
 !! DENSITY DEP. MODULE
 call set_densty_dependent(seed_type, iter_max, proj_Mphip, proj_Mphin)
-
 !!!
 !!! MINIMIZATION
 !!!
@@ -139,7 +138,7 @@ do iter = 1, iter_max
 enddo
 
 call date_and_time(VALUES=dt)
-print '(A,i4,5(a,i2.2),A,i0.3,A,I4)', &
+print '(A,i4,5(a,i2.2),A,i0.3,A,I6)', &
     "TIME_END: ",dt(1),'/',dt(2),'/',dt(3), ' ',&
     dt(5),'_',dt(6),'_',dt(7),'.', dt(8), " ITER_FINAL=", iter
 
