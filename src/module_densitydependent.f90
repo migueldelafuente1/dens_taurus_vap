@@ -569,6 +569,9 @@ subroutine set_densty_dependent(seedtype, itermax, proj_Mphip, proj_Mphin)
 
   call import_DD_parameters
   call import_Rearrange_field_if_exist
+  if (USING_FIXED_REARRANGEMENT) then
+    hamil_H1 = hamil_H1 + fixed_rearrang_field
+  endif
 
   if (.NOT.EVAL_DENSITY_DEPENDENT) then
     print "(A)", " * DD module is TURNED OFF, skip DD array setting."
