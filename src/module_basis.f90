@@ -19,7 +19,7 @@ MODULE Basis
 use Constants
 use MathMethods
 use Nucleus, only: valence_Z, valence_N, valence_A, &
-                   nucleus_Z, nucleus_N, nucleus_A
+                   nucleus_Z, nucleus_N, nucleus_A, core_A
 
 implicit none
 public
@@ -129,24 +129,7 @@ if ( (htype == 1) .or. (htype == 2) ) then
   endif
 else
   read(uth,*) HOsh_dim, (HOsh_na(i),i=1,HOsh_dim)
-  if (htype == 3) then
-    read(uth,*) idens, core(1), core(2), zmass
-
-    ! Mass scaling for the shell-model matrix elements
-    x1 = nucleus_A
-    x2 = core_A + 2
-
-    if ( idens == 1 ) then
-      scaling_1b = 1.d0
-      scaling_2b = (x2/x1)**(zmass)
-    elseif ( idens == 2 ) then
-      scaling_1b = (x2/x1)**(zmass)
-      scaling_2b = (x2/x1)**(zmass)
-    endif
-  else
-    read(uth,*)
-  end if
-
+  read(uth,*)
   read(uth,*) opt_hw, HO_hw
 endif
 
