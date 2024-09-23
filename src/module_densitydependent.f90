@@ -131,6 +131,7 @@ logical   :: USING_FIXED_REARRANGEMENT = .FALSE.
 
 !! [END] DENSITY DEPENDENT MODIFICATIONS =====================================
 !
+logical, dimension(2) :: TEST_SUPRESS_HFPA = (/.FALSE., .FALSE./)
 
 CONTAINS
 
@@ -347,6 +348,24 @@ print *, ''
 haveX0M1 = abs(x0_DD_FACTOR - 1.0d+0) > 1.0d-6
 
 print "(A)", " * Density dependent parameters imported."
+
+!! REMOVE THIS AFTER TEST:
+inquire (file='test_supress_hfpairing_DD.txt', exist=is_exist)
+if ( is_exist ) then
+  OPEN(runit, FILE='test_supress_hfpairing_DD.txt', &
+       FORM="FORMATTED", STATUS="OLD", ACTION="READ")
+
+  read(runit,formatI1) str_, aux_int
+  TEST_SUPRESS_HFPA(1) = aux_int.EQ.1
+  read(runit,formatI1) str_, aux_int
+  TEST_SUPRESS_HFPA(2) = aux_int.EQ.1
+
+  print "(A)",    " * TEST SUPRESS DD PARTS imported: STATUS:"
+  print "(A,L3)", "   - HF   supressed:", TEST_SUPRESS_HFPA(1)
+  print "(A,L3)", "   - PAIR supressed:", TEST_SUPRESS_HFPA(2)
+endif
+
+
 end subroutine import_DD_parameters
 
 
@@ -3005,7 +3024,10 @@ do i_r = 1, r_dim
     aux_d =  dens_pnt(5,i_r,i_a)**2
     aux1  = (dens_pnt(1,i_r,i_a)**2) + (dens_pnt(2,i_r,i_a)**2)
       ! pn np part
-    aux2  = 2.0d0 * dens_pnt(3,i_r,i_a) * dens_pnt(4,i_r,i_a)
+    aux2 = zzero
+    if (.NOT. TEST_SUPRESS_HFPA(1)) then
+      aux2  = 2.0d0 * dens_pnt(3,i_r,i_a) * dens_pnt(4,i_r,i_a)
+    endif
     !! dens_pnt are complex, a test is to verify aux2 with the following to be Real
     !aux2 = 2.0d0*(dreal(dens_pnt(3,i_r,i_a))**2 - dimag(dens_pnt(3,i_r,i_a))**2)
 
@@ -3029,7 +3051,7 @@ do i_r = 1, r_dim
         ! pn np part
       aux1  = BulkHF(3,ms2, i_r,i_a) * BulkHF(4,ms,i_r,i_a) !pn*np
       aux2  = BulkHF(4,ms2, i_r,i_a) * BulkHF(3,ms,i_r,i_a) !np*pn
-      aux_e = aux_e + (aux1  + aux2)
+      if (.NOT. TEST_SUPRESS_HFPA(1)) aux_e = aux_e + (aux1  + aux2)
         !total field part
       aux1  = BulkHF(5,ms2, i_r,i_a) * BulkHF(5,ms,i_r,i_a) !tot
       aux_e = aux_e - (x0_DD_FACTOR * aux1)
@@ -3043,7 +3065,7 @@ do i_r = 1, r_dim
       !pn np part (remember the 1Bpn + x0*1Bpn - 1Bnp - x0*1Bnp was done already)
       aux1   = BulkP2(3,ms, i_r,i_a) * BulkP1(3,ms, i_r,i_a) !pn*pn
       aux2   = BulkP2(4,ms, i_r,i_a) * BulkP1(4,ms, i_r,i_a) !np*np
-      aux_pnp = aux_pnp + (aux1 + aux2)
+      if (.NOT. TEST_SUPRESS_HFPA(2)) aux_pnp = aux_pnp + (aux1 + aux2)
 
     enddo ! loop ms
     !! change 11/11/22 + sings of pairing changed to - (from -k*_ab k_cd)
@@ -3343,6 +3365,16 @@ do a = 1, spO2
       int_pa(Tac) = int_pa(Tac) * integral_factor
     end do
     int_rea = int_rea * 0.25d+0 * integral_factor * alpha_DD
+
+    !! TEST TO ELIMINATE PARTS FROM THE INTEGRALS - DD
+    if (TEST_SUPRESS_HFPA(2)) then
+      int_pa(3) = zzero
+      int_pa(4) = zzero
+    end if
+    if (TEST_SUPRESS_HFPA(1)) then
+      int_hf(3) = zzero
+      int_hf(4) = zzero
+    end if
 
     call complete_DD_fields(int_hf, int_pa, int_rea, gammaLR, deltaLR,deltaRL,&
                             hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, &

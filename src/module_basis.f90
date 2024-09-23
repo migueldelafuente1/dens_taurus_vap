@@ -83,6 +83,9 @@ integer :: i, j, k, htype, opt_hw=0, facn, shinc, mjinc, jmax, ialloc=0, itmp
 real(r64) :: xtmp
 real(r64), dimension(1:max_columns) :: columns
 character(len=max_length) :: line
+!MODIFIED TO READ THE DENSITY-FACTOR IN HAMIL-type = 3
+integer(i32) :: idens, core(2)
+real(r64)    :: x1, x2, zmass
 
 !!! Recovers the basis information from hamiltonian file
 rewind(uth)
@@ -126,7 +129,24 @@ if ( (htype == 1) .or. (htype == 2) ) then
   endif
 else
   read(uth,*) HOsh_dim, (HOsh_na(i),i=1,HOsh_dim)
-  read(uth,*)
+  if (htype == 3) then
+    read(uth,*) idens, core(1), core(2), zmass
+
+    ! Mass scaling for the shell-model matrix elements
+    x1 = nucleus_A
+    x2 = core_A + 2
+
+    if ( idens == 1 ) then
+      scaling_1b = 1.d0
+      scaling_2b = (x2/x1)**(zmass)
+    elseif ( idens == 2 ) then
+      scaling_1b = (x2/x1)**(zmass)
+      scaling_2b = (x2/x1)**(zmass)
+    endif
+  else
+    read(uth,*)
+  end if
+
   read(uth,*) opt_hw, HO_hw
 endif
 
