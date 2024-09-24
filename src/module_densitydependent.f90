@@ -1125,10 +1125,9 @@ end subroutine set_sphhDual_precalcFields
 ! a, b <int> sp states from the pp space (neutron states got here splicitly)  !
 ! This requires the index a:1 -> N/2 and b:1 -> N/2                           !
 !-----------------------------------------------------------------------------!
-subroutine compute_bulkDens4Fields_bench(a, b, a_sh, b_sh, i_r, i_a)!, &
-!                                   rhoLR, kappaLR, kappaRL, ndim)
-integer, intent(in)      :: a, b, a_sh, b_sh, i_r, i_a!, ndim
-!complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
+subroutine compute_bulkDens4Fields_bench(a, b, a_sh, b_sh, i_r, i_a)
+
+integer, intent(in)      :: a, b, a_sh, b_sh, i_r, i_a
 
 integer      :: spO2, ms,ms2, la, lb, ja, jb, ma, mb, ind_jm_a, ind_jm_b
 complex(r64) :: roP, roN, rPN, rNP, kaP, kaN, kaCcP, kaCcN, kPN, kNP, &
@@ -1222,11 +1221,9 @@ end subroutine compute_bulkDens4Fields_bench
 !------------------------------------------------------------------------------!
 ! subroutine to evaluate the the value and transposed values for all spaces    !
 !------------------------------------------------------------------------------!
-subroutine compute_bulkDens4Fields(a, b, a_sh, b_sh, i_r, i_a, &
-!                                   rhoLR, kappaLR, kappaRL,
-                                   overlap)!, ndim)
-integer, intent(in)      :: a, b, a_sh, b_sh, i_r, i_a!, ndim
-!complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
+subroutine compute_bulkDens4Fields(a, b, a_sh, b_sh, i_r, i_a, overlap)
+
+integer, intent(in)      :: a, b, a_sh, b_sh, i_r, i_a
 complex(r64), intent(in) :: overlap
 
 integer      :: spO2, par_ind,    ms,ms2, a_n, b_n
@@ -1599,10 +1596,8 @@ end subroutine choose_riemann_fold_density
 !                                                                             !
 !-----------------------------------------------------------------------------!
 subroutine calculate_expectval_density(overlap, iopt)
-!  (rhoLR, kappaLR, kappaRL, overlap,&
-!                                       ndim, iopt)
-integer, intent(in) :: iopt !ndim,
-!complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaRL, kappaLR
+
+integer, intent(in) :: iopt
 complex(r64), intent(in) :: overlap
 
 integer :: a,b, a_sh, b_sh, spO2, ITER_PRNT
@@ -1647,10 +1642,8 @@ do i_r = 1, r_dim
        do b = a, spO2         !!!!!     BENCH REQUIRES B=1      !!!!
          b_sh = HOsp_sh(b)
 
-         call compute_bulkDens4Fields(a, b, a_sh, b_sh, i_r, i_an, overlap)!&
-!                                      rhoLR, kappaLR, kappaRL, , ndim)
-!         call compute_bulkDens4Fields_bench(a, b, a_sh, b_sh, i_r, i_an, &
-!                                    rhoLR, kappaLR, kappaRL, ndim) ! BENCH REQUIRES B starting at 1
+         call compute_bulkDens4Fields(a, b, a_sh, b_sh, i_r, i_an, overlap)
+!         call compute_bulkDens4Fields_bench(a, b, a_sh, b_sh, i_r, i_an) ! BENCH REQUIRES B starting at 1
       enddo ! do b
     enddo   ! do a
 
@@ -2034,11 +2027,6 @@ end function matrix_element_v_DD
 ! (EVAL_REARRANGEMENT = TRUE)                                                 !
 !-----------------------------------------------------------------------------!
 subroutine calculate_densityDep_hamiltonian
-!  (dens_rhoLR, dens_kappaLR, &
-!                                            dens_kappaRL, ndim)
-!integer, intent(in) :: ndim
-!complex(r64), dimension(ndim,ndim), intent(in) :: dens_rhoLR
-!complex(r64), dimension(ndim,ndim), intent(in) :: dens_kappaLR, dens_kappaRL
 
 integer(i16) :: ared, bred, cred, dred
 integer(i32) :: ht, j, t, tmax, uth6=uth+8, uth7=uth+9, uth8=uth+10, ialloc=0,&
@@ -2213,9 +2201,7 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
             endif
 
             if ((EVAL_REARRANGEMENT).AND.(EVAL_EXPLICIT_FIELDS_DD)) then
-              call calculate_rearrang_field_explicit(a, b, c, d, Vdec)!,&
-!                                                     dens_rhoLR, dens_kappaLR,&
-!                                                     dens_kappaRL, ndim)
+              call calculate_rearrang_field_explicit(a, b, c, d, Vdec)
             endif
           endif
         endif ! select the process or to export the matrix elements
@@ -2729,12 +2715,10 @@ end subroutine print_uncoupled_hamiltonian_H2
 ! these elements are evaluated, completing the Rearrangement Field one element !
 ! at a time.                                                                   !
 !------------------------------------------------------------------------------!
-subroutine calculate_rearrang_field_explicit(ia, ib, ic, id, Vdec)!,&
-!                                             rhoLR, kappaLR, kappaRL, ndim)
-integer, intent(in)   :: ia, ib, ic, id!, ndim
+subroutine calculate_rearrang_field_explicit(ia, ib, ic, id, Vdec)
+
+integer, intent(in)   :: ia, ib, ic, id
 real(r64), intent(in) :: Vdec
-!complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR
-!complex(r64), dimension(ndim,ndim), intent(in) :: kappaLR, kappaRL
 complex(r64) :: aux_rea, Fcomb, aux_reaN
                 !f0, f1, f2, f3, & ! field_abcd, f_abdc, f_bacd, f_badc
                 !f4, f5, f6, f7, & ! field_cdab, f_cdba, f_dcab, f_dcba
@@ -2873,12 +2857,10 @@ end subroutine calculate_rearrang_field_explicit
 ! Output: gammaLR,deltaLR,deltaLR = transition fields                          !
 !------------------------------------------------------------------------------!
 subroutine calculate_fields_DD_explicit(gammaLR,hspLR, deltaLR,deltaRL,ndim)
-  !rhoLR,kappaLR,kappaRL,
 
 integer, intent(in) :: ndim
-!complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
-complex(r64), dimension(ndim,ndim)             :: gammaLR, hspLR, deltaLR, &
-                                                  deltaRL
+complex(r64), dimension(ndim,ndim) :: gammaLR, hspLR, deltaLR, deltaRL
+
 !! The density fields are added to the calculated with the standard hamiltonian
 !! This array variables are local
 complex(r64), dimension(ndim,ndim) :: gammaLR_DD, deltaLR_DD, deltaRL_DD
@@ -2889,7 +2871,6 @@ integer(i64) :: kk
 real(r64) :: h2b, f2b, aux
 character(len=10) :: g_str
 character(len=70) :: mestr
-
 
 !cmpi integer :: ierr=0
 !cmpi complex(r64), dimension(ndim,ndim) :: gammaLR_red, deltaLR_red, &
@@ -3234,9 +3215,8 @@ end subroutine complete_DD_fields
 ! each 10 iterations and at the first iteration.                               !
 !------------------------------------------------------------------------------!
 subroutine calculate_fields_DD(gammaLR,hspLR,deltaLR,deltaRL,ndim)
-  ! rhoLR,kappaLR,kappaRL,
+
 integer, intent(in) :: ndim
-!complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
 complex(r64), dimension(ndim,ndim)             :: gammaLR, hspLR, deltaLR, &
                                                   deltaRL
 !! The density fields are added to the calculated with the standard hamiltonian
@@ -4477,10 +4457,7 @@ end subroutine calculate_energy_field_rearrangement
 !                                                                             !
 !-----------------------------------------------------------------------------!
 
-subroutine test_printDesityKappaWF!(rhoLR, kappaLR, kappaRL, ndim)
-!integer, intent(in) :: ndim
-!complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
-
+subroutine test_printDesityKappaWF
 integer :: i, j
 
 open(626, file = 'DIMENS_indexes_and_rhoLRkappas.gut')

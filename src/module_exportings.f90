@@ -99,7 +99,7 @@ if (exportValSpace) then !-----------------------------------------------------
     end do
   end do
 
-  call test_printDesityKappaWF!(dens_rhoRRc, dens_kappaRRc, dens_kappaRRc, ndim)
+  call test_printDesityKappaWF
 
   print "(A)", " [  SR] Evaluating the Hamiltonian."
   if (evalQuasiParticleVSpace) then
@@ -112,8 +112,8 @@ if (exportValSpace) then !-----------------------------------------------------
     continue !!! NOT NECESSARY,
   endif
 
-  call calculate_densityDep_hamiltonian!(dens_rhoRRc, &
-                                       !dens_kappaRRc, dens_kappaRRc, ndim)
+  call calculate_densityDep_hamiltonian
+
   call export_rearrangement_field(1)
   print "(A,/,A)", "", " [DONE] Evaluating the Hamiltonian."
   if (.NOT. (EXPORT_PREA_DD)) then
@@ -1272,13 +1272,8 @@ transf_H11 = zero
 Jz_11      = zero
 
 !!! Computes the fields
-!call calculate_fields_diag(zone*dens_rhoRR, zone*dens_kappaRR, gammaRR,hspRR, &
-!                           deltaRR,ndim=ndim)
 call calculate_fields(zone*dens_rhoRR, zone*dens_kappaRR, zone*dens_kappaRR, &
                       gammaRR, hspRR, deltaRR, deltaRR, ndim)
-!call calculate_expectval_density(zone*dens_rhoRR, &
-!                                 zone*dens_kappaRR, zone*dens_kappaRR, ndim, 0)
-
 
 field_hspRR   = real(hspRR)   + field_gammaRR_DD + field_rearrRR_DD
 field_deltaRR = real(deltaRR) + field_deltaRR_DD
