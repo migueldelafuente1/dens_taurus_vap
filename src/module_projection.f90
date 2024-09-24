@@ -278,23 +278,27 @@ do nangle = nangle_min, nangle_max
 !cmpi  if ( paral_myteamrank > 0 ) cycle
   !!! [CALCULATE PROJECTED DENSITY]
   if (EVAL_DENSITY_DEPENDENT) then
-    call calculate_expectval_density(dens_rhoLR, dens_kappaLR, dens_kappaRL, &
-                                     rot_over*weip*wein, ndim, iopt)
+    call update_densities_DD(bogo_zU0,bogo_zV0,conjg(bogo_zU0tilde), &
+                             conjg(bogo_zV0tilde),dens_rhoLR,dens_kappaLR, &
+                             dens_kappaRL,ndim)
+    call calculate_expectval_density(&!dens_rhoLR, dens_kappaLR, dens_kappaRL, &
+                                     rot_over*weip*wein, iopt)! ndim, iopt)
     if (EVAL_EXPLICIT_FIELDS_DD) then
-	    call calculate_densityDep_hamiltonian(dens_rhoLR, &
-	                                          dens_kappaLR, dens_kappaRL, ndim)
-      call calculate_fields_DD_explicit(dens_rhoLR, dens_kappaLR, dens_kappaRL,&
+	    call calculate_densityDep_hamiltonian!(dens_rhoLR, &
+	                                         ! dens_kappaLR, dens_kappaRL, ndim)
+      call calculate_fields_DD_explicit(&
+                                      !dens_rhoLR, dens_kappaLR, dens_kappaRL,&
                                         field_gammaLR, field_hspLR, &
                                         field_deltaLR, field_deltaRL, ndim)
     else
-      call calculate_fields_DD(dens_rhoLR, dens_kappaLR, dens_kappaRL, &
+      call calculate_fields_DD(&!dens_rhoLR, dens_kappaLR, dens_kappaRL, &
                                field_gammaLR, field_hspLR, &
                                field_deltaLR, field_deltaRL, ndim)
     endif
     if ((evalQuasiParticleVSpace).AND.(iopt .EQ. 1)) then
       call test_export_pnpn_mmee_uncoupled(ndim) !! TODO: RM test
     endif
-	  call test_printDesityKappaWF(dens_rhoLR, dens_kappaLR, dens_kappaRL, ndim)
+	  call test_printDesityKappaWF!(dens_rhoLR, dens_kappaLR, dens_kappaRL, ndim)
   elseif (USING_FIXED_REARRANGEMENT) then
     continue !field_hspLR = field_hspLR + fixed_rearrang_field
   endif

@@ -1,0 +1,272 @@
+
+TAURUS_VAP PROGRAM
+
+use DensityDep
+
+* Added the timestamps for starting and end of the program:
+
+
+call date_and_time(VALUES=dt)
+print '(A,i4,5(a,i2.2),A,i0.3)', &
+    "TIME_START: ",dt(1),'/',dt(2),'/',dt(3),' ', &
+    dt(5), '_', dt(6), '_', dt(7), '.', dt(8)
+
+call date_and_time(VALUES=dt)
+print '(A,i4,5(a,i2.2),a,i0.3)', &
+    "TIME_START: ",dt(1),'/',dt(2),'/',dt(3),' ', &
+    dt(5), '_', dt(6), '_', dt(7), '.', dt(8)
+
+call date_and_time(VALUES=dt)
+print '(A,i4,5(a,i2.2),A,i0.3,A,I6)', &
+    "TIME_END: ",dt(1),'/',dt(2),'/',dt(3), ' ',&
+    dt(5),'_',dt(6),'_',dt(7),'.', dt(8), " ITER_FINAL=", iter
+	
+	
+* module DD setup, just before the iteration.
+
+!! DENSITY DEP. MODULE
+call set_densty_dependent(seed_type, iter_max, proj_Mphip, proj_Mphin)
+!!!
+
+==================================================================================
+
+MODULE_BASIS
+
+Functions for 2-body radial for spherical basis
+
+ * function denom_B_coeff(na, la, nb, lb, p, k) result (denom_k)
+ * function calculate_B_coeff_radial(na, la, nb, lb, p) result (b_coeff)
+ * subroutine set_B_radial_coefficients
+ * function two_sho_radial_functions(a_sh, b_sh, r, with_exp_part) result (wf_prod)
+ * function two_sho_radial_functions_bench(a_sh, b_sh, r) result (wf_prod_on_r)
+
+------------------------------------------------------------------------------------
+MODULE_MATHMETHODS
+
+Angular momentum funcitons
+ * subroutine Wigner6JCoeff (a, b, c, d, e, f, c6j)
+ * subroutine RacahCoeff (a,b,c,d, e,f, c6j)
+ * subroutine Wigner9JCoeff (l1,s1,j1, l2,s2,j2, L,S,J, c9j)
+
+Required for M.E. exporting
+ * subroutine jacobi_srt(A, D, V, n, ndim)
+ * subroutine jacobi(A, D, V, n, ndim)
+
+------------------------------------------------------------------------------------
+MODULE_PARTICLENUMBER
+
+Funciton developed to evaluate the Pair-Operator positively defined and designed 
+for PN- paring.
+ 
+ * subroutine calculate_particle_number_pn(io,rhoLR,kappaLR,kappaRL, &
+ !                                         pn, np, pnpn, pnnp, nppn, npnp,
+                                           ndim)
+
+
+------------------------------------------------------------------------------------
+MODULE_PAIRS
+
+Subroutine to print the previous pairCoupling operator 
+
+ * subroutine calculate_pairCoupl2B_ben(io,rhoLR,kappaLR,kappaRL, &
+                                        pair_T00_J1m1,pair_T00_J10,pair_T00_J1p1,&
+                                        pair_T1m1_J00,pair_T10_J00,pair_T1p1_J00,&
+                                        ndim, seniorityScheme)
+
+------------------------------------------------------------------------------------
+MODULE_HAMILTONIAN
+
+real(r64), dimension(:,:,:,:,:,:), allocatable :: hamil_H2cpd_DD       ! 2-body for DD exporting module
+logical :: implement_H2cpd_DD = .TRUE.
+
+ * In subroutine set_hamiltonian_2body, for hamiltonians 3,4 (if implement_H2cpd_DD,
+ which is fixed to FALSE for memory save) allocate for matrix elements noDD exporting
+	!! [DENSITY MOD] ------------
+	if (implement_H2cpd_DD) then
+	  allocate( hamil_H2cpd_DD(0:5,0:HO_2jmax, &
+							 HOsh_dim,HOsh_dim,HOsh_dim,HOsh_dim), &
+			  stat=ialloc )
+	  if( ialloc /= 0 ) stop 'Error during allocation of coupled hamiltonian_DD'
+	  hamil_H2cpd_DD = zero
+	endif
+	!! ---------------------------
+ 
+ then at the evaluation part, include the matrix element permutations to be copied
+  ...
+  hamil_H2cpd(find_iso(T,6,ht),J,d,c,a,b) = Vtmp * phascd
+  hamil_H2cpd(find_iso(T,7,ht),J,d,c,b,a) = Vtmp * phasab * phascd
+			  
+  !! [DENSITY PART] copy values
+  if ((hamil_type > 2).AND.(implement_H2cpd_DD)) then
+	! for HamilType=1,2 raise error here since it's not allocated
+	tt = find_iso(T,1,ht)
+	hamil_H2cpd_DD(tt,J,a,b,d,c) = hamil_H2cpd(tt,J,a,b,d,c)
+	tt = find_iso(T,2,ht)
+	hamil_H2cpd_DD(tt,J,b,a,c,d) = hamil_H2cpd(tt,J,b,a,c,d)
+	tt = find_iso(T,3,ht)
+	hamil_H2cpd_DD(tt,J,b,a,d,c) = hamil_H2cpd(tt,J,b,a,d,c)
+	tt = find_iso(T,4,ht)
+	hamil_H2cpd_DD(tt,J,c,d,a,b) = hamil_H2cpd(tt,J,c,d,a,b)
+	tt = find_iso(T,5,ht)
+	hamil_H2cpd_DD(tt,J,c,d,b,a) = hamil_H2cpd(tt,J,c,d,b,a)
+	tt = find_iso(T,6,ht)
+	hamil_H2cpd_DD(tt,J,d,c,a,b) = hamil_H2cpd(tt,J,d,c,a,b)
+	tt = find_iso(T,7,ht)
+	hamil_H2cpd_DD(tt,J,d,c,b,a) = hamil_H2cpd(tt,J,d,c,b,a)
+
+  endif
+  !! ------------ 
+
+
+ * subroutine read_hamiltonian_2body_Jscheme (IMPORTING)
+	...
+	do j = jmin, jmax
+    read(uth2,*) (hamil_H2cpd(T,j,a,b,c,d), T=tmin,tmax)
+	
+	!! [DENSITY] copy hamiltonian
+    if (implement_H2cpd_DD) then
+      do T=tmin,tmax
+        hamil_H2cpd_DD(T,j,a,b,c,d) = hamil_H2cpd(T,j,a,b,c,d)
+      enddo
+    endif
+
+ * subroutine read_hamiltonian_2body_com     (IMPORTING)
+ include the correction:
+	...
+	read(uthc,*) (H2com(T), T=tmin,tmax)
+	hamil_H2cpd(:,j,a,b,c,d) = hamil_H2cpd(:,j,a,b,c,d) + factor * H2com(:)
+	
+	!! [DENSITY] copy hamiltonian if J-scheme
+    if ((hamil_type < 3).OR.(.NOT.implement_H2cpd_DD)) cycle
+    do T = tmin,tmax
+      hamil_H2cpd_DD(T,j,a,b,c,d) = hamil_H2cpd(T,j,a,b,c,d)
+    enddo
+ 
+ 
+
+------------------------------------------------------------------------------------
+MODULE_GRADIENT
+
+Just modified to see the gradient eta-mu evolution parameters for testing purposes
+
+!!! Prints the "caption"
+if ( iter == 1 ) then
+  if ( iter_print == 0 ) then
+    print '(" ")'
+    if (gradient_type == 0) then
+      print'("Iteration",5x,"Gradient",7x,"Energy",6x,"Protons",4x,"Var(Prot)",&
+           & 4x,"Neutrons",3x,"Var(Neut)",/,85("-"))'
+    else
+      print'("Iteration",5x,"Gradient",7x,"Energy",6x,"Protons",4x,"Var(Prot)",&
+           & 4x,"Neutrons",3x,"Var(Neut)",5x,"eta      mu",/,105("-"))'
+    endif
+  elseif ( iter_print == 1 ) then
+    print '(99x,"(unprojected)")'
+    print '("Iteration",5x,"Gradient",7x,"Energy",6x,"Protons",4x,"Var(Prot)", &
+          & 4x,"Neutrons",3x,"Var(Neut)",4x,"Parity",5x,"Beta",3x,"Gamma", &
+          & /,112("-"))'
+  endif
+endif
+
+
+------------------------------------------------------------------------------------
+MODULE_PROJECTIONS
+
+Call the density and fields evaluation after evaluating the fields for the non-DD terms
+
+ * subroutine project_wavefunction(iopt,iprint,Mphip,Mphin,ndim)
+
+if ( max(Mphip,Mphin) > 1 ) then
+    call calculate_fields(dens_rhoLR,dens_kappaLR,dens_kappaRL, &
+                          field_gammaLR,field_hspLR,field_deltaLR, &
+                          field_deltaRL,ndim)
+  else
+    call calculate_fields_diag(dens_rhoLR,dens_kappaLR, &
+                               field_gammaLR,field_hspLR,field_deltaLR, &
+                               field_deltaRL,ndim)
+  endif
+!cmpi  if ( nangle_max == 0 ) exit
+!cmpi  if ( paral_myteamrank > 0 ) cycle
+...
+
+  !!! [CALCULATE PROJECTED DENSITY]
+  if (EVAL_DENSITY_DEPENDENT) then
+    call calculate_expectval_density(dens_rhoLR, dens_kappaLR, dens_kappaRL, &
+                                     rot_over*weip*wein, ndim, iopt)
+    if (EVAL_EXPLICIT_FIELDS_DD) then
+	    call calculate_densityDep_hamiltonian(dens_rhoLR, &
+	                                          dens_kappaLR, dens_kappaRL, ndim)
+      call calculate_fields_DD_explicit(dens_rhoLR, dens_kappaLR, dens_kappaRL,&
+                                        field_gammaLR, field_hspLR, &
+                                        field_deltaLR, field_deltaRL, ndim)
+    else
+      call calculate_fields_DD(dens_rhoLR, dens_kappaLR, dens_kappaRL, &
+                               field_gammaLR, field_hspLR, &
+                               field_deltaLR, field_deltaRL, ndim)
+    endif
+    if ((evalQuasiParticleVSpace).AND.(iopt .EQ. 1)) then
+      call test_export_pnpn_mmee_uncoupled(ndim) !! TODO: RM test
+    endif
+	  call test_printDesityKappaWF(dens_rhoLR, dens_kappaLR, dens_kappaRL, ndim)
+  elseif (USING_FIXED_REARRANGEMENT) then
+    continue !field_hspLR = field_hspLR + fixed_rearrang_field
+  endif
+  !!!
+
+
+Introduction of subroutine to print at the end the 2B pair-coupling operator
+
+ * print_results(Mphip, Mphin)
+ ...
+ call calculate_expectval_pair(dens_kappaRR,pairs_T1p1_J00,P_T1p1_J00,HOsp_dim)
+
+  print '(/,"PAIR COUPLING",/,13("="),//, &
+        & 3x,"MJ or MT =",7x,"-1",10x," 0",10x,"+1",/,49("-"))'
+  write(uto,format10) 'T = 0 ; J = 1', P_T00_J1m1, P_T00_J10, P_T00_J1p1
+
+  write(uto,format10) 'T = 1 ; J = 0', P_T1m1_J00, P_T10_J00, P_T1p1_J00
+  
+  
+  !! delafuen : DENS_DEP NEW 2Body pair coupling operator
+  call calculate_pairCoupl2B_ben(0,dens_rhoLR,dens_kappaLR,dens_kappaRL, &
+                                 P_T00_J1m1, P_T00_J10, P_T00_J1p1, &
+                                 P_T1m1_J00, P_T10_J00, P_T1p1_J00, &
+                                 HOsp_dim, pairs_scheme)
+
+  print '(/,"    2-BODY OPERATOR (pn - pairs)",//, &
+        & 3x,"MJ or MT =",7x,"-1",10x," 0",10x,"+1",/,49("-"))'
+  write(uto,format10) '2B T= 0; J= 1', P_T00_J1m1, P_T00_J10, P_T00_J1p1
+  write(uto,format10) '2B T= 1; J= 0', P_T1m1_J00, P_T10_J00, P_T1p1_J00
+  
+ 
+ 
+ 
+ 
+ ===================================================================================
+ 
+ UPDATES TO INTRODUCE CUTOFFS.
+   Require updating certain variables to introduce the cutoff, based in the Fermi
+   energy and the H11 eigenvalues. 
+   
+   Require the incluison of the DD module in the makefile
+   
+------------------------------------------------------------------------------------
+MODULE_CONSTRAINTS
+use DensityDep, only: lambdaFer_DD
+
+
+ * subroutine calculate_lagrange_multipliers(H20,ndim)
+
+...
+!!! Update the constraints
+do i = 1, constraint_dim
+  lagrange_lambda0(i) = lagrange_lambda1(i)
+enddo
+
+!! [DENSITY PART] copy values
+lambdaFer_DD(1) = lagrange_lambda0(1)
+lambdaFer_DD(2) = lagrange_lambda0(2)
+!!
+
+------------------------------------------------------------------------------------
+MODULE_

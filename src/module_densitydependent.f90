@@ -63,6 +63,8 @@ real(r64), dimension(:), allocatable  :: theta, theta_export
 real(r64), dimension(:), allocatable  :: cos_th, cos_th_export
 real(r64), dimension(:), allocatable  :: phi, phi_export
 
+complex(r64), dimension(:,:), allocatable :: rhoLR, kappaRL, kappaLR
+
 complex(r64), dimension(:,:), allocatable :: density, density_export !(ir, iang)
 complex(r64), dimension(:,:), allocatable :: dens_alpha, dens_alpm1
 complex(r64), dimension(:,:,:), allocatable :: dens_pnt   !(pp, nn, pn, np, total;i_r,iang)
@@ -115,6 +117,9 @@ integer   :: WBsh_dim = 0, WBsp_dim = 0
 integer, dimension(:), allocatable  :: VSsh_list, WBtoHOsp_index, VSsp_VSsh,&
                                        VStoHOsp_index, VStoHOsh_index
 
+real(r64), dimension(2) :: lambdaFer_DD ! Lag. mult. before (lambda-Z, lambda-N)
+
+
 integer   :: Mphip_DD = 0, & ! number of angles in the projection for protons
              Mphin_DD = 0    !   "    "    "    "   "      "       "  neutrons
 integer   :: seed_type_sym  = 0        ! (UNDEFINED)
@@ -128,6 +133,8 @@ logical   :: NOT_DEL_FILE
 logical   :: PRINT_GUTS = .TRUE.
 logical   :: DOING_PROJECTION = .FALSE.
 logical   :: USING_FIXED_REARRANGEMENT = .FALSE.
+logical   :: EVAL_CUTOFF = .FALSE.
+real(r64) :: CUTOFF_ENERGY_MAX = 1.0d+99
 
 !! [END] DENSITY DEPENDENT MODIFICATIONS =====================================
 !
@@ -363,6 +370,7 @@ if ( is_exist ) then
   print "(A)",    " * TEST SUPRESS DD PARTS imported: STATUS:"
   print "(A,L3)", "   - HF   supressed:", TEST_SUPRESS_HFPA(1)
   print "(A,L3)", "   - PAIR supressed:", TEST_SUPRESS_HFPA(2)
+  print *, ""
 endif
 
 
@@ -613,6 +621,10 @@ end subroutine set_densty_dependent
 
 subroutine set_allocate_density_arrays
 
+  allocate(rhoLR  (HOsp_dim,HOsp_dim))
+  allocate(kappaLR(HOsp_dim,HOsp_dim))
+  allocate(kappaRL(HOsp_dim,HOsp_dim))
+
   allocate(density (r_dim, angular_dim))
   allocate(dens_pnt(5, r_dim, angular_dim))
   allocate(dens_alpha(r_dim, angular_dim))
@@ -632,6 +644,10 @@ subroutine set_allocate_density_arrays
   allocate(rearrang_field(HOsp_dim, HOsp_dim))
   allocate(rea_common_RadAng(HOsp_dim /2, HOsp_dim /2, r_dim, angular_dim))
   allocate(REACommonFields(r_dim, angular_dim))
+
+  !! CUTOFF ELEMENTS
+  lambdaFer_DD = zero
+
 
 end subroutine set_allocate_density_arrays
 
@@ -1109,10 +1125,10 @@ end subroutine set_sphhDual_precalcFields
 ! a, b <int> sp states from the pp space (neutron states got here splicitly)  !
 ! This requires the index a:1 -> N/2 and b:1 -> N/2                           !
 !-----------------------------------------------------------------------------!
-subroutine compute_bulkDens4Fields_bench(a, b, a_sh, b_sh, i_r, i_a, &
-                                   rhoLR, kappaLR, kappaRL, ndim)
-integer, intent(in)      :: a, b, a_sh, b_sh, i_r, i_a, ndim
-complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
+subroutine compute_bulkDens4Fields_bench(a, b, a_sh, b_sh, i_r, i_a)!, &
+!                                   rhoLR, kappaLR, kappaRL, ndim)
+integer, intent(in)      :: a, b, a_sh, b_sh, i_r, i_a!, ndim
+!complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
 
 integer      :: spO2, ms,ms2, la, lb, ja, jb, ma, mb, ind_jm_a, ind_jm_b
 complex(r64) :: roP, roN, rPN, rNP, kaP, kaN, kaCcP, kaCcN, kPN, kNP, &
@@ -1207,9 +1223,10 @@ end subroutine compute_bulkDens4Fields_bench
 ! subroutine to evaluate the the value and transposed values for all spaces    !
 !------------------------------------------------------------------------------!
 subroutine compute_bulkDens4Fields(a, b, a_sh, b_sh, i_r, i_a, &
-                                   rhoLR, kappaLR, kappaRL, overlap, ndim)
-integer, intent(in)      :: a, b, a_sh, b_sh, i_r, i_a, ndim
-complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
+!                                   rhoLR, kappaLR, kappaRL,
+                                   overlap)!, ndim)
+integer, intent(in)      :: a, b, a_sh, b_sh, i_r, i_a!, ndim
+!complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
 complex(r64), intent(in) :: overlap
 
 integer      :: spO2, par_ind,    ms,ms2, a_n, b_n
@@ -1434,6 +1451,44 @@ enddo
 
 end subroutine set_rearrangement_RadAng_fucntions
 
+!-----------------------------------------------------------------------------!
+! subroutine set_rearrangement_RadAng_fucntions                               !
+!                                                                             !
+! Update the pointers for the density matrices, their values will be stored   !
+! separately from the main rho/kappa matrices from WF to include cutoff       !
+! conditions and easier access. By default, these matrices are just copied    !
+!-----------------------------------------------------------------------------!
+subroutine update_densities_DD(UL,VL,UR,VR,rho0LR,kappa0LR,kappa0RL,ndim)
+
+integer, intent(in) :: ndim
+complex(r64), dimension(ndim,ndim), intent(in) :: UL, VL, UR, VR
+complex(r64), dimension(ndim,ndim), intent(in) :: rho0LR, kappa0LR, kappa0RL
+!complex(r64), dimension(ndim,ndim) :: URc, VRc
+
+
+if (.NOT. EVAL_CUTOFF) then
+  !! Just update with the main
+  do i = 1, ndim
+    do j = 1, ndim
+      rhoLR  (i,j) = rho0LR(i,j)
+      kappaLR(i,j) = kappa0LR(i,j)
+      kappaRL(i,j) = kappa0RL(i,j)
+    end do
+  end do
+  !rhoLR   = rho0LR
+  !kappaLR = kappa0LR
+  !kappaRL = kappa0RL
+else
+  print "(A)", "  !!! CUTOFF OPTION not implemented"
+endif
+
+!URc = conjg(UR)
+!VRc = conjg(VR)
+!
+!call zgemm('n','t',ndim,ndim,ndim,zone,VRc,ndim,VL,ndim,zzero,rhoLR,ndim)
+!call zgemm('n','t',ndim,ndim,ndim,zone,VRc,ndim,UL,ndim,zzero,kappaLR,ndim)
+!call zgemm('n','t',ndim,ndim,ndim,zone,VL,ndim,URc,ndim,zzero,kappaRL,ndim)
+end subroutine update_densities_DD
 
 !-----------------------------------------------------------------------------!
 ! subroutine calculate_expectval_density                                      !
@@ -1543,10 +1598,11 @@ end subroutine choose_riemann_fold_density
 ! iopt = optimal iteration (=1 when gradient has converged)                   !
 !                                                                             !
 !-----------------------------------------------------------------------------!
-subroutine calculate_expectval_density(rhoLR, kappaLR, kappaRL, overlap,&
-                                       ndim, iopt)
-integer, intent(in) :: ndim, iopt !
-complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaRL, kappaLR
+subroutine calculate_expectval_density(overlap, iopt)
+!  (rhoLR, kappaLR, kappaRL, overlap,&
+!                                       ndim, iopt)
+integer, intent(in) :: iopt !ndim,
+!complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaRL, kappaLR
 complex(r64), intent(in) :: overlap
 
 integer :: a,b, a_sh, b_sh, spO2, ITER_PRNT
@@ -1591,8 +1647,8 @@ do i_r = 1, r_dim
        do b = a, spO2         !!!!!     BENCH REQUIRES B=1      !!!!
          b_sh = HOsp_sh(b)
 
-         call compute_bulkDens4Fields(a, b, a_sh, b_sh, i_r, i_an, &
-                                      rhoLR, kappaLR, kappaRL, overlap, ndim)
+         call compute_bulkDens4Fields(a, b, a_sh, b_sh, i_r, i_an, overlap)!&
+!                                      rhoLR, kappaLR, kappaRL, , ndim)
 !         call compute_bulkDens4Fields_bench(a, b, a_sh, b_sh, i_r, i_an, &
 !                                    rhoLR, kappaLR, kappaRL, ndim) ! BENCH REQUIRES B starting at 1
       enddo ! do b
@@ -1977,11 +2033,12 @@ end function matrix_element_v_DD
 ! evaluated if it is not calculated both (EVAL_EXPLICIT_FIELDS_DD = TRUE) and !
 ! (EVAL_REARRANGEMENT = TRUE)                                                 !
 !-----------------------------------------------------------------------------!
-subroutine calculate_densityDep_hamiltonian(dens_rhoLR, dens_kappaLR, &
-                                            dens_kappaRL, ndim)
-integer, intent(in) :: ndim
-complex(r64), dimension(ndim,ndim), intent(in) :: dens_rhoLR
-complex(r64), dimension(ndim,ndim), intent(in) :: dens_kappaLR, dens_kappaRL
+subroutine calculate_densityDep_hamiltonian
+!  (dens_rhoLR, dens_kappaLR, &
+!                                            dens_kappaRL, ndim)
+!integer, intent(in) :: ndim
+!complex(r64), dimension(ndim,ndim), intent(in) :: dens_rhoLR
+!complex(r64), dimension(ndim,ndim), intent(in) :: dens_kappaLR, dens_kappaRL
 
 integer(i16) :: ared, bred, cred, dred
 integer(i32) :: ht, j, t, tmax, uth6=uth+8, uth7=uth+9, uth8=uth+10, ialloc=0,&
@@ -2156,9 +2213,9 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
             endif
 
             if ((EVAL_REARRANGEMENT).AND.(EVAL_EXPLICIT_FIELDS_DD)) then
-              call calculate_rearrang_field_explicit(a, b, c, d, Vdec,&
-                                                     dens_rhoLR, dens_kappaLR,&
-                                                     dens_kappaRL, ndim)
+              call calculate_rearrang_field_explicit(a, b, c, d, Vdec)!,&
+!                                                     dens_rhoLR, dens_kappaLR,&
+!                                                     dens_kappaRL, ndim)
             endif
           endif
         endif ! select the process or to export the matrix elements
@@ -2672,12 +2729,12 @@ end subroutine print_uncoupled_hamiltonian_H2
 ! these elements are evaluated, completing the Rearrangement Field one element !
 ! at a time.                                                                   !
 !------------------------------------------------------------------------------!
-subroutine calculate_rearrang_field_explicit(ia, ib, ic, id, Vdec,&
-                                             rhoLR, kappaLR, kappaRL, ndim)
-integer, intent(in)   :: ia, ib, ic, id, ndim
+subroutine calculate_rearrang_field_explicit(ia, ib, ic, id, Vdec)!,&
+!                                             rhoLR, kappaLR, kappaRL, ndim)
+integer, intent(in)   :: ia, ib, ic, id!, ndim
 real(r64), intent(in) :: Vdec
-complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR
-complex(r64), dimension(ndim,ndim), intent(in) :: kappaLR, kappaRL
+!complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR
+!complex(r64), dimension(ndim,ndim), intent(in) :: kappaLR, kappaRL
 complex(r64) :: aux_rea, Fcomb, aux_reaN
                 !f0, f1, f2, f3, & ! field_abcd, f_abdc, f_bacd, f_badc
                 !f4, f5, f6, f7, & ! field_cdab, f_cdba, f_dcab, f_dcba
@@ -2815,10 +2872,11 @@ end subroutine calculate_rearrang_field_explicit
 !                                                                              !
 ! Output: gammaLR,deltaLR,deltaLR = transition fields                          !
 !------------------------------------------------------------------------------!
-subroutine calculate_fields_DD_explicit(rhoLR,kappaLR,kappaRL,gammaLR,hspLR,&
-                                          deltaLR,deltaRL,ndim)
+subroutine calculate_fields_DD_explicit(gammaLR,hspLR, deltaLR,deltaRL,ndim)
+  !rhoLR,kappaLR,kappaRL,
+
 integer, intent(in) :: ndim
-complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
+!complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
 complex(r64), dimension(ndim,ndim)             :: gammaLR, hspLR, deltaLR, &
                                                   deltaRL
 !! The density fields are added to the calculated with the standard hamiltonian
@@ -3175,8 +3233,8 @@ end subroutine complete_DD_fields
 ! speeds up the bench process by reading half the N/2 space, perform Trace test!
 ! each 10 iterations and at the first iteration.                               !
 !------------------------------------------------------------------------------!
-subroutine calculate_fields_DD(rhoLR,kappaLR,kappaRL,gammaLR,hspLR,&
-                               deltaLR,deltaRL,ndim)
+subroutine calculate_fields_DD(gammaLR,hspLR,deltaLR,deltaRL,ndim)
+  ! rhoLR,kappaLR,kappaRL,
 integer, intent(in) :: ndim
 complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
 complex(r64), dimension(ndim,ndim)             :: gammaLR, hspLR, deltaLR, &
@@ -4434,9 +4492,9 @@ end subroutine calculate_energy_field_rearrangement
 !                                                                             !
 !-----------------------------------------------------------------------------!
 
-subroutine test_printDesityKappaWF(rhoLR, kappaLR, kappaRL, ndim)
-integer, intent(in) :: ndim
-complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
+subroutine test_printDesityKappaWF!(rhoLR, kappaLR, kappaRL, ndim)
+!integer, intent(in) :: ndim
+!complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
 
 integer :: i, j
 
