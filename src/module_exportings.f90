@@ -99,7 +99,7 @@ if (exportValSpace) then !-----------------------------------------------------
     end do
   end do
 
-  call test_printDesityKappaWF(dens_rhoRRc, dens_kappaRRc, dens_kappaRRc, ndim)
+  call test_printDesityKappaWF!(dens_rhoRRc, dens_kappaRRc, dens_kappaRRc, ndim)
 
   print "(A)", " [  SR] Evaluating the Hamiltonian."
   if (evalQuasiParticleVSpace) then
@@ -112,8 +112,8 @@ if (exportValSpace) then !-----------------------------------------------------
     continue !!! NOT NECESSARY,
   endif
 
-  call calculate_densityDep_hamiltonian(dens_rhoRRc, &
-                                        dens_kappaRRc, dens_kappaRRc, ndim)
+  call calculate_densityDep_hamiltonian!(dens_rhoRRc, &
+                                       !dens_kappaRRc, dens_kappaRRc, ndim)
   call export_rearrangement_field(1)
   print "(A,/,A)", "", " [DONE] Evaluating the Hamiltonian."
   if (.NOT. (EXPORT_PREA_DD)) then
