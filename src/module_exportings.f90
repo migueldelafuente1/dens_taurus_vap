@@ -1278,8 +1278,7 @@ call calculate_fields(zone*dens_rhoRR, zone*dens_kappaRR, zone*dens_kappaRR, &
                       gammaRR, hspRR, deltaRR, deltaRR, ndim)
 !call calculate_expectval_density(zone*dens_rhoRR, &
 !                                 zone*dens_kappaRR, zone*dens_kappaRR, ndim, 0)
-!call calculate_fields_DD_diag(zone*dens_rhoRR, zone*dens_kappaRR, &
-!                              gammaRR, hspRR, deltaRR, ndim)
+
 
 field_hspRR   = real(hspRR)   + field_gammaRR_DD + field_rearrRR_DD
 field_deltaRR = real(deltaRR) + field_deltaRR_DD

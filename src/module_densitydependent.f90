@@ -1464,7 +1464,7 @@ integer, intent(in) :: ndim
 complex(r64), dimension(ndim,ndim), intent(in) :: UL, VL, UR, VR
 complex(r64), dimension(ndim,ndim), intent(in) :: rho0LR, kappa0LR, kappa0RL
 !complex(r64), dimension(ndim,ndim) :: URc, VRc
-
+integer :: i, j
 
 if (.NOT. EVAL_CUTOFF) then
   !! Just update with the main
@@ -1613,7 +1613,7 @@ complex(r64) :: sum_, integral_dens, sum_test, diff, x
 logical :: PRNT_
 
 PRNT_ = (PRINT_GUTS).OR.(.FALSE.)
-spO2 = ndim / 2
+spO2 = HOsp_dim / 2
 
 density   = zzero
 dens_pnt  = zzero
@@ -2079,7 +2079,7 @@ rearrang_field = zero
 
 do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
   a  = WBtoHOsp_index(aa) !VStoHOsp_index(aa)
-  an = a + (ndim / 2)
+  an = a + (HOsp_dim / 2)
   la = HOsp_l(a)
   ma = HOsp_2mj(a)
   ta = HOsp_2mt(a)
@@ -2088,7 +2088,7 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
   if (evalFullSPSpace) bmin = 1
   do bb = bmin, WBsp_dim / 2 ! (prev = HOsp_dim)
     b  = WBtoHOsp_index(bb)
-    bn = b  + (ndim / 2)
+    bn = b  + (HOsp_dim / 2)
     lb = HOsp_l(b)
     mb = HOsp_2mj(b)
     tb = HOsp_2mt(b)
@@ -2099,7 +2099,7 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
     if (evalFullSPSpace) cmin = 1
     do cc = cmin, WBsp_dim / 2 ! (prev = HOsp_dim)
       c  = WBtoHOsp_index(cc)
-      cn = c + (ndim / 2)
+      cn = c + (HOsp_dim / 2)
       lc = HOsp_l(c)
       mc = HOsp_2mj(c)
       tc = HOsp_2mt(c)
@@ -2112,7 +2112,7 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
       endif
       do dd = dmin, dmax
         d  = WBtoHOsp_index(dd)
-        dn = d + (ndim / 2)
+        dn = d + (HOsp_dim / 2)
         ld = HOsp_l(d)
         md = HOsp_2mj(d)
         td = HOsp_2mt(d)
@@ -2744,7 +2744,7 @@ integer   :: perm
 real(r64) :: rea_h, f2r, sign_tr, rea_hN
 logical :: exist_
 
-HOspo2 = ndim / 2
+HOspo2 = HOsp_dim / 2
 perm = 1
 if (.NOT.evalFullSPSpace) perm = step_reconstruct_2body_timerev(ia, ib, ic, id)
 ! copy indexes, find_timerev uses them as INOUT
@@ -3236,7 +3236,7 @@ end subroutine complete_DD_fields
 subroutine calculate_fields_DD(gammaLR,hspLR,deltaLR,deltaRL,ndim)
   ! rhoLR,kappaLR,kappaRL,
 integer, intent(in) :: ndim
-complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
+!complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
 complex(r64), dimension(ndim,ndim)             :: gammaLR, hspLR, deltaLR, &
                                                   deltaRL
 !! The density fields are added to the calculated with the standard hamiltonian
@@ -3554,21 +3554,6 @@ if (PRNT_.OR.doTraceTest_) then
 endif
 
 end subroutine calculate_fields_DD
-
-
-
-
-subroutine calculate_fields_DD_diag(dens_rhoRR, dens_kappaRR, &
-                                    gammaRR, hspRR, deltaRR, ndim)
-
-integer, intent(in) :: ndim
-complex(r64), dimension(ndim,ndim), intent(in) :: dens_rhoRR, dens_kappaRR
-complex(r64), dimension(ndim,ndim) :: gammaRR, hspRR, deltaRR
-
-call calculate_fields_DD(dens_rhoRR, dens_kappaRR, dens_kappaRR, &
-                         gammaRR,hspRR,deltaRR,deltaRR, ndim)
-
-end subroutine calculate_fields_DD_diag
 
 
 !-----------------------------------------------------------------------------!
@@ -4509,8 +4494,8 @@ do i=1, HOsp_dim
         HOsp_n(i), HOsp_l(i), HOsp_2j(i), HOsp_2mj(i), HOsp_2mt(i), HOsp_tr(i)
 enddo
 write(626,'(A)') "// DENSITY MATRIX RHO_LR KAPPA_LR KAPPA_RL "
-do i = 1, ndim
-    do j = 1, ndim
+do i = 1, HOsp_dim
+    do j = 1, HOsp_dim
     write(626, '(2I4,6F20.15)') i, j, dreal(rhoLR(i, j)), dimag(rhoLR(i, j)), &
         dreal(kappaLR(i, j)), dimag(kappaLR(i, j)), &
         dreal(kappaRL(i, j)), dimag(kappaRL(i, j))
