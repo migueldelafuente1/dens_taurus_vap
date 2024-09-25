@@ -1463,18 +1463,18 @@ real(r64), dimension(3*ndim-1) :: work
 integer :: i, j, k, zn_indx
 
 
-if (.NOT. EVAL_CUTOFF) then
+if ((.NOT. EVAL_CUTOFF).OR.(iteration .EQ. 1)) then
   !! Just update with the main
-  do i = 1, ndim
-    do j = 1, ndim
-      rhoLR  (i,j) = rho0LR(i,j)
-      kappaLR(i,j) = kappa0LR(i,j)
-      kappaRL(i,j) = kappa0RL(i,j)
-    end do
-  end do
-  !rhoLR   = rho0LR
-  !kappaLR = kappa0LR
-  !kappaRL = kappa0RL
+!  do i = 1, ndim
+!    do j = 1, ndim
+!      rhoLR  (i,j) = rho0LR(i,j)
+!      kappaLR(i,j) = kappa0LR(i,j)
+!      kappaRL(i,j) = kappa0RL(i,j)
+!    end do
+!  end do
+  rhoLR   = rho0LR
+  kappaLR = kappa0LR
+  kappaRL = kappa0RL
 else
 
   if (PRINT_GUTS) then
