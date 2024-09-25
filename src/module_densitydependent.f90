@@ -1494,7 +1494,7 @@ else
   URc = conjg(UR)
   VRc = conjg(VR)
   call zgemm('n','n',ndim,ndim,ndim,zone,VRc,ndim,VL,ndim,zzero,V2,ndim)
-  call dsyev('v','u',ndim,field_H11,ndim,eigen_H11,work,3*ndim-1,info_H11)
+  call dsyev('v','u',ndim,field_hspRR,ndim,eigen_H11,work,3*ndim-1,info_H11)
 
   do i = 1, ndim
     zn_indx = 1
