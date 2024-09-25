@@ -1494,6 +1494,10 @@ else
   URc = conjg(UR)
   VRc = conjg(VR)
   call zgemm('n','n',ndim,ndim,ndim,zone,VRc,ndim,VL,ndim,zzero,V2,ndim)
+
+  call calculate_fields_diag(rho0LR, kappa0LR, field_gammaLR, field_hspLR, &
+                             field_deltaLR, field_deltaRL, ndim)
+  field_hspRR   = real(field_hspLR) + field_gammaRR_DD + field_rearrRR_DD
   call dsyev('v','u',ndim,field_hspRR,ndim,eigen_H11,work,3*ndim-1,info_H11)
 
   do i = 1, ndim
