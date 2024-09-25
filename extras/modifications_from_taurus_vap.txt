@@ -237,11 +237,43 @@ Introduction of subroutine to print at the end the 2B pair-coupling operator
         & 3x,"MJ or MT =",7x,"-1",10x," 0",10x,"+1",/,49("-"))'
   write(uto,format10) '2B T= 0; J= 1', P_T00_J1m1, P_T00_J10, P_T00_J1p1
   write(uto,format10) '2B T= 1; J= 0', P_T1m1_J00, P_T10_J00, P_T1p1_J00
-  
+ 
+ ===================================================================================
+ 
+ UPDATES TO PRODUCE VALENCE SPACE MATRIX ELEMENTS FROM DD TERMS.
+ 
+------------------------------------------------------------------------------------
+MODULE_FIELDS, 
+
+To produce the 
+ !! For DD term, arrays to store only the DD part to export the quasi particles
+real(r64), dimension(:,:), allocatable :: field_gammaRR_DD, & !
+                                          field_deltaRR_DD, & !
+                                          field_rearrRR_DD    !
  
  
+ * subroutine set_fields
  
- 
+ allocate:
+	...
+          field_gammaRR_DD(HOsp_dim,HOsp_dim), &
+          field_deltaRR_DD(HOsp_dim,HOsp_dim), &
+          field_rearrRR_DD(HOsp_dim,HOsp_dim), &
+
+field_gammaRR_DD = zero
+field_deltaRR_DD = zero
+field_rearrRR_DD = zero
+
+MODULE_GRADIENT (append to field for evaluating the single-particle states)
+
+ * subroutine diagonalize_hsp_and_H11(opt,ndim)
+
+...
+  call calculate_fields_diag(zone*dens_rhoRR,zone*dens_kappaRR,gammaRR,hspRR, &
+                             deltaRR,ndim=ndim)
+  field_hspRR   = real(hspRR)   + field_gammaRR_DD + field_rearrRR_DD
+  field_deltaRR = real(deltaRR) + field_deltaRR_DD
+
  ===================================================================================
  
  UPDATES TO INTRODUCE CUTOFFS.
@@ -269,4 +301,4 @@ lambdaFer_DD(2) = lagrange_lambda0(2)
 !!
 
 ------------------------------------------------------------------------------------
-MODULE_
+MODULE_GRADIENT, no se tiene que usar

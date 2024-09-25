@@ -1455,7 +1455,7 @@ subroutine update_densities_DD(UL,VL,UR,VR,rho0LR,kappa0LR,kappa0RL,ndim)
 integer, intent(in) :: ndim
 complex(r64), dimension(ndim,ndim), intent(in) :: UL, VL, UR, VR
 complex(r64), dimension(ndim,ndim), intent(in) :: rho0LR, kappa0LR, kappa0RL
-complex(r64), dimension(ndim,ndim) :: URc, VRc, V2
+complex(r64), dimension(ndim,ndim) :: URc, VRc, ULc, V2
 real(r64), dimension(ndim) :: eigen_H11, ener_qp
 logical,   dimension(ndim) :: excluded_qp_indx
 integer :: info_H11, ialloc = 0
@@ -1481,6 +1481,7 @@ else
     open (623, file='cutoff_elements.gut')
     open (624, file='RHOKAPPA_withCutoff.gut')
     write(623,fmt='(A)')  "k, V^2(k,k), H11_eig(k), L_Ferm, e_cutoff, excluded"
+    write(623,fmt='(A,I5)') "  ITER=", iteration
     write(624,fmt='(A)')  "i, j, REAL: rho/rho0, kpa/kpa_LR, kpa/kpa_RL,  IMAG"
   endif
 
@@ -1492,8 +1493,9 @@ else
   kappaRL   = zzero
 
   URc = conjg(UR)
+  ULc = conjg(VL)
   VRc = conjg(VR)
-  call zgemm('t','n',ndim,ndim,ndim,zone,URc,ndim,UL,ndim,zzero,V2,ndim)
+  call zgemm('t','n',ndim,ndim,ndim,zone,ULc,ndim,VRc,ndim,zzero,V2,ndim)
 
   call calculate_fields_diag(rho0LR, kappa0LR, field_gammaLR, field_hspLR, &
                              field_deltaLR, field_deltaRL, ndim)
@@ -1507,7 +1509,7 @@ else
     ener_qp(i) = (1 - 2*V2(i,i))*eigen_H11(i) + lambdaFer_DD(zn_indx)
     if (ener_qp(i) .GT. CUTOFF_ENERGY_MAX) excluded_qp_indx(i) = .TRUE.
 
-    if (PRINT_GUTS) write(623,fmt='(I3,4F15.9,L3)')     i, dreal(V2(i,i)), &
+    if (PRINT_GUTS) write(623,fmt='(I5,4F15.9,L3)')     i, dreal(V2(i,i)), &
         eigen_H11(i), lambdaFer_DD(zn_indx), ener_qp(i), excluded_qp_indx(i)
   end do
 
@@ -1515,17 +1517,17 @@ else
     do j = 1, ndim
       do k = 1, ndim
         if (excluded_qp_indx(k)) cycle
-        rhoLR  (i,j) = rhoLR  (i,j) + VRc(i,k)*VL(j,k)
-        kappaLR(i,j) = kappaLR(i,j) + VRc(i,k)*UL(j,k)
-        kappaRL(i,j) = kappaRL(i,j) + VL (i,k)*URc(j,k)
+        rhoLR  (i,j) = rhoLR  (i,j) + VRc(i,k) * VL (j,k)
+        kappaLR(i,j) = kappaLR(i,j) + VRc(i,k) * UL (j,k)
+        kappaRL(i,j) = kappaRL(i,j) + VL (i,k) * URc(j,k)
       end do
 
       if(PRINT_GUTS) then
-        write(624,fmt='(2I3,6F15.9,A,6F15.9)') i, j, &
-        dreal(rhoLR(i,j)),    dreal(rhoLR(i,j)),   dreal(kappaLR(i,j)),&
+        write(624,fmt='(5I5,6F15.9,A,6F15.9)') i, j, &
+        dreal(rhoLR(i,j)),    dreal(rhoLR(i,j)),   dreal(kappaLR (i,j)), &
         dreal(kappa0LR(i,j)), dreal(kappaRL(i,j)), dreal(kappa0RL(i,j)), &
         "    ", &
-        dimag(rhoLR(i,j)),    dimag(rhoLR(i,j)),   dimag(kappaLR(i,j)),&
+        dimag(rhoLR(i,j)),    dimag(rhoLR(i,j)),   dimag(kappaLR(i,j)), &
         dimag(kappa0LR(i,j)), dimag(kappaRL(i,j)), dimag(kappa0RL(i,j))
       endif
     end do
