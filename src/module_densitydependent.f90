@@ -355,7 +355,7 @@ haveX0M1 = abs(x0_DD_FACTOR - 1.0d+0) > 1.0d-6
 print "(A)", " * Density dependent parameters imported."
 
 !! REMOVE THIS AFTER TEST:
-inquire (file='cutoff_Epn_DD.txt', exist=is_exist)
+inquire (file='input_cutoff_DD.txt', exist=is_exist)
 if ( is_exist ) then
   OPEN(runit, FILE='cutoff_Epn_DD.txt', &
        FORM="FORMATTED", STATUS="OLD", ACTION="READ")
@@ -1495,7 +1495,7 @@ else
   URc = conjg(UR)
   ULc = conjg(VL)
   VRc = conjg(VR)
-  call zgemm('t','n',ndim,ndim,ndim,zone,ULc,ndim,VRc,ndim,zzero,V2,ndim)
+  call zgemm('t','n',ndim,ndim,ndim,zone,VL,ndim,VR,ndim,zzero,V2,ndim)
 
   call calculate_fields_diag(rho0LR, kappa0LR, field_gammaLR, field_hspLR, &
                              field_deltaLR, field_deltaRL, ndim)
