@@ -1665,7 +1665,7 @@ else
       kappaRL(i,j) = kappaRL(i,j) + (bdbd + bdb + bbd + bb)
 
       if(PRINT_GUTS) then
-        write(624,fmt='(5I5,6F15.9,A,6F15.9)') i, j, &
+        write(624,fmt='(2I5,6F15.9,A,6F15.9)') i, j, &
         dreal(rhoLR(i,j)),    dreal(rhoLR(i,j)),   dreal(kappaLR (i,j)), &
         dreal(kappa0LR(i,j)), dreal(kappaRL(i,j)), dreal(kappa0RL(i,j)), &
         "    ", &
