@@ -358,7 +358,7 @@ print "(A)", " * Density dependent parameters imported."
 !! REMOVE THIS AFTER TEST:
 inquire (file='input_cutoff_DD.txt', exist=is_exist)
 if ( is_exist ) then
-  OPEN(runit, FILE='cutoff_Epn_DD.txt', &
+  OPEN(runit, FILE='input_cutoff_DD.txt', &
        FORM="FORMATTED", STATUS="OLD", ACTION="READ")
 
   read(runit,formatEE) str_, CUTOFF_ENERGY_MAX
