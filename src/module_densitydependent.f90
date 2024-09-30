@@ -1626,7 +1626,7 @@ else
       do k = 1, ndim
         if (excluded_qp_indx(k)) cycle
         do l = 1, ndim
-          bdbb = bdbd + URc(j,l) * VRc(i,k)
+          bdbd = bdbd + URc(j,l) * VRc(i,k)
           bdb  = bdb  + URc(j,l) * VR (i,k)
           bbd  = bbd  + VR (j,l) * VRc(i,k)
           bb   = bb   + VR (j,l) * UR (i,k)
@@ -1641,7 +1641,7 @@ else
       do k = 1, ndim
         if (excluded_qp_indx(k)) cycle
         do l = 1, ndim
-          bdbb = bdbd + VRc(j,l) * VRc(i,k)
+          bdbd = bdbd + VRc(j,l) * VRc(i,k)
           bdb  = bdb  + VRc(j,l) * UR (i,k)
           bbd  = bbd  + UR (j,l) * VRc(i,k)
           bb   = bb   + UR (j,l) * UR (i,k)
@@ -1655,7 +1655,7 @@ else
       do k = 1, ndim
         if (excluded_qp_indx(k)) cycle
         do l = 1, ndim
-          bdbb = bdbd + URc(j,l) * URc(i,k)
+          bdbd = bdbd + URc(j,l) * URc(i,k)
           bdb  = bdb  + VR (j,l) * URc(i,k)
           bbd  = bbd  + URc(j,l) * VR (i,k)
           bb   = bb   + VR (j,l) * VR (i,k)
