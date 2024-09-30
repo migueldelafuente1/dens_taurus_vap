@@ -1512,7 +1512,7 @@ else
   call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,field_hspRR,ndim,zero,A1,ndim)
   call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
 
-
+  print "(A)", "  - calculate cannonical basis [DONE]"
   ! =====================================================================================
 
   !!! Further reduces h in case of fully empty/occupides states
@@ -1583,8 +1583,6 @@ else
 !  enddo
 
   !!--------------------------------------------------------------------
-
-
 !  do i = 1, ndim
 !    open(ute, file='canonicalbasis.dat', status='replace', action='write', &
 !           form='formatted')
@@ -1609,7 +1607,7 @@ else
         !eigen_H11(i), &
         lambdaFer_DD(zn_indx), ener_qp(i), excluded_qp_indx(i)
   enddo
-
+  print "(A)", "  - calculate cutoffs for single particles [DONE]"
   do i = 1, ndim
     do j = 1, ndim
 !      do k = 1, ndim
@@ -1626,6 +1624,7 @@ else
       do k = 1, ndim
         if (excluded_qp_indx(k)) cycle
         do l = 1, ndim
+          if (excluded_qp_indx(l)) cycle
           bdbd = bdbd + URc(j,l) * VRc(i,k)
           bdb  = bdb  + URc(j,l) * VR (i,k)
           bbd  = bbd  + VR (j,l) * VRc(i,k)
@@ -1641,6 +1640,7 @@ else
       do k = 1, ndim
         if (excluded_qp_indx(k)) cycle
         do l = 1, ndim
+          if (excluded_qp_indx(l)) cycle
           bdbd = bdbd + VRc(j,l) * VRc(i,k)
           bdb  = bdb  + VRc(j,l) * UR (i,k)
           bbd  = bbd  + UR (j,l) * VRc(i,k)
@@ -1655,6 +1655,7 @@ else
       do k = 1, ndim
         if (excluded_qp_indx(k)) cycle
         do l = 1, ndim
+          if (excluded_qp_indx(l)) cycle
           bdbd = bdbd + URc(j,l) * URc(i,k)
           bdb  = bdb  + VR (j,l) * URc(i,k)
           bbd  = bbd  + URc(j,l) * VR (i,k)
