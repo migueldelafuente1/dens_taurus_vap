@@ -1460,10 +1460,11 @@ complex(r64), dimension(ndim,ndim) :: URc, VRc, ULc, V2
 real(r64), dimension(ndim) :: eigen_H11, ener_qp
 real(r64), dimension(ndim,ndim) :: D0, rhoc, hspc, A1, A2
 complex(r64) :: bdbd, bdb, bbd, bb
-logical,   dimension(ndim) :: excluded_qp_indx
-integer :: info_H11, ialloc = 0
+logical,  dimension(ndim) :: excluded_qp_indx
+integer   :: info_H11, ialloc = 0
 real(r64), dimension(3*ndim-1) :: work
-integer :: i, j, k, l, zn_indx, nocc0,nemp0
+real(r64) :: ovac0
+integer   :: i, j, k, l, zn_indx, nocc0,nemp0
 
 
 if ((.NOT. EVAL_CUTOFF).OR.(iteration .EQ. 1)) then
@@ -1500,7 +1501,7 @@ else
 
   !!!! =====================================================================
   !!! CALCULATE THE CANONICAL BASIS
-
+  !!! OVAC= es el el solape de la norma ERROR!!!
   call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
                                  ovac0,nocc0,nemp0,ndim)
   D0 = real(bogo_zD0)
@@ -1598,10 +1599,10 @@ else
     zn_indx = 1
     if (i > ndim/2) zn_indx = 2
 
-    ener_qp(i) = (1 - rhoc(i,i)))*hspc(i, i)!eigen_H11(i) !+ lambdaFer_DD(zn_indx)
+    ener_qp(i) = (1 - rhoc(i,i))*hspc(i, i)!eigen_H11(i) !+ lambdaFer_DD(zn_indx)
     if (ener_qp(i) .GT. CUTOFF_ENERGY_MAX) excluded_qp_indx(i) = .TRUE.
 
-    if (PRINT_GUTS) write(623,fmt='(I5,4F15.9,L3)')
+    if (PRINT_GUTS) write(623,fmt='(I5,4F15.9,L3)') &
         i, rhoc(i,i), &
         !dreal(V2(i,i)), &
         hspc(i, i), &
@@ -1626,9 +1627,9 @@ else
         if (excluded_qp_indx(k)) cycle
         do l = 1, ndim
           bdbb = bdbd + URc(j,l) * VRc(i,k)
-          bdb  = bdb  + URc(j,l) * V  (i,k)
-          bbd  = bbb  + V  (j,l) * VRc(i,k)
-          bb   = bb   + V  (j,l) * U  (i,k)
+          bdb  = bdb  + URc(j,l) * VR (i,k)
+          bbd  = bbd  + VR (j,l) * VRc(i,k)
+          bb   = bb   + VR (j,l) * UR (i,k)
         end do
       end do
       rhoLR  (i,j) = rhoLR  (i,j) + (bdbd + bdb + bbd + bb)
@@ -1641,9 +1642,9 @@ else
         if (excluded_qp_indx(k)) cycle
         do l = 1, ndim
           bdbb = bdbd + VRc(j,l) * VRc(i,k)
-          bdb  = bdb  + VRc(j,l) * U  (i,k)
-          bbd  = bbb  + U  (j,l) * VRc(i,k)
-          bb   = bb   + U  (j,l) * U  (i,k)
+          bdb  = bdb  + VRc(j,l) * UR (i,k)
+          bbd  = bbd  + UR (j,l) * VRc(i,k)
+          bb   = bb   + UR (j,l) * UR (i,k)
         end do
       end do
       kappaLR(i,j) = kappaLR(i,j) + (bdbd + bdb + bbd + bb)
@@ -1655,9 +1656,9 @@ else
         if (excluded_qp_indx(k)) cycle
         do l = 1, ndim
           bdbb = bdbd + URc(j,l) * URc(i,k)
-          bdb  = bdb  + V  (j,l) * URc(i,k)
-          bbd  = bbb  + URc(j,l) * V  (i,k)
-          bb   = bb   + V  (j,l) * V  (i,k)
+          bdb  = bdb  + VR (j,l) * URc(i,k)
+          bbd  = bbd  + URc(j,l) * VR (i,k)
+          bb   = bb   + VR (j,l) * VR (i,k)
         end do
       end do
       kappaRL(i,j) = kappaRL(i,j) + (bdbd + bdb + bbd + bb)
