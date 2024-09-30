@@ -18,6 +18,7 @@ MODULE DensityDep
 use Constants
 use MathMethods
 use Basis
+use Wavefunctions
 use Hamiltonian
 use Fields
 use Lebedev
@@ -1457,21 +1458,16 @@ complex(r64), dimension(ndim,ndim), intent(in) :: UL, VL, UR, VR
 complex(r64), dimension(ndim,ndim), intent(in) :: rho0LR, kappa0LR, kappa0RL
 complex(r64), dimension(ndim,ndim) :: URc, VRc, ULc, V2
 real(r64), dimension(ndim) :: eigen_H11, ener_qp
+real(r64), dimension(ndim,ndim) :: D0, rhoc, hspc, A1, A2
+complex(r64) :: bdbd, bdb, bbd, bb
 logical,   dimension(ndim) :: excluded_qp_indx
 integer :: info_H11, ialloc = 0
 real(r64), dimension(3*ndim-1) :: work
-integer :: i, j, k, zn_indx
+integer :: i, j, k, l, zn_indx, nocc0,nemp0
 
 
 if ((.NOT. EVAL_CUTOFF).OR.(iteration .EQ. 1)) then
   !! Just update with the main
-!  do i = 1, ndim
-!    do j = 1, ndim
-!      rhoLR  (i,j) = rho0LR(i,j)
-!      kappaLR(i,j) = kappa0LR(i,j)
-!      kappaRL(i,j) = kappa0RL(i,j)
-!    end do
-!  end do
   rhoLR   = rho0LR
   kappaLR = kappa0LR
   kappaRL = kappa0RL
@@ -1480,7 +1476,7 @@ else
   if (PRINT_GUTS) then
     open (623, file='cutoff_elements.gut')
     open (624, file='RHOKAPPA_withCutoff.gut')
-    write(623,fmt='(A)')  "k, V^2(k,k), H11_eig(k), L_Ferm, e_cutoff, excluded"
+    write(623,fmt='(A)')  "k, V^2(k,k), h_eig(k), L_Ferm, e_cutoff, excluded"
     write(623,fmt='(A,I5)') "  ITER=", iteration
     write(624,fmt='(A)')  "i, j, REAL: rho/rho0, kpa/kpa_LR, kpa/kpa_RL,  IMAG"
   endif
@@ -1500,27 +1496,171 @@ else
   call calculate_fields_diag(rho0LR, kappa0LR, field_gammaLR, field_hspLR, &
                              field_deltaLR, field_deltaRL, ndim)
   field_hspRR   = real(field_hspLR) + field_gammaRR_DD + field_rearrRR_DD
-  call dsyev('v','u',ndim,field_hspRR,ndim,eigen_H11,work,3*ndim-1,info_H11)
+  !call dsyev('v','u',ndim,field_hspRR,ndim,eigen_H11,work,3*ndim-1,info_H11)
+
+  !!!! =====================================================================
+  !!! CALCULATE THE CANONICAL BASIS
+
+  call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
+                                 ovac0,nocc0,nemp0,ndim)
+  D0 = real(bogo_zD0)
+
+  call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_rhoRR,ndim,zero,A1,ndim)
+  call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,rhoc,ndim)
+
+  call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,field_hspRR,ndim,zero,A1,ndim)
+  call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
+
+
+  ! =====================================================================================
+
+  !!! Further reduces h in case of fully empty/occupides states
+!  if ( nemp0 > 0 ) then
+!    allocate (hspr(nemp0,nemp0), eigenr(nemp0),workr(3*nemp0-1))
+!    hspr(1:nemp0,1:nemp0) = hspc(1:nemp0,1:nemp0)
+!    call dsyev('v','u',nemp0,hspr,nemp0,eigenr,workr,3*nemp0-1,info_hsp)
+!    A1 = zero
+!    A2 = D0
+!    do i = 1, ndim
+!      A1(i,i) = one
+!    enddo
+!    A1(1:nemp0,1:nemp0) = hspr(1:nemp0,1:nemp0)
+!    call dgemm('n','n',ndim,ndim,ndim,one,A2,ndim,A1,ndim,zero,D0,ndim)
+!    deallocate(hspr, eigenr, workr)
+!  endif
+!
+!  if ( nocc0 > 0 ) then
+!    allocate (hspr(nocc0,nocc0), eigenr(nocc0),workr(3*nocc0-1))
+!    hspr(1:nocc0,1:nocc0) = hspc(ndim-nocc0+1:ndim,ndim-nocc0+1:ndim)
+!    call dsyev('v','u',nocc0,hspr,nocc0,eigenr,workr,3*nocc0-1,info_hsp)
+!    A1 = zero
+!    A2 = D0
+!    do i = 1, ndim
+!      A1(i,i) = one
+!    enddo
+!    A1(ndim-nocc0+1:ndim,ndim-nocc0+1:ndim) = hspr(1:nocc0,1:nocc0)
+!    call dgemm('n','n',ndim,ndim,ndim,one,A2,ndim,A1,ndim,zero,D0,ndim)
+!    deallocate(hspr, eigenr, workr)
+!  endif
+!
+!  call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,field_hspRR,ndim,zero,A1,ndim)
+!  call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
+
+  ! =====================================================================================
+!
+!
+!  !!! Ordering of energies
+!  l = 0
+!  eigenh_order = 0
+!  eigenh_tmp = 999
+!
+!  do i = 1, ndim
+!    if ( abs(rhoc(i,i)) > 1.d-7 ) then
+!      l = l + 1
+!      eigenh_tmp(i) = hspc(i,i)
+!    endif
+!  enddo
+!
+!  do i = 1, l
+!    tabmin = minloc(eigenh_tmp)
+!    eigenh_order(i) = tabmin(1)
+!    eigenh_tmp(tabmin(1)) = 1000
+!  enddo
+!
+!  eigenh_tmp = 999
+!
+!  do i = 1, ndim
+!    if ( abs(rhoc(i,i)) <= 1.d-7 ) then
+!      eigenh_tmp(i) = hspc(i,i)
+!    endif
+!  enddo
+!
+!  do i = l+1, ndim
+!    tabmin = minloc(eigenh_tmp)
+!    eigenh_order(i) = tabmin(1)
+!    eigenh_tmp(tabmin(1)) = 1000
+!  enddo
+
+  !!--------------------------------------------------------------------
+
+
+!  do i = 1, ndim
+!    open(ute, file='canonicalbasis.dat', status='replace', action='write', &
+!           form='formatted')
+!    k = eigenh_order(i)
+!
+!!    write(ute,format1) i, xprot, xneut, xn, xl, xpar, xj, xjz, rhoc(k,k), &
+!!                       hspc(k,k)
+!  enddo
+  !!--------------------------------------------------------------
 
   do i = 1, ndim
     zn_indx = 1
     if (i > ndim/2) zn_indx = 2
 
-    ener_qp(i) = (1 - 2*V2(i,i))*eigen_H11(i) + lambdaFer_DD(zn_indx)
+    ener_qp(i) = (1 - rhoc(i,i)))*hspc(i, i)!eigen_H11(i) !+ lambdaFer_DD(zn_indx)
     if (ener_qp(i) .GT. CUTOFF_ENERGY_MAX) excluded_qp_indx(i) = .TRUE.
 
-    if (PRINT_GUTS) write(623,fmt='(I5,4F15.9,L3)')     i, dreal(V2(i,i)), &
-        eigen_H11(i), lambdaFer_DD(zn_indx), ener_qp(i), excluded_qp_indx(i)
-  end do
+    if (PRINT_GUTS) write(623,fmt='(I5,4F15.9,L3)')
+        i, rhoc(i,i), &
+        !dreal(V2(i,i)), &
+        hspc(i, i), &
+        !eigen_H11(i), &
+        lambdaFer_DD(zn_indx), ener_qp(i), excluded_qp_indx(i)
+  enddo
 
   do i = 1, ndim
     do j = 1, ndim
+!      do k = 1, ndim
+!        if (excluded_qp_indx(k)) cycle
+!        rhoLR  (i,j) = rhoLR  (i,j) + VRc(i,k) * VL (j,k)
+!        kappaLR(i,j) = kappaLR(i,j) + VRc(i,k) * UL (j,k)
+!        kappaRL(i,j) = kappaRL(i,j) + VL (i,k) * URc(j,k)
+!      enddo
+      !! Exclusion from the rho-kappa definition
+      bdbd = zzero
+      bdb  = zzero
+      bbd  = zzero
+      bb   = zzero
       do k = 1, ndim
         if (excluded_qp_indx(k)) cycle
-        rhoLR  (i,j) = rhoLR  (i,j) + VRc(i,k) * VL (j,k)
-        kappaLR(i,j) = kappaLR(i,j) + VRc(i,k) * UL (j,k)
-        kappaRL(i,j) = kappaRL(i,j) + VL (i,k) * URc(j,k)
+        do l = 1, ndim
+          bdbb = bdbd + URc(j,l) * VRc(i,k)
+          bdb  = bdb  + URc(j,l) * V  (i,k)
+          bbd  = bbb  + V  (j,l) * VRc(i,k)
+          bb   = bb   + V  (j,l) * U  (i,k)
+        end do
       end do
+      rhoLR  (i,j) = rhoLR  (i,j) + (bdbd + bdb + bbd + bb)
+      !! kappa
+      bdbd = zzero
+      bdb  = zzero
+      bbd  = zzero
+      bb   = zzero
+      do k = 1, ndim
+        if (excluded_qp_indx(k)) cycle
+        do l = 1, ndim
+          bdbb = bdbd + VRc(j,l) * VRc(i,k)
+          bdb  = bdb  + VRc(j,l) * U  (i,k)
+          bbd  = bbb  + U  (j,l) * VRc(i,k)
+          bb   = bb   + U  (j,l) * U  (i,k)
+        end do
+      end do
+      kappaLR(i,j) = kappaLR(i,j) + (bdbd + bdb + bbd + bb)
+      bdbd = zzero
+      bdb  = zzero
+      bbd  = zzero
+      bb   = zzero
+      do k = 1, ndim
+        if (excluded_qp_indx(k)) cycle
+        do l = 1, ndim
+          bdbb = bdbd + URc(j,l) * URc(i,k)
+          bdb  = bdb  + V  (j,l) * URc(i,k)
+          bbd  = bbb  + URc(j,l) * V  (i,k)
+          bb   = bb   + V  (j,l) * V  (i,k)
+        end do
+      end do
+      kappaRL(i,j) = kappaRL(i,j) + (bdbd + bdb + bbd + bb)
 
       if(PRINT_GUTS) then
         write(624,fmt='(5I5,6F15.9,A,6F15.9)') i, j, &
