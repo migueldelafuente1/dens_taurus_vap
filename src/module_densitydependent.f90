@@ -1467,7 +1467,7 @@ real(r64) :: ovac0
 integer   :: i, j, k, l, zn_indx, nocc0,nemp0
 
 
-if ((.NOT. EVAL_CUTOFF).OR.(iteration .EQ. 1)) then
+if ((.TRUE.).OR.(.NOT. EVAL_CUTOFF).OR.(iteration .EQ. 1)) then
   !! Just update with the main
   rhoLR   = rho0LR
   kappaLR = kappa0LR
@@ -3413,8 +3413,7 @@ end subroutine complete_DD_fields
 subroutine calculate_fields_DD(gammaLR,hspLR,deltaLR,deltaRL,ndim)
 
 integer, intent(in) :: ndim
-complex(r64), dimension(ndim,ndim)             :: gammaLR, hspLR, deltaLR, &
-                                                  deltaRL
+complex(r64), dimension(ndim,ndim) :: gammaLR, hspLR, deltaLR, deltaRL
 !! The density fields are added to the calculated with the standard hamiltonian
 !! This array variables are local
 complex(r64), dimension(ndim,ndim) :: gammaLR_DD, deltaLR_DD, deltaRL_DD
@@ -3647,6 +3646,12 @@ do a = 1, spO2
   enddo
 enddo
 
+if (EVAL_CUTOFF) then
+  call filter_fields_for_cutoff(gammaLR, deltaLR, deltaRL,&
+                                hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, &
+                                ndim)
+endif
+
 !! save the last EDF HFB of the DD term
 last_HFB_energy = zero
 if (evalQuasiParticleVSpace .OR. exportValSpace) then
@@ -3721,6 +3726,80 @@ endif
 
 end subroutine calculate_fields_DD
 
+!-----------------------------------------------------------------------------!
+! subroutine to transform the final fields into the canonical basis and evaluate
+! the sp energies valid to exclude the cutoff energy.
+!-----------------------------------------------------------------------------!
+subroutine filter_fields_for_cutoff(gammaLR, deltaLR, deltaRL,&
+                                    hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD,&
+                                    ndim)
+integer, intent(in) :: ndim
+complex(r64), dimension(ndim,ndim):: gammaLR, hspLR, deltaLR, deltaRL
+!! The density fields are added to the calculated with the standard hamiltonian
+!! This array variables are local
+complex(r64), dimension(ndim,ndim) :: gammaLR_DD, deltaLR_DD, deltaRL_DD
+
+complex(r64), dimension(ndim,ndim) :: gammaLR0, deltaLR0, deltaRL0, hspLR0
+complex(r64), dimension(ndim,ndim) :: gammaLR_DD_c, deltaLR_DD_c, deltaRL_DD_c
+
+complex(r64), dimension(ndim,ndim), intent(in) :: rho0LR, kappa0LR, kappa0RL, &
+                                                  hspRR
+real(r64),    dimension(ndim,ndim) :: D0, rhoc, kapc, Gamc, Delc hspc, A1, A2
+real(r64) :: ovac0
+integer   :: i, j, k ,l, zn_indx, nocc0,nemp0
+
+do i = 1, ndim
+  do j = 1, ndim
+    gammaLR0(i, j) = gammaLR(i, j) - gammaLR_DD(i, j)
+    deltaLR0(i, j) = deltaLR(i, j) - deltaLR_DD(i, j)
+    deltaRL0(i, j) = deltaRL(i, j) - deltaRL_DD(i, j)
+    hspLR0  (i, j) = hspLR  (i, j) - gammaLR_DD(i, j) - rearrang_field(i, j)
+  end do
+end do
+
+gammaRR_DD_c = real(gammaLR_DD)
+deltaRR_DD_c = real(deltaLR_DD)
+!deltaRR_DD_c = real(deltaRL_DD)
+hspRR        = real(hspLR)
+
+!call calculate_fields_diag(rho0LR, kappa0LR, field_gammaLR, field_hspLR, &
+!                           field_deltaLR, field_deltaRL, ndim)
+!field_hspRR   = real(field_hspLR) + field_gammaRR_DD + field_rearrRR_DD
+!call dsyev('v','u',ndim,field_hspRR,ndim,eigen_H11,work,3*ndim-1,info_H11)
+
+!!!! =====================================================================
+!!! CALCULATE THE CANONICAL BASIS
+call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
+                               ovac0,nocc0,nemp0,ndim)
+D0 = real(bogo_zD0)
+
+call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_rhoRR,ndim,zero,A1,ndim)
+call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,rhoc,ndim)
+
+call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_kappaRR,ndim,zero,A1,ndim)
+call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,kapc,ndim)
+
+call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,hspRR,ndim,zero,A1,ndim)
+call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
+
+call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,gammaRR_DD_c,ndim,zero,A1,ndim)
+call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,Gamc,ndim)
+
+call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,deltaRR_DD_c,ndim,zero,A1,ndim)
+call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,Delc,ndim)
+
+open(333, file='_cannonicalFields_rhokapa.gut')
+do i = 1, ndim
+  do j = 1, ndim
+    write(333,fmt='(2I5,6F15.5)') i, j , D0(i,j), rhoc(i,j), kapc(i,j), &
+                                  hspc(i,j), Gamc(i,j), Delc(i,j)
+  end do
+end do
+close(333)
+print "(A)", "  - calculate cannonical basis [DONE]"
+
+
+end subroutine filter_fields_for_cutoff
 
 !-----------------------------------------------------------------------------!
 ! subroutine to print the progress of iter/iter_max as a progress bar         !
