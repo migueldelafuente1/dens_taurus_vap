@@ -3740,7 +3740,7 @@ complex(r64), dimension(ndim,ndim):: gammaLR, hspLR, deltaLR, deltaRL
 complex(r64), dimension(ndim,ndim) :: gammaLR_DD, deltaLR_DD, deltaRL_DD
 
 complex(r64), dimension(ndim,ndim) :: gammaLR0, deltaLR0, deltaRL0, hspLR0
-complex(r64), dimension(ndim,ndim) :: gammaLR_DD_co,deltaLR_DD_co,deltaRL_DD_co
+real(r64), dimension(ndim,ndim) :: gammaLR_DD_co, deltaLR_DD_co, deltaRL_DD_co
 
 complex(r64), dimension(ndim,ndim), intent(in) :: rho0LR, kappa0LR, kappa0RL
 real(r64),    dimension(ndim,ndim) :: D0, rhoc, kapc, Gamc, Delc, hspc, &
@@ -3782,10 +3782,10 @@ call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,kapc,ndim)
 call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,hspRR,ndim,zero,A1,ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
 
-call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,gammaRR_DD_c,ndim,zero,A1,ndim)
+call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,gammaRR_DD_co,ndim,zero,A1,ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,Gamc,ndim)
 
-call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,deltaRR_DD_c,ndim,zero,A1,ndim)
+call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,deltaRR_DD_co,ndim,zero,A1,ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,Delc,ndim)
 
 open(333, file='_cannonicalFields_rhokapa.gut')
