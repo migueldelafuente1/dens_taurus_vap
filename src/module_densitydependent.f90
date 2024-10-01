@@ -3740,10 +3740,9 @@ complex(r64), dimension(ndim,ndim):: gammaLR, hspLR, deltaLR, deltaRL
 complex(r64), dimension(ndim,ndim) :: gammaLR_DD, deltaLR_DD, deltaRL_DD
 
 complex(r64), dimension(ndim,ndim) :: gammaLR0, deltaLR0, deltaRL0, hspLR0
-complex(r64), dimension(ndim,ndim) :: gammaLR_DD_c, deltaLR_DD_c, deltaRL_DD_c
+complex(r64), dimension(ndim,ndim) :: gammaLR_DD_co,deltaLR_DD_co,deltaRL_DD_co
 
-complex(r64), dimension(ndim,ndim), intent(in) :: rho0LR, kappa0LR, kappa0RL, &
-                                                  hspLR0
+complex(r64), dimension(ndim,ndim), intent(in) :: rho0LR, kappa0LR, kappa0RL
 real(r64),    dimension(ndim,ndim) :: D0, rhoc, kapc, Gamc, Delc, hspc, &
                                       A1, A2, hspRR
 real(r64) :: ovac0
