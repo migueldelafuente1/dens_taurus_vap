@@ -3743,8 +3743,9 @@ complex(r64), dimension(ndim,ndim) :: gammaLR0, deltaLR0, deltaRL0, hspLR0
 complex(r64), dimension(ndim,ndim) :: gammaLR_DD_c, deltaLR_DD_c, deltaRL_DD_c
 
 complex(r64), dimension(ndim,ndim), intent(in) :: rho0LR, kappa0LR, kappa0RL, &
-                                                  hspRR
-real(r64),    dimension(ndim,ndim) :: D0, rhoc, kapc, Gamc, Delc, hspc, A1, A2
+                                                  hspLR0
+real(r64),    dimension(ndim,ndim) :: D0, rhoc, kapc, Gamc, Delc, hspc, &
+                                      A1, A2, hspRR
 real(r64) :: ovac0
 integer   :: i, j, k ,l, zn_indx, nocc0,nemp0
 
