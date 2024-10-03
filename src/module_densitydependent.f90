@@ -3782,8 +3782,7 @@ hspRR        = real(hspLR)
 !D0 = real(bogo_zD0)
 
 do T = 1, 3 ! pp, nn, pn
-
-it = 0,
+it = 0
 jt = 0
 if ((T .EQ. 2) .OR. (T .EQ. 3)) jt = ndim/2
 if (T .EQ. 2) it = ndim/2
