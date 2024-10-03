@@ -3752,10 +3752,14 @@ real(r64), dimension(ndim/2,ndim/2) :: bogo_U0_2,bogo_V0_2
 complex(r64), dimension(ndim/2,ndim/2) :: bogo_zU0c_2,bogo_zV0c_2,bogo_zD0_2
 
 real(r64),    dimension(ndim,ndim) :: D0, rhoc, kapc, Gamc, Delc, hspc, &
-                                      A1, A2, hspRR
-real(r64) :: ovac0
-integer   :: i, j, k ,l, zn_indx, nocc0,nemp0, T, it, jt
+                                      A1, A2, hspRR, &
+                                      D02, rhoc2, kapc2, Gamc2, Delc2, hspc2, &
+                                      A12, A22
 
+real(r64) :: ovac0
+integer   :: i, j, k ,l, zn_indx, nocc0,nemp0, T, it, jt, n1o2
+
+n1o2 = n1o2
 do i = 1, ndim
   do j = 1, ndim
     gammaLR0(i, j) = gammaLR(i, j) - gammaLR_DD(i, j)
@@ -3782,52 +3786,92 @@ hspRR        = real(hspLR)
 !D0 = real(bogo_zD0)
 
 do T = 1, 3 ! pp, nn, pn
-it = 0
-jt = 0
-if ((T .EQ. 2) .OR. (T .EQ. 3)) jt = ndim/2
-if (T .EQ. 2) it = ndim/2
+  it = 0
+  jt = 0
+  if ((T .EQ. 2) .OR. (T .EQ. 3)) jt = n1o2
+  if  (T .EQ. 2) it = n1o2
 
-do i = 1, ndim/2
-  do j = 1, ndim/2
-    bogo_U0_2(i,j) = bogo_U0(i+it,j+jt)
-    bogo_V0_2(i,j) = bogo_V0(i+it,j+jt)
+  do i = 1, n1o2
+    do j = 1, n1o2
+      bogo_U0_2(i,j) = bogo_U0(i+it,j+jt)
+      bogo_V0_2(i,j) = bogo_V0(i+it,j+jt)
+    enddo
   enddo
-enddo
-call construct_canonical_basis(bogo_U0_2,bogo_V0_2,bogo_zU0c_2,bogo_zV0c_2, &
-                               bogo_zD0_2, ovac0,nocc0,nemp0,ndim/2)
-do i = 1, ndim/2
-  do j = 1, ndim/2
-    if (T.EQ.1) D0_pp(i,j) = real(bogo_zD0_2(i+it,j+jt))
-    if (T.EQ.2) D0_nn(i,j) = real(bogo_zD0_2(i+it,j+jt))
-    if (T.EQ.3) D0_pn(i,j) = real(bogo_zD0_2(i+it,j+jt))
+  call construct_canonical_basis(bogo_U0_2,bogo_V0_2,bogo_zU0c_2,bogo_zV0c_2,&
+                                 bogo_zD0_2, ovac0,nocc0,nemp0,n1o2)
+  do i = 1, n1o2
+    do j = 1, n1o2
+      if (T.EQ.1) D0_pp(i,j) = real(bogo_zD0_2(i,j))
+      if (T.EQ.2) D0_nn(i,j) = real(bogo_zD0_2(i,j))
+      if (T.EQ.3) D0_pn(i,j) = real(bogo_zD0_2(i,j))
+      D02(i,j) = real(bogo_zD0_2(i,j))
 
-    if (T.EQ.1) D0(i+it,j+jt) = D0_pp(i,j)
-    if (T.EQ.2) D0(i+it,j+jt) = D0_nn(i,j)
-    if (T.EQ.3) then
-      D0(i+it,j+jt) = D0_pn(i,j)
-      D0(i+jt,j+it) = D0_pn(i,j)
-    endif
+      if (T.EQ.1) D0(i+it,j+jt) = D0_pp(i,j)
+      if (T.EQ.2) D0(i+it,j+jt) = D0_nn(i,j)
+      if (T.EQ.3) then
+        D0(i+it,j+jt) = D0_pn(i,j)
+        D0(i+jt,j+it) = D0_pn(i,j)
+      endif
+
+      rhoc2(i,j) = dens_rhoRR(i+it,j+jt)
+      kapc2(i,j) = dens_kappaRR(i+it,j+jt)
+      Gamc2(i,j) = gammaRR_DD_co(i+it,j+jt)
+      Delc2(i,j) = deltaRR_DD_co(i+it,j+jt)
+      hspc2(i,j) = hspRR(i+it,j+jt)
+    end do
   end do
-end do
 
-end do
+  call dgemm('t','n',n1o2,n1o2,n1o2,one,D02,n1o2,rhoc2,n1o2,zero,A12,n1o2)
+  call dgemm('n','n',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,rhoc2,n1o2)
+
+  call dgemm('t','n',n1o2,n1o2,n1o2,one,D02,n1o2,kapc2,n1o2,zero,A12,n1o2)
+  call dgemm('n','n',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,kapc2,n1o2)
+
+  call dgemm('t','n',n1o2,n1o2,n1o2,one,D02,n1o2,hspc2,n1o2,zero,A12,n1o2)
+  call dgemm('n','n',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,hspc2,n1o2)
+
+  call dgemm('t','n',n1o2,n1o2,n1o2,one,D02,n1o2,Gamc2,n1o2,zero,A12,n1o2)
+  call dgemm('n','n',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,Gamc2,n1o2)
+
+  call dgemm('t','n',n1o2,n1o2,n1o2,one,D02,n1o2,Delc2,n1o2,zero,A12,n1o2)
+  call dgemm('n','n',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,Delc2,n1o2)
+
+
+  do i = 1, n1o2
+    do j = 1, n1o2
+
+      if (T.EQ.1) D0(i+it,j+jt) = D0_pp(i,j)
+      if (T.EQ.2) D0(i+it,j+jt) = D0_nn(i,j)
+      if (T.EQ.3) then
+        D0(i+it,j+jt) = D0_pn(i,j)
+        D0(i+jt,j+it) = D0_pn(i,j)
+      endif
+
+      rhoc(i+it,j+jt) = rhoc2(i,j)
+      kapc(i+it,j+jt) = kapc2(i,j)
+      Gamc(i+it,j+jt) = Gamc2(i,j)
+      Delc(i+it,j+jt) = Delc2(i,j)
+      hspc(i+it,j+jt) = hspc2(i,j)
+    end do
+  end do
+end do ! T loop
 
 
 
-call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_rhoRR,ndim,zero,A1,ndim)
-call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,rhoc,ndim)
-
-call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_kappaRR,ndim,zero,A1,ndim)
-call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,kapc,ndim)
-
-call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,hspRR,ndim,zero,A1,ndim)
-call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
-
-call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,gammaRR_DD_co,ndim,zero,A1,ndim)
-call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,Gamc,ndim)
-
-call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,deltaRR_DD_co,ndim,zero,A1,ndim)
-call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,Delc,ndim)
+!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_rhoRR,ndim,zero,A1,ndim)
+!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,rhoc,ndim)
+!
+!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_kappaRR,ndim,zero,A1,ndim)
+!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,kapc,ndim)
+!
+!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,hspRR,ndim,zero,A1,ndim)
+!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
+!
+!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,gammaRR_DD_co,ndim,zero,A1,ndim)
+!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,Gamc,ndim)
+!
+!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,deltaRR_DD_co,ndim,zero,A1,ndim)
+!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,Delc,ndim)
 
 open(333, file='_cannonicalFields_rhokapa.gut')
 do i = 1, ndim
