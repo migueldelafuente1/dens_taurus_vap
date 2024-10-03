@@ -3742,11 +3742,19 @@ complex(r64), dimension(ndim,ndim) :: gammaLR_DD, deltaLR_DD, deltaRL_DD
 complex(r64), dimension(ndim,ndim) :: gammaLR0, deltaLR0, deltaRL0, hspLR0
 real(r64), dimension(ndim,ndim) :: gammaRR_DD_co, deltaRR_DD_co
 
-complex(r64), dimension(ndim,ndim) :: rho0LR, kappa0LR, kappa0RL
+complex(r64), dimension(ndim,ndim)  :: rho0LR, kappa0LR, kappa0RL
+real(r64), dimension(ndim/2,ndim/2) :: D0_pp, D0_nn, D0_pn
+real(r64), dimension(ndim/2,ndim/2) :: rhoc_pp, rhoc_nn, rhoc_pn
+real(r64), dimension(ndim/2,ndim/2) :: kapc_pp, kapc_nn, kapc_pn
+real(r64), dimension(ndim/2,ndim/2) :: hspc_pp, hspc_nn, hspc_pn
+real(r64), dimension(ndim/2,ndim/2) :: Delc_pp, Delc_nn, Delc_pn
+real(r64), dimension(ndim/2,ndim/2) :: bogo_U0_2,bogo_V0_2
+complex(r64), dimension(ndim/2,ndim/2) :: bogo_zU0c_2,bogo_zV0c_2,bogo_zD0_2
+
 real(r64),    dimension(ndim,ndim) :: D0, rhoc, kapc, Gamc, Delc, hspc, &
                                       A1, A2, hspRR
 real(r64) :: ovac0
-integer   :: i, j, k ,l, zn_indx, nocc0,nemp0
+integer   :: i, j, k ,l, zn_indx, nocc0,nemp0, T, it, jt
 
 do i = 1, ndim
   do j = 1, ndim
@@ -3769,9 +3777,43 @@ hspRR        = real(hspLR)
 
 !!!! =====================================================================
 !!! CALCULATE THE CANONICAL BASIS
-call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
-                               ovac0,nocc0,nemp0,ndim)
-D0 = real(bogo_zD0)
+!call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
+!                               ovac0,nocc0,nemp0,ndim)
+!D0 = real(bogo_zD0)
+
+do T = 1, 3 ! pp, nn, pn
+
+it = 0,
+jt = 0
+if ((T .EQ. 2) .OR. (T .EQ. 3)) jt = ndim/2
+if (T .EQ. 2) it = ndim/2
+
+do i = 1, ndim/2
+  do j = 1, ndim/2
+    bogo_U0_2(i,j) = bogo_U0(i+it,j+jt)
+    bogo_V0_2(i,j) = bogo_V0(i+it,j+jt)
+  enddo
+enddo
+call construct_canonical_basis(bogo_U0_2,bogo_V0_2,bogo_zU0c_2,bogo_zV0c_2, &
+                               bogo_zD0_2, ovac0,nocc0,nemp0,ndim/2)
+do i = 1, ndim/2
+  do j = 1, ndim/2
+    if (T.EQ.1) D0_pp(i,j) = real(bogo_zD0_2(i+it,j+jt))
+    if (T.EQ.2) D0_nn(i,j) = real(bogo_zD0_2(i+it,j+jt))
+    if (T.EQ.3) D0_pn(i,j) = real(bogo_zD0_2(i+it,j+jt))
+
+    if (T.EQ.1) D0(i+it,j+jt) = D0_pp(i,j)
+    if (T.EQ.2) D0(i+it,j+jt) = D0_nn(i,j)
+    if (T.EQ.3) then
+      D0(i+it,j+jt) = D0_pn(i,j)
+      D0(i+jt,j+it) = D0_pn(i,j)
+    endif
+  end do
+end do
+
+end do
+
+
 
 call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_rhoRR,ndim,zero,A1,ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,rhoc,ndim)
@@ -3797,6 +3839,7 @@ do i = 1, ndim
 end do
 close(333)
 print "(A)", "  - calculate cannonical basis [DONE]"
+
 
 
 end subroutine filter_fields_for_cutoff
