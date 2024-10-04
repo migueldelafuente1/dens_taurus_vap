@@ -3754,8 +3754,8 @@ complex(r64), dimension(ndim/2,ndim/2) :: bogo_zU0c_2,bogo_zV0c_2,bogo_zD0_2
 real(r64),    dimension(ndim,ndim) :: D0, rhoc, kapc, Gamc, Delc, hspc, &
                                       A1, A2, hspRR
 
-complex(r64), dimension(ndim/2,ndim/2) :: D02, rhoc2, kapc2, Gamc2, Delc2, &
-                                          hspc2, A12, A22
+real(r64), dimension(ndim/2,ndim/2) :: D02, rhoc2, kapc2, Gamc2, Delc2, &
+                                       hspc2, A12, A22
 
 real(r64) :: ovac0, e_fermi, VAL_T
 integer   :: i, j, k ,l, zn_indx, nocc0,nemp0, T, it, jt, n1o2
@@ -3885,9 +3885,9 @@ do T = 1, 2
   do while ((ovac0 <= VAL_T) .OR. (k > n1o2))
     k = k + 1
 
-    ovac0 += rhoc(k,k)
+    ovac0 = ovac0 + rhoc(k,k)
     if (ovac0 <= VAL_T) then
-      print "(I3,A,I5,2F15.5)", T,".Occupation filled at k=", k, ovac0, VAT_T
+      print "(I3,A,I5,2F15.5)", T,".Occupation filled at k=", k, ovac0, VAL_T
     end if
   end do
 end do ! T loop
