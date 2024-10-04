@@ -800,16 +800,14 @@ endif
 
 !!! Builds the density rho, then diagonalizes it, then transforms rho in the
 !!! basis where it is diagonal.
-print "(A,I4)", "0, ndim=", ndim
 call dgemm('n','t',ndim,ndim,ndim,one,V,ndim,V,ndim,zero,rho,ndim)
-print "(A)", "1"
 
 Dc = rho
 call dsyev('V','U',ndim,Dc,ndim,eigen_rho,work1,3*ndim-1,info)
 
 call dgemm('t','n',ndim,ndim,ndim,one,Dc,ndim,rho,ndim,zero,A1,ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,Dc,ndim,zero,rhoc,ndim)
-print "(A)", "2"
+
 !!! Counts the number of occupied/empty single-particle states. To determine if
 !!! a state is occupied/empty, we use a cutoff: eps.
 !!! Then computes the overlap of the fully paired part with the bare vacuum. As
@@ -838,7 +836,7 @@ enddo
 call dgemm('n','t',ndim,ndim,ndim,one,V,ndim,U,ndim,zero,kappa,ndim)
 call dgemm('t','n',ndim,ndim,ndim,one,Dc,ndim,kappa,ndim,zero,A1,ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,Dc,ndim,zero,kappac,ndim)
-print "(A)", "3"
+
 !!! Checks if the kappa is already in its canonical form by counting the number
 !!! of non-zero marix in a column of kappac. If it is greater than one (i.e.
 !!! the dimension of the subspace subdim > 2), we need to further reduce kappac.
@@ -912,7 +910,7 @@ if ( maxval(subdim) > 2 ) then
   call dgemm('n','n',ndim,ndim,ndim,one,Dc,ndim,A1,ndim,zero,A2,ndim)
   Dc = A2
 endif
-print "(A)", "4"
+
 zDc = zone * Dc
 
 !!! Construct U and V in the canonical basis. Note that as we know rho/kappa in
