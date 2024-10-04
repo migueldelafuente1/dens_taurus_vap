@@ -3760,7 +3760,7 @@ real(r64), dimension(ndim/2,ndim/2) :: D02, rhoc2, kapc2, Gamc2, Delc2, &
 real(r64) :: ovac0, e_fermi, VAL_T
 integer   :: i, j, k ,l, zn_indx, nocc0,nemp0, T, it, jt, n1o2
 
-n1o2 = n1o2
+n1o2 = ndim / 2
 do i = 1, ndim
   do j = 1, ndim
     gammaLR0(i, j) = gammaLR(i, j) - gammaLR_DD(i, j)
