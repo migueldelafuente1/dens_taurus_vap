@@ -800,6 +800,7 @@ endif
 
 !!! Builds the density rho, then diagonalizes it, then transforms rho in the
 !!! basis where it is diagonal.
+print "(A,I4)", "0, ndim=", ndim
 call dgemm('n','t',ndim,ndim,ndim,one,V,ndim,V,ndim,zero,rho,ndim)
 print "(A)", "1"
 
