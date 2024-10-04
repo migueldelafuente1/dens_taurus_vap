@@ -20,7 +20,7 @@
 ! - subroutine calculate_densities_real                                        !
 ! - subroutine calculate_spatial_density                                       !
 !==============================================================================!
-MODULE Wavefunctions 
+MODULE Wavefunctions
 
 use Basis
 
@@ -33,13 +33,13 @@ integer(i64) :: bogo_label
 !!! Parameters that determines the seed wave function
 integer :: seed_type,   & ! type of seed
            seed_rand,   & ! seed to initialize the random generation
-           seed_text,   & ! format of seed 
+           seed_text,   & ! format of seed
            seed_symm,   & ! option to check the symmetries
            seed_allemp, & ! option to include the empty states (overlap)
            blocking_dim   ! number of quasiparticle to block
-integer, dimension(:), allocatable :: blocking_id ! indices to block 
+integer, dimension(:), allocatable :: blocking_id ! indices to block
 real(r64) :: seed_occeps ! cutoff for occupied single-particle states
-                
+
 !!! Bogoliubov matrices
 integer :: bogo_nparity ! Number parity of the state
 real(r64), dimension(:,:), allocatable :: bogo_U0, & ! U present iteration
@@ -49,18 +49,18 @@ real(r64), dimension(:,:), allocatable :: bogo_U0, & ! U present iteration
 complex(r64), dimension(:,:), allocatable :: bogo_zU0,  & ! U present iteration
                                              bogo_zV0,  & ! V    "       "
                                              bogo_zU0c, & ! U canonical basis
-                                             bogo_zV0c, & ! V    "        "        
-                                             bogo_zD0     ! transf. to can. bas.    
-                
+                                             bogo_zV0c, & ! V    "        "
+                                             bogo_zD0     ! transf. to can. bas.
+
 !!! Density matrices
 real(r64), dimension(:,:), allocatable :: dens_rhoRR, &      ! <R|a+a|R> (real)
                                           dens_kappaRR       ! <R|aa|R>  (real)
-complex(r64), dimension(:,:), allocatable :: dens_rhoLR,   & ! <L|a+a|R> 
+complex(r64), dimension(:,:), allocatable :: dens_rhoLR,   & ! <L|a+a|R>
                                              dens_kappaLR, & ! <L|aa|R>
                                              dens_kappaRL    ! <L|a+a+|R>^*
 integer :: dens_spatial, & ! option to compute the spatial one-body density
            dens_nr(3)   ! number of points in the discretization
-real(r64) :: dens_dr(3) ! spacing between the points 
+real(r64) :: dens_dr(3) ! spacing between the points
 
 !!! Information on the good quantum number of the wave function
 logical :: is_good_Z=.false.,      & ! Slater determinant for protons
@@ -68,7 +68,7 @@ logical :: is_good_Z=.false.,      & ! Slater determinant for protons
            is_separate_NZ=.false., & ! no p-n pairing
            is_good_P=.false.,      & ! good parity
            is_good_K=.false.         ! good angular-momentum third component
-        
+
 CONTAINS
 
 !------------------------------------------------------------------------------!
@@ -84,8 +84,8 @@ integer :: ialloc=0
 allocate( bogo_U0(HOsp_dim,HOsp_dim),   bogo_V0(HOsp_dim,HOsp_dim),   &
           bogo_U1(HOsp_dim,HOsp_dim),   bogo_V1(HOsp_dim,HOsp_dim),   &
           bogo_zU0(HOsp_dim,HOsp_dim),  bogo_zV0(HOsp_dim,HOsp_dim),  &
-          bogo_zU0c(HOsp_dim,HOsp_dim), bogo_zV0c(HOsp_dim,HOsp_dim), & 
-          bogo_zD0(HOsp_dim,HOsp_dim), stat=ialloc ) 
+          bogo_zU0c(HOsp_dim,HOsp_dim), bogo_zV0c(HOsp_dim,HOsp_dim), &
+          bogo_zD0(HOsp_dim,HOsp_dim), stat=ialloc )
 if ( ialloc /= 0 ) stop 'Error during allocation of wave functions'
 
 bogo_U0 = zero
@@ -135,14 +135,14 @@ subroutine generate_wavefunction(ndim)
 
 integer, intent(in) :: ndim
 integer :: i, nocc0, nemp0
-real(r64) :: ovac0                                                              
+real(r64) :: ovac0
 real(r64), dimension(ndim,ndim) :: A1, A2, A3
 !cmpi integer :: ierr=0
 
 !!! Sets the pseudo random number generation
 call set_random_generation
 
-!cmpi if ( paral_myrank == 0 ) then        
+!cmpi if ( paral_myrank == 0 ) then
 select case (seed_type)
 
   !!! Reads the wave function from a file
@@ -150,10 +150,10 @@ select case (seed_type)
     call read_wavefunction
 
   !!! Generates U,V for the HFB states. Starts by generating U,V in the canon-
-  !!! ical basis (BCS) and then performs the Bloch-Messiash transformations C,D 
+  !!! ical basis (BCS) and then performs the Bloch-Messiash transformations C,D
   case (0,2:6)
     call generate_wavefunction_BCS(valence_Z,valence_N,bogo_U0,bogo_V0,ndim)
-    if ((seed_type /= 2) .and. (seed_type /= 3) ) then 
+    if ((seed_type /= 2) .and. (seed_type /= 3) ) then
       ! Transformation D (real for now)
       call generate_unitary_matrix(seed_type,A3,ndim)
       call dgemm('n','n',ndim,ndim,ndim,one,A3,ndim,bogo_U0,ndim,zero,A1,ndim)
@@ -163,7 +163,7 @@ select case (seed_type)
       call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,A3,ndim,zero,bogo_U0,ndim)
       call dgemm('n','n',ndim,ndim,ndim,one,A2,ndim,A3,ndim,zero,bogo_V0,ndim)
     endif
-  
+
   !!! Generates U,V for Slater determinants.
   case (7:9)
     call generate_wavefunction_slater(int(valence_Z),int(valence_N),bogo_U0, &
@@ -197,7 +197,7 @@ call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
                                ovac0,nocc0,nemp0,ndim)
 bogo_nparity = (-1)**nocc0
 
-!cmpi if ( paral_myrank == 0 ) then        
+!cmpi if ( paral_myrank == 0 ) then
 call print_wavefunction(nocc0)
 !cmpi endif
 
@@ -205,17 +205,17 @@ end subroutine generate_wavefunction
 
 !------------------------------------------------------------------------------!
 ! subroutine generate_wavefunction_BCS                                         !
-!                                                                              ! 
-! This subroutine sets the seed for the pseudo random generation using the     ! 
-! input parameter seed_rand.                                                   ! 
-!                                                                              ! 
-! seed_rand = 0 uses the state of the processor (changes with each run)        ! 
-!           > 0 uses the values given in input + a small algorithm             ! 
+!                                                                              !
+! This subroutine sets the seed for the pseudo random generation using the     !
+! input parameter seed_rand.                                                   !
+!                                                                              !
+! seed_rand = 0 uses the state of the processor (changes with each run)        !
+!           > 0 uses the values given in input + a small algorithm             !
 !------------------------------------------------------------------------------!
 subroutine set_random_generation
 
 integer :: i, mdim
-integer, dimension(:), allocatable :: mentry 
+integer, dimension(:), allocatable :: mentry
 
 !!! Initialization using the state of the processor
 call random_seed()
@@ -236,16 +236,16 @@ end subroutine set_random_generation
 
 !------------------------------------------------------------------------------!
 ! subroutine generate_wavefunction_BCS                                         !
-!                                                                              ! 
-! This subroutine generates random Bogoliubov matrices U and V corresponding   ! 
-! to a BCS product state with the correct expectation values for the number of ! 
-! neutrons and protons.                                                        ! 
-!                                                                              ! 
-! Input: ndim = dimension of the sp basis                                      ! 
-!        nprot = number of protons                                             ! 
-!        npneut= number of neutrons                                            ! 
-!                                                                              ! 
-! Output: U,V = Bogoliubov matrices                                            ! 
+!                                                                              !
+! This subroutine generates random Bogoliubov matrices U and V corresponding   !
+! to a BCS product state with the correct expectation values for the number of !
+! neutrons and protons.                                                        !
+!                                                                              !
+! Input: ndim = dimension of the sp basis                                      !
+!        nprot = number of protons                                             !
+!        npneut= number of neutrons                                            !
+!                                                                              !
+! Output: U,V = Bogoliubov matrices                                            !
 !------------------------------------------------------------------------------!
 subroutine generate_wavefunction_BCS(nprot,nneut,U,V,ndim)
 
@@ -263,11 +263,11 @@ v2c = zero
 !!! Generates random occupancies v^2 for protons. The code first increases
 !!! the occupancies until \sum_p v^2 > nprot but the check is done only after
 !!! increasing v^2 for all single-particle states (I don't want to favor the
-!!! first states in the basis). Then the v^2 are rescaled to obtain the 
+!!! first states in the basis). Then the v^2 are rescaled to obtain the
 !!! correct values \sum_p v^2 = nprot
 num_v2c = -1.d0
 fac_v2c =  1.d0
-  
+
 do while ( num_v2c < 0.98*nprot )
   num_v2c = 0.d0
   do i = 1, ndim/4
@@ -300,7 +300,7 @@ do while ( num_v2c < 0.98*nneut )
   num_v2c = 0.d0
   do i = 1+ndim/4, ndim/2
     call random_number(ranval)
-    
+
     if ( (seed_type == 2) .and. (i > 1) ) then
       if ( HOsp_sh(2*i-1) == HOsp_sh(2*i-3) ) then
         ranval = 0.d0
@@ -314,11 +314,11 @@ do while ( num_v2c < 0.98*nneut )
 enddo
 
 if ( (num_v2c > nneut) .and. (nneut > 0.d0) ) then
-  fac_v2c = num_v2c / nneut  
+  fac_v2c = num_v2c / nneut
   v2c(1+ndim/4:ndim/2) = v2c(1+ndim/4:ndim/2) / fac_v2c
 endif
 
-!!! Builds U and V in the canonical basis where u^2 + v^2 = 1. The pairing is 
+!!! Builds U and V in the canonical basis where u^2 + v^2 = 1. The pairing is
 !!! built between time-reversal partners: |jm> and |j-m>
 ipos = 0
 k = 0
@@ -337,12 +337,12 @@ do i = 1, HOsh_dim
     else
       factor = one
     endif
- 
+
     U(ipos1,ipos1) =  sqrt(1.d0 - v2c(k))
     U(ipos2,ipos2) =  U(ipos1,ipos1)
     U(ipos3,ipos3) =  sqrt(1.d0 - v2c(k+ndim/4))
     U(ipos4,ipos4) =  U(ipos3,ipos3)
-  
+
     V(ipos1,ipos2) =  factor * sqrt(v2c(k))
     V(ipos2,ipos1) = -V(ipos1,ipos2)
     V(ipos3,ipos4) =  factor * sqrt(v2c(k+ndim/4))
@@ -351,12 +351,12 @@ do i = 1, HOsh_dim
   ipos = ipos + j + 1
 enddo
 
-end subroutine generate_wavefunction_BCS    
+end subroutine generate_wavefunction_BCS
 
 !------------------------------------------------------------------------------!
 ! subroutine generate_wavefunction_slater                                      !
 !                                                                              !
-! This subroutine generates Bogoliubov matrices U and V corresponding to a     ! 
+! This subroutine generates Bogoliubov matrices U and V corresponding to a     !
 ! Slater determinant. This is achieved by occupying the first (nprot,nneut)    !
 ! single-particle states by storing order. A subsequent random unitary         !
 ! transformation can then be performed just after to generate a random Slater  !
@@ -371,12 +371,12 @@ end subroutine generate_wavefunction_BCS
 subroutine generate_wavefunction_slater(nprot,nneut,U,V,ndim)
 
 integer, intent(in) :: ndim, nprot, nneut
-real(r64), dimension(ndim,ndim), intent(out) :: U, V                
-integer, dimension(ndim) :: idx    
+real(r64), dimension(ndim,ndim), intent(out) :: U, V
+integer, dimension(ndim) :: idx
 integer :: i, k, l
 real(r64) :: ranval
 
-!!! Builds a fully empty state 
+!!! Builds a fully empty state
 U = zero
 V = zero
 
@@ -385,20 +385,20 @@ do i = 1, ndim
 enddo
 
 !!! Occupies the sp states for protons. The srategy is to generate a random
-!!! integer value between 1 and (ndim/2 - iteration +1) (=> k), then look in an 
+!!! integer value between 1 and (ndim/2 - iteration +1) (=> k), then look in an
 !!! array the state to occupy (=> l), then occupy the state, then update the
 !!! array to remove the possibility to find the same index at next iteration
 do i = 1, ndim/2
   idx(i) = i
 enddo
 
-do i = 1, nprot  
+do i = 1, nprot
   call random_number(ranval)
   k = 1 + int((ndim/2-i+1) * ranval)
   l = idx(k)
 
   U(l,l) = zero
-  V(l,l) = one 
+  V(l,l) = one
 
   do l = k+1, ndim/2
     idx(l-1) = idx(l)
@@ -411,13 +411,13 @@ do i = 1, ndim/2
   idx(i) = i
 enddo
 
-do i = 1, nneut  
+do i = 1, nneut
   call random_number(ranval)
   k = 1 + int((ndim/2-i+1) * ranval)
   l = idx(k)
 
   U(l+ndim/2,l+ndim/2) = zero
-  V(l+ndim/2,l+ndim/2) = one 
+  V(l+ndim/2,l+ndim/2) = one
 
   do l = k+1, ndim/2
     idx(l-1) = idx(l)
@@ -451,7 +451,7 @@ real(r64), dimension(:,:), allocatable :: B
 
 A = zero
 
-!!! Determines the number of block to use and their dimensions. 
+!!! Determines the number of block to use and their dimensions.
 tdim = 0
 tpar = 0
 tmin = 1
@@ -469,12 +469,12 @@ select case (opt_bloc)
    tdim(2) = ndim - tdim(1)
    if ( (tdim(1) /= 0) .and. (tdim(2) /= 0) ) then
      nbloc = 2
-     tpar(1) =  1    
-     tpar(2) = -1    
+     tpar(1) =  1
+     tpar(2) = -1
    else
      nbloc = 1
      tdim(1) = ndim
-   endif 
+   endif
 
  case(5,7)
    nbloc = 2
@@ -492,18 +492,18 @@ select case (opt_bloc)
      nbloc = 4
      tdim(3) = tdim(1)
      tdim(4) = tdim(2)
-     tpar(1) =  1    
-     tpar(2) = -1    
-     tpar(3) =  1    
-     tpar(4) = -1   
+     tpar(1) =  1
+     tpar(2) = -1
+     tpar(3) =  1
+     tpar(4) = -1
      tmax(1) = ndim/2
      tmax(2) = ndim/2
      tmin(3) = 1 + ndim/2
      tmin(4) = 1 + ndim/2
-   else 
+   else
      nbloc = 2
-     tdim(1) = ndim/2 
-     tdim(2) = ndim/2 
+     tdim(1) = ndim/2
+     tdim(2) = ndim/2
      tmax(1) = ndim/2
      tmin(2) = 1 + ndim/2
    endif
@@ -511,17 +511,17 @@ end select
 
 !!! Computes each bloch by diagonalizing a symmetric matrix of the same dimen-
 !!! sion. As the single-particle states are not in any particular order regard-
-!!! ing the parity, one has to keep track of it. 
+!!! ing the parity, one has to keep track of it.
 do k = 1, nbloc
 
-  allocate ( B(tdim(k),tdim(k)), wev(tdim(k)), work(3*tdim(k)-1) ) 
+  allocate ( B(tdim(k),tdim(k)), wev(tdim(k)), work(3*tdim(k)-1) )
   do j = 1, tdim(k)
     do i = 1, tdim(k)
       call random_number(ranval)
       B(i,j) = ranval
       B(j,i) = ranval
-    enddo 
-  enddo 
+    enddo
+  enddo
   call dsyev('v','L',tdim(k),B,tdim(k),wev,work,3*tdim(k)-1,info)
 
   m = 1
@@ -544,7 +544,7 @@ do k = 1, nbloc
 
 enddo
 
-end subroutine generate_unitary_matrix 
+end subroutine generate_unitary_matrix
 
 !------------------------------------------------------------------------------!
 ! subroutine read_wavefunction                                                 !
@@ -565,13 +565,13 @@ end subroutine generate_unitary_matrix
 !                                                                              !
 ! In the case of a text file, the file is read as a single column.             !
 !------------------------------------------------------------------------------!
-subroutine read_wavefunction            
+subroutine read_wavefunction
 
-integer :: i, j, icheck, HOsh_dim0       
+integer :: i, j, icheck, HOsh_dim0
 integer, dimension(:), allocatable :: HOsh_na0
-character(4) :: filetype  
-character(11) :: fileform  
-character(14) :: filename  
+character(4) :: filetype
+character(11) :: fileform
+character(14) :: filename
 logical :: is_exist, is_binary
 
 !!! Determines the name of the file (binary or text file)
@@ -592,17 +592,17 @@ endif
 
 filename = 'initial_wf' // filetype
 
-!!! Checks if the initial wave function exists, otherwise stops the run 
+!!! Checks if the initial wave function exists, otherwise stops the run
 inquire (file=filename, exist=is_exist)
 if ( is_exist .eqv. .false. ) then
   print '(/,"The file containing the seed wave function is missing.")'
-  stop 
-endif 
+  stop
+endif
 
 !!! Opens the file
 open(utw, file=filename, status='old', action='read', form=fileform)
 
-!!! Reads the model space 
+!!! Reads the model space
 if ( is_binary ) then
   read(utw) HOsh_dim0
   allocate(HOsh_na0(HOsh_dim0))
@@ -615,27 +615,27 @@ else
   enddo
 endif
 
-!!! Stops the run if the model spaces of the wave func. and interaction differ    
+!!! Stops the run if the model spaces of the wave func. and interaction differ
 icheck = 0
 if ( HOsh_dim0 /= HOsh_dim ) icheck = icheck + 1
 do i = 1, min(HOsh_dim,HOsh_dim0)
   if ( HOsh_na0(i) /= HOsh_na(i) ) icheck = icheck + 1
 enddo
 if ( icheck /= 0 ) then
-  print '(/,"The model space of the seed wave function is not consistent", & 
+  print '(/,"The model space of the seed wave function is not consistent", &
         & " with the one of the interaction.")'
   print*, 'Inter:', HOsh_dim, (HOsh_na(i), i=1,HOsh_dim)
   print*, 'State:', HOsh_dim0, (HOsh_na0(i), i=1,HOsh_dim0)
-  stop 
+  stop
 endif
 
-!!! Reads the wave function                                                  
+!!! Reads the wave function
 if ( is_binary ) then
-  read(utw) bogo_label   
+  read(utw) bogo_label
   read(utw) ((bogo_U0(j,i), j=1,HOsp_dim), i=1,HOsp_dim)
   read(utw) ((bogo_V0(j,i), j=1,HOsp_dim), i=1,HOsp_dim)
 else
-  read(utw,*) bogo_label   
+  read(utw,*) bogo_label
   do i = 1, HOsp_dim
     do j = 1, HOsp_dim
       read(utw,*) bogo_U0(j,i)
@@ -652,7 +652,7 @@ close (utw, status='keep')
 
 deallocate(HOsh_na0)
 
-end subroutine read_wavefunction    
+end subroutine read_wavefunction
 
 !------------------------------------------------------------------------------!
 ! subroutine write_wavefunction                                                !
@@ -673,23 +673,23 @@ end subroutine read_wavefunction
 !        iter = iteraction number                                              !
 !        ener = particle-number projected energy                               !
 !------------------------------------------------------------------------------!
-subroutine write_wavefunction(iopt,iter,ener)           
+subroutine write_wavefunction(iopt,iter,ener)
 
 integer, intent(in) :: iopt, iter
-real(r64), intent(in) :: ener 
+real(r64), intent(in) :: ener
 integer :: i, j
 real(r64) :: absener
-character(4) :: filetype  
-character(11) :: fileform  
-character(19) :: filename  
+character(4) :: filetype
+character(11) :: fileform
+character(19) :: filename
 logical :: is_binary
 
-!!! Determines the label of the state based on a random number and the 
+!!! Determines the label of the state based on a random number and the
 !!! particle-number projected energy.
 if ( iter > 0 ) then
   absener = abs(ener)
 
-  do while (absener >= one) 
+  do while (absener >= one)
     absener = absener / 10.d0
   enddo
 
@@ -748,7 +748,7 @@ endif
 
 close(utw, status='keep')
 
-end subroutine write_wavefunction    
+end subroutine write_wavefunction
 
 !------------------------------------------------------------------------------!
 ! subroutine construct_canonical_basis                                         !
@@ -779,16 +779,16 @@ subroutine construct_canonical_basis (U,V,zUc,zVc,zDc,ovacc,nocc,nemp,ndim)
 integer, intent(in) :: ndim
 real(r64), dimension(ndim,ndim), intent(in) :: U, V
 integer, intent(out) :: nocc, nemp
-real(r64), intent(out) :: ovacc       
+real(r64), intent(out) :: ovacc
 complex(r64), dimension(ndim,ndim), intent(out) :: zUc, zVc, zDc
 integer :: i, j, k, m, info, sdim, ialloc=0
 integer, dimension(ndim) :: submax, subdim
 real(r64) :: occu_u, occu_v, occu_v2, eps
 real(r64), dimension(ndim) :: eigen_rho
-real(r64), dimension(3*ndim-1) :: work1   
+real(r64), dimension(3*ndim-1) :: work1
 real(r64), dimension(:), allocatable :: wr, wi, work2
-real(r64), dimension(ndim,ndim) :: rho, kappa, Dc, rhoc, kappac, A1, A2 
-real(r64), dimension(:,:), allocatable :: B1, vs 
+real(r64), dimension(ndim,ndim) :: rho, kappa, Dc, rhoc, kappac, A1, A2
+real(r64), dimension(:,:), allocatable :: B1, vs
 logical, dimension(:), allocatable :: bwork
 
 !!! Cutoff for occupied single-particle states
@@ -798,20 +798,21 @@ else
   eps = seed_occeps
 endif
 
-!!! Builds the density rho, then diagonalizes it, then transforms rho in the  
+!!! Builds the density rho, then diagonalizes it, then transforms rho in the
 !!! basis where it is diagonal.
 call dgemm('n','t',ndim,ndim,ndim,one,V,ndim,V,ndim,zero,rho,ndim)
+print "(A)", "1"
 
 Dc = rho
 call dsyev('V','U',ndim,Dc,ndim,eigen_rho,work1,3*ndim-1,info)
 
 call dgemm('t','n',ndim,ndim,ndim,one,Dc,ndim,rho,ndim,zero,A1,ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,Dc,ndim,zero,rhoc,ndim)
-
-!!! Counts the number of occupied/empty single-particle states. To determine if 
+print "(A)", "2"
+!!! Counts the number of occupied/empty single-particle states. To determine if
 !!! a state is occupied/empty, we use a cutoff: eps.
 !!! Then computes the overlap of the fully paired part with the bare vacuum. As
-!!! the quantity occu_u can be quite small, we build \sum log(occu_u) rather 
+!!! the quantity occu_u can be quite small, we build \sum log(occu_u) rather
 !!! than \product occu_u.
 nocc = 0
 nemp = 0
@@ -819,31 +820,31 @@ ovacc = 0.0d0
 
 do i = 1, ndim
   occu_v2 = abs(rhoc(i,i))
-  occu_u  = sqrt(abs(1.d0 - occu_v2))  
+  occu_u  = sqrt(abs(1.d0 - occu_v2))
   if ( occu_v2 >= 1.0d0 - eps ) then
-    nocc = nocc + 1    
+    nocc = nocc + 1
   elseif ( (occu_v2 <= eps) .and. (seed_allemp == 0) ) then
     nemp = nemp + 1
   else
-    ovacc = ovacc + log(occu_u) 
+    ovacc = ovacc + log(occu_u)
   endif
 enddo
 
 !!! Builds the density kappa, then builds it in the basis that diagonlizes rho.
 !!! At this point, there is no guaranty that kappa will be in its canonical form
-!!! yet. There could be degeneracies in the v2,u2 that would prevent a full     
+!!! yet. There could be degeneracies in the v2,u2 that would prevent a full
 !!! canonical structure.
-call dgemm('n','t',ndim,ndim,ndim,one,V,ndim,U,ndim,zero,kappa,ndim) 
+call dgemm('n','t',ndim,ndim,ndim,one,V,ndim,U,ndim,zero,kappa,ndim)
 call dgemm('t','n',ndim,ndim,ndim,one,Dc,ndim,kappa,ndim,zero,A1,ndim)
 call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,Dc,ndim,zero,kappac,ndim)
-
+print "(A)", "3"
 !!! Checks if the kappa is already in its canonical form by counting the number
-!!! of non-zero marix in a column of kappac. If it is greater than one (i.e. 
+!!! of non-zero marix in a column of kappac. If it is greater than one (i.e.
 !!! the dimension of the subspace subdim > 2), we need to further reduce kappac.
 submax = 0
 
 do i = 1+nemp, ndim-nocc
-  submax(i) = i 
+  submax(i) = i
   do j = i+1, ndim-nocc
     if ( abs(kappac(j,i)) > sqrt(eps)*1.0d-2 ) submax(i) = j
   enddo
@@ -885,24 +886,24 @@ k = 1 + nemp
 
 do while ( k < ndim - nocc )
   m = subdim(k)
-  !!! Schur factorization of this block 
+  !!! Schur factorization of this block
   if ( m > 2 ) then
     !print*,"Diangostic purpose (Schur), dim = :", m
     allocate(B1(m,m), wr(m), wi(m), work2(3*m), bwork(m), vs(m,m), &
              stat=ialloc)
     if ( ialloc /= 0 ) stop 'Error during allocation for Schur factorization'
-    
+
     B1(1:m,1:m) = kappac(k:k+m-1,k:k+m-1)
     call dgees('V','N',lapack_sel,m,B1,m,sdim,wr,wi,vs,m,work2,3*m,bwork,info)
-  
-    ! store the transformation for this block   
-    A1(k:k+m-1,k:k+m-1) = vs(1:m,1:m)  
-    kappac(k:k+m-1,k:k+m-1) = B1(1:m,1:m)  
+
+    ! store the transformation for this block
+    A1(k:k+m-1,k:k+m-1) = vs(1:m,1:m)
+    kappac(k:k+m-1,k:k+m-1) = B1(1:m,1:m)
     deallocate(B1,wr,wi,work2,bwork,vs)
   endif
-  
+
   k = k + m
-enddo    
+enddo
 
 !!! Update the transformation D and recomptues kappa in the canonical basis
 !!! if necessary
@@ -910,7 +911,7 @@ if ( maxval(subdim) > 2 ) then
   call dgemm('n','n',ndim,ndim,ndim,one,Dc,ndim,A1,ndim,zero,A2,ndim)
   Dc = A2
 endif
-
+print "(A)", "4"
 zDc = zone * Dc
 
 !!! Construct U and V in the canonical basis. Note that as we know rho/kappa in
@@ -929,12 +930,12 @@ do i = 1, ndim
   zUc(i,i) = sqrt(abs(1.d0 - occu_v2))
 
   if ( occu_v2 > 1.0d0 - eps ) then   ! occupied states
-    zVc(i,i) = occu_v * zone          
+    zVc(i,i) = occu_v * zone
   elseif ( occu_v2 <= eps ) then      ! empty states
-    zVc(i,i) = occu_v * zone          
+    zVc(i,i) = occu_v * zone
   else                                ! paired states
     if ( mod(k,2) == 0 ) then
-      zVc(i,i+1) = sign(occu_v,kappac(i,i+1)) * zone 
+      zVc(i,i+1) = sign(occu_v,kappac(i,i+1)) * zone
     else
       zVc(i,i-1) = sign(occu_v,kappac(i,i-1)) * zone
     endif
@@ -946,12 +947,12 @@ end subroutine construct_canonical_basis
 
 !------------------------------------------------------------------------------!
 ! subroutine block_quasiparticle                                               !
-!                                                                              ! 
-! Performs the blocking of quasiparticle states by exchanging the colmuns of   ! 
-! Bogoliubov matrices U and V.                                                 ! 
-! For index 1 we have : (Um1,Vm1) => (Vm1^*,Um1^*) as described in equation    ! 
-! (7.21) of the book by Ring and Schuck (ISBN: 978-3-540-21206-5).             ! 
-!                                                                              ! 
+!                                                                              !
+! Performs the blocking of quasiparticle states by exchanging the colmuns of   !
+! Bogoliubov matrices U and V.                                                 !
+! For index 1 we have : (Um1,Vm1) => (Vm1^*,Um1^*) as described in equation    !
+! (7.21) of the book by Ring and Schuck (ISBN: 978-3-540-21206-5).             !
+!                                                                              !
 ! Input: ndim = dimension of the sp basis                                      !
 !        nidx = the index of the qp to block                                   !
 !        UR,VR = Bovoliubov matrices                                           !
@@ -966,14 +967,14 @@ real(r64), dimension(ndim,ndim) :: Ub, Vb
 !!! Exits the routine if no blocking is required
 if ( nidx == 0 ) return
 
-!!! Checks if the blocking index is consistent with the model space 
+!!! Checks if the blocking index is consistent with the model space
 if ( nidx > ndim ) then
  print '(1a,1x,1i5,1a,1i5)', 'The blocking index = ',nidx,' is greater than &
-       & the dimension of the single-particle space = ',ndim  
- stop 
-endif 
+       & the dimension of the single-particle space = ',ndim
+ stop
+endif
 
-!!! Exchanges the nidx-th column of U and V                                
+!!! Exchanges the nidx-th column of U and V
 Ub = U
 Vb = V
 do i = 1, ndim
@@ -1026,13 +1027,13 @@ select case (seed_type)
     info_type = '(Slater, good P + Jz, HO)'
   case default
     info_type = '(not recognized)'
-end select 
+end select
 
 print '(/,60("%"),/,24x,"WAVE FUNCTION",23x,/,60("%"),//, &
       & 3x,"Description",9x,"Value",/,28("-"))'
-print format1, 'Initial type of seed', seed_type, info_type  
+print format1, 'Initial type of seed', seed_type, info_type
 print format2, 'Number of qp blocked', blocking_dim
-if ( blocking_dim /= 0 ) then 
+if ( blocking_dim /= 0 ) then
   print format2, 'Indices for blocking',(blocking_id(i), i=1, &
                                          min(5,blocking_dim))
   do i = 1, nline-1
@@ -1043,7 +1044,7 @@ endif
 print format3, 'Total number parity ', bogo_nparity
 print format3, 'No. of fully occ. sp', nocc
 
-end subroutine print_wavefunction  
+end subroutine print_wavefunction
 
 !------------------------------------------------------------------------------!
 ! subroutine calculate_densities                                               !
@@ -1071,19 +1072,19 @@ end subroutine print_wavefunction
 ! Output: rhoLR,kappaLR,kappaRL = densities                                    !
 !------------------------------------------------------------------------------!
 subroutine calculate_densities(UL,VL,UR,VR,rhoLR,kappaLR,kappaRL,ndim)
-                                                                                 
-integer, intent(in) :: ndim                                                                  
+
+integer, intent(in) :: ndim
 complex(r64), dimension(ndim,ndim), intent(in) :: UL, VL, UR, VR
 complex(r64), dimension(ndim,ndim), intent(out) :: rhoLR, kappaLR, kappaRL
 complex(r64), dimension(ndim,ndim) :: URc, VRc
 
-URc = conjg(UR)                                                                 
-VRc = conjg(VR)                                                                 
-                                                                                 
-call zgemm('n','t',ndim,ndim,ndim,zone,VRc,ndim,VL,ndim,zzero,rhoLR,ndim)             
-call zgemm('n','t',ndim,ndim,ndim,zone,VRc,ndim,UL,ndim,zzero,kappaLR,ndim)             
-call zgemm('n','t',ndim,ndim,ndim,zone,VL,ndim,URc,ndim,zzero,kappaRL,ndim)             
-                                                                                 
+URc = conjg(UR)
+VRc = conjg(VR)
+
+call zgemm('n','t',ndim,ndim,ndim,zone,VRc,ndim,VL,ndim,zzero,rhoLR,ndim)
+call zgemm('n','t',ndim,ndim,ndim,zone,VRc,ndim,UL,ndim,zzero,kappaLR,ndim)
+call zgemm('n','t',ndim,ndim,ndim,zone,VL,ndim,URc,ndim,zzero,kappaRL,ndim)
+
 end subroutine calculate_densities
 
 !------------------------------------------------------------------------------!
@@ -1129,7 +1130,7 @@ integer, intent(in) ::  ndim
 complex(r64), dimension(ndim,ndim), intent(in) :: rhoRR, rhoNZ
 integer :: a, b, na, nb, la, lb, mla, mlb, ja, jb, mja, mjb, ms, hdim, &
            r1, r2, r3, r1min, r1max, r2min, r2max, r3min, r3max
-real(r64) :: x, y, z, r, theta, phi, dr1, dr2, dr3, Rnla, Rnlb, cga, cgb, &   
+real(r64) :: x, y, z, r, theta, phi, dr1, dr2, dr3, Rnla, Rnlb, cga, cgb, &
              fac, rho_p, rho_n, rhoNZ_p, rhoNZ_n
 complex(r64) :: Ylma, Ylmb, angular
 character(50) :: filename1, filename2, filename3
@@ -1144,19 +1145,19 @@ filename2 = adjustl('spatial_density_RThetaPhi.dat')
 filename3 = adjustl('spatial_density_XYZ.dat')
 
 !!! If dens_spatial <= 2: r1 = r, r2 = theta, r3 = phi
-!!! If dens_spatial  = 3: r1 = x, r2 = y    , r3 = z  
+!!! If dens_spatial  = 3: r1 = x, r2 = y    , r3 = z
 if ( dens_spatial <= 2 ) then
-  r1min = 0 
+  r1min = 0
   r1max = dens_nr(1) - 1
-  r2min = 0 
+  r2min = 0
   r2max = dens_nr(2) - 1
-  r3min = 0 
+  r3min = 0
   r3max = dens_nr(3) - 1
   dr1 = dens_dr(1)
   dr2 =   pi / (r2max+1)
   dr3 = 2*pi / (r3max+1)
-else 
-  r1min = -dens_nr(1) 
+else
+  r1min = -dens_nr(1)
   r1max =  dens_nr(1)
   r2min = -dens_nr(2)
   r2max =  dens_nr(2)
@@ -1168,13 +1169,13 @@ else
 endif
 
 !!! Computes the spatial one-body density integrated over the angular part
-if ( dens_spatial <= 2 ) then  
-  open(utd, file=filename1, status='replace', action='write', form='formatted')        
+if ( dens_spatial <= 2 ) then
+  open(utd, file=filename1, status='replace', action='write', form='formatted')
   write(utd,*) "            unprojected          projected   "
   write(utd,*) "   r      rho_p     rho_n     rho_p     rho_n"
 
   do r1 = r1min, r1max
-    r = r1 * dr1 
+    r = r1 * dr1
 
     rho_p = zero
     rho_n = zero
@@ -1194,23 +1195,23 @@ if ( dens_spatial <= 2 ) then
         jb = HOsp_2j(b)
         mjb= HOsp_2mj(b)
         Rnlb = radial_function(nb,lb,r)
-     
-        if ( la /= lb ) cycle   
-        if ( ja /= jb ) cycle   
-        if ( mja /= mjb ) cycle   
- 
+
+        if ( la /= lb ) cycle
+        if ( ja /= jb ) cycle
+        if ( mja /= mjb ) cycle
+
         fac = (2.0d0 - kdelta(a,b)) * Rnla * Rnlb
- 
+
         rho_p = rho_p + fac * real(rhoRR(b,a))
         rho_n = rho_n + fac * real(rhoRR(b+hdim,a+hdim))
         rhoNZ_p = rhoNZ_p + fac * real(rhoNZ(b,a))
         rhoNZ_n = rhoNZ_n + fac * real(rhoNZ(b+hdim,a+hdim))
- 
+
       enddo
     enddo
 
-    write(utd,format1) r, rho_p/(4*pi), rho_n/(4*pi), rhoNZ_p/(4*pi), & 
-                          rhoNZ_n/(4*pi) 
+    write(utd,format1) r, rho_p/(4*pi), rho_n/(4*pi), rhoNZ_p/(4*pi), &
+                          rhoNZ_n/(4*pi)
   enddo
 
   close(utd)
@@ -1218,13 +1219,13 @@ endif
 
 if ( dens_spatial == 1 ) return
 
-!!! Computes the spatial one-body density 
+!!! Computes the spatial one-body density
 if ( dens_spatial == 2 ) then
-  open(utd, file=filename2, status='replace', action='write', form='formatted')        
+  open(utd, file=filename2, status='replace', action='write', form='formatted')
   write(utd,*) "                             unprojected          projected   "
   write(utd,*) "   r      theta   phi      rho_p     rho_n     rho_p     rho_n"
 else
-  open(utd, file=filename3, status='replace', action='write', form='formatted')        
+  open(utd, file=filename3, status='replace', action='write', form='formatted')
   write(utd,*) "                             unprojected          projected   "
   write(utd,*) "   x       y       z       rho_p     rho_n     rho_p     rho_n"
 endif
@@ -1234,11 +1235,11 @@ do r1 = r1min, r1max
     do r3 = r3min, r3max
 
       if ( dens_spatial == 2 ) then
-        r = r1 * dr1 
+        r = r1 * dr1
         theta = r2 * dr2 + dr2/2
         phi = r3 * dr3 + dr3/2
       else
-        x = r1 * dr1 
+        x = r1 * dr1
         y = r2 * dr2
         z = r3 * dr3
 
@@ -1247,8 +1248,8 @@ do r1 = r1min, r1max
           theta = acos( z / r )
           phi = atan2(y,x)
           if ( phi < 0 ) phi = phi + 2*pi
-        else 
-          theta = zero 
+        else
+          theta = zero
           phi = zero
         endif
       endif
@@ -1271,9 +1272,9 @@ do r1 = r1min, r1max
           jb = HOsp_2j(b)
           mjb= HOsp_2mj(b)
           Rnlb = radial_function(nb,lb,r)
-     
+
           fac = (2.0d0 - kdelta(a,b)) * Rnla * Rnlb
-     
+
           angular = zzero
           do mla = -la, la
             ms = mja - 2*mla
@@ -1285,9 +1286,9 @@ do r1 = r1min, r1max
             Ylmb = spherharmonic(lb,mlb,theta,phi)
             call ClebschGordan(2*la,1,ja,2*mla,ms,mja,cga)
             call ClebschGordan(2*lb,1,jb,2*mlb,ms,mjb,cgb)
-            angular = angular + Ylma * Ylmb * cga * cgb 
+            angular = angular + Ylma * Ylmb * cga * cgb
           enddo
-         
+
           rho_p = rho_p + fac * real(rhoRR(b,a) * angular)
           rho_n = rho_n + fac * real(rhoRR(b+hdim,a+hdim) * angular)
           rhoNZ_p = rhoNZ_p + fac * real(rhoNZ(b,a) * angular)
@@ -1295,9 +1296,9 @@ do r1 = r1min, r1max
         enddo
       enddo
 
-      if ( dens_spatial == 2 ) then 
+      if ( dens_spatial == 2 ) then
         write(utd,format2) r, theta, phi, rho_p, rho_n, rhoNZ_p, rhoNZ_n
-      else 
+      else
         write(utd,format2) x, y, z, rho_p, rho_n, rhoNZ_p, rhoNZ_n
       endif
     enddo
@@ -1308,7 +1309,7 @@ close(utd)
 
 end subroutine calculate_spatial_density
 
-END MODULE Wavefunctions 
+END MODULE Wavefunctions
 !==============================================================================!
 ! End of file                                                                  !
 !==============================================================================!
