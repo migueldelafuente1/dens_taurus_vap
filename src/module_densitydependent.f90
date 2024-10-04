@@ -3751,8 +3751,8 @@ real(r64), dimension(ndim/2,ndim/2) :: Delc_pp, Delc_nn, Delc_pn
 real(r64), dimension(ndim/2,ndim/2) :: bogo_U0_2,bogo_V0_2
 complex(r64), dimension(ndim/2,ndim/2) :: bogo_zU0c_2,bogo_zV0c_2,bogo_zD0_2
 
-real(r64),    dimension(ndim,ndim) :: D0, rhoc, kapc, Gamc, Delc, hspc, &
-                                      A1, A2, hspRR
+real(r64),    dimension(ndim,ndim)  :: D0, rhoc, kapc, Gamc, Delc, hspc, &
+                                       A1, A2, hspRR
 
 real(r64), dimension(ndim/2,ndim/2) :: D02, rhoc2, kapc2, Gamc2, Delc2, &
                                        hspc2, A12, A22
@@ -3773,7 +3773,7 @@ end do
 gammaRR_DD_co = real(gammaLR_DD)
 deltaRR_DD_co = real(deltaLR_DD)
 !deltaRR_DD_c = real(deltaRL_DD)
-hspRR        = real(hspLR)
+hspRR         = real(hspLR)
 
 !call calculate_fields_diag(rho0LR, kappa0LR, field_gammaLR, field_hspLR, &
 !                           field_deltaLR, field_deltaRL, ndim)
@@ -3801,6 +3801,7 @@ do T = 1, 3 ! pp, nn, pn
   enddo
   call construct_canonical_basis(bogo_U0_2,bogo_V0_2,bogo_zU0c_2,bogo_zV0c_2,&
                                  bogo_zD0_2, ovac0,nocc0,nemp0,n1o2)
+  print "(A)", " cannonical basis constructed, now copying."
   do i = 1, n1o2
     do j = 1, n1o2
       if (T.EQ.1) D0_pp(i,j) = real(bogo_zD0_2(i,j))
@@ -3823,6 +3824,7 @@ do T = 1, 3 ! pp, nn, pn
     end do
   end do
 
+  print "(A)", " submatrices to convert into de cannonical basis."
   call dgemm('t','n',n1o2,n1o2,n1o2,one,D02,n1o2,rhoc2,n1o2,zero,A12,n1o2)
   call dgemm('n','n',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,rhoc2,n1o2)
 
@@ -3838,7 +3840,7 @@ do T = 1, 3 ! pp, nn, pn
   call dgemm('t','n',n1o2,n1o2,n1o2,one,D02,n1o2,Delc2,n1o2,zero,A12,n1o2)
   call dgemm('n','n',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,Delc2,n1o2)
 
-
+  print "(A)", " submatrices to convert into de cannonical basis. (DONE)"
   do i = 1, n1o2
     do j = 1, n1o2
       rhoc(i+it,j+jt) = rhoc2(i,j)
