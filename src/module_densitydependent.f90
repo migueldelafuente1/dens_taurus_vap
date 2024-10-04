@@ -3752,11 +3752,12 @@ real(r64), dimension(ndim/2,ndim/2) :: bogo_U0_2,bogo_V0_2
 complex(r64), dimension(ndim/2,ndim/2) :: bogo_zU0c_2,bogo_zV0c_2,bogo_zD0_2
 
 real(r64),    dimension(ndim,ndim) :: D0, rhoc, kapc, Gamc, Delc, hspc, &
-                                      A1, A2, hspRR, &
-                                      D02, rhoc2, kapc2, Gamc2, Delc2, hspc2, &
-                                      A12, A22
+                                      A1, A2, hspRR
 
-real(r64) :: ovac0
+complex(r64), dimension(ndim/2,ndim/2) :: D02, rhoc2, kapc2, Gamc2, Delc2, &
+                                          hspc2, A12, A22
+
+real(r64) :: ovac0, e_fermi, VAL_T
 integer   :: i, j, k ,l, zn_indx, nocc0,nemp0, T, it, jt, n1o2
 
 n1o2 = n1o2
@@ -3791,6 +3792,7 @@ do T = 1, 3 ! pp, nn, pn
   if ((T .EQ. 2) .OR. (T .EQ. 3)) jt = n1o2
   if  (T .EQ. 2) it = n1o2
 
+  print "(A,3i5)", "it, it:", T, it, jt
   do i = 1, n1o2
     do j = 1, n1o2
       bogo_U0_2(i,j) = bogo_U0(i+it,j+jt)
@@ -3813,11 +3815,11 @@ do T = 1, 3 ! pp, nn, pn
         D0(i+jt,j+it) = D0_pn(i,j)
       endif
 
-      rhoc2(i,j) = dens_rhoRR(i+it,j+jt)
-      kapc2(i,j) = dens_kappaRR(i+it,j+jt)
+      rhoc2(i,j) = dens_rhoRR   (i+it,j+jt)
+      kapc2(i,j) = dens_kappaRR (i+it,j+jt)
       Gamc2(i,j) = gammaRR_DD_co(i+it,j+jt)
       Delc2(i,j) = deltaRR_DD_co(i+it,j+jt)
-      hspc2(i,j) = hspRR(i+it,j+jt)
+      hspc2(i,j) = hspRR        (i+it,j+jt)
     end do
   end do
 
@@ -3839,14 +3841,6 @@ do T = 1, 3 ! pp, nn, pn
 
   do i = 1, n1o2
     do j = 1, n1o2
-
-      if (T.EQ.1) D0(i+it,j+jt) = D0_pp(i,j)
-      if (T.EQ.2) D0(i+it,j+jt) = D0_nn(i,j)
-      if (T.EQ.3) then
-        D0(i+it,j+jt) = D0_pn(i,j)
-        D0(i+jt,j+it) = D0_pn(i,j)
-      endif
-
       rhoc(i+it,j+jt) = rhoc2(i,j)
       kapc(i+it,j+jt) = kapc2(i,j)
       Gamc(i+it,j+jt) = Gamc2(i,j)
@@ -3883,7 +3877,20 @@ end do
 close(333)
 print "(A)", "  - calculate cannonical basis [DONE]"
 
+do T = 1, 2
+  ovac0 = zero
+  k = 0
+  if (T .EQ. 1) VAL_T = nucleus_Z
+  if (T .EQ. 2) VAL_T = nucleus_N
+  do while ((ovac0 <= VAL_T) .OR. (k > n1o2))
+    k = k + 1
 
+    ovac0 += rhoc(k,k)
+    if (ovac0 <= VAL_T) then
+      print "(I3,A,I5,2F15.5)", T,".Occupation filled at k=", k, ovac0, VAT_T
+    end if
+  end do
+end do ! T loop
 
 end subroutine filter_fields_for_cutoff
 
