@@ -3785,6 +3785,21 @@ hspRR         = real(hspLR)
 !call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
 !                               ovac0,nocc0,nemp0,ndim)
 !D0 = real(bogo_zD0)
+!
+!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_rhoRR,ndim,zero,A1,ndim)
+!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,rhoc,ndim)
+!
+!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_kappaRR,ndim,zero,A1,ndim)
+!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,kapc,ndim)
+!
+!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,hspRR,ndim,zero,A1,ndim)
+!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
+!
+!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,gammaRR_DD_co,ndim,zero,A1,ndim)
+!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,Gamc,ndim)
+!
+!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,deltaRR_DD_co,ndim,zero,A1,ndim)
+!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,Delc,ndim)
 
 do T = 1, 3 ! pp, nn, pn
   it = 0
@@ -3852,23 +3867,6 @@ do T = 1, 3 ! pp, nn, pn
   end do
 end do ! T loop
 
-
-
-!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_rhoRR,ndim,zero,A1,ndim)
-!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,rhoc,ndim)
-!
-!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_kappaRR,ndim,zero,A1,ndim)
-!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,kapc,ndim)
-!
-!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,hspRR,ndim,zero,A1,ndim)
-!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
-!
-!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,gammaRR_DD_co,ndim,zero,A1,ndim)
-!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,Gamc,ndim)
-!
-!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,deltaRR_DD_co,ndim,zero,A1,ndim)
-!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,Delc,ndim)
-
 open(333, file='_cannonicalFields_rhokapa.gut')
 do i = 1, ndim
   do j = 1, ndim
@@ -3883,17 +3881,22 @@ do T = 1, 2
   ovac0 = zero
   k = 0
   if (T .EQ. 1) VAL_T = nucleus_Z
-  if (T .EQ. 2) VAL_T = nucleus_N
-  do while ((ovac0 <= VAL_T) .OR. (k > n1o2))
-    k = k + 1
+  if (T .EQ. 2) then
+    it = n1o2
+    VAL_T = nucleus_N
+  endif
 
-    ovac0 = ovac0 + rhoc(k,k)
+  do while ((ovac0 <= VAL_T) .AND. (k < n1o2 - 1))
+    k = k + 1
+    ovac0 = ovac0 + rhoc(k+it,k+it)
     if (ovac0 <= VAL_T) then
       print "(I3,A,I5,2F15.5)", T,".Occupation filled at k=", k, ovac0, VAL_T
-    end if
+    endif
   end do
+  print "(A)", ""
 end do ! T loop
 
+print "(A,I5)", " -cutoff subroutine DONE, iter =", iteration
 end subroutine filter_fields_for_cutoff
 
 !-----------------------------------------------------------------------------!
