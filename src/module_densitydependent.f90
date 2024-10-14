@@ -1121,111 +1121,16 @@ end subroutine set_sphhDual_precalcFields
 ! a, b <int> sp states from the pp space (neutron states got here splicitly)  !
 ! This requires the index a:1 -> N/2 and b:1 -> N/2                           !
 !-----------------------------------------------------------------------------!
-subroutine compute_bulkDens4Fields_bench(a, b, a_sh, b_sh, i_r, i_a)
-
-integer, intent(in)      :: a, b, a_sh, b_sh, i_r, i_a
-
-integer      :: spO2, ms,ms2, la, lb, ja, jb, ma, mb, ind_jm_a, ind_jm_b
-complex(r64) :: roP, roN, rPN, rNP, kaP, kaN, kaCcP, kaCcN, kPN, kNP, &
-                kCcNP, kCcPN, A_part,B1_part,B2_part, aux
-real(r64)    :: radial_ab
-spO2 = HOsp_dim / 2
-
-!!!  ASSERTION  !!! , a, b only from pp space:
-if ((a > spO2).OR.(b > spO2)) then
-   print *, " [ASS. ERROR] compute_bulkDens4Fields a,b (sp) in neutron space"
-   STOP
-endif
-
-radial_ab = radial_2b_sho_memo(a_sh, b_sh, i_r)
-
-roP = radial_ab * rhoLR  (b, a)
-roN = radial_ab * rhoLR  (b +spO2, a +spO2)
-rPN = radial_ab * rhoLR  (b      , a +spO2)
-rNP = radial_ab * rhoLR  (b +spO2, a)
-
-kaP = radial_ab * kappaLR(a, b)
-kaN = radial_ab * kappaLR(a +spO2, b +spO2)
-kPN = radial_ab * kappaLR(a      , b +spO2)
-kNP = radial_ab * kappaLR(a +spO2, b)
-
-kaCcP = radial_ab * kappaRL(a, b)
-kaCcN = radial_ab * kappaRL(a +spO2, b +spO2)
-kCcPN = radial_ab * kappaRL(a      , b +spO2)
-kCcNP = radial_ab * kappaRL(a +spO2, b)
-
-!---------------------- density matrix elements by spherical harmonic m.e  ---!
-!aux = zzero
-!la   = HOsp_l(a)
-!ja   = HOsp_2j(a)
-!ma   = HOsp_2mj(a)
-!ind_jm_a = angular_momentum_index(ja, ma, .TRUE.)
-!lb   = HOsp_l(b)
-!jb   = HOsp_2j(b)
-!mb   = HOsp_2mj(b)
-!ind_jm_b = angular_momentum_index(jb, mb, .TRUE.)
-!do K = abs(ja - jb) / 2, (ja + jb) / 2
-!  M = (mb - ma)/2
-!  if ((MOD(K + la + lb, 2) == 1).OR.(abs(M) > K)) cycle
-!
-!  ind_km = angular_momentum_index(K, M, .FALSE.)
-!  aux   = aux + (dens_Y_KM_me(ind_jm_a, ind_jm_b, ind_km) * &
-!                   sph_harmonics_memo(ind_km, i_a))
-!enddo -----------------------------------------------------------------------!
-aux = AngFunctDUAL_HF(1,a,b,i_a) + AngFunctDUAL_HF(4,a,b,i_a)
-
-dens_pnt(1,i_r,i_a) = dens_pnt(1,i_r,i_a) + (aux * roP)
-dens_pnt(2,i_r,i_a) = dens_pnt(2,i_r,i_a) + (aux * roN)
-dens_pnt(3,i_r,i_a) = dens_pnt(3,i_r,i_a) + (aux * rPN)
-dens_pnt(4,i_r,i_a) = dens_pnt(4,i_r,i_a) + (aux * rNP)
-
-do ms = 1, 4
-  select case (ms)
-    case (2, 3)
-      ms2 = 5 - ms
-    case default
-      ms2 = ms
-  end select
-
-  A_part = AngFunctDUAL_HF(ms2,a,b,i_a)
-  BulkHF(1,ms,i_r,i_a) = BulkHF(1,ms,i_r,i_a) + (A_part * roP) !pp
-  BulkHF(2,ms,i_r,i_a) = BulkHF(2,ms,i_r,i_a) + (A_part * roN) !nn
-  BulkHF(3,ms,i_r,i_a) = BulkHF(3,ms,i_r,i_a) + (A_part * rPN) !pn
-  BulkHF(4,ms,i_r,i_a) = BulkHF(4,ms,i_r,i_a) + (A_part * rNP) !np
-
-  B1_part = (AngFunctDUAL_P1(ms,a,b,i_a) - AngFunctDUAL_P1(ms2,a,b,i_a))
-  BulkP1(1,ms,i_r,i_a) = BulkP1(1,ms,i_r,i_a) + (B1_part * kaP) !pp
-  BulkP1(2,ms,i_r,i_a) = BulkP1(2,ms,i_r,i_a) + (B1_part * kaN) !nn
-
-  B1_part = AngFunctDUAL_P1(ms ,a,b,i_a) &
-             + (x0_DD_FACTOR*AngFunctDUAL_P1(ms2,a,b,i_a))
-  B2_part = AngFunctDUAL_P1(ms2,a,b,i_a) &
-             + (x0_DD_FACTOR*AngFunctDUAL_P1(ms ,a,b,i_a))
-  BulkP1(3,ms,i_r,i_a) = BulkP1(3,ms,i_r,i_a) + (B1_part*kPN - B2_part*kNP) !pn
-  BulkP1(4,ms,i_r,i_a) = BulkP1(4,ms,i_r,i_a) + (B1_part*kNP - B2_part*kPN) !np
-  !! BulkP1_** are  common for the paring and rearrangement fields respectively.
-
-  B2_part = AngFunctDUAL_P2(ms,a,b,i_a)
-  BulkP2(1,ms,i_r,i_a) = BulkP2(1,ms,i_r,i_a) + (B2_part * kaCcP) !pp
-  BulkP2(2,ms,i_r,i_a) = BulkP2(2,ms,i_r,i_a) + (B2_part * kaCcN) !nn
-  BulkP2(3,ms,i_r,i_a) = BulkP2(3,ms,i_r,i_a) + (B2_part * kCcPN) !pn
-  BulkP2(4,ms,i_r,i_a) = BulkP2(4,ms,i_r,i_a) + (B2_part * kCcNP) !np
-enddo
-
-end subroutine compute_bulkDens4Fields_bench
-
-!------------------------------------------------------------------------------!
-! subroutine to evaluate the the value and transposed values for all spaces    !
-!------------------------------------------------------------------------------!
-subroutine compute_bulkDens4Fields(a, b, a_sh, b_sh, i_r, i_a, overlap)
+!  to evaluate the the value and transposed values for all spaces             !
+!-----------------------------------------------------------------------------!
+subroutine compute_bulkDens4_hf(a, b, a_sh, b_sh, i_r, i_a, overlap)
 
 integer, intent(in)      :: a, b, a_sh, b_sh, i_r, i_a
 complex(r64), intent(in) :: overlap
 
 integer      :: spO2, par_ind,    ms,ms2, a_n, b_n
-complex(r64) :: roP, roN, rPN, rNP, kaP,kaN,kaCcP, kaCcN,kPN,kNP,kCcNP,kCcPN, &
-                roPt, roNt, rPNt, rNPt, kaPt,kaNt,kaCcPt, kaCcNt,kPNt,kNPt, &
-                kCcNPt,kCcPNt, A_part,B1_part,B2_part, aux, sum_, radial_ab
+complex(r64) :: roP, roN, rPN, rNP, roPt, roNt, rPNt, rNPt, &
+                A_part, aux, sum_, radial_ab
 logical      :: aNeQb
 spO2 = HOsp_dim / 2
 
@@ -1249,31 +1154,11 @@ roN = radial_ab * rhoLR  (b_n,a_n)
 rPN = radial_ab * rhoLR  (b  ,a_n)
 rNP = radial_ab * rhoLR  (b_n,a)
 
-kaP = radial_ab * kappaLR(a  ,b)
-kaN = radial_ab * kappaLR(a_n,b_n)
-kPN = radial_ab * kappaLR(a  ,b_n)
-kNP = radial_ab * kappaLR(a_n,b)
-
-kaCcP = radial_ab * kappaRL(a  ,b)
-kaCcN = radial_ab * kappaRL(a_n,b_n)
-kCcPN = radial_ab * kappaRL(a  ,b_n)
-kCcNP = radial_ab * kappaRL(a_n,b)
-
 !if (aNeQb) then !do it always, dont sum then
   roPt   = radial_ab * rhoLR  (a,  b)
   roNt   = radial_ab * rhoLR  (a_n,b_n)
   rPNt   = radial_ab * rhoLR  (a  ,b_n)
   rNPt   = radial_ab * rhoLR  (a_n,b)
-
-  kaPt   = radial_ab * kappaLR(b  ,a)
-  kaNt   = radial_ab * kappaLR(b_n,a_n)
-  kPNt   = radial_ab * kappaLR(b  ,a_n)
-  kNPt   = radial_ab * kappaLR(b_n,a)
-
-  kaCcPt = radial_ab * kappaRL(b  ,a)
-  kaCcNt = radial_ab * kappaRL(b_n,a_n)
-  kCcPNt = radial_ab * kappaRL(b  ,a_n)
-  kCcNPt = radial_ab * kappaRL(b_n,a)
 !endif
 
 !! compute the direct bulk densities
@@ -1305,6 +1190,74 @@ do ms = 1, 4
   BulkHF(3,ms,i_r,i_a) = BulkHF(3,ms,i_r,i_a) + (A_part * rPN) !pn
   BulkHF(4,ms,i_r,i_a) = BulkHF(4,ms,i_r,i_a) + (A_part * rNP) !np
 
+  if (aNeQb) then
+    A_part = AngFunctDUAL_HF(ms2,b,a,i_a)
+    BulkHF(1,ms,i_r,i_a) = BulkHF(1,ms,i_r,i_a) + (A_part * roPt) !pp
+    BulkHF(2,ms,i_r,i_a) = BulkHF(2,ms,i_r,i_a) + (A_part * roNt) !nn
+    BulkHF(3,ms,i_r,i_a) = BulkHF(3,ms,i_r,i_a) + (A_part * rPNt) !pn
+    BulkHF(4,ms,i_r,i_a) = BulkHF(4,ms,i_r,i_a) + (A_part * rNPt) !np
+  endif
+enddo
+
+end subroutine compute_bulkDens4_hf
+
+subroutine compute_bulkDens4_pair(a, b, a_sh, b_sh, i_r, i_a, overlap)
+
+integer, intent(in)      :: a, b, a_sh, b_sh, i_r, i_a
+complex(r64), intent(in) :: overlap
+
+integer      :: spO2, par_ind,    ms,ms2, a_n, b_n
+complex(r64) :: kaP,kaN,kaCcP, kaCcN,kPN,kNP,kCcNP,kCcPN, &
+                kaPt,kaNt,kaCcPt, kaCcNt,kPNt,kNPt, &
+                kCcNPt,kCcPNt,B1_part,B2_part, aux, sum_, radial_ab
+logical      :: aNeQb
+spO2 = HOsp_dim / 2
+
+! assertion, a, b only from pp space:
+if ((a > spO2).OR.(b > spO2)) then
+  print *, "[ASSERT. ERROR] compute_bulkDens4Fields a,b (sp) in neutron space"
+  STOP
+endif
+if (b < a) then
+  print *, "[ASSERT. ERROR] compute_bulkDens4Fields a <= b!, but b < a"
+  STOP
+end if
+aNeQb = kdelta(a, b).ne.1
+a_n   = a + spO2
+b_n   = b + spO2
+
+radial_ab = radial_2b_sho_memo(a_sh, b_sh, i_r) / overlap
+
+kaP = radial_ab * kappaLR(a  ,b)
+kaN = radial_ab * kappaLR(a_n,b_n)
+kPN = radial_ab * kappaLR(a  ,b_n)
+kNP = radial_ab * kappaLR(a_n,b)
+
+kaCcP = radial_ab * kappaRL(a  ,b)
+kaCcN = radial_ab * kappaRL(a_n,b_n)
+kCcPN = radial_ab * kappaRL(a  ,b_n)
+kCcNP = radial_ab * kappaRL(a_n,b)
+
+!if (aNeQb) then !do it always, dont sum then
+  kaPt   = radial_ab * kappaLR(b  ,a)
+  kaNt   = radial_ab * kappaLR(b_n,a_n)
+  kPNt   = radial_ab * kappaLR(b  ,a_n)
+  kNPt   = radial_ab * kappaLR(b_n,a)
+
+  kaCcPt = radial_ab * kappaRL(b  ,a)
+  kaCcNt = radial_ab * kappaRL(b_n,a_n)
+  kCcPNt = radial_ab * kappaRL(b  ,a_n)
+  kCcNPt = radial_ab * kappaRL(b_n,a)
+!endif
+
+do ms = 1, 4
+  select case (ms)
+    case (2, 3)
+      ms2 = 5 - ms
+    case default
+      ms2 = ms
+  end select
+
   B1_part = (AngFunctDUAL_P1(ms,a,b,i_a) - AngFunctDUAL_P1(ms2,a,b,i_a))
   BulkP1(1,ms,i_r,i_a) = BulkP1(1,ms,i_r,i_a) + (B1_part * kaP) !pp
   BulkP1(2,ms,i_r,i_a) = BulkP1(2,ms,i_r,i_a) + (B1_part * kaN) !nn
@@ -1324,12 +1277,6 @@ do ms = 1, 4
   BulkP2(4,ms,i_r,i_a) = BulkP2(4,ms,i_r,i_a) + (B2_part * kCcNP) !np
 
   if (aNeQb) then
-    A_part = AngFunctDUAL_HF(ms2,b,a,i_a)
-    BulkHF(1,ms,i_r,i_a) = BulkHF(1,ms,i_r,i_a) + (A_part * roPt) !pp
-    BulkHF(2,ms,i_r,i_a) = BulkHF(2,ms,i_r,i_a) + (A_part * roNt) !nn
-    BulkHF(3,ms,i_r,i_a) = BulkHF(3,ms,i_r,i_a) + (A_part * rPNt) !pn
-    BulkHF(4,ms,i_r,i_a) = BulkHF(4,ms,i_r,i_a) + (A_part * rNPt) !np
-
     B1_part = (AngFunctDUAL_P1(ms,b,a,i_a) - AngFunctDUAL_P1(ms2,b,a,i_a))
     BulkP1(1,ms,i_r,i_a) = BulkP1(1,ms,i_r,i_a) + (B1_part * kaPt) !pp
     BulkP1(2,ms,i_r,i_a) = BulkP1(2,ms,i_r,i_a) + (B1_part * kaNt) !nn
@@ -1350,9 +1297,7 @@ do ms = 1, 4
   endif
 enddo
 
-end subroutine compute_bulkDens4Fields
-
-
+end subroutine compute_bulkDens4_pair
 
 !-----------------------------------------------------------------------------!
 ! Auxiliary clean the Bulk fields to be pre-calculated or get the total value !
@@ -1372,7 +1317,7 @@ else
     ! BulkHF(ms,i_r,i_ang) = BulkHF_pp(ms,i_r,i_ang) + BulkHF_nn(ms,i_r,i_ang)
     BulkHF(5,ms,i_r,i_ang) = BulkHF(1,ms,i_r,i_ang) + BulkHF(2,ms,i_r,i_ang)
     BulkP1(5,ms,i_r,i_ang) = BulkP1(1,ms,i_r,i_ang) + BulkP1(2,ms,i_r,i_ang)
-    BulkP2(5,ms,i_r,i_ang) = BulkP2(1,ms,i_r,i_ang) + BulkP1(2,ms,i_r,i_ang)
+    BulkP2(5,ms,i_r,i_ang) = BulkP2(1,ms,i_r,i_ang) + BulkP2(2,ms,i_r,i_ang)
   enddo
 endif
 
@@ -1841,8 +1786,8 @@ do i_r = 1, r_dim
        do b = a, spO2         !!!!!     BENCH REQUIRES B=1      !!!!
          b_sh = HOsp_sh(b)
 
-         call compute_bulkDens4Fields(a, b, a_sh, b_sh, i_r, i_an, overlap)
-!         call compute_bulkDens4Fields_bench(a, b, a_sh, b_sh, i_r, i_an) ! BENCH REQUIRES B starting at 1
+         call compute_bulkDens4_hf  (a, b, a_sh, b_sh, i_r, i_an, overlap)
+         call compute_bulkDens4_pair(a, b, a_sh, b_sh, i_r, i_an, overlap)
       enddo ! do b
     enddo   ! do a
 
@@ -3482,6 +3427,13 @@ if (PRNT_) then
   write(558, fmt='(A)') "[pair integrals] a  c  ms  %%  I_real(pp)  nn   pn  np"
 endif
 
+if (EVAL_CUTOFF) then
+  call filter_fields_for_cutoff(HOsp_dim)
+!                               (gammaLR, deltaLR, deltaRL,&
+!                                hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, ndim)
+  call reeval_pairing_fields_after_cutoff
+endif
+
 do a = 1, spO2
   !! HF field
   a_sh = HOsp_sh(a)
@@ -3646,11 +3598,12 @@ do a = 1, spO2
   enddo
 enddo
 
-if (EVAL_CUTOFF) then
-  call filter_fields_for_cutoff(gammaLR, deltaLR, deltaRL,&
-                                hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, &
-                                ndim)
-endif
+!if (EVAL_CUTOFF) then
+!  call filter_fields_for_cutoff(HOsp_dim)
+!!                               (gammaLR, deltaLR, deltaRL,&
+!!                                hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, ndim)
+!  call reeval_pairing_fields_after_cutoff
+!endif
 
 !! save the last EDF HFB of the DD term
 last_HFB_energy = zero
@@ -3730,50 +3683,49 @@ end subroutine calculate_fields_DD
 ! subroutine to transform the final fields into the canonical basis and evaluate
 ! the sp energies valid to exclude the cutoff energy.
 !-----------------------------------------------------------------------------!
-subroutine filter_fields_for_cutoff(gammaLR, deltaLR, deltaRL,&
-                                    hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD,&
-                                    ndim)
+subroutine filter_fields_for_cutoff(ndim)
+!  (gammaLR, deltaLR, deltaRL,&
+!                                    hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD,&
+!                                    ndim)
 integer, intent(in) :: ndim
-complex(r64), dimension(ndim,ndim):: gammaLR, hspLR, deltaLR, deltaRL
-!! The density fields are added to the calculated with the standard hamiltonian
-!! This array variables are local
-complex(r64), dimension(ndim,ndim) :: gammaLR_DD, deltaLR_DD, deltaRL_DD
+!complex(r64), dimension(ndim,ndim):: gammaLR, hspLR, deltaLR, deltaRL
+!!! The density fields are added to the calculated with the standard hamiltonian
+!!! This array variables are local
+!complex(r64), dimension(ndim,ndim) :: gammaLR_DD, deltaLR_DD, deltaRL_DD
 
-complex(r64), dimension(ndim,ndim) :: gammaLR0, deltaLR0, deltaRL0, hspLR0
-real(r64), dimension(ndim,ndim) :: gammaRR_DD_co, deltaRR_DD_co
+!complex(r64), dimension(ndim,ndim) :: gammaLR0, deltaLR0, deltaRL0, hspLR0
+!real(r64), dimension(ndim,ndim) :: gammaRR_DD_co, deltaRR_DD_co
 
 complex(r64), dimension(ndim,ndim)  :: rho0LR, kappa0LR, kappa0RL
 real(r64), dimension(ndim/2,ndim/2) :: D0_pp, D0_nn, D0_pn
 real(r64), dimension(ndim/2,ndim/2) :: rhoc_pp, rhoc_nn, rhoc_pn
 real(r64), dimension(ndim/2,ndim/2) :: kapc_pp, kapc_nn, kapc_pn
-real(r64), dimension(ndim/2,ndim/2) :: hspc_pp, hspc_nn, hspc_pn
-real(r64), dimension(ndim/2,ndim/2) :: Delc_pp, Delc_nn, Delc_pn
+!real(r64), dimension(ndim/2,ndim/2) :: hspc_pp, hspc_nn, hspc_pn
+!real(r64), dimension(ndim/2,ndim/2) :: Delc_pp, Delc_nn, Delc_pn
 real(r64), dimension(ndim/2,ndim/2) :: bogo_U0_2,bogo_V0_2
 complex(r64), dimension(ndim/2,ndim/2) :: bogo_zU0c_2,bogo_zV0c_2,bogo_zD0_2
 
-real(r64),    dimension(ndim,ndim)  :: D0, rhoc, kapc, Gamc, Delc, hspc, &
-                                       A1, A2, hspRR
+real(r64),    dimension(ndim,ndim)  :: D0, rhoc, kapc, A1, A2!, Gamc, Delc, hspc, &
+!                                       hspRR
 
-real(r64), dimension(ndim/2,ndim/2) :: D02, rhoc2, kapc2, Gamc2, Delc2, &
-                                       hspc2, A12, A22
-
+real(r64), dimension(ndim/2,ndim/2) :: D02, rhoc2, kapc2,  A12, A22!, &
+!                                       Gamc2, Delc2, hspc2
+integer, dimension(2) :: k_min, k_max
+logical, dimension(2) :: max_ach
 real(r64) :: ovac0, e_fermi, VAL_T
 integer   :: i, j, k ,l, zn_indx, nocc0,nemp0, T, it, jt, n1o2
 
 n1o2 = ndim / 2
-do i = 1, ndim
-  do j = 1, ndim
-    gammaLR0(i, j) = gammaLR(i, j) - gammaLR_DD(i, j)
-    deltaLR0(i, j) = deltaLR(i, j) - deltaLR_DD(i, j)
-    deltaRL0(i, j) = deltaRL(i, j) - deltaRL_DD(i, j)
-    hspLR0  (i, j) = hspLR  (i, j) - gammaLR_DD(i, j) - rearrang_field(i, j)
-  end do
-end do
+!do i = 1, ndim
+!  do j = 1, ndim
+!    hspLR0  (i, j) = hspLR  (i, j) - gammaLR_DD(i, j) - rearrang_field(i, j)
+!  end do
+!end do
 
-gammaRR_DD_co = real(gammaLR_DD)
-deltaRR_DD_co = real(deltaLR_DD)
+!gammaRR_DD_co = real(gammaLR_DD)
+!deltaRR_DD_co = real(deltaLR_DD)
 !deltaRR_DD_c = real(deltaRL_DD)
-hspRR         = real(hspLR)
+!hspRR         = real(hspLR)
 
 !call calculate_fields_diag(rho0LR, kappa0LR, field_gammaLR, field_hspLR, &
 !                           field_deltaLR, field_deltaRL, ndim)
@@ -3833,9 +3785,7 @@ do T = 1, 3 ! pp, nn, pn
 
       rhoc2(i,j) = dens_rhoRR   (i+it,j+jt)
       kapc2(i,j) = dens_kappaRR (i+it,j+jt)
-      Gamc2(i,j) = gammaRR_DD_co(i+it,j+jt)
-      Delc2(i,j) = deltaRR_DD_co(i+it,j+jt)
-      hspc2(i,j) = hspRR        (i+it,j+jt)
+!      hspc2(i,j) = hspRR        (i+it,j+jt)
     end do
   end do
 
@@ -3846,23 +3796,15 @@ do T = 1, 3 ! pp, nn, pn
   call dgemm('t','n',n1o2,n1o2,n1o2,one,D02,n1o2,kapc2,n1o2,zero,A12,n1o2)
   call dgemm('n','n',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,kapc2,n1o2)
 
-  call dgemm('t','n',n1o2,n1o2,n1o2,one,D02,n1o2,hspc2,n1o2,zero,A12,n1o2)
-  call dgemm('n','n',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,hspc2,n1o2)
-
-  call dgemm('t','n',n1o2,n1o2,n1o2,one,D02,n1o2,Gamc2,n1o2,zero,A12,n1o2)
-  call dgemm('n','n',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,Gamc2,n1o2)
-
-  call dgemm('t','n',n1o2,n1o2,n1o2,one,D02,n1o2,Delc2,n1o2,zero,A12,n1o2)
-  call dgemm('n','n',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,Delc2,n1o2)
+!  call dgemm('t','n',n1o2,n1o2,n1o2,one,D02,n1o2,hspc2,n1o2,zero,A12,n1o2)
+!  call dgemm('n','n',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,hspc2,n1o2)
 
   print "(A)", " submatrices to convert into de cannonical basis. (DONE)"
   do i = 1, n1o2
     do j = 1, n1o2
       rhoc(i+it,j+jt) = rhoc2(i,j)
       kapc(i+it,j+jt) = kapc2(i,j)
-      Gamc(i+it,j+jt) = Gamc2(i,j)
-      Delc(i+it,j+jt) = Delc2(i,j)
-      hspc(i+it,j+jt) = hspc2(i,j)
+!      hspc(i+it,j+jt) = hspc2(i,j)
     end do
   end do
 end do ! T loop
@@ -3870,34 +3812,205 @@ end do ! T loop
 open(333, file='_cannonicalFields_rhokapa.gut')
 do i = 1, ndim
   do j = 1, ndim
-    write(333,fmt='(2I5,6F15.5)') i, j , D0(i,j), rhoc(i,j), kapc(i,j), &
-                                  hspc(i,j), Gamc(i,j), Delc(i,j)
+    write(333,fmt='(2I5,3F15.5)') i, j , D0(i,j), rhoc(i,j),kapc(i,j)!, hspc(i,j)
   end do
 end do
 close(333)
 print "(A)", "  - calculate cannonical basis [DONE]"
 
-do T = 1, 2
-  ovac0 = zero
-  k = 0
-  if (T .EQ. 1) VAL_T = nucleus_Z
-  if (T .EQ. 2) then
-    it = n1o2
-    VAL_T = nucleus_N
-  endif
+!do T = 1, 2
+!  ovac0 = zero
+!  k = 0
+!  if (T .EQ. 1) VAL_T = nucleus_Z
+!  if (T .EQ. 2) then
+!    it = n1o2
+!    VAL_T = nucleus_N
+!  endif
+!
+!  do while ((ovac0 <= VAL_T) .AND. (k < n1o2 - 1))
+!    k = k + 1
+!    ovac0 = ovac0 + rhoc(k+it,k+it)
+!    if (ovac0 <= VAL_T) then
+!      print "(I3,A,I5,2F15.5)", T,".Occupation filled at k=", k, ovac0, VAL_T
+!    endif
+!  end do
+!  print "(A)", ""
+!end do ! T loop
 
-  do while ((ovac0 <= VAL_T) .AND. (k < n1o2 - 1))
-    k = k + 1
-    ovac0 = ovac0 + rhoc(k+it,k+it)
-    if (ovac0 <= VAL_T) then
-      print "(I3,A,I5,2F15.5)", T,".Occupation filled at k=", k, ovac0, VAL_T
+!! Cutoff criteria from Kappa matrix.
+k_min = (/1, 1/)
+k_max = (/1, 1/)
+
+max_ach = (/.FALSE., .FALSE./)
+do k = 1, spO2, 2
+  do T = 0, 1
+    if (abs(kapc2(k + n1o2*T + 1, k + n1o2*T)) > 0.2) then
+      if (k_min(T) .EQ. 1) k_min(T) = k
+      if (.NOT.max_ach(T) .AND. (k > 1)) then
+        max_ach(T) = abs(kapc2(k + n1o2*T + 1, k + n1o2*T) .LT. \
+                     abs(kapc2(k + n1o2*T - 1, k + n1o2*T - 2)
+      endif
+    else
+      if (max_ach(T) .AND. (k_max(t).EQ.1)) then
+        k_max(T) = k - 2
+      endif
     endif
+  enddo
+enddo
+
+!! remove all states but k within kappa min and max, undo the canonical transf.
+do k = 1, n1o2 - 2
+  i = 1
+  if (mod(k, 2) .EQ. 1) i = 2
+
+  if ((k < max(k_min)) .OR. (k > min(k_max)))
+    if (i .EQ. 1) kapc_pn(k, k + 1) = .zero.
+    if (i .EQ. 2) kapc_pn(k + 1, k) = .zero.
+  endif
+  kapc_pn(k, k) = .zero.
+
+  do j = k+i, n1o2
+    kapc_pn(k, j) = .zero.
+    kapc_pn(j, k) = .zero.
   end do
-  print "(A)", ""
-end do ! T loop
+enddo
+if ((k > min(k_max)))
+  kapc_pn(k, k) = .zero.
+  kapc_pn(k, k + 1) = .zero.
+  kapc_pn(k + 1, k) = .zero.
+  kapc_pn(k + 1, k + 1) = .zero.
+endif
+
+!! Last D02 was pn transformation
+call dgemm('n','n',n1o2,n1o2,n1o2,one,D02,n1o2,kapc_pn,n1o2,zero,A12,n1o2)
+call dgemm('n','t',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,kapc2,n1o2)
+do i = 1, n1o2
+  do j = 1, n1o2
+    ! no cutoff in pp-nn, copy directly
+    kappaRL(i, j) = kappaRL(i, j)
+    kappaLR(i, j) = kappaLR(i, j)
+    kappaRL(i+n1o2, j+n1o2) = kappaRL(i+n1o2, j+n1o2)
+    kappaLR(i+n1o2, j+n1o2) = kappaLR(i+n1o2, j+n1o2)
+    ! pn cutoff
+    kappaRL(i+n1o2, j) = kapc2(i, j)
+    kappaLR(i+n1o2, j) = kapc2(i, j)
+    kappaRL(i, j+n1o2) = kapc2(i, j)
+    kappaLR(i, j+n1o2) = kapc2(i, j)
+  end do
+end do
 
 print "(A,I5)", " -cutoff subroutine DONE, iter =", iteration
 end subroutine filter_fields_for_cutoff
+
+
+
+subroutine reeval_pairing_fields_after_cutoff
+
+integer :: a,b,a_sh,b_sh,spO2,i_r,i_an, ms, Tab
+complex(r64), dimension(4) :: int_hf, int_pa ! all arrays are for (pp, nn, pn, np)
+complex(r64), dimension(4) :: aux, aux_PE, aux_pair
+complex(r64) :: int_rea, auxRea
+real(r64)    :: rad_ab
+spO2   = HOsp_dim / 2
+
+do a = 1, spO2
+   do b = 1, spO2         !!!!!     BENCH REQUIRES B=1      !!!!
+    continue
+  enddo ! do b
+enddo   ! do a
+
+
+BulkP1 = zzero
+BulkP2 = zzero
+!!-----------------------
+do i_r = 1, r_dim
+  do i_an = 1, angular_dim
+
+    do a = 1, spO2
+       a_sh = HOsp_sh(a)
+       do b = a, spO2         !!!!!     BENCH REQUIRES B=1      !!!!
+         b_sh = HOsp_sh(b)
+         call compute_bulkDens4_pair(a, b, a_sh, b_sh, i_r, i_an, zone)
+      enddo ! do b
+    enddo   ! do a
+
+    do ms = 1, 4
+      BulkP1(5,ms,i_r,i_an) = BulkP1(1,ms,i_r,i_an) + BulkP1(2,ms,i_r,i_an)
+      BulkP2(5,ms,i_r,i_an) = BulkP2(1,ms,i_r,i_an) + BulkP2(2,ms,i_r,i_an)
+    enddo
+  enddo
+enddo
+
+call calculate_common_rearrang_bulkFields
+
+return
+!!----------------------
+int_hf = zzero
+do a = 1, spO2
+  a_sh = HOsp_sh(a)
+  do b = a, spO2
+    b_sh = HOsp_sh(c)
+
+    int_pa = zzero
+    int_rea= zzero
+
+    int_test_PE = zzero
+
+    do i_r = 1, r_dim
+      rad_ab = weight_R(i_r) * radial_2b_sho_memo(a_sh, b_sh, i_r)
+      rad_ab = rad_ab * dexp((2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
+      do i_an = 1, angular_dim
+
+        !! EXCHANGE terms for the HF fields
+        aux_PE = zzero
+        aux = zzero
+        do ms = 1, 4
+          !! NOTE: Angular 1, 2 functions are defined with direct form of ms,ms'
+          if (haveX0M1) then
+            aux(ms) = AngFunctDUAL_P2(ms,a,b,i_an) * BulkP1(1,ms,i_r,i_an) !pp
+            aux_PE(1) = aux_PE(1)  + (X0M1*aux(ms))
+            aux(ms) = AngFunctDUAL_P2(ms,a,b,i_an) * BulkP1(2,ms,i_r,i_an) !nn
+            aux_PE(2) = aux_PE(2)  + (X0M1*aux(ms))
+          endif
+          !! pn np part, x0 dependence was calculated in BulkP1_**
+          aux(ms) = AngFunctDUAL_P2(ms,a,b, i_an) * BulkP1(3,ms, i_r,i_an) !pn
+          aux_PE(3)  = aux_PE(3)  + aux(ms)
+          aux(ms) = AngFunctDUAL_P2(ms,a,b, i_an) * BulkP1(4,ms, i_r,i_an) !np
+          aux_PE(4)  = aux_PE(4)  + aux(ms)
+        enddo ! ms loop
+
+        !! EXCHANGE Sum terms and add to the global (r,ang) value to integrate
+        do Tab =  1, 4
+          aux_pair(Tab) = weight_LEB(i_an) * rad_ab * dens_alpha(i_r,i_an)
+          aux_pair(Tab) = aux_PE(Tab) * aux_pair(Tab)
+          int_pa  (Tab) = int_pa(Tab) + aux_pair(Tab)
+        enddo
+
+        auxRea = zzero
+        if (EVAL_REARRANGEMENT) then
+          auxRea  = REACommonFields(i_r,i_an) * dens_alpm1(i_r,i_an)
+          auxRea  = auxRea * rea_common_RadAng(a,b, i_r, i_an)
+          auxRea  = auxRea * dexp( (2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
+          int_rea = int_rea + (auxRea * weight_R(i_r) * weight_LEB(i_an))
+        endif
+        ! rearrange for pn and np are the same (pn/np are Zero)
+
+      enddo ! loop ang
+    enddo !loop r
+
+    do Tab = 1, 4
+      int_pa(Tab) = int_pa(Tab) * integral_factor
+    enddo
+    int_rea = int_rea * 0.25d+0 * integral_factor * alpha_DD
+
+    call complete_DD_fields(int_hf, int_pa, int_rea, gammaLR, deltaLR,deltaRL,&
+                            hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, &
+                            a, b, spO2, ndim)
+
+  enddo
+enddo
+
+end subroutine reeval_pairing_fields_after_cutoff
 
 !-----------------------------------------------------------------------------!
 ! subroutine to print the progress of iter/iter_max as a progress bar         !
