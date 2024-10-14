@@ -3731,7 +3731,7 @@ n1o2 = ndim / 2
 !                           field_deltaLR, field_deltaRL, ndim)
 !field_hspRR   = real(field_hspLR) + field_gammaRR_DD + field_rearrRR_DD
 !call dsyev('v','u',ndim,field_hspRR,ndim,eigen_H11,work,3*ndim-1,info_H11)
-
+!
 !!!! =====================================================================
 !!! CALCULATE THE CANONICAL BASIS
 !call construct_canonical_basis(bogo_U0,bogo_V0,bogo_zU0c,bogo_zV0c,bogo_zD0, &
@@ -3845,7 +3845,9 @@ max_ach = (/.FALSE., .FALSE./)
 do k = 1, spO2, 2
   do T = 1, 2
     if (abs(kapc2(k + n1o2*T + 1, k + n1o2*T)) > 0.2) then
-      if (k_min(T) .EQ. 1) k_min(T) = k
+      if (k_min(T) .EQ. 1) then
+        k_min(T) = k
+        endif
       if (.NOT.max_ach(T) .AND. (k > 1)) then
         max_ach(T) = abs(kapc2(k + n1o2*T + 1, k + n1o2*T)) .LT. &
                      abs(kapc2(k + n1o2*T - 1, k + n1o2*T - 2))
@@ -3864,8 +3866,12 @@ do k = 1, n1o2 - 2
   if (mod(k, 2) .EQ. 1) i = 2
 
   if ((k < max(k_min)) .OR. (k > min(k_max))) then
-    if (i .EQ. 1) kapc_pn(k, k + 1) = .zero.
-    if (i .EQ. 2) kapc_pn(k + 1, k) = .zero.
+    if (i .EQ. 1) then
+      kapc_pn(k, k + 1) = .zero.
+      endif
+    if (i .EQ. 2) then
+      kapc_pn(k + 1, k) = .zero.
+      endif
   endif
   kapc_pn(k, k) = .zero.
 
@@ -3945,70 +3951,70 @@ call calculate_common_rearrang_bulkFields
 
 return
 !!----------------------
-int_hf = zzero
-do a = 1, spO2
-  a_sh = HOsp_sh(a)
-  do b = a, spO2
-    b_sh = HOsp_sh(c)
-
-    int_pa = zzero
-    int_rea= zzero
-
-    int_test_PE = zzero
-
-    do i_r = 1, r_dim
-      rad_ab = weight_R(i_r) * radial_2b_sho_memo(a_sh, b_sh, i_r)
-      rad_ab = rad_ab * dexp((2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
-      do i_an = 1, angular_dim
-
-        !! EXCHANGE terms for the HF fields
-        aux_PE = zzero
-        aux = zzero
-        do ms = 1, 4
-          !! NOTE: Angular 1, 2 functions are defined with direct form of ms,ms'
-          if (haveX0M1) then
-            aux(ms) = AngFunctDUAL_P2(ms,a,b,i_an) * BulkP1(1,ms,i_r,i_an) !pp
-            aux_PE(1) = aux_PE(1)  + (X0M1*aux(ms))
-            aux(ms) = AngFunctDUAL_P2(ms,a,b,i_an) * BulkP1(2,ms,i_r,i_an) !nn
-            aux_PE(2) = aux_PE(2)  + (X0M1*aux(ms))
-          endif
-          !! pn np part, x0 dependence was calculated in BulkP1_**
-          aux(ms) = AngFunctDUAL_P2(ms,a,b, i_an) * BulkP1(3,ms, i_r,i_an) !pn
-          aux_PE(3)  = aux_PE(3)  + aux(ms)
-          aux(ms) = AngFunctDUAL_P2(ms,a,b, i_an) * BulkP1(4,ms, i_r,i_an) !np
-          aux_PE(4)  = aux_PE(4)  + aux(ms)
-        enddo ! ms loop
-
-        !! EXCHANGE Sum terms and add to the global (r,ang) value to integrate
-        do Tab =  1, 4
-          aux_pair(Tab) = weight_LEB(i_an) * rad_ab * dens_alpha(i_r,i_an)
-          aux_pair(Tab) = aux_PE(Tab) * aux_pair(Tab)
-          int_pa  (Tab) = int_pa(Tab) + aux_pair(Tab)
-        enddo
-
-        auxRea = zzero
-        if (EVAL_REARRANGEMENT) then
-          auxRea  = REACommonFields(i_r,i_an) * dens_alpm1(i_r,i_an)
-          auxRea  = auxRea * rea_common_RadAng(a,b, i_r, i_an)
-          auxRea  = auxRea * dexp( (2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
-          int_rea = int_rea + (auxRea * weight_R(i_r) * weight_LEB(i_an))
-        endif
-        ! rearrange for pn and np are the same (pn/np are Zero)
-
-      enddo ! loop ang
-    enddo !loop r
-
-    do Tab = 1, 4
-      int_pa(Tab) = int_pa(Tab) * integral_factor
-    enddo
-    int_rea = int_rea * 0.25d+0 * integral_factor * alpha_DD
-
-    call complete_DD_fields(int_hf, int_pa, int_rea, gammaLR, deltaLR,deltaRL,&
-                            hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, &
-                            a, b, spO2, ndim)
-
-  enddo
-enddo
+!int_hf = zzero
+!do a = 1, spO2
+!  a_sh = HOsp_sh(a)
+!  do b = a, spO2
+!    b_sh = HOsp_sh(c)
+!
+!    int_pa = zzero
+!    int_rea= zzero
+!
+!    int_test_PE = zzero
+!
+!    do i_r = 1, r_dim
+!      rad_ab = weight_R(i_r) * radial_2b_sho_memo(a_sh, b_sh, i_r)
+!      rad_ab = rad_ab * dexp((2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
+!      do i_an = 1, angular_dim
+!
+!        !! EXCHANGE terms for the HF fields
+!        aux_PE = zzero
+!        aux = zzero
+!        do ms = 1, 4
+!          !! NOTE: Angular 1, 2 functions are defined with direct form of ms,ms'
+!          if (haveX0M1) then
+!            aux(ms) = AngFunctDUAL_P2(ms,a,b,i_an) * BulkP1(1,ms,i_r,i_an) !pp
+!            aux_PE(1) = aux_PE(1)  + (X0M1*aux(ms))
+!            aux(ms) = AngFunctDUAL_P2(ms,a,b,i_an) * BulkP1(2,ms,i_r,i_an) !nn
+!            aux_PE(2) = aux_PE(2)  + (X0M1*aux(ms))
+!          endif
+!          !! pn np part, x0 dependence was calculated in BulkP1_**
+!          aux(ms) = AngFunctDUAL_P2(ms,a,b, i_an) * BulkP1(3,ms, i_r,i_an) !pn
+!          aux_PE(3)  = aux_PE(3)  + aux(ms)
+!          aux(ms) = AngFunctDUAL_P2(ms,a,b, i_an) * BulkP1(4,ms, i_r,i_an) !np
+!          aux_PE(4)  = aux_PE(4)  + aux(ms)
+!        enddo ! ms loop
+!
+!        !! EXCHANGE Sum terms and add to the global (r,ang) value to integrate
+!        do Tab =  1, 4
+!          aux_pair(Tab) = weight_LEB(i_an) * rad_ab * dens_alpha(i_r,i_an)
+!          aux_pair(Tab) = aux_PE(Tab) * aux_pair(Tab)
+!          int_pa  (Tab) = int_pa(Tab) + aux_pair(Tab)
+!        enddo
+!
+!        auxRea = zzero
+!        if (EVAL_REARRANGEMENT) then
+!          auxRea  = REACommonFields(i_r,i_an) * dens_alpm1(i_r,i_an)
+!          auxRea  = auxRea * rea_common_RadAng(a,b, i_r, i_an)
+!          auxRea  = auxRea * dexp( (2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
+!          int_rea = int_rea + (auxRea * weight_R(i_r) * weight_LEB(i_an))
+!        endif
+!        ! rearrange for pn and np are the same (pn/np are Zero)
+!
+!      enddo ! loop ang
+!    enddo !loop r
+!
+!    do Tab = 1, 4
+!      int_pa(Tab) = int_pa(Tab) * integral_factor
+!    enddo
+!    int_rea = int_rea * 0.25d+0 * integral_factor * alpha_DD
+!
+!    call complete_DD_fields(int_hf, int_pa, int_rea, gammaLR, deltaLR,deltaRL,&
+!                            hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, &
+!                            a, b, spO2, ndim)
+!
+!  enddo
+!enddo
 
 end subroutine reeval_pairing_fields_after_cutoff
 
