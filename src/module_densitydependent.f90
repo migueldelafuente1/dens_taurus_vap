@@ -3847,7 +3847,7 @@ do k = 1, spO2, 2
     if (abs(kapc2(k + n1o2*T + 1, k + n1o2*T)) > 0.2) then
       if (k_min(T) .EQ. 1) k_min(T) = k
       if (.NOT.max_ach(T) .AND. (k > 1)) then
-        max_ach(T) = abs(kapc2(k + n1o2*T + 1, k + n1o2*T) .LT. \
+        max_ach(T) = abs(kapc2(k + n1o2*T + 1, k + n1o2*T) .LT. &
                      abs(kapc2(k + n1o2*T - 1, k + n1o2*T - 2)
       endif
     else
