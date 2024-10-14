@@ -3863,7 +3863,7 @@ do k = 1, n1o2 - 2
   i = 1
   if (mod(k, 2) .EQ. 1) i = 2
 
-  if ((k < max(k_min)) .OR. (k > min(k_max)))
+  if ((k < max(k_min)) .OR. (k > min(k_max))) then
     if (i .EQ. 1) kapc_pn(k, k + 1) = .zero.
     if (i .EQ. 2) kapc_pn(k + 1, k) = .zero.
   endif
@@ -3874,7 +3874,7 @@ do k = 1, n1o2 - 2
     kapc_pn(j, k) = .zero.
   end do
 enddo
-if ((k > min(k_max)))
+if ((k > min(k_max))) then
   kapc_pn(k, k) = .zero.
   kapc_pn(k, k + 1) = .zero.
   kapc_pn(k + 1, k) = .zero.
