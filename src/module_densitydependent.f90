@@ -3712,7 +3712,7 @@ real(r64), dimension(ndim/2,ndim/2) :: D02, rhoc2, kapc2,  A12, A22!, &
 !                                       Gamc2, Delc2, hspc2
 integer, dimension(2) :: k_min, k_max
 logical, dimension(2) :: max_ach
-real(r64) :: ovac0, e_fermi, VAL_T
+real(r64) :: ovac0, e_fermi, VAL_T, aux
 integer   :: i, j, k ,l, zn_indx, nocc0,nemp0, T, it, jt, n1o2
 real(r64), parameter :: KAPPA_CUTOFF = 0.2
 
@@ -3812,14 +3812,6 @@ do T = 1, 3 ! pp, nn, pn
     end do
   end do
 end do ! T loop
-
-open(333, file='_cannonicalFields_rhokapa.gut')
-do i = 1, ndim
-  do j = 1, ndim
-    write(333,fmt='(2I5,3F15.5)') i, j , D0(i,j), rhoc(i,j),kapc(i,j)!,hspc(i,j)
-  end do
-end do
-close(333)
 !print "(A)", "  - calculate cannonical basis [DONE]"
 
 !do T = 1, 2
@@ -3893,6 +3885,22 @@ if ((maxval(k_min) .LE. minval(k_max)) .AND. (minval(k_max) /= 0)) then
   enddo
 endif
 !! else: cannot apply the cutoff and kapc_pn remains as the initial state
+
+open(333, file='_cannonicalFields_rhokapa.gut')
+do i = 1, ndim
+  do j = 1, ndim
+    if (i .GT. n1o2) then
+      if (j .GT. n1o2) aux =  kapc_nn(i-n1o2,j-n1o2)
+      else             aux =  kapc_pn(i-n1o2,j)
+    else
+      if (j .GT. n1o2) aux = -kapc_pn(j-n1o2,i)
+      else             aux =  kapc_pp(i,j)
+    end if
+    write(333,fmt='(2I5,4F15.5)') i, j , D0(i,j), rhoc(i,j),kapc(i,j),aux
+      !,hspc(i,j)
+  end do
+end do
+close(333)
 
 !! Last D02 was pn transformation
 call dgemm('n','n',n1o2,n1o2,n1o2,one,D0_pn,n1o2,kapc_pn,n1o2,zero,A12,n1o2)
