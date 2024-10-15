@@ -3804,6 +3804,9 @@ do T = 1, 3 ! pp, nn, pn
       rhoc(i+it,j+jt) = rhoc2(i,j)
       kapc(i+it,j+jt) = kapc2(i,j)
 !      hspc(i+it,j+jt) = hspc2(i,j)
+      if (T.EQ.1) D0_pp(i,j) = D02(i,j)
+      if (T.EQ.2) D0_nn(i,j) = D02(i,j)
+      if (T.EQ.3) D0_pn(i,j) = D02(i,j)
     end do
   end do
 end do ! T loop
@@ -3847,14 +3850,18 @@ do k = 1, n1o2, 2
       if (k_min(T) .EQ. 0) then
         k_min(T) = k
         endif
-      if (.NOT.max_ach(T) .AND. (k > 1)) then ! k in 2 steps, (k > 2)
+      if ((.NOT.max_ach(T)) .AND. (k > 1)) then ! k in 2 steps, (k > 2)
         max_ach(T) = abs(kapc2(k + n1o2*(T-1)    , k + n1o2*(T-1) + 1)) .LT. &
                      abs(kapc2(k + n1o2*(T-1) - 2, k + n1o2*(T-1) - 1))
       endif
     else
+      if (k_min(T) .NE. 0) then
+        !case: kappa values continue increasing until a sudden drop below CUTOFF
+        max_ach(T) = .TRUE.
+        endif
       if (max_ach(T) .AND. (k_max(t).EQ.0)) then
-        k_max(T) = k - 2
-      endif
+        k_max(T) = k - 1
+        endif
     endif
   enddo
 enddo
@@ -3892,8 +3899,8 @@ if ((maxval(k_min) .LE. minval(k_max)) .AND. (minval(k_max) /= 0)) then
 endif
 
 !! Last D02 was pn transformation
-call dgemm('n','n',n1o2,n1o2,n1o2,one,D02,n1o2,kapc_pn,n1o2,zero,A12,n1o2)
-call dgemm('n','t',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,kapc2,n1o2)
+call dgemm('n','n',n1o2,n1o2,n1o2,one,D0_pn,n1o2,kapc_pn,n1o2,zero,A12,n1o2)
+call dgemm('n','t',n1o2,n1o2,n1o2,one,A12,n1o2,D0_pn,n1o2,zero,kapc2,n1o2)
 do i = 1, n1o2
   do j = 1, n1o2
     ! no cutoff in pp-nn, copy directly
