@@ -3851,22 +3851,27 @@ do k = 1, n1o2, 2
       abs(kapc2(k + n1o2*(T-1) + 1, k + n1o2*(T-1))), KAPPA_CUTOFF
     if (abs(kapc2(k + n1o2*(T-1), k + n1o2*(T-1) + 1)) .GT. KAPPA_CUTOFF) then
       if (k_min(T) .EQ. 0) then
+        print "(A)", "    cs:1"
         k_min(T) = k
         endif
       if ((.NOT.max_ach(T)) .AND. (k > 1)) then ! k in 2 steps, (k > 2)
         max_ach(T) = abs(kapc2(k + n1o2*(T-1)    , k + n1o2*(T-1) + 1)) .LT. &
                      abs(kapc2(k + n1o2*(T-1) - 2, k + n1o2*(T-1) - 1))
+        print "(A,L3)", "    cs:1.b max_ach=", max_ach(T)
       endif
     else
       if (k_min(T) .NE. 0) then
         !case: kappa values continue increasing until a sudden drop below CUTOFF
         max_ach(T) = .TRUE.
+        print "(A)", "    cs:2.b"
         endif
       if (max_ach(T) .AND. (k_max(t).EQ.0)) then
+        print "(A)", "    cs:2"
         k_max(T) = k - 1
         endif
     endif
   enddo
+  print "(A)", ""
 enddo
 print "(A,4I5,A,2L3)", " > Cutoff-kappa (p,n)(min, max):", k_min(1), k_min(2),&
             k_max(1), k_max(2), "  // max achieved=", max_ach(1), max_ach(2)
