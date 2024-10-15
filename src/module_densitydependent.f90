@@ -3894,7 +3894,7 @@ do i = 1, ndim
   do j = 1, ndim
     if (i .GT. n1o2) then
       if (j .GT. n1o2) then
-        aux =  kapc_nn(i-n1o2,j-n1o2)
+        aux =  kapc(i-n1o2,j-n1o2)
       else
         aux =  kapc_pn(i-n1o2,j)
       endif
@@ -3902,7 +3902,7 @@ do i = 1, ndim
       if (j .GT. n1o2) then
         aux = -kapc_pn(j-n1o2,i)
       else
-        aux =  kapc_pp(i,j)
+        aux =  kapc(i,j)
       endif
     endif
     write(333,fmt='(2I5,4F15.5)') i, j , D0(i,j), rhoc(i,j),kapc(i,j),aux
@@ -3917,10 +3917,10 @@ call dgemm('n','t',n1o2,n1o2,n1o2,one,A12,n1o2,D0_pn,n1o2,zero,kapc2,n1o2)
 do i = 1, n1o2
   do j = 1, n1o2
     ! no cutoff in pp-nn, copy directly
-    kappaRL(i, j) = kappaRL(i, j)
-    kappaLR(i, j) = kappaLR(i, j)
-    kappaRL(i+n1o2, j+n1o2) = kappaRL(i+n1o2, j+n1o2)
-    kappaLR(i+n1o2, j+n1o2) = kappaLR(i+n1o2, j+n1o2)
+    kappaRL(i, j) = dens_kappaRR(i, j)
+    kappaLR(i, j) = dens_kappaRR(i, j)
+    kappaRL(i+n1o2, j+n1o2) = dens_kappaRR(i+n1o2, j+n1o2)
+    kappaLR(i+n1o2, j+n1o2) = dens_kappaRR(i+n1o2, j+n1o2)
     ! pn cutoff
     kappaRL(i+n1o2, j) = -kapc2(j, i)
     kappaLR(i+n1o2, j) = -kapc2(j, i)
