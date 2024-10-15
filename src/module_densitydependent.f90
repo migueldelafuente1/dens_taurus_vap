@@ -3859,31 +3859,34 @@ do k = 1, n1o2, 2
     endif
   enddo
 enddo
+!! remove all states but k within kappa min and max, undo the canonical transf.
+if ((maxval(k_min) .GT. minval(k_max)) .OR. (minval(k_max) == 0) &
+    .OR. ((k_max(1) < n1o2 / 3).OR.(k_max(2) < n1o2 / 3))) then
+  k_min = (/n1o2 - 2*int(nucleus_Z), n1o2 - 2*int(nucleus_N)/)
+  k_max = (/n1o2, n1o2/)
+endif
 print "(A,4I5,A,2L3)", " > Cutoff-kappa (p,n)(min, max):", k_min(1), k_min(2),&
             k_max(1), k_max(2), "  // max achieved=", max_ach(1), max_ach(2)
 
-!! remove all states but k within kappa min and max, undo the canonical transf.
-if ((maxval(k_min) .LE. minval(k_max)) .AND. (minval(k_max) /= 0)) then
+do i = 1, n1o2
+  if      (i .LT. k_min(1)) then
+    do j = 1, n1o2
+      kapc_pn(i, j) = zero
+    enddo
+  else if (i .GT. k_max(1)) then
+    do j = 1, n1o2
+      kapc_pn(i, j) = zero
+    enddo
+  else ! in k_valid range
+    do j = 1, max(1, k_min(2) - 1)
+      kapc_pn(i, j) = zero
+    enddo
+    do j = min(k_max(2) + 1, n1o2), n1o2
+      kapc_pn(i, j) = zero
+    enddo
+  end if
+enddo
 
-  do i = 1, n1o2
-    if      (i .LT. k_min(1)) then
-      do j = 1, n1o2
-        kapc_pn(i, j) = zero
-      enddo
-    else if (i .GT. k_max(1)) then
-      do j = 1, n1o2
-        kapc_pn(i, j) = zero
-      enddo
-    else ! in k_valid range
-      do j = 1, max(1, k_min(2) - 1)
-        kapc_pn(i, j) = zero
-      enddo
-      do j = min(k_max(2) + 1, n1o2), n1o2
-        kapc_pn(i, j) = zero
-      enddo
-    end if
-  enddo
-endif
 !! else: cannot apply the cutoff and kapc_pn remains as the initial state
 
 open(333, file='_cannonicalFields_rhokapa.gut')
