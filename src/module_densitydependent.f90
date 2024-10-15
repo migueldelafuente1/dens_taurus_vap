@@ -3807,6 +3807,8 @@ do T = 1, 3 ! pp, nn, pn
       if (T.EQ.1) D0_pp(i,j) = D02(i,j)
       if (T.EQ.2) D0_nn(i,j) = D02(i,j)
       if (T.EQ.3) D0_pn(i,j) = D02(i,j)
+
+      if (T.EQ.3) kapc_pn(i,j) = kapc2(i,j) !back up kapc_pn
     end do
   end do
 end do ! T loop
@@ -3846,67 +3848,51 @@ k_max = (/0, 0/)
 max_ach = (/.FALSE., .FALSE./)
 do k = 1, n1o2, 2
   do T = 1, 2
-    print "(A,3I4,5F15.9)", " GUT_k,T: kapc:",k,T,k + n1o2*(T-1), &
-      abs(kapc(k + n1o2*(T-1)    , k + n1o2*(T-1))), &
-      abs(kapc(k + n1o2*(T-1) + 1, k + n1o2*(T-1))), &
-      abs(kapc(k + n1o2*(T-1)    , k + n1o2*(T-1) + 1)), &
-      abs(kapc(k + n1o2*(T-1) + 1, k + n1o2*(T-1) + 1)), KAPPA_CUTOFF
     if (abs(kapc(k + n1o2*(T-1), k + n1o2*(T-1) + 1)) .GT. KAPPA_CUTOFF) then
       if (k_min(T) .EQ. 0) then
-        print "(A)", "    cs:1"
         k_min(T) = k
         endif
       if ((.NOT.max_ach(T)) .AND. (k > 1)) then ! k in 2 steps, (k > 2)
         max_ach(T) = abs(kapc(k + n1o2*(T-1)    , k + n1o2*(T-1) + 1)) .LT. &
                      abs(kapc(k + n1o2*(T-1) - 2, k + n1o2*(T-1) - 1))
-        print "(A,L3)", "    cs:1.b max_ach=", max_ach(T)
       endif
     else
-      if (k_min(T) .NE. 0) then
+      if ((.NOT.max_ach(T)) .AND. (k_min(T) .NE. 0)) then
         !case: kappa values continue increasing until a sudden drop below CUTOFF
         max_ach(T) = .TRUE.
-        print "(A)", "    cs:2.b"
         endif
       if (max_ach(T) .AND. (k_max(t).EQ.0)) then
-        print "(A)", "    cs:2"
         k_max(T) = k - 1
         endif
     endif
   enddo
-  print "(A)", ""
 enddo
 print "(A,4I5,A,2L3)", " > Cutoff-kappa (p,n)(min, max):", k_min(1), k_min(2),&
             k_max(1), k_max(2), "  // max achieved=", max_ach(1), max_ach(2)
 
 !! remove all states but k within kappa min and max, undo the canonical transf.
 if ((maxval(k_min) .LE. minval(k_max)) .AND. (minval(k_max) /= 0)) then
-  do k = 1, n1o2 - 2
-    i = 1
-    if (mod(k, 2) .EQ. 1) i = 2
 
-    if ((k < maxval(k_min)) .OR. (k > minval(k_max))) then
-      if (i .EQ. 1) then
-        kapc_pn(k, k + 1) = zero
-        endif
-      if (i .EQ. 2) then
-        kapc_pn(k + 1, k) = zero
-        endif
-    endif
-    kapc_pn(k, k) = zero
-
-    do j = k+i, n1o2
-      kapc_pn(k, j) = zero
-      kapc_pn(j, k) = zero
-    end do
+  do i = 1, n1o2
+    if      (i .LT. k_min(1)) then
+      do j = 1, n1o2
+        kapc_pn(i, j) = zero
+      enddo
+    else if (i .GT. k_max(1)) then
+      do j = 1, n1o2
+        kapc_pn(i, j) = zero
+      enddo
+    else ! in k_valid range
+      do j = 1, max(1, k_min(2) - 1)
+        kapc_pn(i, j) = zero
+      enddo
+      do j = min(k_max(2) + 1, n1o2), n1o2
+        kapc_pn(i, j) = zero
+      enddo
+    end if
   enddo
-  k = n1o2 - 1
-  if ((k > minval(k_max))) then ! last sub-matrix k for kappa
-    kapc_pn(k, k) = zero
-    kapc_pn(k, k + 1) = zero
-    kapc_pn(k + 1, k) = zero
-    kapc_pn(k + 1, k + 1) = zero
-  endif
 endif
+!! else: cannot apply the cutoff and kapc_pn remains as the initial state
 
 !! Last D02 was pn transformation
 call dgemm('n','n',n1o2,n1o2,n1o2,one,D0_pn,n1o2,kapc_pn,n1o2,zero,A12,n1o2)
