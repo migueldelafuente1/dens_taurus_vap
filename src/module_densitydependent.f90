@@ -3759,7 +3759,7 @@ do T = 1, 3 ! pp, nn, pn
   if ((T .EQ. 2) .OR. (T .EQ. 3)) jt = n1o2
   if  (T .EQ. 2) it = n1o2
 
-  print "(A,3i5)", "it, it:", T, it, jt
+!  print "(A,3i5)", "it, it:", T, it, jt
   do i = 1, n1o2
     do j = 1, n1o2
       bogo_U0_2(i,j) = bogo_U0(i+it,j+jt)
@@ -3768,7 +3768,7 @@ do T = 1, 3 ! pp, nn, pn
   enddo
   call construct_canonical_basis(bogo_U0_2,bogo_V0_2,bogo_zU0c_2,bogo_zV0c_2,&
                                  bogo_zD0_2, ovac0,nocc0,nemp0,n1o2)
-  print "(A)", " cannonical basis constructed, now copying."
+!  print "(A)", " cannonical basis constructed, now copying."
   do i = 1, n1o2
     do j = 1, n1o2
       if (T.EQ.1) D0_pp(i,j) = real(bogo_zD0_2(i,j))
@@ -3789,7 +3789,6 @@ do T = 1, 3 ! pp, nn, pn
     end do
   end do
 
-  print "(A)", " submatrices to convert into de cannonical basis."
   call dgemm('t','n',n1o2,n1o2,n1o2,one,D02,n1o2,rhoc2,n1o2,zero,A12,n1o2)
   call dgemm('n','n',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,rhoc2,n1o2)
 
@@ -3799,7 +3798,6 @@ do T = 1, 3 ! pp, nn, pn
 !  call dgemm('t','n',n1o2,n1o2,n1o2,one,D02,n1o2,hspc2,n1o2,zero,A12,n1o2)
 !  call dgemm('n','n',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,hspc2,n1o2)
 
-  print "(A)", " submatrices to convert into de cannonical basis. (DONE)"
   do i = 1, n1o2
     do j = 1, n1o2
       rhoc(i+it,j+jt) = rhoc2(i,j)
@@ -3816,7 +3814,7 @@ do i = 1, ndim
   end do
 end do
 close(333)
-print "(A)", "  - calculate cannonical basis [DONE]"
+!print "(A)", "  - calculate cannonical basis [DONE]"
 
 !do T = 1, 2
 !  ovac0 = zero
@@ -3838,27 +3836,29 @@ print "(A)", "  - calculate cannonical basis [DONE]"
 !end do ! T loop
 
 !! Cutoff criteria from Kappa matrix.
-k_min = (/1, 1/)
-k_max = (/1, 1/)
+k_min = (/0, 0/)
+k_max = (/0, 0/)
 
 max_ach = (/.FALSE., .FALSE./)
 do k = 1, n1o2, 2
   do T = 1, 2
     if (abs(kapc2(k + n1o2*T + 1, k + n1o2*T)) > 0.2) then
-      if (k_min(T) .EQ. 1) then
+      if (k_min(T) .EQ. 0) then
         k_min(T) = k
         endif
-      if (.NOT.max_ach(T) .AND. (k > 1)) then
+      if (.NOT.max_ach(T) .AND. (k > 0)) then
         max_ach(T) = abs(kapc2(k + n1o2*T + 1, k + n1o2*T)) .LT. &
                      abs(kapc2(k + n1o2*T - 1, k + n1o2*T - 2))
       endif
     else
-      if (max_ach(T) .AND. (k_max(t).EQ.1)) then
+      if (max_ach(T) .AND. (k_max(t).EQ.0)) then
         k_max(T) = k - 2
       endif
     endif
   enddo
 enddo
+print "(A,4I5,A,2L3)", " > Cutoff-kappa (p,n)(min, max):", k_min(1), k_min(2),&
+            k_max(1), k_max(2), "  // max achieved=", max_ach(1), max_ach(2)
 
 !! remove all states but k within kappa min and max, undo the canonical transf.
 do k = 1, n1o2 - 2
@@ -3880,7 +3880,7 @@ do k = 1, n1o2 - 2
     kapc_pn(j, k) = zero
   end do
 enddo
-if ((k > minval(k_max))) then
+if ((k > minval(k_max))) then ! last sub-matrix k for kappa
   kapc_pn(k, k) = zero
   kapc_pn(k, k + 1) = zero
   kapc_pn(k + 1, k) = zero
@@ -3898,14 +3898,14 @@ do i = 1, n1o2
     kappaRL(i+n1o2, j+n1o2) = kappaRL(i+n1o2, j+n1o2)
     kappaLR(i+n1o2, j+n1o2) = kappaLR(i+n1o2, j+n1o2)
     ! pn cutoff
-    kappaRL(i+n1o2, j) = kapc2(i, j)
-    kappaLR(i+n1o2, j) = kapc2(i, j)
+    kappaRL(i+n1o2, j) = -kapc2(j, i)
+    kappaLR(i+n1o2, j) = -kapc2(j, i)
     kappaRL(i, j+n1o2) = kapc2(i, j)
     kappaLR(i, j+n1o2) = kapc2(i, j)
   end do
 end do
 
-print "(A,I5)", " -cutoff subroutine DONE, iter =", iteration
+!print "(A,I5)", " -cutoff subroutine DONE, iter =", iteration
 end subroutine filter_fields_for_cutoff
 
 
@@ -3918,13 +3918,6 @@ complex(r64), dimension(4) :: aux, aux_PE, aux_pair
 complex(r64) :: int_rea, auxRea
 real(r64)    :: rad_ab
 spO2   = HOsp_dim / 2
-
-do a = 1, spO2
-   do b = 1, spO2         !!!!!     BENCH REQUIRES B=1      !!!!
-    continue
-  enddo ! do b
-enddo   ! do a
-
 
 BulkP1 = zzero
 BulkP2 = zzero
