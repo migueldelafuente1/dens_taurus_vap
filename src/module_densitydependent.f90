@@ -3714,6 +3714,7 @@ integer, dimension(2) :: k_min, k_max
 logical, dimension(2) :: max_ach
 real(r64) :: ovac0, e_fermi, VAL_T
 integer   :: i, j, k ,l, zn_indx, nocc0,nemp0, T, it, jt, n1o2
+real(r64), parameter :: KAPPA_CUTOFF = 0.2
 
 n1o2 = ndim / 2
 !do i = 1, ndim
@@ -3842,13 +3843,13 @@ k_max = (/0, 0/)
 max_ach = (/.FALSE., .FALSE./)
 do k = 1, n1o2, 2
   do T = 1, 2
-    if (abs(kapc2(k + n1o2*T + 1, k + n1o2*T)) > 0.2) then
+    if (abs(kapc2(k + n1o2*T, k + n1o2*T + 1)) .GT. KAPPA_CUTOFF) then
       if (k_min(T) .EQ. 0) then
         k_min(T) = k
         endif
-      if (.NOT.max_ach(T) .AND. (k > 0)) then
-        max_ach(T) = abs(kapc2(k + n1o2*T + 1, k + n1o2*T)) .LT. &
-                     abs(kapc2(k + n1o2*T - 1, k + n1o2*T - 2))
+      if (.NOT.max_ach(T) .AND. (k > 1)) then ! k in 2 steps, (k > 2)
+        max_ach(T) = abs(kapc2(k + n1o2*T    , k + n1o2*T + 1)) .LT. &
+                     abs(kapc2(k + n1o2*T - 2, k + n1o2*T - 1))
       endif
     else
       if (max_ach(T) .AND. (k_max(t).EQ.0)) then
@@ -3861,30 +3862,33 @@ print "(A,4I5,A,2L3)", " > Cutoff-kappa (p,n)(min, max):", k_min(1), k_min(2),&
             k_max(1), k_max(2), "  // max achieved=", max_ach(1), max_ach(2)
 
 !! remove all states but k within kappa min and max, undo the canonical transf.
-do k = 1, n1o2 - 2
-  i = 1
-  if (mod(k, 2) .EQ. 1) i = 2
+if ((maxval(k_min) .LE. minval(k_max)) .AND. (minval(k_max) /= 0)) then
+  do k = 1, n1o2 - 2
+    i = 1
+    if (mod(k, 2) .EQ. 1) i = 2
 
-  if ((k < maxval(k_min)) .OR. (k > minval(k_max))) then
-    if (i .EQ. 1) then
-      kapc_pn(k, k + 1) = zero
-      endif
-    if (i .EQ. 2) then
-      kapc_pn(k + 1, k) = zero
-      endif
+    if ((k < maxval(k_min)) .OR. (k > minval(k_max))) then
+      if (i .EQ. 1) then
+        kapc_pn(k, k + 1) = zero
+        endif
+      if (i .EQ. 2) then
+        kapc_pn(k + 1, k) = zero
+        endif
+    endif
+    kapc_pn(k, k) = zero
+
+    do j = k+i, n1o2
+      kapc_pn(k, j) = zero
+      kapc_pn(j, k) = zero
+    end do
+  enddo
+  k = n1o2 - 1
+  if ((k > minval(k_max))) then ! last sub-matrix k for kappa
+    kapc_pn(k, k) = zero
+    kapc_pn(k, k + 1) = zero
+    kapc_pn(k + 1, k) = zero
+    kapc_pn(k + 1, k + 1) = zero
   endif
-  kapc_pn(k, k) = zero
-
-  do j = k+i, n1o2
-    kapc_pn(k, j) = zero
-    kapc_pn(j, k) = zero
-  end do
-enddo
-if ((k > minval(k_max))) then ! last sub-matrix k for kappa
-  kapc_pn(k, k) = zero
-  kapc_pn(k, k + 1) = zero
-  kapc_pn(k + 1, k) = zero
-  kapc_pn(k + 1, k + 1) = zero
 endif
 
 !! Last D02 was pn transformation
