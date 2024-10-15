@@ -3843,13 +3843,13 @@ k_max = (/0, 0/)
 max_ach = (/.FALSE., .FALSE./)
 do k = 1, n1o2, 2
   do T = 1, 2
-    if (abs(kapc2(k + n1o2*T, k + n1o2*T + 1)) .GT. KAPPA_CUTOFF) then
+    if (abs(kapc2(k + n1o2*(T-1), k + n1o2*(T-1) + 1)) .GT. KAPPA_CUTOFF) then
       if (k_min(T) .EQ. 0) then
         k_min(T) = k
         endif
       if (.NOT.max_ach(T) .AND. (k > 1)) then ! k in 2 steps, (k > 2)
-        max_ach(T) = abs(kapc2(k + n1o2*T    , k + n1o2*T + 1)) .LT. &
-                     abs(kapc2(k + n1o2*T - 2, k + n1o2*T - 1))
+        max_ach(T) = abs(kapc2(k + n1o2*(T-1)    , k + n1o2*(T-1) + 1)) .LT. &
+                     abs(kapc2(k + n1o2*(T-1) - 2, k + n1o2*(T-1) - 1))
       endif
     else
       if (max_ach(T) .AND. (k_max(t).EQ.0)) then
