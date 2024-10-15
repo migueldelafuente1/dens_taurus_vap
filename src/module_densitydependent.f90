@@ -3893,12 +3893,18 @@ open(333, file='_cannonicalFields_rhokapa.gut')
 do i = 1, ndim
   do j = 1, ndim
     if (i .GT. n1o2) then
-      if (j .GT. n1o2) aux =  kapc_nn(i-n1o2,j-n1o2)
-      else             aux =  kapc_pn(i-n1o2,j)
+      if (j .GT. n1o2) then
+        aux =  kapc_nn(i-n1o2,j-n1o2)
+      else
+        aux =  kapc_pn(i-n1o2,j)
+      endif
     else
-      if (j .GT. n1o2) aux = -kapc_pn(j-n1o2,i)
-      else             aux =  kapc_pp(i,j)
-    end if
+      if (j .GT. n1o2) then
+        aux = -kapc_pn(j-n1o2,i)
+      else
+        aux =  kapc_pp(i,j)
+      endif
+    endif
     write(333,fmt='(2I5,4F15.5)') i, j , D0(i,j), rhoc(i,j),kapc(i,j),aux
       !,hspc(i,j)
   end do
