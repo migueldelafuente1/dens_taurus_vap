@@ -3846,6 +3846,9 @@ k_max = (/0, 0/)
 max_ach = (/.FALSE., .FALSE./)
 do k = 1, n1o2, 2
   do T = 1, 2
+    print "(A,3I4,3F15.9)", " GUT_k,T: kapc:",k,T,k + n1o2*(T-1), &
+      abs(kapc2(k + n1o2*(T-1)    , k + n1o2*(T-1) + 1)), &
+      abs(kapc2(k + n1o2*(T-1) + 1, k + n1o2*(T-1))), KAPPA_CUTOFF
     if (abs(kapc2(k + n1o2*(T-1), k + n1o2*(T-1) + 1)) .GT. KAPPA_CUTOFF) then
       if (k_min(T) .EQ. 0) then
         k_min(T) = k
