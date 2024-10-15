@@ -3847,7 +3847,7 @@ max_ach = (/.FALSE., .FALSE./)
 do k = 1, n1o2, 2
   do T = 1, 2
     print "(A,3I4,5F15.9)", " GUT_k,T: kapc:",k,T,k + n1o2*(T-1), &
-      abs(kapc(k + n1o2*(T-1)    , k + n1o2*(T-1) + 1)), &
+      abs(kapc(k + n1o2*(T-1)    , k + n1o2*(T-1))), &
       abs(kapc(k + n1o2*(T-1) + 1, k + n1o2*(T-1))), &
       abs(kapc(k + n1o2*(T-1)    , k + n1o2*(T-1) + 1)), &
       abs(kapc(k + n1o2*(T-1) + 1, k + n1o2*(T-1) + 1)), KAPPA_CUTOFF
