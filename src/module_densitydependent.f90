@@ -22,7 +22,7 @@ use Wavefunctions
 use Hamiltonian
 use Fields
 use Lebedev
-use Constraints, only constraint_HO, constraint_switch
+use Constraints, only: constraint_HO, constraint_switch
 
 implicit none
 PUBLIC
