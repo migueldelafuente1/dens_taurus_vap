@@ -149,7 +149,7 @@ $(OBJDIR)/module_projection.o: $(OBJDIR)/module_fields.o $(OBJDIR)/module_operat
 
 $(OBJDIR)/module_constraints.o: $(OBJDIR)/module_nucleus.o $(OBJDIR)/module_wavefunctions.o \
                                 $(OBJDIR)/module_operators.o $(OBJDIR)/module_fields.o \
-                                $(OBJDIR)/module_projection.o /
+                                $(OBJDIR)/module_projection.o \
 								$(OBJDIR)/module_densitydependent.o
 
 $(OBJDIR)/module_gradient.o: $(OBJDIR)/module_fields.o $(OBJDIR)/module_constraints.o
