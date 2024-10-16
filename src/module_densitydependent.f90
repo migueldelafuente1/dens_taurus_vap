@@ -4027,7 +4027,7 @@ do i = 1, ndim
       max_ach(T) = .TRUE.
       k_min(T)   = i - n1o2*(T-1)
     endif
-  else:
+  else
     if ((max_ach(T)) .AND. (k_max(T) .EQ. 0)) then
       k_max(T) = i - n1o2*(T-1)
     endif
@@ -4134,7 +4134,8 @@ integer :: a,b,a_sh,b_sh,spO2,i_r,i_an, ms, Tab
 complex(r64), dimension(4) :: int_hf, int_pa ! all arrays are for (pp, nn, pn, np)
 complex(r64), dimension(4) :: aux, aux_PE, aux_pair
 complex(r64) :: int_rea, auxRea
-real(r64)    :: rad_ab
+real(r64)    :: rad_ab, X0M1, integral_factor
+
 spO2   = HOsp_dim / 2
 
 BulkP1 = zzero
@@ -4174,11 +4175,16 @@ deltaLR_DD = zzero
 deltaRL_DD = zzero
 
 !!! Evaluate the pairing fields ----------------------
+!! Note :: Remember that radial functions already have the factor 1/b**3
+integral_factor = 0.5d0 * (HO_b**3) / ((2.0d0 + alpha_DD)**1.5d0)
+integral_factor = 4.0d0 * pi * t3_DD_CONST * integral_factor
+X0M1 = 1.0d0 - x0_DD_FACTOR
+
 int_hf = zzero
 do a = 1, spO2
   a_sh = HOsp_sh(a)
   do b = a, spO2
-    b_sh = HOsp_sh(c)
+    b_sh = HOsp_sh(b)
 
     int_pa = zzero
     int_rea= zzero
@@ -4232,7 +4238,7 @@ do a = 1, spO2
     enddo
     int_rea = int_rea * 0.25d+0 * integral_factor * alpha_DD
 
-    call complete_DD_fields(zero, int_pa, int_rea, gammaLR, deltaLR,deltaRL,&
+    call complete_DD_fields(zzero, int_pa, int_rea, gammaLR, deltaLR,deltaRL,&
                             hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, &
                             a, b, spO2, ndim)
 
