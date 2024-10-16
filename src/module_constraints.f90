@@ -19,7 +19,7 @@ use Wavefunctions
 use Operators
 use Fields, only: factor_delta
 use Projection, only: proj_Mphip, proj_Mphin
-use DensityDep, only: lambdaFer_DD
+!use DensityDep, only: lambdaFer_DD
 
 
 implicit none
@@ -483,11 +483,11 @@ do i = 1, constraint_dim
 enddo
 
 !! [DENSITY PART] copy values
-lambdaFer_DD = zero
-do i = 1, constraint_dim
-  if (i .NE. 2) lambdaFer_DD(1) = lambdaFer_DD(1) + lagrange_lambda1(i)
-  if (i .NE. 1) lambdaFer_DD(2) = lambdaFer_DD(2) + lagrange_lambda1(i)
-enddo
+!lambdaFer_DD = zero
+!do i = 1, constraint_dim
+!  if (i .NE. 2) lambdaFer_DD(1) = lambdaFer_DD(1) + lagrange_lambda1(i)
+!  if (i .NE. 1) lambdaFer_DD(2) = lambdaFer_DD(2) + lagrange_lambda1(i)
+!enddo
 !!
 
 end subroutine calculate_lagrange_multipliers

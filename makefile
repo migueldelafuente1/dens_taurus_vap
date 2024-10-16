@@ -1,7 +1,7 @@
 #################
 #  Description  #
 #################
- 
+
 # This is an example of makefile to compile TAURUS_vap. The code requires the
 # BLAS/LAPACK libraries. When using the intel compiler "ifort", we recommend
 # to use of their specific Math Kernel Library (MKL).
@@ -24,13 +24,13 @@ EXEDIR=exe
 #  Fortran compiler, options and libraries  #
 #############################################
 
-# default 
+# default
 FC=gfortran
 TH=none
 
 ifeq ($(FC),$(filter $(FC), gfortran mpif90))
  OPT=-O3 -J$(MODDIR)
- LIB=-L/usr/lib -llapack -lblas 
+ LIB=-L/usr/lib -llapack -lblas
  ifeq ($(TH),omp)
    OPT=-O3 -J$(MODDIR) -fopenmp
  endif
@@ -79,7 +79,7 @@ $(code): $(OBJ90) $(OBJ77) | $(OBJDIR)/ $(MODDIR)/ $(EXEDIR)/
 	$(FC) $(OPT) -o $(EXEDIR)/$(exec) $^ $(LIB)
 	@echo "Compilation finished."
 
-# General rules 
+# General rules
 #==============
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.f90 | $(OBJDIR)/ $(MODDIR)/
@@ -87,7 +87,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.f90 | $(OBJDIR)/ $(MODDIR)/
 	@if [ $(FC) = "mpiifort" ] || [ $(FC) = "mpif90" ]; then \
  	   sed "s/\!cmpi //g" $(OBJDIR)/tmp.f90 > $(OBJDIR)/tmp2.f90 ; \
  	   mv $(OBJDIR)/tmp2.f90 $(OBJDIR)/tmp.f90 ; \
-	 fi 
+	 fi
 	$(FC) $(OPT) -o $@ -c $(OBJDIR)/tmp.f90
 	@rm -f $(OBJDIR)/tmp.f90
 
@@ -128,7 +128,8 @@ $(OBJDIR)/module_fields.o: $(OBJDIR)/module_hamiltonian.o $(OBJDIR)/module_wavef
 $(OBJDIR)/module_densitydependent.o: $(OBJDIR)/module_constants.o $(OBJDIR)/module_mathmethods.o \
  				     $(OBJDIR)/module_basis.o $(OBJDIR)/module_hamiltonian.o \
 				     $(OBJDIR)/module_lebedev.o  $(OBJDIR)/module_fields.o \
-					 $(OBJDIR)/module_wavefunctions.o
+					 $(OBJDIR)/module_wavefunctions.o \
+					 $(OBJDIR)/module_constraints.o
 
 $(OBJDIR)/module_particlenumber.o: $(OBJDIR)/module_basis.o
 
@@ -149,10 +150,10 @@ $(OBJDIR)/module_projection.o: $(OBJDIR)/module_fields.o $(OBJDIR)/module_operat
 
 $(OBJDIR)/module_constraints.o: $(OBJDIR)/module_nucleus.o $(OBJDIR)/module_wavefunctions.o \
                                 $(OBJDIR)/module_operators.o $(OBJDIR)/module_fields.o \
-                                $(OBJDIR)/module_projection.o \
-								$(OBJDIR)/module_densitydependent.o
+                                $(OBJDIR)/module_projection.o
+								#$(OBJDIR)/module_densitydependent.o
 
-$(OBJDIR)/module_gradient.o: $(OBJDIR)/module_fields.o $(OBJDIR)/module_constraints.o 
+$(OBJDIR)/module_gradient.o: $(OBJDIR)/module_fields.o $(OBJDIR)/module_constraints.o
 
 $(OBJDIR)/module_exportings.o: $(OBJDIR)/module_constants.o $(OBJDIR)/module_mathmethods.o \
                                $(OBJDIR)/module_basis.o $(OBJDIR)/module_hamiltonian.o \
@@ -179,7 +180,7 @@ debug:
 
 clean:
 	rm -f $(MODDIR)/*.mod
-	rm -f $(OBJDIR)/*.o  
+	rm -f $(OBJDIR)/*.o
 
 deepclean:
 	rm -rf $(MODDIR)/
