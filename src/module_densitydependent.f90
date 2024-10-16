@@ -3922,7 +3922,7 @@ complex(r64), dimension(ndim/2,ndim/2) :: bogo_zU0c_2,bogo_zV0c_2,bogo_zD0_2
 real(r64),    dimension(ndim,ndim)  :: D0, rhoc, kapc, A1, A2, hspc, hspRR
 real(r64), dimension(ndim/2,ndim/2) :: D02, rhoc2, kapc2,  A12, A22, hspc2
 
-integer,   dimension(ndim) :: excluded_qp_indx
+logical,   dimension(ndim) :: excluded_qp_indx
 real(r64), dimension(ndim) :: ener_qp
 integer, dimension(2) :: k_min, k_max
 logical, dimension(2) :: max_ach
@@ -4020,7 +4020,7 @@ do i = 1, ndim
   T = 1
   if (i > n1o2) T = 2
 
-  ener_qp(i) = hscp(i,i)
+  ener_qp(i) = hspc(i,i)
   if (abs(ener_qp(i)) .GT. CUTOFF_ENERGY_MAX) then
     excluded_qp_indx(i) = .TRUE.
     if (.NOT. max_ach(T)) then
@@ -4180,7 +4180,6 @@ integral_factor = 0.5d0 * (HO_b**3) / ((2.0d0 + alpha_DD)**1.5d0)
 integral_factor = 4.0d0 * pi * t3_DD_CONST * integral_factor
 X0M1 = 1.0d0 - x0_DD_FACTOR
 
-int_hf = zzero
 do a = 1, spO2
   a_sh = HOsp_sh(a)
   do b = a, spO2
@@ -4188,8 +4187,6 @@ do a = 1, spO2
 
     int_pa = zzero
     int_rea= zzero
-
-    int_test_PE = zzero
 
     do i_r = 1, r_dim
       rad_ab = weight_R(i_r) * radial_2b_sho_memo(a_sh, b_sh, i_r)
@@ -4238,7 +4235,8 @@ do a = 1, spO2
     enddo
     int_rea = int_rea * 0.25d+0 * integral_factor * alpha_DD
 
-    call complete_DD_fields(zzero, int_pa, int_rea, gammaLR, deltaLR,deltaRL,&
+    int_hf = zzero
+    call complete_DD_fields(int_hf, int_pa, int_rea, gammaLR, deltaLR,deltaRL,&
                             hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, &
                             a, b, spO2, ndim)
 
