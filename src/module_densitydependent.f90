@@ -135,7 +135,10 @@ logical   :: PRINT_GUTS = .TRUE.
 logical   :: DOING_PROJECTION = .FALSE.
 logical   :: USING_FIXED_REARRANGEMENT = .FALSE.
 logical   :: EVAL_CUTOFF = .FALSE.
+integer   :: CUTOFF_MODE = 2    ! 1: Energy Cutoff, 2: Kappa cutoff, 3: both
 real(r64) :: CUTOFF_ENERGY_MAX = 1.0d+99
+real(r64) :: CUTOFF_KAPPA      = 0.0
+
 
 !! [END] DENSITY DEPENDENT MODIFICATIONS =====================================
 
@@ -361,11 +364,17 @@ if ( is_exist ) then
   OPEN(runit, FILE='input_cutoff_DD.txt', &
        FORM="FORMATTED", STATUS="OLD", ACTION="READ")
 
+  read(runit,formatI1) str_, CUTOFF_MODE
   read(runit,formatEE) str_, CUTOFF_ENERGY_MAX
+  read(runit,formatEE) str_, CUTOFF_KAPPA
   EVAL_CUTOFF = .TRUE.
 
   print "(A,L3)",    " * [WARNING]  DD CUTOFF:", EVAL_CUTOFF
-  print "(A,F15.3)", "   - DD CUTOFF ENERGY for DD (MeV): ", CUTOFF_ENERGY_MAX
+  if (CUTOFF_MODE .EQ. 1) print "(A)", "   - DD CUTOFF THRESHOLD: Energy C.O."
+  if (CUTOFF_MODE .EQ. 2) print "(A)", "   - DD CUTOFF THRESHOLD: Kappa"
+  if (CUTOFF_MODE .EQ. 3) print "(A)", "   - DD CUTOFF THRESHOLD: Energy+kappa"
+  print "(A,F15.3)", "   - DD CUTOFF ENERGY for DD  (MeV): ", CUTOFF_ENERGY_MAX
+  print "(A,F15.3)", "   - DD CUTOFF KAPPA  for DD (>0.5): ", CUTOFF_KAPPA
   print *, ""
 endif
 
@@ -3427,11 +3436,10 @@ if (PRNT_) then
   write(558, fmt='(A)') "[pair integrals] a  c  ms  %%  I_real(pp)  nn   pn  np"
 endif
 
-if (EVAL_CUTOFF) then
-  call filter_fields_for_cutoff(HOsp_dim)
-!                               (gammaLR, deltaLR, deltaRL,&
-!                                hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, ndim)
-  call reeval_pairing_fields_after_cutoff
+if (EVAL_CUTOFF .AND. (CUTOFF_MODE.NE.1)) then
+  call cutoff_by_kappa_matrix(HOsp_dim)
+  call reeval_pairing_fields_after_cutoff(.TRUE., hspLR, deltaLR, deltaRL, &
+                                          deltaLR_DD, deltaRL_DD, ndim)
 endif
 
 do a = 1, spO2
@@ -3598,12 +3606,10 @@ do a = 1, spO2
   enddo
 enddo
 
-!if (EVAL_CUTOFF) then
-!  call filter_fields_for_cutoff(HOsp_dim)
-!!                               (gammaLR, deltaLR, deltaRL,&
-!!                                hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, ndim)
-!  call reeval_pairing_fields_after_cutoff
-!endif
+if (EVAL_CUTOFF .AND. (CUTOFF_MODE.NE.2)) then
+  call cutoff_by_hspfield_matrix(hspLR, deltaLR, deltaRL, &
+                                 deltaLR_DD, deltaRL_DD,ndim)
+endif
 
 !! save the last EDF HFB of the DD term
 last_HFB_energy = zero
@@ -3683,25 +3689,22 @@ end subroutine calculate_fields_DD
 ! subroutine to transform the final fields into the canonical basis and evaluate
 ! the sp energies valid to exclude the cutoff energy.
 !-----------------------------------------------------------------------------!
-subroutine filter_fields_for_cutoff(ndim)
-!  (gammaLR, deltaLR, deltaRL,&
-!                                    hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD,&
-!                                    ndim)
+subroutine cutoff_by_kappa_matrix(ndim)
+
 integer, intent(in) :: ndim
-!complex(r64), dimension(ndim,ndim):: gammaLR, hspLR, deltaLR, deltaRL
+!complex(r64), dimension(ndim,ndim) :: gammaLR, hspLR
 !!! The density fields are added to the calculated with the standard hamiltonian
 !!! This array variables are local
-!complex(r64), dimension(ndim,ndim) :: gammaLR_DD, deltaLR_DD, deltaRL_DD
+!complex(r64), dimension(ndim,ndim) :: gammaLR_DD
 
-!complex(r64), dimension(ndim,ndim) :: gammaLR0, deltaLR0, deltaRL0, hspLR0
-!real(r64), dimension(ndim,ndim) :: gammaRR_DD_co, deltaRR_DD_co
+!complex(r64), dimension(ndim,ndim) :: gammaLR0, hspLR0
+!real(r64), dimension(ndim,ndim)    :: gammaRR_DD_co
 
 complex(r64), dimension(ndim,ndim)  :: rho0LR, kappa0LR, kappa0RL
 real(r64), dimension(ndim/2,ndim/2) :: D0_pp, D0_nn, D0_pn
 real(r64), dimension(ndim/2,ndim/2) :: rhoc_pp, rhoc_nn, rhoc_pn
 real(r64), dimension(ndim/2,ndim/2) :: kapc_pp, kapc_nn, kapc_pn
 !real(r64), dimension(ndim/2,ndim/2) :: hspc_pp, hspc_nn, hspc_pn
-!real(r64), dimension(ndim/2,ndim/2) :: Delc_pp, Delc_nn, Delc_pn
 real(r64), dimension(ndim/2,ndim/2) :: bogo_U0_2,bogo_V0_2
 complex(r64), dimension(ndim/2,ndim/2) :: bogo_zU0c_2,bogo_zV0c_2,bogo_zD0_2
 
@@ -3714,7 +3717,6 @@ integer, dimension(2) :: k_min, k_max
 logical, dimension(2) :: max_ach
 real(r64) :: ovac0, e_fermi, VAL_T, aux
 integer   :: i, j, k ,l, zn_indx, nocc0,nemp0, T, it, jt, n1o2
-real(r64), parameter :: KAPPA_CUTOFF = 0.2
 
 n1o2 = ndim / 2
 !do i = 1, ndim
@@ -3724,8 +3726,6 @@ n1o2 = ndim / 2
 !end do
 
 !gammaRR_DD_co = real(gammaLR_DD)
-!deltaRR_DD_co = real(deltaLR_DD)
-!deltaRR_DD_c = real(deltaRL_DD)
 !hspRR         = real(hspLR)
 
 !call calculate_fields_diag(rho0LR, kappa0LR, field_gammaLR, field_hspLR, &
@@ -3739,20 +3739,8 @@ n1o2 = ndim / 2
 !                               ovac0,nocc0,nemp0,ndim)
 !D0 = real(bogo_zD0)
 !
-!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_rhoRR,ndim,zero,A1,ndim)
-!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,rhoc,ndim)
-!
-!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,dens_kappaRR,ndim,zero,A1,ndim)
-!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,kapc,ndim)
-!
 !call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,hspRR,ndim,zero,A1,ndim)
 !call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,hspc,ndim)
-!
-!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,gammaRR_DD_co,ndim,zero,A1,ndim)
-!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,Gamc,ndim)
-!
-!call dgemm('t','n',ndim,ndim,ndim,one,D0,ndim,deltaRR_DD_co,ndim,zero,A1,ndim)
-!call dgemm('n','n',ndim,ndim,ndim,one,A1,ndim,D0,ndim,zero,Delc,ndim)
 
 do T = 1, 3 ! pp, nn, pn
   it = 0
@@ -3760,7 +3748,6 @@ do T = 1, 3 ! pp, nn, pn
   if ((T .EQ. 2) .OR. (T .EQ. 3)) jt = n1o2
   if  (T .EQ. 2) it = n1o2
 
-!  print "(A,3i5)", "it, it:", T, it, jt
   do i = 1, n1o2
     do j = 1, n1o2
       bogo_U0_2(i,j) = bogo_U0(i+it,j+jt)
@@ -3769,7 +3756,6 @@ do T = 1, 3 ! pp, nn, pn
   enddo
   call construct_canonical_basis(bogo_U0_2,bogo_V0_2,bogo_zU0c_2,bogo_zV0c_2,&
                                  bogo_zD0_2, ovac0,nocc0,nemp0,n1o2)
-!  print "(A)", " cannonical basis constructed, now copying."
   do i = 1, n1o2
     do j = 1, n1o2
       if (T.EQ.1) D0_pp(i,j) = real(bogo_zD0_2(i,j))
@@ -3814,25 +3800,6 @@ do T = 1, 3 ! pp, nn, pn
 end do ! T loop
 !print "(A)", "  - calculate cannonical basis [DONE]"
 
-!do T = 1, 2
-!  ovac0 = zero
-!  k = 0
-!  if (T .EQ. 1) VAL_T = nucleus_Z
-!  if (T .EQ. 2) then
-!    it = n1o2
-!    VAL_T = nucleus_N
-!  endif
-!
-!  do while ((ovac0 <= VAL_T) .AND. (k < n1o2 - 1))
-!    k = k + 1
-!    ovac0 = ovac0 + rhoc(k+it,k+it)
-!    if (ovac0 <= VAL_T) then
-!      print "(I3,A,I5,2F15.5)", T,".Occupation filled at k=", k, ovac0, VAL_T
-!    endif
-!  end do
-!  print "(A)", ""
-!end do ! T loop
-
 !! Cutoff criteria from Kappa matrix.
 k_min = (/0, 0/)
 k_max = (/0, 0/)
@@ -3840,7 +3807,7 @@ k_max = (/0, 0/)
 max_ach = (/.FALSE., .FALSE./)
 do k = 1, n1o2, 2
   do T = 1, 2
-    if (abs(kapc(k + n1o2*(T-1), k + n1o2*(T-1) + 1)) .GT. KAPPA_CUTOFF) then
+    if (abs(kapc(k + n1o2*(T-1), k + n1o2*(T-1) + 1)) .GT. CUTOFF_KAPPA) then
       if (k_min(T) .EQ. 0) then
         k_min(T) = k
         endif
@@ -3930,11 +3897,238 @@ do i = 1, n1o2
 end do
 
 !print "(A,I5)", " -cutoff subroutine DONE, iter =", iteration
-end subroutine filter_fields_for_cutoff
+end subroutine cutoff_by_kappa_matrix
+
+subroutine cutoff_by_hspfield_matrix(hspLR, deltaLR, deltaRL, &
+                                     deltaLR_DD, deltaRL_DD, ndim)
+
+integer, intent(in) :: ndim
+complex(r64), dimension(ndim,ndim)  :: hspLR, deltaLR, deltaRL, &
+                                       deltaLR_DD, deltaRL_DD
+!! The density fields are added to the calculated with the standard hamiltonian
+!! This array variables are local
+
+complex(r64), dimension(ndim,ndim)  :: hspLR0, deltaLR0
+
+complex(r64), dimension(ndim,ndim)  :: rho0LR, kappa0LR, kappa0RL
+real(r64), dimension(ndim/2,ndim/2) :: D0_pp, D0_nn, D0_pn
+real(r64), dimension(ndim/2,ndim/2) :: rhoc_pp, rhoc_nn, rhoc_pn
+real(r64), dimension(ndim/2,ndim/2) :: kapc_pp, kapc_nn, kapc_pn
+
+real(r64), dimension(ndim/2,ndim/2) :: hspc_pp, hspc_nn, hspc_pn
+real(r64), dimension(ndim/2,ndim/2) :: bogo_U0_2,bogo_V0_2
+complex(r64), dimension(ndim/2,ndim/2) :: bogo_zU0c_2,bogo_zV0c_2,bogo_zD0_2
+
+real(r64),    dimension(ndim,ndim)  :: D0, rhoc, kapc, A1, A2, hspc, hspRR
+real(r64), dimension(ndim/2,ndim/2) :: D02, rhoc2, kapc2,  A12, A22, hspc2
+
+integer,   dimension(ndim) :: excluded_qp_indx
+real(r64), dimension(ndim) :: ener_qp
+integer, dimension(2) :: k_min, k_max
+logical, dimension(2) :: max_ach
+real(r64) :: ovac0, e_fermi, VAL_T, aux
+integer   :: i, j, k ,l, zn_indx, nocc0,nemp0, T, it, jt, n1o2
+
+n1o2 = ndim / 2
+do i = 1, ndim
+  do j = 1, ndim
+    ! - gammaLR_DD(i, j) !! no, the DD gamma field is not modified with the C.O.
+    hspLR0  (i, j) = hspLR  (i, j) - rearrang_field(i, j)
+    deltaLR0(i, j) = deltaLR(i, j) - deltaLR_DD(i, j)
+  end do
+end do
+
+hspRR = real(hspLR)
+
+!!! Computes the expectation values of the operators
+!do m = 1, constraint_dim
+!  if ( m <= (constraint_dim - constraint_pair) ) then
+!    call calculate_expectval_obo(dens_rhoRR,constraint_HO(1+(m-1)*ndim2), &
+!                                 expvalp,expvaln,ndim)
+!    expecval(m) =  expvalp + expvaln
+!  else
+!    call calculate_expectval_pair(dens_kappaRR,constraint_HO(1+(m-1)*ndim2), &
+!                                  expecval(m),ndim)
+!  endif
+!enddo
+
+do T = 1, 3 ! pp, nn, pn
+  it = 0
+  jt = 0
+  if ((T .EQ. 2) .OR. (T .EQ. 3)) jt = n1o2
+  if  (T .EQ. 2) it = n1o2
+
+  do i = 1, n1o2
+    do j = 1, n1o2
+      bogo_U0_2(i,j) = bogo_U0(i+it,j+jt)
+      bogo_V0_2(i,j) = bogo_V0(i+it,j+jt)
+    enddo
+  enddo
+  call construct_canonical_basis(bogo_U0_2,bogo_V0_2,bogo_zU0c_2,bogo_zV0c_2,&
+                                 bogo_zD0_2, ovac0,nocc0,nemp0,n1o2)
+  do i = 1, n1o2
+    do j = 1, n1o2
+      if (T.EQ.1) D0_pp(i,j) = real(bogo_zD0_2(i,j))
+      if (T.EQ.2) D0_nn(i,j) = real(bogo_zD0_2(i,j))
+      if (T.EQ.3) D0_pn(i,j) = real(bogo_zD0_2(i,j))
+      D02(i,j) = real(bogo_zD0_2(i,j))
+
+      if (T.EQ.1) D0(i+it,j+jt) = D0_pp(i,j)
+      if (T.EQ.2) D0(i+it,j+jt) = D0_nn(i,j)
+      if (T.EQ.3) then
+        D0(i+it,j+jt) = D0_pn(i,j)
+        D0(i+jt,j+it) = D0_pn(i,j)
+      endif
+
+      rhoc2(i,j) = dens_rhoRR   (i+it,j+jt)
+      kapc2(i,j) = dens_kappaRR (i+it,j+jt)
+      hspc2(i,j) = hspRR        (i+it,j+jt)
+      if (T .NE. 3) then
+        hspc2(i,j) = hspc2(i,j) - lambdaFer_DD(T)
+      endif
+    enddo
+  enddo
+
+  call dgemm('t','n',n1o2,n1o2,n1o2,one,D02,n1o2,rhoc2,n1o2,zero,A12,n1o2)
+  call dgemm('n','n',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,rhoc2,n1o2)
+
+  call dgemm('t','n',n1o2,n1o2,n1o2,one,D02,n1o2,kapc2,n1o2,zero,A12,n1o2)
+  call dgemm('n','n',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,kapc2,n1o2)
+
+  call dgemm('t','n',n1o2,n1o2,n1o2,one,D02,n1o2,hspc2,n1o2,zero,A12,n1o2)
+  call dgemm('n','n',n1o2,n1o2,n1o2,one,A12,n1o2,D02,n1o2,zero,hspc2,n1o2)
+
+  do i = 1, n1o2
+    do j = 1, n1o2
+      rhoc(i+it,j+jt) = rhoc2(i,j)
+      kapc(i+it,j+jt) = kapc2(i,j)
+      hspc(i+it,j+jt) = hspc2(i,j)
+      if (T.EQ.1) D0_pp(i,j) = D02(i,j)
+      if (T.EQ.2) D0_nn(i,j) = D02(i,j)
+      if (T.EQ.3) D0_pn(i,j) = D02(i,j)
+
+      if (T.EQ.3) kapc_pn(i,j) = kapc2(i,j) !back up kapc_pn
+    enddo
+  enddo
+enddo ! T loop
+
+!! Cutoff criteria from Kappa matrix.
+k_min = (/0, 0/)
+k_max = (/0, 0/)
+max_ach = (/.FALSE., .FALSE./)
+do i = 1, ndim
+  T = 1
+  if (i > n1o2) T = 2
+
+  ener_qp(i) = hscp(i,i)
+  if (abs(ener_qp(i)) .GT. CUTOFF_ENERGY_MAX) then
+    excluded_qp_indx(i) = .TRUE.
+    if (.NOT. max_ach(T)) then
+      max_ach(T) = .TRUE.
+      k_min(T)   = i - n1o2*(T-1)
+    endif
+  else:
+    if ((max_ach(T)) .AND. (k_max(T) .EQ. 0)) then
+      k_max(T) = i - n1o2*(T-1)
+    endif
+  endif
+enddo
+!!! remove all states but k within kappa min and max, undo the canonical transf.
+!if ((maxval(k_min) .GT. minval(k_max)) .OR. (minval(k_max) == 0) &
+!    .OR. ((k_max(1) < n1o2 / 3).OR.(k_max(2) < n1o2 / 3))) then
+!  k_min = (/n1o2 - 2*int(nucleus_Z), n1o2 - 2*int(nucleus_N)/)
+!  k_max = (/n1o2, n1o2/)
+!endif
+print "(A,4I5,A,2L3)", " > Cutoff-kappa (p,n)(min, max):", k_min(1), k_min(2),&
+            k_max(1), k_max(2), "  // max achieved=", max_ach(1), max_ach(2)
+
+do i = 1, n1o2
+  if      (i .LT. k_min(1)) then
+    do j = 1, n1o2
+      kapc_pn(i, j) = zero
+    enddo
+  else if (i .GT. k_max(1)) then
+    do j = 1, n1o2
+      kapc_pn(i, j) = zero
+    enddo
+  else ! in k_valid range
+    do j = 1, max(1, k_min(2) - 1)
+      kapc_pn(i, j) = zero
+    enddo
+    do j = min(k_max(2) + 1, n1o2), n1o2
+      kapc_pn(i, j) = zero
+    enddo
+  end if
+enddo
+
+!! else: cannot apply the cutoff and kapc_pn remains as the initial state
+!! Export
+open(333, file='_cannonicalFields_coE_rhokapa.gut')
+do i = 1, ndim
+  do j = 1, ndim
+    if (i .GT. n1o2) then
+      if (j .GT. n1o2) then
+        aux =  kapc(i-n1o2,j-n1o2)
+      else
+        aux =  kapc_pn(i-n1o2,j)
+      endif
+    else
+      if (j .GT. n1o2) then
+        aux = -kapc_pn(j-n1o2,i)
+      else
+        aux =  kapc(i,j)
+      endif
+    endif
+    write(333,fmt='(2I5,5F15.5)') i, j , D0(i,j), rhoc(i,j),kapc(i,j),aux, &
+                                  hspc(i,j)
+  end do
+end do
+close(333)
+
+!! Transform Kappa-pn to the working basis.
+call dgemm('n','n',n1o2,n1o2,n1o2,one,D0_pn,n1o2,kapc_pn,n1o2,zero,A12,n1o2)
+call dgemm('n','t',n1o2,n1o2,n1o2,one,A12,n1o2,D0_pn,n1o2,zero,kapc2,n1o2)
+do i = 1, n1o2
+  do j = 1, n1o2
+    ! no cutoff in pp-nn, copy directly
+    kappaRL(i, j) = dens_kappaRR(i, j)
+    kappaLR(i, j) = dens_kappaRR(i, j)
+    kappaRL(i+n1o2, j+n1o2) = dens_kappaRR(i+n1o2, j+n1o2)
+    kappaLR(i+n1o2, j+n1o2) = dens_kappaRR(i+n1o2, j+n1o2)
+    ! pn cutoff
+    kappaRL(i+n1o2, j) = -kapc2(j, i)
+    kappaLR(i+n1o2, j) = -kapc2(j, i)
+    kappaRL(i, j+n1o2) = kapc2(i, j)
+    kappaLR(i, j+n1o2) = kapc2(i, j)
+  end do
+end do
+
+!!! - Copy the non-DD modified from initial kappa
+do i = 1, ndim
+  do j = 1, ndim
+    hspLR  (i, j) = hspLR0  (i, j)
+    deltaLR(i, j) = deltaLR0(i, j)
+    deltaRL(i, j) = deltaLR0(i, j)
+  end do
+end do
+call reeval_pairing_fields_after_cutoff(.FALSE., hspLR, deltaLR, deltaRL, &
+                                        deltaLR_DD, deltaRL_DD, ndim)
+
+!print "(A,I5)", " -cutoff subroutine DONE, iter =", iteration
+end subroutine cutoff_by_hspfield_matrix
 
 
 
-subroutine reeval_pairing_fields_after_cutoff
+subroutine reeval_pairing_fields_after_cutoff(only_bulk_fields, hspLR, &
+                                              deltaLR,deltaRL, &
+                                              deltaLR_DD, deltaRL_DD, ndim)
+
+logical, intent(in) :: only_bulk_fields
+integer, intent(in) :: ndim
+complex(r64), dimension(ndim,ndim) :: hspLR, deltaLR, deltaRL
+
+real(r64),    dimension(ndim,ndim) :: BU_gammaRR_DD
+complex(r64), dimension(ndim,ndim) :: gammaLR, gammaLR_DD,deltaLR_DD,deltaRL_DD
 
 integer :: a,b,a_sh,b_sh,spO2,i_r,i_an, ms, Tab
 complex(r64), dimension(4) :: int_hf, int_pa ! all arrays are for (pp, nn, pn, np)
@@ -3966,72 +4160,91 @@ enddo
 
 call calculate_common_rearrang_bulkFields
 
-return
-!!----------------------
-!int_hf = zzero
-!do a = 1, spO2
-!  a_sh = HOsp_sh(a)
-!  do b = a, spO2
-!    b_sh = HOsp_sh(c)
-!
-!    int_pa = zzero
-!    int_rea= zzero
-!
-!    int_test_PE = zzero
-!
-!    do i_r = 1, r_dim
-!      rad_ab = weight_R(i_r) * radial_2b_sho_memo(a_sh, b_sh, i_r)
-!      rad_ab = rad_ab * dexp((2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
-!      do i_an = 1, angular_dim
-!
-!        !! EXCHANGE terms for the HF fields
-!        aux_PE = zzero
-!        aux = zzero
-!        do ms = 1, 4
-!          !! NOTE: Angular 1, 2 functions are defined with direct form of ms,ms'
-!          if (haveX0M1) then
-!            aux(ms) = AngFunctDUAL_P2(ms,a,b,i_an) * BulkP1(1,ms,i_r,i_an) !pp
-!            aux_PE(1) = aux_PE(1)  + (X0M1*aux(ms))
-!            aux(ms) = AngFunctDUAL_P2(ms,a,b,i_an) * BulkP1(2,ms,i_r,i_an) !nn
-!            aux_PE(2) = aux_PE(2)  + (X0M1*aux(ms))
-!          endif
-!          !! pn np part, x0 dependence was calculated in BulkP1_**
-!          aux(ms) = AngFunctDUAL_P2(ms,a,b, i_an) * BulkP1(3,ms, i_r,i_an) !pn
-!          aux_PE(3)  = aux_PE(3)  + aux(ms)
-!          aux(ms) = AngFunctDUAL_P2(ms,a,b, i_an) * BulkP1(4,ms, i_r,i_an) !np
-!          aux_PE(4)  = aux_PE(4)  + aux(ms)
-!        enddo ! ms loop
-!
-!        !! EXCHANGE Sum terms and add to the global (r,ang) value to integrate
-!        do Tab =  1, 4
-!          aux_pair(Tab) = weight_LEB(i_an) * rad_ab * dens_alpha(i_r,i_an)
-!          aux_pair(Tab) = aux_PE(Tab) * aux_pair(Tab)
-!          int_pa  (Tab) = int_pa(Tab) + aux_pair(Tab)
-!        enddo
-!
-!        auxRea = zzero
-!        if (EVAL_REARRANGEMENT) then
-!          auxRea  = REACommonFields(i_r,i_an) * dens_alpm1(i_r,i_an)
-!          auxRea  = auxRea * rea_common_RadAng(a,b, i_r, i_an)
-!          auxRea  = auxRea * dexp( (2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
-!          int_rea = int_rea + (auxRea * weight_R(i_r) * weight_LEB(i_an))
-!        endif
-!        ! rearrange for pn and np are the same (pn/np are Zero)
-!
-!      enddo ! loop ang
-!    enddo !loop r
-!
-!    do Tab = 1, 4
-!      int_pa(Tab) = int_pa(Tab) * integral_factor
-!    enddo
-!    int_rea = int_rea * 0.25d+0 * integral_factor * alpha_DD
-!
-!    call complete_DD_fields(int_hf, int_pa, int_rea, gammaLR, deltaLR,deltaRL,&
-!                            hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, &
-!                            a, b, spO2, ndim)
-!
-!  enddo
-!enddo
+if (only_bulk_fields) return  !! ========================================
+
+!! save BU for Gamma RR (ommited)
+do a = 1, ndim
+  do b = 1, ndim
+    BU_gammaRR_DD(a, b) = field_gammaRR_DD(a, b)
+  enddo
+enddo
+gammaLR    = zzero
+gammaLR_DD = zzero
+deltaLR_DD = zzero
+deltaRL_DD = zzero
+
+!!! Evaluate the pairing fields ----------------------
+int_hf = zzero
+do a = 1, spO2
+  a_sh = HOsp_sh(a)
+  do b = a, spO2
+    b_sh = HOsp_sh(c)
+
+    int_pa = zzero
+    int_rea= zzero
+
+    int_test_PE = zzero
+
+    do i_r = 1, r_dim
+      rad_ab = weight_R(i_r) * radial_2b_sho_memo(a_sh, b_sh, i_r)
+      rad_ab = rad_ab * dexp((2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
+      do i_an = 1, angular_dim
+
+        !! EXCHANGE terms for the HF fields
+        aux_PE = zzero
+        aux = zzero
+        do ms = 1, 4
+          !! NOTE: Angular 1, 2 functions are defined with direct form of ms,ms'
+          if (haveX0M1) then
+            aux(ms) = AngFunctDUAL_P2(ms,a,b,i_an) * BulkP1(1,ms,i_r,i_an) !pp
+            aux_PE(1) = aux_PE(1)  + (X0M1*aux(ms))
+            aux(ms) = AngFunctDUAL_P2(ms,a,b,i_an) * BulkP1(2,ms,i_r,i_an) !nn
+            aux_PE(2) = aux_PE(2)  + (X0M1*aux(ms))
+          endif
+          !! pn np part, x0 dependence was calculated in BulkP1_**
+          aux(ms) = AngFunctDUAL_P2(ms,a,b, i_an) * BulkP1(3,ms, i_r,i_an) !pn
+          aux_PE(3)  = aux_PE(3)  + aux(ms)
+          aux(ms) = AngFunctDUAL_P2(ms,a,b, i_an) * BulkP1(4,ms, i_r,i_an) !np
+          aux_PE(4)  = aux_PE(4)  + aux(ms)
+        enddo ! ms loop
+
+        !! EXCHANGE Sum terms and add to the global (r,ang) value to integrate
+        do Tab =  1, 4
+          aux_pair(Tab) = weight_LEB(i_an) * rad_ab * dens_alpha(i_r,i_an)
+          aux_pair(Tab) = aux_PE(Tab) * aux_pair(Tab)
+          int_pa  (Tab) = int_pa(Tab) + aux_pair(Tab)
+        enddo
+
+        auxRea = zzero
+        if (EVAL_REARRANGEMENT) then
+          auxRea  = REACommonFields(i_r,i_an) * dens_alpm1(i_r,i_an)
+          auxRea  = auxRea * rea_common_RadAng(a,b, i_r, i_an)
+          auxRea  = auxRea * dexp( (2.0d0+alpha_DD) * (r(i_r)/HO_b)**2)
+          int_rea = int_rea + (auxRea * weight_R(i_r) * weight_LEB(i_an))
+        endif
+        ! rearrange for pn and np are the same (pn/np are Zero)
+
+      enddo ! loop ang
+    enddo !loop r
+
+    do Tab = 1, 4
+      int_pa(Tab) = int_pa(Tab) * integral_factor
+    enddo
+    int_rea = int_rea * 0.25d+0 * integral_factor * alpha_DD
+
+    call complete_DD_fields(zero, int_pa, int_rea, gammaLR, deltaLR,deltaRL,&
+                            hspLR, gammaLR_DD, deltaLR_DD, deltaRL_DD, &
+                            a, b, spO2, ndim)
+
+  enddo
+enddo
+
+! recover the gamma BU.
+do a = 1, ndim
+  do b = 1, ndim
+    field_gammaRR_DD(a, b) = BU_gammaRR_DD(a, b)
+  enddo
+enddo
 
 end subroutine reeval_pairing_fields_after_cutoff
 
