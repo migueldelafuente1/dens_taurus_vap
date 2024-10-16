@@ -19,7 +19,7 @@ use Wavefunctions
 use Operators
 use Fields, only: factor_delta
 use Projection, only: proj_Mphip, proj_Mphin
-!use DensityDep, only: lambdaFer_DD
+use DensityDep, only: lambdaFer_DD
 
 
 implicit none
