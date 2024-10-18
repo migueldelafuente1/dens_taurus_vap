@@ -1,0 +1,3 @@
+Cut-off MODE (1:E,2:k,3:&)  = 2
+Energy-h Cut-off DD.pn(MeV) = 3.5000d+01
+Kappa-occupation C.O (<0.5) = 2.5000d-01
