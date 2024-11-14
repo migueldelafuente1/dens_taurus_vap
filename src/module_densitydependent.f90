@@ -139,7 +139,8 @@ logical   :: EVAL_CUTOFF = .FALSE.
 integer   :: CUTOFF_MODE = 2    ! 1: Energy Cutoff, 2: Kappa cutoff, 3: both
 real(r64) :: CUTOFF_ENERGY_MAX = 1.0d+99
 real(r64) :: CUTOFF_KAPPA      = 0.0
-
+logical   :: CALCULATE_DD_PN_PA   = .TRUE.
+logical   :: CALCULATE_DD_PN_HF   = .TRUE.
 
 !! [END] DENSITY DEPENDENT MODIFICATIONS =====================================
 
@@ -3241,7 +3242,7 @@ do i_r = 1, r_dim
         ! pn np part
       aux1  = BulkHF(3,ms2, i_r,i_a) * BulkHF(4,ms,i_r,i_a) !pn*np
       aux2  = BulkHF(4,ms2, i_r,i_a) * BulkHF(3,ms,i_r,i_a) !np*pn
-      aux_e = aux_e + (aux1  + aux2)
+      if (CALCULATE_DD_PN_HF) aux_e = aux_e + (aux1  + aux2)
         !total field part
       aux1  = BulkHF(5,ms2, i_r,i_a) * BulkHF(5,ms,i_r,i_a) !tot
       aux_e = aux_e - (x0_DD_FACTOR * aux1)
@@ -3255,7 +3256,7 @@ do i_r = 1, r_dim
       !pn np part (remember the 1Bpn + x0*1Bpn - 1Bnp - x0*1Bnp was done already)
       aux1   = BulkP2(3,ms, i_r,i_a) * BulkP1(3,ms, i_r,i_a) !pn*pn
       aux2   = BulkP2(4,ms, i_r,i_a) * BulkP1(4,ms, i_r,i_a) !np*np
-      aux_pnp = aux_pnp + (aux1 + aux2)
+      if (CALCULATE_DD_PN_PA) aux_pnp = aux_pnp + (aux1 + aux2)
 
     enddo ! loop ms
     !! change 11/11/22 + sings of pairing changed to - (from -k*_ab k_cd)
@@ -3465,8 +3466,10 @@ do a = 1, spO2
         sumD_ang  = AngFunctDUAL_HF(1,a,c,i_ang) + AngFunctDUAL_HF(4,a,c,i_ang)
         auxHfD(1) = dens_pnt(5,i_r,i_ang) - (x0_DD_FACTOR*dens_pnt(1,i_r,i_ang))
         auxHfD(2) = dens_pnt(5,i_r,i_ang) - (x0_DD_FACTOR*dens_pnt(2,i_r,i_ang))
-        auxHfD(3) = -x0_DD_FACTOR * dens_pnt(3,i_r,i_ang)
-        auxHfD(4) = -x0_DD_FACTOR * dens_pnt(4,i_r,i_ang)
+        if (CALCULATE_DD_PN_HF) then
+          auxHfD(3) = -x0_DD_FACTOR * dens_pnt(3,i_r,i_ang)
+          auxHfD(4) = -x0_DD_FACTOR * dens_pnt(4,i_r,i_ang)
+          endif
         do Tac = 1, 4
           auxHfD(Tac) = sumD_ang * auxHfD(Tac)
         end do
@@ -3486,10 +3489,12 @@ do a = 1, spO2
           aux(ms) = aux(ms) * AngFunctDUAL_HF(ms, a,c, i_ang)
           auxHfE(2)  = auxHfE(2) + aux(ms)
             !pn np part
+          if (CALCULATE_DD_PN_PA) then
           aux(ms) = AngFunctDUAL_HF(ms,a,c, i_ang) * BulkHF(3,ms, i_r,i_ang) !pn
           auxHfE(3)  = auxHfE(3) + aux(ms)
           aux(ms) = AngFunctDUAL_HF(ms,a,c, i_ang) * BulkHF(4,ms, i_r,i_ang) !np
           auxHfE(4)  = auxHfE(4) + aux(ms)
+          endif
 
           !! NOTE: Angular 1, 2 functions are defined with direct form of ms,ms'
           if (haveX0M1) then
@@ -3498,11 +3503,14 @@ do a = 1, spO2
             aux(ms) = AngFunctDUAL_P2(ms,a,c,i_ang) * BulkP1(2,ms,i_r,i_ang) !nn
             aux_PE(2) = aux_PE(2)  + (X0M1*aux(ms))
           endif
+
           !! pn np part, x0 dependence was calculated in BulkP1_**
+          if (CALCULATE_DD_PN_PA) then
           aux(ms) = AngFunctDUAL_P2(ms,a,c, i_ang) * BulkP1(3,ms, i_r,i_ang) !pn
           aux_PE(3)  = aux_PE(3)  + aux(ms)
           aux(ms) = AngFunctDUAL_P2(ms,a,c, i_ang) * BulkP1(4,ms, i_r,i_ang) !np
           aux_PE(4)  = aux_PE(4)  + aux(ms)
+          endif
 
           !! TEST -----------------------------------------------------------
           if (PRNT_)then
@@ -4040,7 +4048,7 @@ enddo
 !  k_min = (/n1o2 - 2*int(nucleus_Z), n1o2 - 2*int(nucleus_N)/)
 !  k_max = (/n1o2, n1o2/)
 !endif
-print "(A,4I5,A,2L3)", " > Cutoff-kappa (p,n)(min, max):", k_min(1), k_min(2),&
+print "(A,4I5,A,2L3)", " > Cutoff-energy (p,n)(min, max):", k_min(1),k_min(2),&
             k_max(1), k_max(2), "  // max achieved=", max_ach(1), max_ach(2)
 
 do i = 1, n1o2
@@ -4206,10 +4214,12 @@ do a = 1, spO2
             aux_PE(2) = aux_PE(2)  + (X0M1*aux(ms))
           endif
           !! pn np part, x0 dependence was calculated in BulkP1_**
+          if (CALCULATE_DD_PN_HF) then
           aux(ms) = AngFunctDUAL_P2(ms,a,b, i_an) * BulkP1(3,ms, i_r,i_an) !pn
           aux_PE(3)  = aux_PE(3)  + aux(ms)
           aux(ms) = AngFunctDUAL_P2(ms,a,b, i_an) * BulkP1(4,ms, i_r,i_an) !np
           aux_PE(4)  = aux_PE(4)  + aux(ms)
+          endif
         enddo ! ms loop
 
         !! EXCHANGE Sum terms and add to the global (r,ang) value to integrate
