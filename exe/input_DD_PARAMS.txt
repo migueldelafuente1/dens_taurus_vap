@@ -11,4 +11,5 @@ Omega_Order                 = 14
 export_density (1, 0)       = 0
 eval QuasiParticle Vs       = 1
 eval/export Valence.Space   = 0 203 205 10001
+additional options-modes    = 0
 * Integration parameters:      ------------

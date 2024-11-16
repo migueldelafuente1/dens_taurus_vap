@@ -136,11 +136,16 @@ logical   :: PRINT_GUTS = .TRUE.
 logical   :: DOING_PROJECTION = .FALSE.
 logical   :: USING_FIXED_REARRANGEMENT = .FALSE.
 logical   :: EVAL_CUTOFF = .FALSE.
-integer   :: CUTOFF_MODE = 2    ! 1: Energy Cutoff, 2: Kappa cutoff, 3: both
+integer   :: CUTOFF_MODE = 0    ! 1: Energy Cutoff, 2: Kappa cutoff, 3: both
 real(r64) :: CUTOFF_ENERGY_MAX = 1.0d+99
 real(r64) :: CUTOFF_KAPPA      = 0.0
 logical   :: CALCULATE_DD_PN_PA   = .TRUE.
 logical   :: CALCULATE_DD_PN_HF   = .TRUE.
+
+! Alternative Density dependent Profiles
+integer   :: FUNCTIONAL_DENS_MODE = 1  ! 1=D1/D1S(default), 2=Nucl.Matter x0=0
+real(r64) :: CONST_EDD_M2_ETA  = 0.0D+00
+real(r64) :: CONST_EDD_M2_RHO0 = 1.0D+00
 
 !! [END] DENSITY DEPENDENT MODIFICATIONS =====================================
 
@@ -153,7 +158,9 @@ subroutine import_DD_parameters
 
 integer :: runit = 99
 integer :: ios, i, seed_type_imported, aa, a, a_ant
+integer :: extra_params = 0
 logical :: is_exist
+real(r64) :: aux_float
 character(len=*), parameter :: formatST = "(1a)", &
                                formatI1 = "(1a30, 1i1)", &
                                formatI2 = "(1a30, 1i2)", &
@@ -161,7 +168,8 @@ character(len=*), parameter :: formatST = "(1a)", &
                                formatF6 = "(1a30, 1f9.6)", &
                                formatEE = "(1a30, 1es12.6)", &
                                formatStrHeader = "(1a30)", &
-                               formatII = "(1a30, 1i1, 99i6)"
+                               formatII = "(1a30, 1i1, 99i6)", &
+                               formatI1F6="(1a30, 1i1, 1es12.6)"
 
 CHARACTER(LEN=20) :: file_input = "input_DD_PARAMS.txt"
 CHARACTER(LEN=30) :: filecontents, str_
@@ -205,6 +213,15 @@ read(runit,formatI1) str_, aux_int
 evalQuasiParticleVSpace = aux_int.GE.1
 read(runit,formatI2) str_, aux_int
 exportValSpace = aux_int.GE.1
+!! Auxiliary additional parameters
+read(runit,formatI2) str_, extra_params
+if (extra_params .GT. 0) then
+  print "(A,I3,A)", "  Additional ", extra_params, " Parameters-Constants."
+  do i=1, extra_params
+    read(runit,formatI1F6) str_, aux_int, aux_float
+    call set_extra_DD_parameters(aux_int, aux_float)
+  end do
+end if
 
 VSsh_dim = aux_int
 if (exportValSpace) then
@@ -286,6 +303,11 @@ print '(A,L10)',   'eval_explicit_fieldsDD =', EVAL_EXPLICIT_FIELDS_DD
 print '(A,F10.4)', 't3_DD_CONST (MeV fm-4) =', t3_DD_CONST
 print '(A,F10.6)', 'x0_DD_FACTOR           =', x0_DD_FACTOR
 print '(A,F10.6)', 'alpha_DD               =', alpha_DD
+if (FUNCTIONAL_DENS_MODE .NE. 1) then
+  print '(A,I10)',   '  MODE-density_dependent =', FUNCTIONAL_DENS_MODE
+  print '(A,F10.4)', '  * Eta - factor (M2)  =', CONST_EDD_M2_ETA
+  print '(A,F10.4)', '  * Dens rho0    (M2)  =', CONST_EDD_M2_RHO0
+end if
 print *, ''
 print *,           '   Integration parameters  '
 print *,           '-----------------------------------------------'
@@ -378,8 +400,11 @@ if ( is_exist ) then
   print "(A,F15.3)", "   - DD CUTOFF ENERGY for DD  (MeV): ", CUTOFF_ENERGY_MAX
   print "(A,F15.3)", "   - DD CUTOFF KAPPA  for DD (>0.5): ", CUTOFF_KAPPA
   print *, ""
+else
+  print "(A,L3)",    " * [OPTIONs]  DD CUTOFF:", EVAL_CUTOFF
 endif
-
+print "(A,2L3)", " * [OPTIONs] Calculate DD-pn parts (HF/PA) :", &
+                 CALCULATE_DD_PN_HF, CALCULATE_DD_PN_PA
 
 end subroutine import_DD_parameters
 
@@ -450,6 +475,62 @@ deallocate(HOsh_na0)
 end subroutine import_Rearrange_field_if_exist
 
 
+!-----------------------------------------------------------------------------!
+! Subroutine to import extra constants or modes for the calculation           !
+!-----------------------------------------------------------------------------!
+subroutine set_extra_DD_parameters(aux_int, aux_float)
+
+select case (aux_int)
+  !! OPTIONS TO AVOID CALCULATING PN-DD FIELDS
+  case (1)
+    PRINT_GUTS = .FALSE.
+  case (1)
+    CALCULATE_DD_PN_PA = .FALSE. !logical(abs(aux_float) .GT. 1.0)
+    print "(A,2I3)", " > Calculate DD-pn PAIR Field OFF:", CALCULATE_DD_PN_PA
+  case (2)
+    CALCULATE_DD_PN_HF = .FALSE. !logical(abs(aux_float) .GT. 1.0)
+    print "(A,2I3)", " > Calculate DD-pn HF   Field  OFF",   CALCULATE_DD_PN_HF
+  case (3)
+    EXPORT_GRAD_DD = .TRUE.
+
+  !! CUTOFF OPTIONS
+  case (11)
+    CUTOFF_ENERGY_MAX = aux_float
+    if (CUTOFF_MODE .EQ. 2) then
+      CUTOFF_MODE = 3
+    else
+      CUTOFF_MODE = 1
+    endif
+    EVAL_CUTOFF = .TRUE.
+    print "(A,2I3)", " > Param CUTOFF-Energy: ", CUTOFF_MODE, CUTOFF_ENERGY_MAX
+  case (12)
+    CUTOFF_KAPPA  = aux_float
+    if (CUTOFF_MODE .EQ. 2) then
+      CUTOFF_MODE = 3
+    else
+      CUTOFF_MODE = 2
+    end if
+    EVAL_CUTOFF = .TRUE.
+    print "(A,2I3)", " > Param CUTOFF-Kappa: ", CUTOFF_MODE, CUTOFF_KAPPA
+
+  !! POTENTIALS  ---------------------------------------------------------------
+  ! * Potential DD With no exchange term (x0=0) for N.matter
+  !   E.Garrido, P.Sarriguren, E.Moya, N.Schuck - Phys.Rev.C 60, 064312 (1999)
+  case(21)
+    FUNCTIONAL_DENS_MODE = 2
+    CONST_EDD_M1_ETA  = aux_float
+    print "(A,2I3)", " > Potential MODE 2: ETA  =", CONST_EDD_M2_ETA
+  case(22)
+    FUNCTIONAL_DENS_MODE = 2
+    CONST_EDD_M2_RHO0 = aux_float
+    print "(A,2I3)", " > Potential MODE 2: RHO_0=", CONST_EDD_M2_RHO0
+
+  case default
+    print "(2A,I4,F15.6)"," [ERROR] Invalid option SetUp Extra-argument case",&
+      " not valid. Got:", aux_int, aux_float
+    STOP
+end select
+end subroutine set_extra_DD_parameters
 
 !-----------------------------------------------------------------------------!
 ! Subroutine to identify the index of the valence space from the basis        !
@@ -1160,17 +1241,25 @@ b_n   = b + spO2
 
 radial_ab = radial_2b_sho_memo(a_sh, b_sh, i_r) / overlap
 
-roP = radial_ab * rhoLR  (b  ,a)
-roN = radial_ab * rhoLR  (b_n,a_n)
-rPN = radial_ab * rhoLR  (b  ,a_n)
-rNP = radial_ab * rhoLR  (b_n,a)
+roP  = radial_ab * rhoLR  (b  ,a)
+roN  = radial_ab * rhoLR  (b_n,a_n)
+! transposed, always add
+roPt = radial_ab * rhoLR  (a,  b)
+roNt = radial_ab * rhoLR  (a_n,b_n)
 
-!if (aNeQb) then !do it always, dont sum then
-  roPt   = radial_ab * rhoLR  (a,  b)
-  roNt   = radial_ab * rhoLR  (a_n,b_n)
-  rPNt   = radial_ab * rhoLR  (a  ,b_n)
-  rNPt   = radial_ab * rhoLR  (a_n,b)
-!endif
+if (CALCULATE_DD_PN_HF) then
+  rPN  = radial_ab * rhoLR  (b  ,a_n)
+  rNP  = radial_ab * rhoLR  (b_n,a)
+  ! transposed, always add
+  rPNt = radial_ab * rhoLR  (a  ,b_n)
+  rNPt = radial_ab * rhoLR  (a_n,b)
+else
+  rPN  = zzero
+  rNP  = zzero
+  rPNt = zzero
+  rNPt = zzero
+end if
+
 
 !! compute the direct bulk densities
 sum_ = AngFunctDUAL_HF(1,a,b,i_a) + AngFunctDUAL_HF(4,a,b,i_a)
@@ -1239,27 +1328,37 @@ b_n   = b + spO2
 
 radial_ab = radial_2b_sho_memo(a_sh, b_sh, i_r) / overlap
 
-kaP = radial_ab * kappaLR(a  ,b)
-kaN = radial_ab * kappaLR(a_n,b_n)
-kPN = radial_ab * kappaLR(a  ,b_n)
-kNP = radial_ab * kappaLR(a_n,b)
+kaP    = radial_ab * kappaLR(a  ,b)
+kaN    = radial_ab * kappaLR(a_n,b_n)
+kaCcP  = radial_ab * kappaRL(a  ,b)
+kaCcN  = radial_ab * kappaRL(a_n,b_n)
+! transposed, always add
+kaPt   = radial_ab * kappaLR(b  ,a)
+kaNt   = radial_ab * kappaLR(b_n,a_n)
+kaCcPt = radial_ab * kappaRL(b  ,a)
+kaCcNt = radial_ab * kappaRL(b_n,a_n)
 
-kaCcP = radial_ab * kappaRL(a  ,b)
-kaCcN = radial_ab * kappaRL(a_n,b_n)
-kCcPN = radial_ab * kappaRL(a  ,b_n)
-kCcNP = radial_ab * kappaRL(a_n,b)
 
-!if (aNeQb) then !do it always, dont sum then
-  kaPt   = radial_ab * kappaLR(b  ,a)
-  kaNt   = radial_ab * kappaLR(b_n,a_n)
+if (CALCULATE_DD_PN_PA) then
+  kPN    = radial_ab * kappaLR(a  ,b_n)
+  kNP    = radial_ab * kappaLR(a_n,b)
+  kCcPN  = radial_ab * kappaRL(a  ,b_n)
+  kCcNP  = radial_ab * kappaRL(a_n,b)
+  ! transposed, always add
   kPNt   = radial_ab * kappaLR(b  ,a_n)
   kNPt   = radial_ab * kappaLR(b_n,a)
-
-  kaCcPt = radial_ab * kappaRL(b  ,a)
-  kaCcNt = radial_ab * kappaRL(b_n,a_n)
   kCcPNt = radial_ab * kappaRL(b  ,a_n)
   kCcNPt = radial_ab * kappaRL(b_n,a)
-!endif
+else
+  kPN    = zzero
+  kNP    = zzero
+  kCcPN  = zzero
+  kCcNP  = zzero
+  kPNt   = zzero
+  kNPt   = zzero
+  kCcPNt = zzero
+  kCcNPt = zzero
+end if
 
 do ms = 1, 4
   select case (ms)
@@ -3240,9 +3339,11 @@ do i_r = 1, r_dim
       aux2  = BulkHF(2,ms2, i_r,i_a) * BulkHF(2,ms,i_r,i_a) !nn
       aux_e = aux_e + (aux1  + aux2)
         ! pn np part
-      aux1  = BulkHF(3,ms2, i_r,i_a) * BulkHF(4,ms,i_r,i_a) !pn*np
-      aux2  = BulkHF(4,ms2, i_r,i_a) * BulkHF(3,ms,i_r,i_a) !np*pn
-      if (CALCULATE_DD_PN_HF) aux_e = aux_e + (aux1  + aux2)
+      if (CALCULATE_DD_PN_HF) then
+        aux1  = BulkHF(3,ms2, i_r,i_a) * BulkHF(4,ms,i_r,i_a) !pn*np
+        aux2  = BulkHF(4,ms2, i_r,i_a) * BulkHF(3,ms,i_r,i_a) !np*pn
+        aux_e = aux_e + (aux1  + aux2)
+      end if
         !total field part
       aux1  = BulkHF(5,ms2, i_r,i_a) * BulkHF(5,ms,i_r,i_a) !tot
       aux_e = aux_e - (x0_DD_FACTOR * aux1)
@@ -3254,9 +3355,11 @@ do i_r = 1, r_dim
         aux_p = aux_p + (aux1 + aux2)
       endif
       !pn np part (remember the 1Bpn + x0*1Bpn - 1Bnp - x0*1Bnp was done already)
-      aux1   = BulkP2(3,ms, i_r,i_a) * BulkP1(3,ms, i_r,i_a) !pn*pn
-      aux2   = BulkP2(4,ms, i_r,i_a) * BulkP1(4,ms, i_r,i_a) !np*np
-      if (CALCULATE_DD_PN_PA) aux_pnp = aux_pnp + (aux1 + aux2)
+      if (CALCULATE_DD_PN_PA) then
+        aux1   = BulkP2(3,ms, i_r,i_a) * BulkP1(3,ms, i_r,i_a) !pn*pn
+        aux2   = BulkP2(4,ms, i_r,i_a) * BulkP1(4,ms, i_r,i_a) !np*np
+        aux_pnp = aux_pnp + (aux1 + aux2)
+      endif
 
     enddo ! loop ms
     !! change 11/11/22 + sings of pairing changed to - (from -k*_ab k_cd)
