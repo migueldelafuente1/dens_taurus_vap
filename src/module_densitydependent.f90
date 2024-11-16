@@ -486,13 +486,13 @@ select case (aux_int)
   !! OPTIONS TO AVOID CALCULATING PN-DD FIELDS
   case (1)
     PRINT_GUTS = .FALSE.
-  case (1)
+  case (2)
     CALCULATE_DD_PN_PA = .FALSE. !logical(abs(aux_float) .GT. 1.0)
     print "(A,2I3)", " > Calculate DD-pn PAIR Field OFF:", CALCULATE_DD_PN_PA
-  case (2)
+  case (3)
     CALCULATE_DD_PN_HF = .FALSE. !logical(abs(aux_float) .GT. 1.0)
     print "(A,2I3)", " > Calculate DD-pn HF   Field  OFF",   CALCULATE_DD_PN_HF
-  case (3)
+  case (4)
     EXPORT_GRAD_DD = .TRUE.
 
   !! CUTOFF OPTIONS
