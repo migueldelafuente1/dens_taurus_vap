@@ -479,6 +479,8 @@ end subroutine import_Rearrange_field_if_exist
 ! Subroutine to import extra constants or modes for the calculation           !
 !-----------------------------------------------------------------------------!
 subroutine set_extra_DD_parameters(aux_int, aux_float)
+integer,   intent(in) :: aux_int
+real(r64), intent(in) :: aux_float
 
 select case (aux_int)
   !! OPTIONS TO AVOID CALCULATING PN-DD FIELDS
@@ -518,7 +520,7 @@ select case (aux_int)
   !   E.Garrido, P.Sarriguren, E.Moya, N.Schuck - Phys.Rev.C 60, 064312 (1999)
   case(21)
     FUNCTIONAL_DENS_MODE = 2
-    CONST_EDD_M1_ETA  = aux_float
+    CONST_EDD_M2_ETA  = aux_float
     print "(A,2I3)", " > Potential MODE 2: ETA  =", CONST_EDD_M2_ETA
   case(22)
     FUNCTIONAL_DENS_MODE = 2
