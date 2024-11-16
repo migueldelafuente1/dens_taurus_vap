@@ -488,13 +488,13 @@ select case (aux_int)
     PRINT_GUTS = .FALSE.
   case (2)
     CALCULATE_DD_PN_PA = .FALSE. !logical(abs(aux_float) .GT. 1.0)
-    print "(A,2I3)", " > Calculate DD-pn PAIR Field OFF:", CALCULATE_DD_PN_PA
+    print "(A,L3)", " > Calculate DD-pn PAIR Field OFF:", CALCULATE_DD_PN_PA
   case (3)
     CALCULATE_DD_PN_HF = .FALSE. !logical(abs(aux_float) .GT. 1.0)
-    print "(A,2I3)", " > Calculate DD-pn HF   Field  OFF",   CALCULATE_DD_PN_HF
+    print "(A,L3)", " > Calculate DD-pn HF   Field OFF:", CALCULATE_DD_PN_HF
   case (4)
     EXPORT_GRAD_DD = .TRUE.
-
+    print "(A,L3)", " > Exporting Gradient Hamiltonian:", EXPORT_GRAD_DD
   !! CUTOFF OPTIONS
   case (11)
     CUTOFF_ENERGY_MAX = aux_float
