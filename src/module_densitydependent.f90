@@ -3600,9 +3600,9 @@ end subroutine complete_DD_fields
 ! Notice: these fields have sign (-1), and exchange terms for HF has to be
 !    inversed (* -1) since the current definition of from usual D1S interaction
 !------------------------------------------------------------------------------!
-subroutine calculate_fields_DD_HM(a,c,i_ang, auxHfDio, auxHfEio, aux_PEio)
+subroutine calculate_fields_DD_HM(a,c, i_r,i_ang, auxHfDio, auxHfEio, aux_PEio)
 
-integer,   intent(in) :: a, c, i_ang
+integer,   intent(in) :: a, c, i_r, i_ang
 complex(r64), dimension(4) :: auxHfDio, auxHfEio, aux_PEio ! all arrays are for (pp, nn, pn, np)
 
 complex(r64), dimension(4) :: auxHfD, auxHfE, aux_PE, aux
@@ -3848,7 +3848,7 @@ do a = 1, spO2
         enddo ! ms loop
 
         if (has_HEIS_MAJO_TERMS) then
-          call calculate_fields_DD_HM(a,c, i_ang, auxHfD, auxHfE, aux_PE)
+          call calculate_fields_DD_HM(a,c, i_r,i_ang, auxHfD, auxHfE, aux_PE)
         endif
 
         !! EXCHANGE Sum terms and add to the global (r,ang) value to integrate
