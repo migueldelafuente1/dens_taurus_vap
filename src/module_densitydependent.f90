@@ -86,8 +86,9 @@ complex(r64), dimension(:,:,:,:), allocatable, save :: AngFunctDUAL_HF ! CGa CGb
 complex(r64), dimension(:,:,:,:), allocatable, save :: AngFunctDUAL_P1 ! CGa CGb Y (a) Y (b)
 complex(r64), dimension(:,:,:,:), allocatable, save :: AngFunctDUAL_P2 ! CGa CGb Y*(a) Y*(b)
 complex(r64), dimension(:,:,:,:), allocatable, save :: BulkHF ! (tt,msms',r,ang) DEF:Sum AngFunctDUAL_HF * rho [pp,nn,pn,np, tot]  [(++,+-,-+,--)]
-complex(r64), dimension(:,:,:,:), allocatable, save :: BulkP1 ! (tt,msms',r,ang) DEF:Sum AngFunctDUAL_P1(msms') - AngFunctDUAL_P1(ms'ms) * kappaLR
+complex(r64), dimension(:,:,:,:), allocatable, save :: BulkP1 ! (tt,msms',r,ang) DEF:Sum AngFunctDUAL_P1(msms') - AngFunctDUAL_P1(ms'ms) * kappaLR (p, n), pn=function xM xH
 complex(r64), dimension(:,:,:,:), allocatable, save :: BulkP2 ! (tt,msms',r,ang) DEF:Sum AngFunctDUAL_P2 * kappaRL
+complex(r64), dimension(:,:,:,:), allocatable, save :: BulkP1_HM ! (tt,msms',r,ang) DEF:Sum AngFunctDUAL_P1(msms') - AngFunctDUAL_P1(ms'ms) * kappaLR (p, n), pn=function xM xH
 
 complex(r64), dimension(:,:), allocatable     :: rearrangement_me  !(isp1, isp2)
 complex(r64), dimension(:,:), allocatable     :: rearrang_field    !(isp1, isp2)
@@ -125,7 +126,7 @@ real(r64), dimension(2) :: lambdaFer_DD ! Lag. mult. before (lambda-Z, lambda-N)
 integer   :: Mphip_DD = 0, & ! number of angles in the projection for protons
              Mphin_DD = 0    !   "    "    "    "   "      "       "  neutrons
 integer   :: seed_type_sym  = 0        ! (UNDEFINED)
-logical   :: haveX0M1       = .FALSE.  ! |x0 - 1| > 1E-6
+logical   :: hasX0M1        = .FALSE.  ! |x0 - 1| > 1E-6
 logical   :: evalFullSPSpace= .TRUE.   ! compute the full a,b, c,d space for explicit DD fields (cannot be set)
 logical   :: exportValSpace = .FALSE.  ! the export of a reduced val.space
 logical   :: evalQuasiParticleVSpace = .FALSE. ! Export for the QP sp states, not the VS procedure
@@ -145,7 +146,11 @@ logical   :: CALCULATE_DD_PN_HF   = .TRUE.
 ! Alternative Density dependent Profiles
 integer   :: FUNCTIONAL_DENS_MODE = 1  ! 1=D1/D1S(default), 2=Nucl.Matter x0=0
 real(r64) :: CONST_EDD_M2_ETA  = 0.0D+00
-real(r64) :: CONST_EDD_M2_RHO0 = 1.0D+00
+real(r64) :: CONST_EDD_M2_RHO0 = 0.1381553D+00  ! r0=1.2 fm
+
+logical   :: has_HEIS_MAJO_TERMS  = .FALSE.
+real(r64) :: CONST_x0_EXC_HEIS = 0.0D+00
+real(r64) :: CONST_x0_EXC_MAJO = 0.0D+00
 
 !! [END] DENSITY DEPENDENT MODIFICATIONS =====================================
 
@@ -378,7 +383,7 @@ if (EVAL_EXPLICIT_FIELDS_DD) then
 endif
 print *, ''
 
-haveX0M1 = abs(x0_DD_FACTOR - 1.0d+0) > 1.0d-6
+hasX0M1 = abs(x0_DD_FACTOR - 1.0d+0) > 1.0d-6
 
 print "(A)", " * Density dependent parameters imported."
 
@@ -495,6 +500,7 @@ select case (aux_int)
   case (4)
     EXPORT_GRAD_DD = .TRUE.
     print "(A,L3)", " > Exporting Gradient Hamiltonian:", EXPORT_GRAD_DD
+
   !! CUTOFF OPTIONS
   case (11)
     CUTOFF_ENERGY_MAX = aux_float
@@ -526,6 +532,17 @@ select case (aux_int)
     FUNCTIONAL_DENS_MODE = 2
     CONST_EDD_M2_RHO0 = aux_float
     print "(A,2I3)", " > Potential MODE 2: RHO_0=", CONST_EDD_M2_RHO0
+
+
+  case(31)
+    has_HEIS_MAJO_TERMS  = .TRUE.
+    CONST_x0_EXC_HEIS = aux_float
+    print "(A,2I3)", " > Exchange (spin):       Heisenberg=", CONST_x0_EXC_HEIS
+  case(32)
+    has_HEIS_MAJO_TERMS  = .TRUE.
+    CONST_x0_EXC_MAJO = aux_float
+    print "(A,2I3)", " > Exchange (spin-isospin): Majorana=", CONST_x0_EXC_MAJO
+
 
   case default
     print "(2A,I4,F15.6)"," [ERROR] Invalid option SetUp Extra-argument case",&
@@ -973,6 +990,11 @@ AngFunctDUAL_HF = zzero
 AngFunctDUAL_P1 = zzero
 AngFunctDUAL_P2 = zzero
 
+if (has_HEIS_MAJO_TERMS) then
+  allocate(BulkP1_HM(5,4, r_dim, angular_dim))
+  BulkP1_HM = zzero
+endif
+
 if (PRINT_GUTS) then
   open(622, file='Y_ab_K_matrix_elements.gut')
   write(622,fmt='(2A)') " la ja ma i_a|  lb jb mb i_b|   K   M i_km ",&
@@ -1407,6 +1429,36 @@ do ms = 1, 4
     BulkP2(3,ms,i_r,i_a) = BulkP2(3,ms,i_r,i_a) + (B2_part * kCcPNt) !pn
     BulkP2(4,ms,i_r,i_a) = BulkP2(4,ms,i_r,i_a) + (B2_part * kCcNPt) !np
   endif
+
+  !! EXTENSION FOR HEISENBERG - MAJORANA PAIRING FIELDS
+  if (has_HEIS_MAJO_TERMS) then
+
+  B1_part = (AngFunctDUAL_P1(ms,a,b,i_a) - AngFunctDUAL_P1(ms2,a,b,i_a))
+  BulkP1_HM(1,ms,i_r,i_a) = BulkP1_HM(1,ms,i_r,i_a) + (B1_part * kaP) !pp
+  BulkP1_HM(2,ms,i_r,i_a) = BulkP1_HM(2,ms,i_r,i_a) + (B1_part * kaN) !nn
+
+  B1_part =    CONST_x0_EXC_HEIS * AngFunctDUAL_P1(ms ,a,b,i_a) &
+            - (CONST_x0_EXC_MAJO * AngFunctDUAL_P1(ms2,a,b,i_a))
+  B2_part =    CONST_x0_EXC_HEIS * AngFunctDUAL_P1(ms2,a,b,i_a) &
+            - (CONST_x0_EXC_MAJO * AngFunctDUAL_P1(ms ,a,b,i_a))
+  BulkP1_HM(3,ms,i_r,i_a)= BulkP1_HM(3,ms,i_r,i_a) + (B1_part*kNP - B2_part*kPN) !pn
+  BulkP1_HM(4,ms,i_r,i_a)= BulkP1_HM(4,ms,i_r,i_a) + (B1_part*kPN - B2_part*kNP) !np
+
+  if (aNeQb) then
+  B1_part = (AngFunctDUAL_P1(ms,b,a,i_a) - AngFunctDUAL_P1(ms2,b,a,i_a))
+  BulkP1_HM(1,ms,i_r,i_a) = BulkP1_HM(1,ms,i_r,i_a) + (B1_part * kaPt) !pp
+  BulkP1_HM(2,ms,i_r,i_a) = BulkP1_HM(2,ms,i_r,i_a) + (B1_part * kaNt) !nn
+
+  B1_part =    CONST_x0_EXC_HEIS * AngFunctDUAL_P1(ms ,a,b,i_a) &
+            - (CONST_x0_EXC_MAJO * AngFunctDUAL_P1(ms2,a,b,i_a))
+  B2_part =    CONST_x0_EXC_HEIS * AngFunctDUAL_P1(ms2,a,b,i_a) &
+            - (CONST_x0_EXC_MAJO * AngFunctDUAL_P1(ms ,a,b,i_a))
+  BulkP1_HM(3,ms,i_r,i_a)= BulkP1_HM(3,ms,i_r,i_a) + (B1_part*kNPt-B2_part*kPNt) !pn
+  BulkP1_HM(4,ms,i_r,i_a)= BulkP1_HM(4,ms,i_r,i_a) + (B1_part*kPNt-B2_part*kNPt) !np
+  endif
+
+  endif
+
 enddo
 
 end subroutine compute_bulkDens4_pair
@@ -1424,12 +1476,17 @@ if (reset_) then
   BulkHF    = zzero
   BulkP1    = zzero
   BulkP2    = zzero
+  if (has_HEIS_MAJO_TERMS) BulkP1_HM = zzero
 else
   do ms = 1, 4
     ! BulkHF(ms,i_r,i_ang) = BulkHF_pp(ms,i_r,i_ang) + BulkHF_nn(ms,i_r,i_ang)
     BulkHF(5,ms,i_r,i_ang) = BulkHF(1,ms,i_r,i_ang) + BulkHF(2,ms,i_r,i_ang)
     BulkP1(5,ms,i_r,i_ang) = BulkP1(1,ms,i_r,i_ang) + BulkP1(2,ms,i_r,i_ang)
     BulkP2(5,ms,i_r,i_ang) = BulkP2(1,ms,i_r,i_ang) + BulkP2(2,ms,i_r,i_ang)
+    if (has_HEIS_MAJO_TERMS) then
+      BulkP1_HM(5,ms,i_r,i_ang) =   BulkP1_HM(1,ms,i_r,i_ang) &
+                                  + BulkP1_HM(2,ms,i_r,i_ang)
+    endif
   enddo
 endif
 
@@ -3318,8 +3375,11 @@ do i_r = 1, r_dim
 
     aux_d =  dens_pnt(5,i_r,i_a)**2
     aux1  = (dens_pnt(1,i_r,i_a)**2) + (dens_pnt(2,i_r,i_a)**2)
-      ! pn np part
-    aux2  = 2.0d0 * dens_pnt(3,i_r,i_a) * dens_pnt(4,i_r,i_a)
+
+    aux2 = zzero  ! pn np part
+    if (CALCULATE_DD_PN_HF) then
+      aux2  = 2.0d0 * dens_pnt(3,i_r,i_a) * dens_pnt(4,i_r,i_a)
+      endif
     !! dens_pnt are complex, a test is to verify aux2 with the following to be Real
     !aux2 = 2.0d0*(dreal(dens_pnt(3,i_r,i_a))**2 - dimag(dens_pnt(3,i_r,i_a))**2)
 
@@ -3351,7 +3411,7 @@ do i_r = 1, r_dim
       aux_e = aux_e - (x0_DD_FACTOR * aux1)
 
       !Pairing rearrangement fields
-      if (haveX0M1) then
+      if (hasX0M1) then
         aux1  = BulkP2(1,ms, i_r,i_a) * BulkP1(1,ms, i_r,i_a) !pp
         aux2  = BulkP2(2,ms, i_r,i_a) * BulkP1(2,ms, i_r,i_a) !nn
         aux_p = aux_p + (aux1 + aux2)
@@ -3374,6 +3434,8 @@ do i_r = 1, r_dim
     end if
     REACommonFields(i_r, i_a) = aux1   !! dreal(aux1)
 
+    if (has_HEIS_MAJO_TERMS) call calculate_rearrang_bulkFields_HM(i_r, i_a)
+
     ! export Rea Fields by parts
     if (PRINT_GUTS) then
       write(665, fmt='(2I4,5(F22.15,SP,F20.15,"j"))') &
@@ -3384,6 +3446,72 @@ enddo
 if (PRINT_GUTS) close(665)
 
 end subroutine calculate_common_rearrang_bulkFields
+
+!!
+!! ! Extension of the rearrangement for Heisenberg-Majorana exchange operators
+!!
+subroutine calculate_rearrang_bulkFields_HM(i_r, i_a)
+integer, intent(in) :: i_r, i_a
+integer      ::  ms, ms2
+complex(r64) :: aux_d, aux_e, aux_p, aux_pnp, aux1, aux2, aux3, aux4
+real(r64)    :: X0MpH
+
+X0MpH = CONST_x0_EXC_HEIS + CONST_x0_EXC_MAJO
+
+if (.NOT. has_HEIS_MAJO_TERMS) return
+
+aux_d =  dens_pnt(5,i_r,i_a)**2
+aux1  = (dens_pnt(1,i_r,i_a)**2) + (dens_pnt(2,i_r,i_a)**2)
+aux2 = zzero  ! pn np part
+if (CALCULATE_DD_PN_HF) then
+  aux2  = (dens_pnt(3,i_r,i_a)**2) + (dens_pnt(4,i_r,i_a)**2)
+  endif
+aux_d = (CONST_x0_EXC_HEIS * (aux1 + aux2)) - (CONST_x0_EXC_MAJO * aux_d)
+
+aux_e = zzero
+aux_p = zzero
+aux_pnp = zzero
+do ms = 1, 4
+  select case (ms)
+    case (2, 3)
+      ms2 = 5 - ms
+    case default
+      ms2 = ms
+  end select
+
+  !Exchange part of the HF like fields
+  aux1  = BulkHF(1,ms2, i_r,i_a) * BulkHF(1,ms,i_r,i_a) !pp
+  aux2  = BulkHF(2,ms2, i_r,i_a) * BulkHF(2,ms,i_r,i_a) !nn
+  aux_e = aux_e + (CONST_x0_EXC_MAJO * (aux1 + aux2))
+  ! pn np part in the following <if>
+
+  !total field part
+  aux1  = BulkHF(5,ms2, i_r,i_a) * BulkHF(5,ms,i_r,i_a) !tot
+  aux_e = aux_e - (CONST_x0_EXC_HEIS * aux1)
+
+  !Pairing rearrangement fields
+  aux1  = BulkP2(1,ms, i_r,i_a) * BulkP1(1,ms, i_r,i_a) !pp
+  aux2  = BulkP2(2,ms, i_r,i_a) * BulkP1(2,ms, i_r,i_a) !nn
+  aux_p = aux_p + (aux1 + aux2)
+  !pn np part (remember the H 1Bnp - M*1Bpn - H 1Bpn  + M*1Bpn was done already)
+  if (CALCULATE_DD_PN_PA) then
+    aux1   = BulkP2(3,ms, i_r,i_a) * BulkP1(3,ms, i_r,i_a) !pn*pn
+    aux2   = BulkP2(4,ms, i_r,i_a) * BulkP1(4,ms, i_r,i_a) !np*np
+    aux_pnp = aux_pnp + (aux1 + aux2)
+
+    aux1  = BulkHF(3,ms2, i_r,i_a) * BulkHF(3,ms,i_r,i_a) !pn*np
+    aux2  = BulkHF(4,ms2, i_r,i_a) * BulkHF(4,ms,i_r,i_a) !np*pn
+    aux_e = aux_e + (CONST_x0_EXC_MAJO * (aux1 + aux2))
+  endif
+
+enddo ! loop ms
+
+aux1 = (aux_d + aux_e) + (X0MpH*aux_p) + aux_pnp
+
+!! Append to normal DD exchange
+REACommonFields(i_r, i_a) = REACommonFields(i_r, i_a) - aux1
+
+end subroutine calculate_rearrang_bulkFields_HM
 
 !------------------------------------------------------------------------------!
 ! subroutine complete_DD_fields                                                !
@@ -3465,7 +3593,89 @@ enddo !Tac
 
 end subroutine complete_DD_fields
 
+!------------------------------------------------------------------------------!
+!    subroutine calculate_fields_DD_HM
+! If including Heisenberg - Majorana exchange in the DD term, complete
+! with this part with respect to the different angular-parts of the fields
+! Notice: these fields have sign (-1), and exchange terms for HF has to be
+!    inversed (* -1) since the current definition of from usual D1S interaction
+!------------------------------------------------------------------------------!
+subroutine calculate_fields_DD_HM(a,c,i_ang, auxHfDio, auxHfEio, aux_PEio)
 
+integer,   intent(in) :: a, c, i_ang
+complex(r64), dimension(4) :: auxHfDio, auxHfEio, aux_PEio ! all arrays are for (pp, nn, pn, np)
+
+complex(r64), dimension(4) :: auxHfD, auxHfE, aux_PE, aux
+complex(r64) :: sumD_ang
+integer      :: ms, Tac
+real(r64)    :: X0MpH
+
+X0MpH = CONST_x0_EXC_HEIS + CONST_x0_EXC_MAJO
+
+if (.NOT. (has_HEIS_MAJO_TERMS)) return
+
+auxHfD = zzero
+!! DIRECT terms for the HF field
+sumD_ang  = AngFunctDUAL_HF(1,a,c,i_ang) + AngFunctDUAL_HF(4,a,c,i_ang)
+auxHfD(1) = (CONST_x0_EXC_HEIS*dens_pnt(1,i_r,i_ang) - &
+             CONST_x0_EXC_MAJO*dens_pnt(5,i_r,i_ang))
+auxHfD(2) = (CONST_x0_EXC_HEIS*dens_pnt(2,i_r,i_ang) - &
+             CONST_x0_EXC_MAJO*dens_pnt(5,i_r,i_ang))
+if (CALCULATE_DD_PN_HF) then
+  auxHfD(3) = -CONST_x0_EXC_HEIS * dens_pnt(3,i_r,i_ang)
+  auxHfD(4) = -CONST_x0_EXC_HEIS * dens_pnt(4,i_r,i_ang)
+  endif
+do Tac = 1, 4
+  auxHfD(Tac)   = sumD_ang * auxHfD(Tac)
+  auxHfDio(Tac) = auxHfDio(Tac) - auxHfD(Tac)
+enddo
+
+!! EXCHANGE terms for the HF fields
+auxHfE = zzero
+aux_PE = zzero
+aux = zzero
+do ms = 1, 4
+  aux(ms) = CONST_x0_EXC_MAJO * BulkHF(1,ms, i_r, i_ang) !pp
+  aux(ms) = aux(ms) - (CONST_x0_EXC_HEIS * BulkHF(5,ms, i_r, i_ang)) !tot
+  aux(ms) = aux(ms) * AngFunctDUAL_HF(ms, a,c, i_ang)
+  auxHfE(1)  = auxHfE(1) + aux(ms)
+
+  aux(ms) = CONST_x0_EXC_MAJO * BulkHF(2,ms, i_r, i_ang) !nn
+  aux(ms) = aux(ms) - (CONST_x0_EXC_HEIS * BulkHF(5,ms, i_r, i_ang))
+  aux(ms) = aux(ms) * AngFunctDUAL_HF(ms, a,c, i_ang)
+  auxHfE(2)  = auxHfE(2) + aux(ms)
+    !pn np part
+  if (CALCULATE_DD_PN_PA) then
+  aux(ms) = AngFunctDUAL_HF(ms,a,c, i_ang) * BulkHF(3,ms, i_r,i_ang) !pn
+  auxHfE(3)  = auxHfE(3) + (aux(ms) * CONST_x0_EXC_MAJO)
+  aux(ms) = AngFunctDUAL_HF(ms,a,c, i_ang) * BulkHF(4,ms, i_r,i_ang) !np
+  auxHfE(4)  = auxHfE(4) + (aux(ms) * CONST_x0_EXC_MAJO)
+  endif
+
+  !! NOTE: Angular 1, 2 functions are defined with direct form of ms,ms'
+  if (hasX0M1) then
+    aux(ms) = AngFunctDUAL_P2(ms,a,c,i_ang) * BulkP1_HM(1,ms,i_r,i_ang) !pp
+    aux_PE(1) = aux_PE(1)  + (X0MpH * aux(ms))
+    aux(ms) = AngFunctDUAL_P2(ms,a,c,i_ang) * BulkP1_HM(2,ms,i_r,i_ang) !nn
+    aux_PE(2) = aux_PE(2)  + (X0MpH * aux(ms))
+  endif
+
+  !! pn np part, x0 dependence was calculated in BulkP1_**
+  if (CALCULATE_DD_PN_PA) then
+  aux(ms) = AngFunctDUAL_P2(ms,a,c, i_ang) * BulkP1_HM(3,ms, i_r,i_ang) !pn
+  aux_PE(3)  = aux_PE(3)  + aux(ms)
+  aux(ms) = AngFunctDUAL_P2(ms,a,c, i_ang) * BulkP1_HM(4,ms, i_r,i_ang) !np
+  aux_PE(4)  = aux_PE(4)  + aux(ms)
+  endif
+
+enddo ! ms loop
+
+do Tac = 1, 4
+  auxHfEio(Tac) = auxHfEio(Tac) + auxHfE(Tac) ! + = -(from fields) * - (HF-Exch is substracted)
+  aux_PEio(Tac) = aux_PEio(Tac) - aux_PE(Tac)
+enddo
+
+end subroutine calculate_fields_DD_HM
 !------------------------------------------------------------------------------!
 !    subroutine calculate_fields_DD                                            !
 ! speeds up the bench process by reading half the N/2 space, perform Trace test!
@@ -3602,7 +3812,7 @@ do a = 1, spO2
           endif
 
           !! NOTE: Angular 1, 2 functions are defined with direct form of ms,ms'
-          if (haveX0M1) then
+          if (hasX0M1) then
             aux(ms) = AngFunctDUAL_P2(ms,a,c,i_ang) * BulkP1(1,ms,i_r,i_ang) !pp
             aux_PE(1) = aux_PE(1)  + (X0M1*aux(ms))
             aux(ms) = AngFunctDUAL_P2(ms,a,c,i_ang) * BulkP1(2,ms,i_r,i_ang) !nn
@@ -3616,7 +3826,6 @@ do a = 1, spO2
           aux(ms) = AngFunctDUAL_P2(ms,a,c, i_ang) * BulkP1(4,ms, i_r,i_ang) !np
           aux_PE(4)  = aux_PE(4)  + aux(ms)
           endif
-
           !! TEST -----------------------------------------------------------
           if (PRNT_)then
             !! Integrals for the Pairing Independently
@@ -3637,6 +3846,10 @@ do a = 1, spO2
           !! TEST -----------------------------------------------------------
 
         enddo ! ms loop
+
+        if (has_HEIS_MAJO_TERMS) then
+          call calculate_fields_DD_HM(a,c, i_ang, auxHfD, auxHfE, aux_PE)
+        endif
 
         !! EXCHANGE Sum terms and add to the global (r,ang) value to integrate
         do Tac =  1, 4
@@ -4312,7 +4525,7 @@ do a = 1, spO2
         aux = zzero
         do ms = 1, 4
           !! NOTE: Angular 1, 2 functions are defined with direct form of ms,ms'
-          if (haveX0M1) then
+          if (hasX0M1) then
             aux(ms) = AngFunctDUAL_P2(ms,a,b,i_an) * BulkP1(1,ms,i_r,i_an) !pp
             aux_PE(1) = aux_PE(1)  + (X0M1*aux(ms))
             aux(ms) = AngFunctDUAL_P2(ms,a,b,i_an) * BulkP1(2,ms,i_r,i_an) !nn

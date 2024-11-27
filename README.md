@@ -57,6 +57,8 @@ Additional options and codes:
 | 12 | Kappa norm CO | Cutoff(CO) for the PN-interaction part, lower limit for the kappa tensor value to account for the states in the cannocical basis (is around the Fermi energy)  (can be used in combination with 11).|
 | 21 | float | Funcitonal for the D1S without spin-exchange supression [Phys.Rev.C 60, 064312 (1999)](https://doi.org/10.1103/PhysRevC.60.064312), density factor 'eta', use with alpha and x0=0 in the main arguments, also with argument 22|
 | 22 | float | Same functional as 21, argument rho0 associated to the nuclear matter density. If not given, it is setup as the nuclear denisty 0.138 fm^-3 (r0=1.2 fm)|
+| 31 | float | Include Heisenberg exchange operator for -B\*P(s) for the DD term. x0H = H/t3 |
+| 32 | float | Include Majorana exchange operator for -M\*P(s)\*P(t) for the DD term. x0M = M/t3|
 | \* | \* | Developing. |
 
 
