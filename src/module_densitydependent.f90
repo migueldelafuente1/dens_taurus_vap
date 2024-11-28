@@ -3651,8 +3651,8 @@ enddo ! ms loop
 
 do Tac = 1, 4
   if (a.eq.1 .AND. c.eq.1 .and. i_r.eq.1 .AND. i_ang.EQ.1) then
-    print "(A,3I4,4F10.5)", "a,c,tac, ",a,c,Tac,auxHfEio(Tac),auxHfE(Tac),&
-      aux_PEio(Tac), -aux_PE(Tac)
+    print "(A,3I4,4F10.5)", "a,c,tac, ",a,c,Tac, real(auxHfEio(Tac)), &
+      real(auxHfE(Tac)), real(aux_PEio(Tac)), -real(aux_PE(Tac))
     if (Tac .EQ. 4) print *, ""
   end if
   auxHfEio(Tac) = auxHfEio(Tac) + auxHfE(Tac) ! + = -(from fields) * - (HF-Exch is substracted)
