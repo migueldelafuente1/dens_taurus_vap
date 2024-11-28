@@ -3607,7 +3607,7 @@ if (CALCULATE_DD_PN_HF) then
 do Tac = 1, 4
   auxHfD(Tac)   = sumD_ang * auxHfD(Tac)
 
-  if (a.lt.3 .AND. c.le.3 .and. i_r.eq.1 .AND. i_ang.EQ.1) then
+  if (a.lt.10 .AND. c.le.10 .and. i_r.eq.4 .AND. i_ang.EQ.20) then
     print "(A,3I4,2F10.5)", "DIRE a,c,tac=",a,c,Tac, real(auxHfDio(Tac)),&
       real(auxHfD(Tac))
     if (Tac .EQ. 4) print *, ""
@@ -3657,7 +3657,7 @@ do ms = 1, 4
 enddo ! ms loop
 
 do Tac = 1, 4
-  if (a.lt.3 .AND. c.le.3 .and. i_r.eq.1 .AND. i_ang.EQ.1) then
+  if (a.lt.10 .AND. c.le.10 .and. i_r.eq.4 .AND. i_ang.EQ.20) then
     print "(A,3I4,4F10.5)", "EXCH-PAIR a,c,tac=",a,c,Tac, real(auxHfEio(Tac)),&
       real(auxHfE(Tac)), real(aux_PEio(Tac)), -real(aux_PE(Tac))
     if (Tac .EQ. 4) print *, ""
