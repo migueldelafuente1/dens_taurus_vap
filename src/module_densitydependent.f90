@@ -3650,6 +3650,11 @@ do ms = 1, 4
 enddo ! ms loop
 
 do Tac = 1, 4
+  if (a.eq.1 .AND. c.eq.1 .and. i_r.eq.1 .AND. i_ang.EQ.1) then
+    print "(A,3I4,4F10.5)", "a,c,tac, ",a,c,Tac,auxHfEio(Tac),auxHfE(Tac),&
+      aux_PEio(Tac), -aux_PE(Tac)
+    if (Tac .EQ. 4) print *, ""
+  end if
   auxHfEio(Tac) = auxHfEio(Tac) + auxHfE(Tac) ! + = -(from fields) * - (HF-Exch is substracted)
   aux_PEio(Tac) = aux_PEio(Tac) - aux_PE(Tac)
 enddo
@@ -3827,7 +3832,8 @@ do a = 1, spO2
         enddo ! ms loop
 
         if (has_HEIS_MAJO_TERMS) then
-          if (a.eq.1 .AND. c.eq.1) print *, "evaluating calcu HM fields"
+          if (a.eq.1 .AND. c.eq.1 .and. i_r.eq.1 .AND. i_ang.EQ.1) &
+            print *, "evaluating calcu HM fields"
           call calculate_fields_DD_HM(a,c, i_r,i_ang, auxHfD, auxHfE, aux_PE)
         endif
 
