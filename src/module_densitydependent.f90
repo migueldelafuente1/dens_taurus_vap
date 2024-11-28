@@ -516,11 +516,11 @@ select case (aux_int)
   case(31)
     has_HEIS_MAJO_TERMS  = .TRUE.
     CONST_x0_EXC_HEIS = aux_float
-    print "(A,F10.9)", " > Exchange (spin):       Heisenberg=", CONST_x0_EXC_HEIS
+    print "(A,F12.9)", " > Exchange (spin):       Heisenberg=", CONST_x0_EXC_HEIS
   case(32)
     has_HEIS_MAJO_TERMS  = .TRUE.
     CONST_x0_EXC_MAJO = aux_float
-    print "(A,F10.9)", " > Exchange (spin-isospin): Majorana=", CONST_x0_EXC_MAJO
+    print "(A,F12.9)", " > Exchange (spin-isospin): Majorana=", CONST_x0_EXC_MAJO
 
 
   case default
