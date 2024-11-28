@@ -3827,6 +3827,7 @@ do a = 1, spO2
         enddo ! ms loop
 
         if (has_HEIS_MAJO_TERMS) then
+          if (a.eq.1 .AND. c.eq.1) print *, "evaluating calcu HM fields"
           call calculate_fields_DD_HM(a,c, i_r,i_ang, auxHfD, auxHfE, aux_PE)
         endif
 
