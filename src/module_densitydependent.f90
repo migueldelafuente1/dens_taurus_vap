@@ -174,7 +174,7 @@ character(len=*), parameter :: formatST = "(1a)", &
                                formatEE = "(1a30, 1es12.6)", &
                                formatStrHeader = "(1a30)", &
                                formatII = "(1a30, 1i1, 99i6)", &
-                               formatI1F6="(1a30, 1i1, 1es12.6)"
+                               formatI3F6="(1a30, 1i3, 1es12.6)"
 
 CHARACTER(LEN=20) :: file_input = "input_DD_PARAMS.txt"
 CHARACTER(LEN=30) :: filecontents, str_
@@ -223,7 +223,7 @@ read(runit,formatI2) str_, extra_params
 if (extra_params .GT. 0) then
   print "(A,I3,A)", "  Additional ", extra_params, " Parameters-Constants."
   do i=1, extra_params
-    read(runit,formatI1F6) str_, aux_int, aux_float
+    read(runit,formatI3F6) str_, aux_int, aux_float
     call set_extra_DD_parameters(aux_int, aux_float)
   end do
 end if
@@ -387,27 +387,6 @@ hasX0M1 = abs(x0_DD_FACTOR - 1.0d+0) > 1.0d-6
 
 print "(A)", " * Density dependent parameters imported."
 
-!! REMOVE THIS AFTER TEST:
-inquire (file='input_cutoff_DD.txt', exist=is_exist)
-if ( is_exist ) then
-  OPEN(runit, FILE='input_cutoff_DD.txt', &
-       FORM="FORMATTED", STATUS="OLD", ACTION="READ")
-
-  read(runit,formatI1) str_, CUTOFF_MODE
-  read(runit,formatEE) str_, CUTOFF_ENERGY_MAX
-  read(runit,formatEE) str_, CUTOFF_KAPPA
-  EVAL_CUTOFF = .TRUE.
-
-  print "(A,L3)",    " * [WARNING]  DD CUTOFF:", EVAL_CUTOFF
-  if (CUTOFF_MODE .EQ. 1) print "(A)", "   - DD CUTOFF THRESHOLD: Energy C.O."
-  if (CUTOFF_MODE .EQ. 2) print "(A)", "   - DD CUTOFF THRESHOLD: Kappa"
-  if (CUTOFF_MODE .EQ. 3) print "(A)", "   - DD CUTOFF THRESHOLD: Energy+kappa"
-  print "(A,F15.3)", "   - DD CUTOFF ENERGY for DD  (MeV): ", CUTOFF_ENERGY_MAX
-  print "(A,F15.3)", "   - DD CUTOFF KAPPA  for DD (>0.5): ", CUTOFF_KAPPA
-  print *, ""
-else
-  print "(A,L3)",    " * [OPTIONs]  DD CUTOFF:", EVAL_CUTOFF
-endif
 print "(A,2L3)", " * [OPTIONs] Calculate DD-pn parts (HF/PA) :", &
                  CALCULATE_DD_PN_HF, CALCULATE_DD_PN_PA
 
