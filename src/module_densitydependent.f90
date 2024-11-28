@@ -1428,10 +1428,10 @@ do ms = 1, 4
   BulkP1_HM(1,ms,i_r,i_a) = BulkP1_HM(1,ms,i_r,i_a) + (B1_part * kaPt) !pp
   BulkP1_HM(2,ms,i_r,i_a) = BulkP1_HM(2,ms,i_r,i_a) + (B1_part * kaNt) !nn
 
-  B1_part =    CONST_x0_EXC_HEIS * AngFunctDUAL_P1(ms ,a,b,i_a) &
-            - (CONST_x0_EXC_MAJO * AngFunctDUAL_P1(ms2,a,b,i_a))
-  B2_part =    CONST_x0_EXC_HEIS * AngFunctDUAL_P1(ms2,a,b,i_a) &
-            - (CONST_x0_EXC_MAJO * AngFunctDUAL_P1(ms ,a,b,i_a))
+  B1_part =    CONST_x0_EXC_HEIS * AngFunctDUAL_P1(ms ,b,a,i_a) &
+            - (CONST_x0_EXC_MAJO * AngFunctDUAL_P1(ms2,b,a,i_a))
+  B2_part =    CONST_x0_EXC_HEIS * AngFunctDUAL_P1(ms2,b,a,i_a) &
+            - (CONST_x0_EXC_MAJO * AngFunctDUAL_P1(ms ,b,a,i_a))
   BulkP1_HM(3,ms,i_r,i_a)= BulkP1_HM(3,ms,i_r,i_a) + (B1_part*kNPt-B2_part*kPNt) !pn
   BulkP1_HM(4,ms,i_r,i_a)= BulkP1_HM(4,ms,i_r,i_a) + (B1_part*kPNt-B2_part*kNPt) !np
   endif
@@ -3383,7 +3383,7 @@ do i_r = 1, r_dim
       if (CALCULATE_DD_PN_HF) then
         aux1  = BulkHF(3,ms2, i_r,i_a) * BulkHF(4,ms,i_r,i_a) !pn*np
         aux2  = BulkHF(4,ms2, i_r,i_a) * BulkHF(3,ms,i_r,i_a) !np*pn
-        aux_e = aux_e + (aux1  + aux2)
+        aux_e = aux_e + (aux1 + aux2)
       end if
         !total field part
       aux1  = BulkHF(5,ms2, i_r,i_a) * BulkHF(5,ms,i_r,i_a) !tot
@@ -3443,7 +3443,7 @@ aux_d =  dens_pnt(5,i_r,i_a)**2
 aux1  = (dens_pnt(1,i_r,i_a)**2) + (dens_pnt(2,i_r,i_a)**2)
 aux2 = zzero  ! pn np part
 if (CALCULATE_DD_PN_HF) then
-  aux2  = (dens_pnt(3,i_r,i_a)**2) + (dens_pnt(4,i_r,i_a)**2)
+  aux2  = 2.0d0 * dens_pnt(3,i_r,i_a) * dens_pnt(4,i_r,i_a)
   endif
 aux_d = (CONST_x0_EXC_HEIS * (aux1 + aux2)) - (CONST_x0_EXC_MAJO * aux_d)
 
@@ -3478,14 +3478,14 @@ do ms = 1, 4
     aux2   = BulkP2(4,ms, i_r,i_a) * BulkP1(4,ms, i_r,i_a) !np*np
     aux_pnp = aux_pnp + (aux1 + aux2)
 
-    aux1  = BulkHF(3,ms2, i_r,i_a) * BulkHF(3,ms,i_r,i_a) !pn*np
-    aux2  = BulkHF(4,ms2, i_r,i_a) * BulkHF(4,ms,i_r,i_a) !np*pn
+    aux1  = BulkHF(4,ms2, i_r,i_a) * BulkHF(3,ms,i_r,i_a) !pn*np
+    aux2  = BulkHF(3,ms2, i_r,i_a) * BulkHF(4,ms,i_r,i_a) !np*pn
     aux_e = aux_e + (CONST_x0_EXC_MAJO * (aux1 + aux2))
   endif
 
 enddo ! loop ms
 
-aux1 = (aux_d + aux_e) + (X0MpH*aux_p) + aux_pnp
+aux1 = (2.0D+00*(aux_d + aux_e)) + (X0MpH*aux_p) + aux_pnp
 
 !! Append to normal DD exchange
 REACommonFields(i_r, i_a) = REACommonFields(i_r, i_a) - aux1
