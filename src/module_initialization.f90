@@ -15,24 +15,24 @@
 MODULE Initialization
 
 use Constants
-!cmpi use MPI            
+!cmpi use MPI
 !cmpi use Parallelization
 use Nucleus, only: valence_Z, valence_N
 use Hamiltonian, only: hamil_file, hamil_fsho, hamil_f01b, hamil_f2b, &
                        hamil_fred, hamil_fcom, hamil_com, hamil_type, &
-                       hamil_read 
+                       hamil_read
 use WaveFunctions, only: seed_type, blocking_dim, blocking_id, seed_text, &
                          seed_rand, seed_symm, seed_occeps, seed_allemp, &
                          dens_spatial, dens_nr, dens_dr
 use Pairs, only: pairs_scheme
 use Projection, only: proj_Mphip, proj_Mphin
 use Constraints, only: constraint_eps, constraint_max, constraint_dim, &
-                       constraint_read, constraint_switch, opt_betalm, & 
+                       constraint_read, constraint_switch, opt_betalm, &
                        constraint_types, enforce_NZ
 use Gradient, only: gradient_type, gradient_eta, gradient_mu, gradient_eps
 
 implicit none
-private 
+private
 
 character(30), dimension(69) :: input_names ! Name of inputs
 character(30), dimension(:), allocatable :: input_block ! Name for blocking
@@ -40,7 +40,7 @@ character(30), dimension(:), allocatable :: input_block ! Name for blocking
 !!! Public routines
 public :: print_version, read_input
 
-CONTAINS 
+CONTAINS
 
 !------------------------------------------------------------------------------!
 ! subroutine print_version                                                     !
@@ -50,22 +50,24 @@ CONTAINS
 !------------------------------------------------------------------------------!
 subroutine print_version
 
-!cmpi if ( paral_myrank == 0 ) then        
-print '("  _________________________________________________________ ",/, &
-      & " |                                                         |",/, &
-      & " |  (______)  TAURUS_vap                Benjamin Bally     |",/, &
-      & " |  <(0  0)>  2022.02.18                Tomás R. Rodríguez |",/, &
-      & " |    (°°)                              Adrián Sánchez-F.  |",/, &
-      & " |                                                         |",/, &
-      & " | This code performs the particle-number variation after  |",/, &
-      & " | projection of real general Bogoliubov quasi-particle    |",/, &
-      & " | states represented in a spherical harmonic oscillator   |",/, &
-      & " | basis.                                                  |",/, &
-      & " |                                                         |",/, &
-      & " | Licence: GNU General Public License version 3 or later  |",/, &
-      & " | DOI: https://doi.org/10.5281/zenodo.4130680             |",/, &
-      & " | Git: https://github.com/project-taurus/taurus_vap.git   |",/, &
-      & " |_________________________________________________________|",/)' 
+!cmpi if ( paral_myrank == 0 ) then
+print '(" __________________________________________________________ ",/, &
+      & "|                                                          |",/, &
+      & "|  (______)                                                |",/, &
+      & "|  <(0  0)>   TAURUS_vap, version 2022.12.21               |",/, &
+      & "|    (°°)                                                  |",/, &
+      & "|                                                          |",/, &
+      & "| This code performs the particle-number variation after   |",/, &
+      & "| projection of real general Bogoliubov quasi-particle     |",/, &
+      & "| states represented in S.H.O. basis. This extension also  |",/, &
+      & "| allows the inclusion of a density-dependent term.        |",/, &
+      & "|                                                          |",/, &
+      & "| Licence: GNU General Public License version 3 or later   |",/, &
+      & "| DOI: 10.5281/zenodo.6906647                              |",/, &
+      & "| Git: https://github.com/migueldelafuente1/dens_taurus_vap|",/, &
+      & "|                                                          |",/, &
+      & "| Contributors: M. de la Fuente, B. Bally, T. Rodríguez    |",/, &
+      & "|__________________________________________________________|",/)'
 !cmpi endif
 
 end subroutine print_version
@@ -98,16 +100,16 @@ character(len=*), parameter :: format1 = "(1a)", &
                                format8 = "(1a30,1i3,1x,1f5.2)"
 
 !!! Reads the input parameters
-!cmpi if ( paral_myrank == 0 ) then        
+!cmpi if ( paral_myrank == 0 ) then
 read(uti,format1) input_names(1)
 read(uti,format1) input_names(2)
 read(uti,format2) input_names(3),  hamil_dummy
-read(uti,format3) input_names(4),  hamil_com  
+read(uti,format3) input_names(4),  hamil_com
 read(uti,format3) input_names(5),  hamil_read
 read(uti,format4) input_names(6),  dummy_teamssize
-read(uti,format1) input_names(7) 
-read(uti,format1) input_names(8) 
-read(uti,format1) input_names(9) 
+read(uti,format1) input_names(7)
+read(uti,format1) input_names(8)
+read(uti,format1) input_names(9)
 read(uti,format5) input_names(10), valence_Z
 read(uti,format5) input_names(11), valence_N
 read(uti,format4) input_names(12), proj_Mphip
@@ -121,15 +123,15 @@ allocate( blocking_id(blocking_dim), input_block(blocking_dim) )
 do i = 1, blocking_dim
   read(uti,format4) input_block(i), blocking_id(i)
 enddo
-read(uti,format3) input_names(19), seed_symm    
+read(uti,format3) input_names(19), seed_symm
 read(uti,format4) input_names(20), seed_rand
-read(uti,format3) input_names(21), seed_text    
-read(uti,format6) input_names(22), seed_occeps   
-read(uti,format3) input_names(23), seed_allemp   
-read(uti,format3) input_names(24), dens_spatial  
-read(uti,format8) input_names(25), dens_nr(1), dens_dr(1) 
-read(uti,format8) input_names(26), dens_nr(2), dens_dr(2) 
-read(uti,format8) input_names(27), dens_nr(3), dens_dr(3) 
+read(uti,format3) input_names(21), seed_text
+read(uti,format6) input_names(22), seed_occeps
+read(uti,format3) input_names(23), seed_allemp
+read(uti,format3) input_names(24), dens_spatial
+read(uti,format8) input_names(25), dens_nr(1), dens_dr(1)
+read(uti,format8) input_names(26), dens_nr(2), dens_dr(2)
+read(uti,format8) input_names(27), dens_nr(3), dens_dr(3)
 read(uti,format1) input_names(28)
 read(uti,format1) input_names(29)
 read(uti,format1) input_names(30)
@@ -145,16 +147,16 @@ read(uti,format1) input_names(39)
 read(uti,format1) input_names(40)
 read(uti,format3) input_names(41), enforce_NZ
 read(uti,format3) input_names(42), opt_betalm
-read(uti,format3) input_names(43), pairs_scheme  
+read(uti,format3) input_names(43), pairs_scheme
 read(uti,format6) input_names(44), constraint_eps
-do i = 3, constraint_types  
+do i = 3, constraint_types
   read(uti,format7) input_names(42+i), constraint_switch(i), &
                     constraint_read(i,1), constraint_read(i,2)
 enddo
 !cmpi endif
 
 !!! MPI adjustment and broadcast
-!cmpi paral_teamssize = max(dummy_teamssize,1) 
+!cmpi paral_teamssize = max(dummy_teamssize,1)
 !cmpi call broadcast_inputs(hamil_dummy,iter_max,iter_write,iter_print)
 
 !!! Counts the number of constraints. By default, switches on the constraint for
@@ -179,10 +181,10 @@ if ( proj_Mphin > -1 ) proj_Mphin = max(1,proj_Mphin)
 
 !!! Determines the spacing for the spatial density in spherical coordinates
 if ( dens_spatial == 0 ) then
-  dens_nr = 0   
+  dens_nr = 0
   dens_dr = zero
 elseif ( dens_spatial == 1 ) then
-  dens_nr(2:3) = 0   
+  dens_nr(2:3) = 0
   dens_dr(2:3) = zero
 endif
 
@@ -205,7 +207,7 @@ hamil_fcom = hamil_file // appcom
 
 !!! Performs some tests on the value of the inputs and link the units for
 !!! the Hamiltonian files
-!cmpi if ( paral_myrank == 0 ) then        
+!cmpi if ( paral_myrank == 0 ) then
 call print_input(iter_max,iter_write,iter_print)
 !cmpi endif
 call check_input(iter_max,iter_write,iter_print)
@@ -252,7 +254,7 @@ write(valence_N_ch,'(1f7.2)') valence_N
 valence_Z_ch = adjustl(valence_Z_ch)
 valence_N_ch = adjustl(valence_N_ch)
 
-!cmpi dummy_teamssize = paral_teamssize 
+!cmpi dummy_teamssize = paral_teamssize
 write(paral_teamssize_ch,'(1i5)') dummy_teamssize
 paral_teamssize_ch = adjustl(paral_teamssize_ch)
 
@@ -315,12 +317,12 @@ print '(60("%"),/,22x,"INPUT PARAMETERS",22x,/,60("%"),/)'
 write(uto,format1) input_names(1)
 write(uto,format1) input_names(2)
 write(uto,format2) input_names(3),  trim(adjustl(hamil_file))
-write(uto,format3) input_names(4),  hamil_com  
+write(uto,format3) input_names(4),  hamil_com
 write(uto,format3) input_names(5),  hamil_read
 write(uto,format4) input_names(6),  paral_teamssize_ch
-write(uto,format1) input_names(7) 
-write(uto,format1) input_names(8) 
-write(uto,format1) input_names(9) 
+write(uto,format1) input_names(7)
+write(uto,format1) input_names(8)
+write(uto,format1) input_names(9)
 write(uto,format5) input_names(10), valence_Z_ch
 write(uto,format5) input_names(11), valence_N_ch
 write(uto,format4) input_names(12), proj_Mphip_ch
@@ -333,12 +335,12 @@ write(uto,format4) input_names(18), blocking_dim_ch
 do i = 1, blocking_dim
   write(uto,format4) input_block(i), blocking_id_ch(i)
 enddo
-write(uto,format3) input_names(19), seed_symm    
+write(uto,format3) input_names(19), seed_symm
 write(uto,format4) input_names(20), seed_rand_ch
-write(uto,format3) input_names(21), seed_text    
+write(uto,format3) input_names(21), seed_text
 write(uto,format5) input_names(22), seed_occeps_ch
-write(uto,format3) input_names(23), seed_allemp  
-write(uto,format3) input_names(24), dens_spatial 
+write(uto,format3) input_names(23), seed_allemp
+write(uto,format3) input_names(24), dens_spatial
 write(uto,format7) input_names(25), dens_nr_ch(1), dens_dr_ch(1)
 write(uto,format7) input_names(26), dens_nr_ch(2), dens_dr_ch(2)
 write(uto,format7) input_names(27), dens_nr_ch(3), dens_dr_ch(3)
@@ -357,10 +359,10 @@ write(uto,format1) input_names(39)
 write(uto,format1) input_names(40)
 write(uto,format3) input_names(41), enforce_NZ
 write(uto,format3) input_names(42), opt_betalm
-write(uto,format3) input_names(43), pairs_scheme  
+write(uto,format3) input_names(43), pairs_scheme
 write(uto,format5) input_names(44), constraint_eps_ch
 do i = 3, constraint_types
-  if ( constraint_switch(i) < 2 ) then 
+  if ( constraint_switch(i) < 2 ) then
     write(uto,format6) input_names(42+i), constraint_switch(i), &
                        constraint_read_ch(i,1)
   else
@@ -371,7 +373,7 @@ enddo
 print*,' '
 
 deallocate(input_block,blocking_id_ch)
- 
+
 end subroutine print_input
 
 !------------------------------------------------------------------------------!
@@ -425,9 +427,9 @@ end subroutine print_input
 !cmpi call mpi_bcast(pairs_scheme,1,mpi_integer,0,mpi_comm_world,ierr)
 !cmpi call mpi_bcast(constraint_eps,1,mpi_double_precision,0, &
 !cmpi                 mpi_comm_world,ierr)
-!cmpi call mpi_bcast (constraint_switch,constraint_max,mpi_integer,0, & 
+!cmpi call mpi_bcast (constraint_switch,constraint_max,mpi_integer,0, &
 !cmpi                 mpi_comm_world,ierr)
-!cmpi call mpi_bcast (constraint_read,constraint_max,mpi_double_precision,0, & 
+!cmpi call mpi_bcast (constraint_read,constraint_max,mpi_double_precision,0, &
 !cmpi                 mpi_comm_world,ierr)
 
 !cmpi end subroutine broadcast_inputs
@@ -454,34 +456,34 @@ real(r64) :: integerness
 ierror = 0
 
 !!!
-!!! Hamiltonian    
+!!! Hamiltonian
 !!!
 
 !cmpi if ( paral_myrank == 0 ) then
 if ( (hamil_com < 0) .or. (hamil_com > 1) ) then
   ierror = ierror + 1
-  print "(a,1i1,a)","The option for the COM correction (hamil_com) = ", & 
+  print "(a,1i1,a)","The option for the COM correction (hamil_com) = ", &
          hamil_com," should be 0 or 1."
-endif 
+endif
 
 if ( (hamil_read < 0) .or. (hamil_read > 1) ) then
   ierror = ierror + 1
-  print "(a,1i1,a)","The option to read an uncoupled file (hamil_read) = ", & 
+  print "(a,1i1,a)","The option to read an uncoupled file (hamil_read) = ", &
          hamil_read," should be 0 or 1."
-endif 
+endif
 
 !cmpi if ( hamil_read /= 1 ) then
 !cmpi   ierror = ierror + 1
-!cmpi   print "(a,1i1,a)","The option to read an uncoupled file (hamil_read) &  
+!cmpi   print "(a,1i1,a)","The option to read an uncoupled file (hamil_read) &
 !cmpi   = ",hamil_read," should be 1 when doing MPI calculations."
 !cmpi endif
 
 !cmpi if ( (paral_teamssize < 0) .or. (paral_teamssize > paral_worldsize) ) then
 !cmpi   ierror = ierror + 1
-!cmpi   print "(a,1i1,a)","The numer of processes per team (MPI) = ", & 
+!cmpi   print "(a,1i1,a)","The numer of processes per team (MPI) = ", &
 !cmpi          paral_teamssize," should be positive and smaller than the", &
 !cmpi         " total number of processes."
-!cmpi endif 
+!cmpi endif
 
 !!!
 !!! Particle number
@@ -489,49 +491,49 @@ endif
 
 if ( valence_Z < 0 ) then
   ierror = ierror + 1
-  print "(a,1f10.3,a)","The number of active protons (valence_Z) = ", & 
+  print "(a,1f10.3,a)","The number of active protons (valence_Z) = ", &
          valence_Z," should be positive."
-endif 
+endif
 
 if ( valence_N < 0 ) then
   ierror = ierror + 1
-  print "(a,1f10.3,a)","The number of active neutrons (valence_N) = ", & 
+  print "(a,1f10.3,a)","The number of active neutrons (valence_N) = ", &
          valence_N," should be positive."
-endif 
+endif
 
 if ( (abs(valence_Z) + abs(valence_N)) <= epsilon0 ) then
   ierror = ierror + 1
   print "(a,1f10.3,a)","The number of active nucleons (valence_Z + valence_N) &
         &= ",valence_Z+valence_N," should be strictly positive."
-endif 
+endif
 
 if ( proj_Mphip < 0 ) then
   ierror = ierror + 1
-  print "(a,1i5,a)","The number of gauge angles for protons (proj_Mphip) = ", & 
+  print "(a,1i5,a)","The number of gauge angles for protons (proj_Mphip) = ", &
          proj_Mphip," should be positive."
-endif 
+endif
 
 if ( proj_Mphin < 0 ) then
   ierror = ierror + 1
-  print "(a,1i5,a)","The number of gauge angles for neutrons (proj_Mphin) = ", & 
+  print "(a,1i5,a)","The number of gauge angles for neutrons (proj_Mphin) = ", &
          proj_Mphin," should be positive."
-endif 
+endif
 
-integerness = valence_Z - int(valence_Z)  
-if ( ((proj_Mphip > 1) .or. (seed_type > 6)) .and. & 
-     (abs(integerness) > epsilon0) ) then
-  ierror = ierror + 1
-  print "(a,1f10.3,a)","The number of active protons (valence_Z) = ", & 
-         valence_Z," is not an integer (needed for PNR or Slater)."
-endif 
-
-integerness = valence_N - int(valence_N)  
+integerness = valence_Z - int(valence_Z)
 if ( ((proj_Mphip > 1) .or. (seed_type > 6)) .and. &
      (abs(integerness) > epsilon0) ) then
   ierror = ierror + 1
-  print "(a,1f10.3,a)","The number of active neutrons (valence_N) = ", & 
+  print "(a,1f10.3,a)","The number of active protons (valence_Z) = ", &
+         valence_Z," is not an integer (needed for PNR or Slater)."
+endif
+
+integerness = valence_N - int(valence_N)
+if ( ((proj_Mphip > 1) .or. (seed_type > 6)) .and. &
+     (abs(integerness) > epsilon0) ) then
+  ierror = ierror + 1
+  print "(a,1f10.3,a)","The number of active neutrons (valence_N) = ", &
          valence_N," is not an integer (needed for PNR or Slater)."
-endif 
+endif
 
 !!!
 !!! Wave function
@@ -539,13 +541,13 @@ endif
 
 if ( (seed_type < 0) .or. (seed_type > 9) ) then
   ierror = ierror + 1
-  print "(a,1i1,a)","The option for the type of seed (seed_type) = ", & 
+  print "(a,1i1,a)","The option for the type of seed (seed_type) = ", &
          seed_type," should be between 0 and 9."
-endif 
+endif
 
 if ( blocking_dim < 0 ) then
   ierror = ierror + 1
-  print "(a,1i5,a)","The number of blocked quasiparticles (blocking_dim) = " & 
+  print "(a,1i5,a)","The number of blocked quasiparticles (blocking_dim) = " &
          ,blocking_dim," should be positive."
 endif
 
@@ -559,39 +561,39 @@ enddo
 
 if ( (seed_symm < 0) .or. (seed_symm > 1) ) then
   ierror = ierror + 1
-  print "(a,1i1,a)","The option for checking the symmetries (seed_symm) = ", & 
+  print "(a,1i1,a)","The option for checking the symmetries (seed_symm) = ", &
          seed_symm," should be 0 or 1."
-endif 
+endif
 
 if ( seed_rand < 0 ) then
   ierror = ierror + 1
-  print "(a,1i5,a)","The seed for the random number generation (seed_rand) = ",& 
+  print "(a,1i5,a)","The seed for the random number generation (seed_rand) = ",&
          seed_rand," should be positive or null."
-endif 
+endif
 
 if ( (seed_text < 0) .or. (seed_text > 3) ) then
   ierror = ierror + 1
-  print "(a,1i1,a)","The option to write the wf in binary/text (seed_text) = " & 
+  print "(a,1i1,a)","The option to write the wf in binary/text (seed_text) = " &
          ,seed_text," should be between 0 or 3."
-endif 
+endif
 
 if ( seed_occeps < 0.0d0 ) then
   ierror = ierror + 1
   print "(a,1es10.3,a)","The cutoff for the occupied single-particle states &
         &(seed_occeps) = ", seed_occeps," should be positive."
-endif 
+endif
 
 if ( (seed_allemp < 0) .or. (seed_allemp > 1) ) then
   ierror = ierror + 1
   print "(a,1i1,a)","The option for including all the empty states &
         &(seed_allemp) = ", seed_allemp," should be 0 or 1."
-endif 
+endif
 
 if ( (dens_spatial < 0) .or. (dens_spatial > 3) ) then
   ierror = ierror + 1
   print "(a,1i1,a)","The option for including all the empty states &
         &(seed_allemp) = ", seed_allemp," should be 0 or 1."
-endif 
+endif
 
 do i = 1, 3
   if ( (dens_nr(i) < 0.d0) .or. (dens_dr(i) < 0.d0) ) then
@@ -607,45 +609,45 @@ enddo
 
 if ( iter_max < 0 ) then
   ierror = ierror + 1
-  print "(a,1i5,a)","The maximum number of iterations (iter_max) = ", & 
+  print "(a,1i5,a)","The maximum number of iterations (iter_max) = ", &
          iter_max," should be positive."
 endif
 
 if ( iter_write < 0 ) then
   ierror = ierror + 1
-  print "(a,1i5,a)","The step for intermediate wf writing (iter_write) = ", & 
+  print "(a,1i5,a)","The step for intermediate wf writing (iter_write) = ", &
          iter_write," should be positive."
 endif
 
 if ( (iter_print < 0) .or. (iter_print > 1) ) then
   ierror = ierror + 1
-  print "(a,1i1,a)","The option for extensive printing (iter_print) = ", & 
+  print "(a,1i1,a)","The option for extensive printing (iter_print) = ", &
          iter_print," should be 0 or 1."
-endif 
+endif
 
 if ( (gradient_type < 0) .or. (gradient_type > 2) ) then
   ierror = ierror + 1
-  print "(a,1i1,a)","The option for the type of gradient (gradient_type) = ", & 
+  print "(a,1i1,a)","The option for the type of gradient (gradient_type) = ", &
          gradient_type," should be beteween 0 and 2."
-endif 
+endif
 
 if ( gradient_eta < 0.0d0 ) then
   ierror = ierror + 1
-  print "(a,1es10.3,a)","The gradient parameter eta (gradient_eta) = ", & 
+  print "(a,1es10.3,a)","The gradient parameter eta (gradient_eta) = ", &
          gradient_eta," should be positive."
-endif 
+endif
 
 if ( (gradient_mu < 0.0d0) .or. (gradient_mu > 1.0d0) ) then
   ierror = ierror + 1
-  print "(a,1es10.3,a)","The gradient parameter mu (gradient_mu) = ", & 
+  print "(a,1es10.3,a)","The gradient parameter mu (gradient_mu) = ", &
          gradient_mu," should be between 0.0 and 1.0."
-endif 
+endif
 
 if ( gradient_eps <= 0.0d0 ) then
   ierror = ierror + 1
-  print "(a,1es10.3,a)","The tolerance for the gradient (gradient_eps) = ", & 
+  print "(a,1es10.3,a)","The tolerance for the gradient (gradient_eps) = ", &
          gradient_eps," should be strictly positive."
-endif 
+endif
 
 !!!
 !!! Constraints
@@ -661,22 +663,22 @@ isum = sum(switch_check)
 
 if ( (enforce_NZ < 0) .or. (enforce_NZ > 1) ) then
   ierror = ierror + 1
-  print "(a,1i1,a)","The option to force the constraint on N/Z (enforce_NZ) = "& 
+  print "(a,1i1,a)","The option to force the constraint on N/Z (enforce_NZ) = "&
          ,enforce_NZ," should be 0 or 1."
-endif 
+endif
 
 if ( (opt_betalm < 0) .or. (opt_betalm > 2) ) then
   ierror = ierror + 1
-  print "(a,1i1,a)","The option to constraint beta_lm (opt_betalm) = ", & 
+  print "(a,1i1,a)","The option to constraint beta_lm (opt_betalm) = ", &
          opt_betalm," should be between 0 and 2."
-endif 
+endif
 
 if ( (opt_betalm == 2) .and. ((constraint_read(5,1) < 0.0d0) .or. &
      (constraint_read(5,2) < 0.0d0)) ) then
   ierror = ierror + 1
-  print "(a,2es11.3,a)","The values of beta (constraint_read(5,1:2)) = ", & 
+  print "(a,2es11.3,a)","The values of beta (constraint_read(5,1:2)) = ", &
          constraint_read(5,1),constraint_read(5,2)," should be positive."
-endif 
+endif
 
 if ( (constraint_switch(17) == 3) .and. (constraint_read(17,1) - &
      constraint_read(17,2) < 0.0d0) ) then
@@ -689,29 +691,29 @@ endif
 
 if ( (pairs_scheme < 0) .or. (pairs_scheme > 1) ) then
   ierror = ierror + 1
-  print "(a,1i1,a)","The scheme for the coupling of pairs (pairs_scheme) = ", & 
+  print "(a,1i1,a)","The scheme for the coupling of pairs (pairs_scheme) = ", &
          pairs_scheme," should be 0 or 1."
-endif 
+endif
 
 if ( constraint_switch(19) == 1 ) then
   ierror = ierror + 1
   print "(a)", "The constraint on <Jy> has to be switched off for now as the &
         &wave functions are real."
-endif 
+endif
 
 if ( constraint_eps <= 0.0d0 ) then
   ierror = ierror + 1
-  print "(a,1es10.3,a)","The tolerance for the constraints (constraint_eps) = "& 
+  print "(a,1es10.3,a)","The tolerance for the constraints (constraint_eps) = "&
          ,constraint_eps," should be strictly positive."
-endif 
+endif
 
 if ( isum /= 0 ) then
   ierror = ierror + 1
-  print "(a,1i1,a)", "The flags to switch on/off the constraints & 
+  print "(a,1i1,a)", "The flags to switch on/off the constraints &
         &(constraint_switch) accept the values: 0, 1 (all), 2, 3 (radius and &
         &multipoles)."
 endif
-!cmpi endif 
+!cmpi endif
 
 !!!
 !!! Stops the code if an error has been found in the input file
@@ -723,8 +725,8 @@ if ( ierror /= 0 ) then
 !cmpi   if ( paral_myrank == 0 ) then
   print "(a,1i2,a)", "The code has dectected ",ierror," problem(s) with the &
         &input parameters and will stop. Please check the manual."
-!cmpi   endif 
-  stop 
+!cmpi   endif
+  stop
 endif
 
 end subroutine check_input
@@ -743,13 +745,13 @@ subroutine open_files_hamiltonian
 
 integer :: htype, ierror, iwarn
 character(100) :: hname, hname1, hname2, hnamer
-logical :: is_exist            
+logical :: is_exist
 
 !!! Counter for the number of errors (should be 0 at the end)
 ierror = 0
 iwarn  = 0
 
-!!! Main file 
+!!! Main file
 inquire (file=hamil_fsho, exist=is_exist)
 
 if ( is_exist ) then
@@ -761,23 +763,23 @@ else
   ierror = ierror + 1
   print "(a,a,a)", "The main file (hamil_fsho) = ", hamil_fsho, &
         " can not be found."
-endif 
+endif
 
 !!! Reduced file
 if ( hamil_read == 1 ) then
   inquire (file=hamil_fred, exist=is_exist)
   if ( is_exist ) then
     open(uthr, file=hamil_fred, status='old', action='read', access='stream',&
-         form='unformatted')              
+         form='unformatted')
     read(uthr) hnamer
     if ( hnamer /= hname ) then
       iwarn = iwarn + 1
       print "(a,a,a,a)", "Warning: the name in the reduced file = ", &
              trim(adjustl(hnamer)), &
             " does not correspond with the one of the main file = ", &
-             trim(adjustl(hname))     
+             trim(adjustl(hname))
     endif
-  else  
+  else
     ierror = ierror + 1
     print "(a,a,a)", "The uncoupled binary file (hamil_fred) = ",hamil_fred, &
           " can not be found."
@@ -794,7 +796,7 @@ select case ( htype*(1-hamil_read) )
     if ( htype == 3 ) then
       inquire (file=hamil_f01b, exist=is_exist)
       if ( is_exist ) then
-        open(uth1, file=hamil_f01b, status='old', action='read', & 
+        open(uth1, file=hamil_f01b, status='old', action='read', &
              form='formatted')
         read(uth1,'(a)') hname1
         rewind(uth1)
@@ -804,9 +806,9 @@ select case ( htype*(1-hamil_read) )
           print "(a,a,a,a)", "Warning: the name in the 0+1-body file = ", &
                  trim(adjustl(hname1)), &
                 " does not correspond with the one of the main file = ",  &
-                 trim(adjustl(hname))     
+                 trim(adjustl(hname))
         endif
-      else  
+      else
         ierror = ierror + 1
         print "(a,a,a)", "The 0+1-body file (hamil_f01b) = ",hamil_f01b, &
               " can not be found."
@@ -821,12 +823,12 @@ select case ( htype*(1-hamil_read) )
       rewind(uth2)
       if ( hname2 /= hname ) then
         iwarn = iwarn + 1
-        print "(a,a,a,a)", "Warning: the name in the 2-body file = ",  &  
+        print "(a,a,a,a)", "Warning: the name in the 2-body file = ",  &
                trim(adjustl(hname2)), &
               " does not correspond with the one of the main file = ", &
-               trim(adjustl(hname))     
+               trim(adjustl(hname))
       endif
-    else 
+    else
       ierror = ierror + 1
       print "(a,a,a)", "The 2-body file (hamil_f2b) = ",hamil_f2b, &
             " can not be found."
@@ -836,9 +838,9 @@ select case ( htype*(1-hamil_read) )
     if ( hamil_com == 1 ) then
       inquire (file=hamil_fcom, exist=is_exist)
       if ( is_exist ) then
-        open(uthc, file=hamil_fcom, status='old', action='read', & 
+        open(uthc, file=hamil_fcom, status='old', action='read', &
              form='formatted')
-      else  
+      else
         ierror = ierror + 1
         print "(a,a,a)", "The center-of-mass file (hamil_fcom) = ",hamil_fcom, &
               " can not be found."
@@ -847,7 +849,7 @@ select case ( htype*(1-hamil_read) )
 
   case default
     ierror = ierror + 1
-    print "(a,1i1,a)", "The hamiltonian format (hamil_type) = ",htype, & 
+    print "(a,1i1,a)", "The hamiltonian format (hamil_type) = ",htype, &
           " should be between 1 and 4."
 
 end select
@@ -859,7 +861,7 @@ end select
 if ( ierror /= 0 ) then
   print "(a,1i1,a)", "The code has dectected ",ierror," problem(s) with the &
         &hamiltonian files and will stop. Please check the files."
-  stop 
+  stop
 endif
 
 if ( iwarn /= 0 ) print*,' '
