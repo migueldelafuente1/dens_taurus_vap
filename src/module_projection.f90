@@ -1254,7 +1254,7 @@ write(uto,format9) 'Total', amj2(1) + amj2(2) + amj2(3)
 !!!
 !!! Pair coupling
 !!!
-if ( max(Mphip,Mphin) == 1 ) then
+if ( max(Mphip,Mphin) .LE. 1 ) then
   call calculate_expectval_pair(dens_kappaRR,pairs_T00_J1m1,P_T00_J1m1,HOsp_dim)
   call calculate_expectval_pair(dens_kappaRR,pairs_T00_J10, P_T00_J10, HOsp_dim)
   call calculate_expectval_pair(dens_kappaRR,pairs_T00_J1p1,P_T00_J1p1,HOsp_dim)
