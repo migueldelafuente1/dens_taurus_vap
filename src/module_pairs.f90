@@ -339,7 +339,7 @@ end subroutine calculate_pairCoupl2B_ben
 ! Computes the expectation values of the proton and neutron number operators.  !
 ! Extended to the pn-terms for the variance evaluation.                        !
 !------------------------------------------------------------------------------!
-subroutine calculate_variance_components(rhoLR, kappaLR, kappaRL,
+subroutine calculate_variance_components(rhoLR, kappaLR, kappaRL, &
                                          prot2, var_pn2, neut2, ndim)
 
 integer, intent(in) :: ndim
