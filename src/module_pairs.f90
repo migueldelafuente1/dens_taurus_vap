@@ -346,7 +346,7 @@ integer, intent(in) :: ndim
 complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
 real(r64), intent(out) :: prot2, var_pn2, neut2
 integer :: hdim, j, i
-complex(r64) :: tr1, tr2, tr3, tr4, tr5
+complex(r64) :: tr1, tr2, tr3, tr4, tr5, prot, neut
 complex(r64), dimension(ndim/2,ndim/2) :: rhoLRp, kapLRp, kapRLp, A1, A2, &
                                           rhoLRn, kapLRn, kapRLn, A3, A4, &
                                           rhoLRm, kapLRm, kapRLm, A5
