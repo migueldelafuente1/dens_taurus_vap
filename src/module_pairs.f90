@@ -355,8 +355,8 @@ hdim = ndim/2
 
 prot  = zzero
 neut  = zzero
-prot2 = zzero
-neut2 = zzero
+prot2 = zero
+neut2 = zero
 
 !!! N and Z
 do i = 1, hdim
@@ -398,9 +398,9 @@ do i = 1, hdim
   tr5 = tr5 - A5(i,i)
 enddo
 
-prot2 = prot + prot**2 - tr1 + tr2
-neut2 = neut + neut**2 - tr3 + tr4
-var_pn2 = prot2 + neut2 - 2 * tr5
+prot2 = dreal(prot + prot**2 - tr1 + tr2)
+neut2 = dreal(neut + neut**2 - tr3 + tr4)
+var_pn2 = dreal(prot2 + neut2 - 2 * tr5)
 
 
 end subroutine calculate_variance_components
