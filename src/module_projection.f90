@@ -1016,7 +1016,7 @@ subroutine print_results(Mphip,Mphin)
 
 integer, intent(in) :: Mphip, Mphin
 integer :: i, j, ialloc=0
-real(r64) :: over, pari, prot, neut, prot2, neut2,&
+real(r64) :: over, pari, prot, neut, prot2, neut2, var_pn2,&
              rad2_p, rad2_n, rad2_ch, rad2_is, rad2_iv, &
              amj(3), amj2(3), spor_p, spor_n, &
              Qlm(4,0:4,4), betalm(4,0:4,4), betaT(4), &
@@ -1273,11 +1273,13 @@ if ( max(Mphip,Mphin) == 1 ) then
                                  P_T00_J1m1, P_T00_J10, P_T00_J1p1, &
                                  P_T1m1_J00, P_T10_J00, P_T1p1_J00, &
                                  HOsp_dim, pairs_scheme)
-
+  call calculate_variance_components(dens_rhoLR,dens_kappaLR,dens_kappaRL,
+                                     prot2, var_pn2, neut2, HOsp_dim)
   print '(/,"    2-BODY OPERATOR (pn - pairs)",//, &
         & 3x,"MJ or MT =",7x,"-1",10x," 0",10x,"+1",/,49("-"))'
   write(uto,format10) '2B T= 0; J= 1', P_T00_J1m1, P_T00_J10, P_T00_J1p1
   write(uto,format10) '2B T= 1; J= 0', P_T1m1_J00, P_T10_J00, P_T1p1_J00
+  write(uto,format10) 'Var. p; pn; n', prot2, var_pn2, neut2
 endif
 
 !!!

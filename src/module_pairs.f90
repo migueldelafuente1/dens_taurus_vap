@@ -333,6 +333,78 @@ pair_T10_J00  = real(p2B_T10_J00)  + aux1B
 
 end subroutine calculate_pairCoupl2B_ben
 
+!------------------------------------------------------------------------------!
+! subroutine calculate_particle_number                                         !
+!                                                                              !
+! Computes the expectation values of the proton and neutron number operators.  !
+! Extended to the pn-terms for the variance evaluation.                        !
+!------------------------------------------------------------------------------!
+subroutine calculate_variance_components(dens_rhoLR,dens_kappaLR,dens_kappaRL,
+                                          prot2, var_pn2, neut2, ndim)
+
+integer, intent(in) :: ndim
+complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
+real(r64), intent(out) :: prot2, var_pn2, neut2
+integer :: hdim, j, i
+complex(r64) :: tr1, tr2, tr3, tr4
+complex(r64), dimension(ndim/2,ndim/2) :: rhoLRp, kapLRp, kapRLp, A1, A2, &
+                                          rhoLRn, kapLRn, kapRLn, A3, A4
+
+if ( (io /= 0) .and. (io /= 1) ) then
+  print*,'Wrong argument in calculate_particle_number: io = ', io
+  stop
+endif
+
+hdim = ndim/2
+
+prot  = zzero
+neut  = zzero
+prot2 = zzero
+neut2 = zzero
+
+!!! N and Z
+do i = 1, hdim
+  prot = prot + rhoLR(i,i)
+  neut = neut + rhoLR(i+hdim,i+hdim)
+enddo
+
+!!! N^2 and Z^2
+if ( io == 0 ) then
+
+  do j = 1, hdim
+    do i = 1, hdim
+      rhoLRp(i,j) = rhoLR(i,j)
+      rhoLRn(i,j) = rhoLR(i+hdim,j+hdim)
+      kapLRp(i,j) = kappaLR(i,j)
+      kapLRn(i,j) = kappaLR(i+hdim,j+hdim)
+      kapRLp(i,j) = kappaRL(i,j)
+      kapRLn(i,j) = kappaRL(i+hdim,j+hdim)
+    enddo
+  enddo
+
+  call zgemm('n','n',hdim,hdim,hdim,zone,rhoLRp,hdim,rhoLRp,hdim,zzero,A1,hdim)
+  call zgemm('t','n',hdim,hdim,hdim,zone,kapRLp,hdim,kapLRp,hdim,zzero,A2,hdim)
+  call zgemm('n','n',hdim,hdim,hdim,zone,rhoLRn,hdim,rhoLRn,hdim,zzero,A3,hdim)
+  call zgemm('t','n',hdim,hdim,hdim,zone,kapRLn,hdim,kapLRn,hdim,zzero,A4,hdim)
+
+  tr1 = zzero
+  tr2 = zzero
+  tr3 = zzero
+  tr4 = zzero
+
+  do i = 1, hdim
+    tr1 = tr1 + A1(i,i)
+    tr2 = tr2 + A2(i,i)
+    tr3 = tr3 + A3(i,i)
+    tr4 = tr4 + A4(i,i)
+  enddo
+
+  prot2 = prot + prot**2 - tr1 + tr2
+  neut2 = neut + neut**2 - tr3 + tr4
+
+endif
+
+end subroutine calculate_variance_components
 !!! --------------------------------------------------------------------------
 END MODULE Pairs
 !==============================================================================!
