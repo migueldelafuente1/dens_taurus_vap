@@ -349,7 +349,7 @@ integer :: hdim, j, i
 complex(r64) :: tr1, tr2, tr3, tr4, tr5, prot, neut
 complex(r64), dimension(ndim/2,ndim/2) :: rhoLRp, kapLRp, kapRLp, A1, A2, &
                                           rhoLRn, kapLRn, kapRLn, A3, A4, &
-                                          rhoLRm, kapLRm, kapRLm, A5
+                                          kapLRm, kapRLm, A5
 
 hdim = ndim/2
 
@@ -398,8 +398,8 @@ do i = 1, hdim
   tr5 = tr5 - A5(i,i)
 enddo
 
-prot2 = dreal(prot + prot**2 - tr1 + tr2)
-neut2 = dreal(neut + neut**2 - tr3 + tr4)
+prot2 = dreal(prot - tr1 + tr2)
+neut2 = dreal(neut - tr3 + tr4)
 var_pn2 = dreal(prot2 + neut2 - 2 * tr5)
 
 

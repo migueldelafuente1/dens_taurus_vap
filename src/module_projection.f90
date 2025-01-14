@@ -1280,6 +1280,7 @@ if ( max(Mphip,Mphin) .LE. 1 ) then
   write(uto,format10) '2B T= 0; J= 1', P_T00_J1m1, P_T00_J10, P_T00_J1p1
   write(uto,format10) '2B T= 1; J= 0', P_T1m1_J00, P_T10_J00, P_T1p1_J00
   write(uto,format10) 'Var. p; pn; n', prot2, var_pn2, neut2
+  print *, prot2, var_pn2, neut2
 endif
 
 !!!
