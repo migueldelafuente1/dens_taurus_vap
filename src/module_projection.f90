@@ -1273,7 +1273,7 @@ if ( max(Mphip,Mphin) == 1 ) then
                                  P_T00_J1m1, P_T00_J10, P_T00_J1p1, &
                                  P_T1m1_J00, P_T10_J00, P_T1p1_J00, &
                                  HOsp_dim, pairs_scheme)
-  call calculate_variance_components(dens_rhoLR,dens_kappaLR,dens_kappaRL,
+  call calculate_variance_components(dens_rhoLR,dens_kappaLR,dens_kappaRL, &
                                      prot2, var_pn2, neut2, HOsp_dim)
   print '(/,"    2-BODY OPERATOR (pn - pairs)",//, &
         & 3x,"MJ or MT =",7x,"-1",10x," 0",10x,"+1",/,49("-"))'
