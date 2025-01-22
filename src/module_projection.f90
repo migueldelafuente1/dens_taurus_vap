@@ -288,7 +288,7 @@ do nangle = nangle_min, nangle_max
                                         field_deltaLR, field_deltaRL, ndim)
     else
       call calculate_fields_DD(field_gammaLR, field_hspLR, &
-                               field_deltaLR, field_deltaRL, ndim)
+                                      field_deltaLR, field_deltaRL, ndim)
     endif
     if ((evalQuasiParticleVSpace).AND.(iopt .EQ. 1)) then
       call test_export_pnpn_mmee_uncoupled(ndim) !! TODO: RM test

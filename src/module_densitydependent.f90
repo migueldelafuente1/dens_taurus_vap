@@ -152,6 +152,10 @@ logical   :: has_HEIS_MAJO_TERMS  = .FALSE.
 real(r64) :: CONST_x0_EXC_HEIS = 0.0D+00
 real(r64) :: CONST_x0_EXC_MAJO = 0.0D+00
 
+logical   :: has_sevaral_DD_tems = .FALSE.
+integer   :: number_DD_terms     = 1
+real(r64), dimension(:,:), allocatable :: parameters_1x0x0Hx0M  !! (t3,x0, x0H,x0M)[term]
+
 !! [END] DENSITY DEPENDENT MODIFICATIONS =====================================
 
 CONTAINS
@@ -466,6 +470,8 @@ subroutine set_extra_DD_parameters(aux_int, aux_float)
 integer,   intent(in) :: aux_int
 real(r64), intent(in) :: aux_float
 
+
+
 select case (aux_int)
   !! OPTIONS TO AVOID CALCULATING PN-DD FIELDS
   case (1)
@@ -521,14 +527,24 @@ select case (aux_int)
     has_HEIS_MAJO_TERMS  = .TRUE.
     CONST_x0_EXC_MAJO = aux_float
     print "(A,F12.9)", " > Exchange (spin-isospin): Majorana=", CONST_x0_EXC_MAJO
-
-
+  case(33:42)
+    print "(2A,I4,F15.6)"," [ERROR] Several DD term implementation is not ",&
+      "valid, Program to do it in repository [LINK]"
+    STOP
   case default
     print "(2A,I4,F15.6)"," [ERROR] Invalid option SetUp Extra-argument case",&
       " not valid. Got:", aux_int, aux_float
     STOP
 end select
+
+if (has_sevaral_DD_tems)then
+  parameters_1x0x0Hx0M(1,1) = t3_DD_CONST
+  parameters_1x0x0Hx0M(1,2) = x0_DD_FACTOR
+  parameters_1x0x0Hx0M(1,3) = CONST_x0_EXC_HEIS
+  parameters_1x0x0Hx0M(1,4) = CONST_x0_EXC_MAJO
+end if
 end subroutine set_extra_DD_parameters
+
 
 !-----------------------------------------------------------------------------!
 ! Subroutine to identify the index of the valence space from the basis        !
@@ -4004,6 +4020,23 @@ if (PRNT_.OR.doTraceTest_) then
 endif
 
 end subroutine calculate_fields_DD
+
+!-----------------------------------------------------------------------------!
+! Generalization of fields for evaluating several DD terms.
+! (iterates and fix the constants)
+!    Call from module_projections.
+!-----------------------------------------------------------------------------!
+subroutine compute_fields_DD_selector(gammaLR,hspLR,deltaLR,deltaRL,ndim)
+  integer, intent(in) :: ndim
+  complex(r64), dimension(ndim,ndim) :: gammaLR, hspLR, deltaLR, deltaRL
+  !! The density fields are added to the calculated with the standard hamiltonian
+  !! This array variables are local
+  complex(r64), dimension(ndim,ndim) :: gammaLR_DD, deltaLR_DD, deltaRL_DD
+
+
+  print *, " [WARNING] Unimplemented method, calling [calculate_fields_DD]"
+  call calculate_fields_DD(gammaLR,hspLR,deltaLR,deltaRL,ndim)
+end subroutine compute_fields_DD_selector
 
 !-----------------------------------------------------------------------------!
 ! subroutine to transform the final fields into the canonical basis and evaluate
