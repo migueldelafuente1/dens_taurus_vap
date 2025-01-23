@@ -61,7 +61,8 @@ Usage of the different options.
 | 32 | float | Include Majorana exchange operator for -M\*P(s)\*P(t) for the DD term. x0M = M/t3|
 | \* | \* | Developing. |
 
-**Not implemented in this code (go to REPO-LINK)**
+**Not implemented in this code (go to REPO)** [densN_taurus_vap](https://github.com/migueldelafuente1/densN_taurus_vap).
+
 To introduce several zero-range density dependent terms (up to 3), include the modes from 33 to 42 for including the t3, x0, x0-Heissenberg, x0-Majorana and alpha of each term. It cannot be used with options 21,22 and it is not tested with the cutoff options (11,12). The first term constants (including 31,32) will be copied for the first one, include the rest of them in order for each term following these codes:
 |Code|Argument|Description|
 |----|----|----|

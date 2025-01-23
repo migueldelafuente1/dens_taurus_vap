@@ -235,7 +235,7 @@ end if
 VSsh_dim = aux_int
 if (exportValSpace) then
   if ((VSsh_dim.LE.HOsh_dim).OR.(evalQuasiParticleVSpace)) then
-    print "(A,I3,A)", "   ... Reading VS sh states", VSsh_dim, &
+    print "(A,I3,2A)", "   ... Reading VS ", VSsh_dim, " sh states", &
       " (error if wrong sh dimension)"
     !print *, ""
     backspace runit
@@ -528,8 +528,9 @@ select case (aux_int)
     CONST_x0_EXC_MAJO = aux_float
     print "(A,F12.9)", " > Exchange (spin-isospin): Majorana=", CONST_x0_EXC_MAJO
   case(33:42)
-    print "(2A,I4,F15.6)"," [ERROR] Several DD term implementation is not ",&
-      "valid, Program to do it in repository [LINK]"
+    print "(3A)"," [ERROR] Several DD term implementation is not ",&
+      "valid, Program to do it in repository ", &
+      "[https://github.com/migueldelafuente1/densN_taurus_vap] STOP."
     STOP
   case default
     print "(2A,I4,F15.6)"," [ERROR] Invalid option SetUp Extra-argument case",&
