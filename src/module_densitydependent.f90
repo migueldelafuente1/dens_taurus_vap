@@ -512,11 +512,11 @@ select case (aux_int)
   case(21)
     FUNCTIONAL_DENS_MODE = 2
     CONST_EDD_M2_ETA  = aux_float
-    print "(A,I3)", " > Potential MODE 2: ETA  =", CONST_EDD_M2_ETA
+    print "(A,F12.9)", " > Potential MODE 2: ETA  =", CONST_EDD_M2_ETA
   case(22)
     FUNCTIONAL_DENS_MODE = 2
     CONST_EDD_M2_RHO0 = aux_float
-    print "(A,I3)", " > Potential MODE 2: RHO_0=", CONST_EDD_M2_RHO0
+    print "(A,F12.9)", " > Potential MODE 2: RHO_0=", CONST_EDD_M2_RHO0
 
 
   case(31)
