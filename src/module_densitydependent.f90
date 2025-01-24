@@ -382,7 +382,7 @@ if (EVAL_EXPLICIT_FIELDS_DD) then
 endif
 print *, ''
 if ((FUNCTIONAL_DENS_MODE .EQ. 2) .AND. (has_HEIS_MAJO_TERMS)) then
-  print "[ERROR] Functional Form 2 (Phys.Rev.C 60 064312) and Heis/Majo terms!"
+  print *, "[ERROR] Functional (Phys.Rev.C 60 064312) AND Heis/Majo terms!"
   STOP
 end if
 
@@ -522,11 +522,11 @@ select case (aux_int)
   case(31)
     has_HEIS_MAJO_TERMS  = .TRUE.
     CONST_x0_EXC_HEIS = aux_float
-    print "(A,F12.9)", " > Exchange (spin):       Heisenberg=", CONST_x0_EXC_HEIS
+    print "(A,F12.9)", " > Exchange (spin):     Heisenberg=", CONST_x0_EXC_HEIS
   case(32)
     has_HEIS_MAJO_TERMS  = .TRUE.
     CONST_x0_EXC_MAJO = aux_float
-    print "(A,F12.9)", " > Exchange (spin-isospin): Majorana=", CONST_x0_EXC_MAJO
+    print "(A,F12.9)", " > Exchange (s-T):        Majorana=", CONST_x0_EXC_MAJO
   case(33:42)
     print "(3A)"," [ERROR] Several DD term implementation is not ",&
       "valid, Program to do it in repository ", &
