@@ -49,11 +49,6 @@ real(r64) :: R_MAX    = 7.5d0
 integer   :: THE_grid = 1
 integer   :: PHI_grid = 1
 
-!! spatial steps for trapezoidal integration
-real(r64) :: d_r   ! = R_MAX / (r_dim - 1)
-real(r64) :: d_theta
-real(r64) :: d_phi
-
 ! Quadratures for integration
 real(r64), dimension(:), allocatable   :: x_R
 real(r64), dimension(:), allocatable   :: weight_R
@@ -147,6 +142,7 @@ logical   :: CALCULATE_DD_PN_HF   = .TRUE.
 integer   :: FUNCTIONAL_DENS_MODE = 1  ! 1=D1/D1S(default), 2=Nucl.Matter x0=0
 real(r64) :: CONST_EDD_M2_ETA  = 0.0D+00
 real(r64) :: CONST_EDD_M2_RHO0 = 0.1381553D+00  ! r0=1.2 fm
+real(r64) :: CONST_EDD_M2      = 0.0D+00
 
 logical   :: has_HEIS_MAJO_TERMS  = .FALSE.
 real(r64) :: CONST_x0_EXC_HEIS = 0.0D+00
@@ -154,7 +150,7 @@ real(r64) :: CONST_x0_EXC_MAJO = 0.0D+00
 
 logical   :: has_sevaral_DD_tems = .FALSE.
 integer   :: number_DD_terms     = 1
-real(r64), dimension(:,:), allocatable :: parameters_1x0x0Hx0M  !! (t3,x0, x0H,x0M)[term]
+real(r64), dimension(5,5) :: parameters_alphx0x0Hx0M  !! (alp,t3,x0, x0H,x0M)[term]
 
 !! [END] DENSITY DEPENDENT MODIFICATIONS =====================================
 
@@ -298,7 +294,6 @@ else
   print '(A,F9.5)', "[WARGNING] Awkward ALPHA constant for DD-EDF: ", alpha_DD
 endif
 
-d_r = R_MAX / (r_dim - 1)
 
 allocate(x_R(r_dim))
 allocate(weight_R(r_dim))
@@ -386,8 +381,13 @@ if (EVAL_EXPLICIT_FIELDS_DD) then
     evalFullSPSpace
 endif
 print *, ''
+if ((FUNCTIONAL_DENS_MODE .EQ. 2) .AND. (has_HEIS_MAJO_TERMS)) then
+  print "[ERROR] Functional Form 2 (Phys.Rev.C 60 064312) and Heis/Majo terms!"
+  STOP
+end if
 
 hasX0M1 = abs(x0_DD_FACTOR - 1.0d+0) > 1.0d-6
+CONST_EDD_M2 = CONST_EDD_M2_ETA / (CONST_EDD_M2_RHO0 ** alpha_DD)
 
 print "(A)", " * Density dependent parameters imported."
 
@@ -539,10 +539,10 @@ select case (aux_int)
 end select
 
 if (has_sevaral_DD_tems)then
-  parameters_1x0x0Hx0M(1,1) = t3_DD_CONST
-  parameters_1x0x0Hx0M(1,2) = x0_DD_FACTOR
-  parameters_1x0x0Hx0M(1,3) = CONST_x0_EXC_HEIS
-  parameters_1x0x0Hx0M(1,4) = CONST_x0_EXC_MAJO
+  parameters_alphx0x0Hx0M(1,1) = t3_DD_CONST
+  parameters_alphx0x0Hx0M(1,2) = x0_DD_FACTOR
+  parameters_alphx0x0Hx0M(1,3) = CONST_x0_EXC_HEIS
+  parameters_alphx0x0Hx0M(1,4) = CONST_x0_EXC_MAJO
 end if
 end subroutine set_extra_DD_parameters
 
@@ -1978,9 +1978,17 @@ do i_r = 1, r_dim
       call choose_riemann_fold_density(i_r, i_an)
 
     else
-      dens_alpha(i_r,i_an) = dreal(density(i_r,i_an)) ** alpha_DD
-      dens_alpm1(i_r,i_an) = dens_alpha(i_r,i_an) / density(i_r,i_an)
-      dens_alpm1(i_r,i_an) = MIN(dreal(dens_alpm1(i_r,i_an)), 1.0D+30)
+      if (FUNCTIONAL_DENS_MODE .EQ. 1) then
+        dens_alpha(i_r,i_an) = dreal(density(i_r,i_an)) ** alpha_DD
+        dens_alpm1(i_r,i_an) = dens_alpha(i_r,i_an) / density(i_r,i_an)
+        dens_alpm1(i_r,i_an) = MIN(dreal(dens_alpm1(i_r,i_an)), 1.0D+30)
+      else
+        dens_alpha(i_r,i_an) = 1.0d+00 - &
+                          CONST_EDD_M2 * (dreal(density(i_r,i_an)) ** alpha_DD)
+        dens_alpm1(i_r,i_an) = -CONST_EDD_M2 * &
+                          (dreal(density(i_r,i_an)) ** (alpha_DD - 1.0d+00))
+        dens_alpm1(i_r,i_an) = MIN(dreal(dens_alpm1(i_r,i_an)), 1.0D+30)
+      endif
     endif
 
     if (PRNT_) then
