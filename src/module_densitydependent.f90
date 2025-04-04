@@ -3852,7 +3852,7 @@ do a = 1, spO2
               (weight_LEB(i_ang) * rad_ac * dens_alpha(i_r,i_ang) * aux(ms))
             end do
 
-            if ((i_r == R_PRINT).AND.(i_ang == ANG_PRINT)) then
+            if ((i_ang == ANG_PRINT)) then ! (i_r == R_PRINT).AND.
               write(555, fmt='(5I4,A,4(F20.15,SP,F20.15,"j"))') &
                 a,c,i_r,i_ang,ms,"%%", auxHfE(1),auxHfE(2),auxHfE(3),auxHfE(4)
               write(557, fmt='(5I4,A,4(F20.15,SP,F20.15,"j"))') &
@@ -3889,7 +3889,7 @@ do a = 1, spO2
         endif
         ! rearrange for pn and np are the same (pn/np are Zero)
 
-        if ((PRNT_).AND.(i_r == R_PRINT).AND.(i_ang == ANG_PRINT)) then
+        if ((PRNT_).AND.(i_ang == ANG_PRINT)) then ! .AND.(i_r == R_PRINT)
         write(556, fmt="(4I4,A,8F20.15)") a,c,i_r,i_ang, "%%", &
           dreal(auxHfD(1)),dimag(auxHfD(1)),dreal(auxHfD(2)),dimag(auxHfD(2)),&
           dreal(auxHfD(3)),dimag(auxHfD(3)), dreal(auxRea),dimag(auxRea)
