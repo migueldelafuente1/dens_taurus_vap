@@ -393,6 +393,8 @@ print "(A)", " * Density dependent parameters imported."
 
 print "(A,2L3)", " * [OPTIONs] Calculate DD-pn parts (HF/PA) :", &
                  CALCULATE_DD_PN_HF, CALCULATE_DD_PN_PA
+print "(A,L3)",  " * [OPTIONs] Calculate DD HEISENBERG/MAJORANA :", &
+                 has_HEIS_MAJO_TERMS
 
 end subroutine import_DD_parameters
 
@@ -1912,12 +1914,12 @@ complex(r64), intent(in) :: overlap
 integer :: a,b, a_sh, b_sh, spO2, ITER_PRNT
 integer :: i_r=1, i_an=1, msp
 
-real(r64) :: radial_part, dens_R, dens_A, rad4Integr, dens_Aa,dens_Ra
+real(r64)    :: radial_part, dens_R, dens_A, rad4Integr, dens_Aa,dens_Ra
 complex(r64) :: sum_, integral_dens, sum_test, diff, x
-logical :: PRNT_
+logical      :: PRNT_
 
 PRNT_ = (PRINT_GUTS).OR.(.FALSE.)
-spO2 = HOsp_dim / 2
+spO2  = HOsp_dim / 2
 
 density   = zzero
 dens_pnt  = zzero
@@ -2039,7 +2041,7 @@ ITER_PRNT = 10
 if (DOING_PROJECTION) ITER_PRNT = ITER_PRNT * Mphip_DD * Mphin_DD
 if ((iteration.eq.0).OR.(MOD(iteration + 1, ITER_PRNT).EQ.0)) then
   integral_dens = integral_dens * 2 * pi * (HO_b**3) / ((2.0 + alpha_DD)**1.5)
-  print "(A,F13.9,A)", "      *A* ", dreal(integral_dens), "  <dens(r)> approx"
+  print "(A,F13.9,A)", "      *A* ", dreal(integral_dens),"  <dens(r)> approx "
 endif
 
 end subroutine calculate_expectval_density
