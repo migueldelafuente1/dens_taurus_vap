@@ -2530,6 +2530,7 @@ if (tmax .GT. 0) print "(A,I3,A,4I5)", "   [ERROR]s:[",tmax,"] a,b,c,d",a,b,c,d
     enddo  !end loop c
   enddo  !end loop b
   if (.NOT.EVAL_EXPLICIT_FIELDS_DD) call progress_bar_iteration(aa, WBsp_dim/2)
+  print *, " PROGRESS HAMIL: a=", a
 enddo  !end loop a
 
 !!! At the first iteration, the values of the hamiltonian are saved via file
