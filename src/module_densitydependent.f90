@@ -5518,7 +5518,7 @@ if (abs(imag(v_dd_value(2))) > 1.0d-9 ) then
 endif
 
 return
-end function matrix_element_pseudoRearrangement
+end function matrix_element_pseudoRearrangement_v3
 
 !-----------------------------------------------------------------------------!
 ! function matrix_element_pseudoRearrangement                                 !
