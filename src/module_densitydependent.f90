@@ -77,9 +77,9 @@ complex(r64), dimension(:,:), allocatable,   save :: sph_harmonics_memo ! Y_(km_
 complex(r64), dimension(:,:,:), allocatable, save :: sphharmDUAL_memo   ! Y*(a) Y(b)
 real(r64), dimension(:,:,:), allocatable,    save :: dens_Y_KM_me       ! <a|Y_kb|b>(jm_a, jm_b, KM indx)
 
-complex(r64), dimension(:,:,:,:), allocatable, save :: AngFunctDUAL_HF ! CGa CGb Y*(a) Y (b)
-complex(r64), dimension(:,:,:,:), allocatable, save :: AngFunctDUAL_P1 ! CGa CGb Y (a) Y (b)
-complex(r64), dimension(:,:,:,:), allocatable, save :: AngFunctDUAL_P2 ! CGa CGb Y*(a) Y*(b)
+complex(r64), dimension(:,:,:,:), allocatable, save :: AngFunctDUAL_HF ! CGa CGb Y*(a) Y (b) [(++,+-,-+,--)], a, b, i_ang
+complex(r64), dimension(:,:,:,:), allocatable, save :: AngFunctDUAL_P1 ! CGa CGb Y (a) Y (b) [(++,+-,-+,--)], a, b, i_ang
+complex(r64), dimension(:,:,:,:), allocatable, save :: AngFunctDUAL_P2 ! CGa CGb Y*(a) Y*(b) [(++,+-,-+,--)], a, b, i_ang
 complex(r64), dimension(:,:,:,:), allocatable, save :: BulkHF ! (tt,msms',r,ang) DEF:Sum AngFunctDUAL_HF * rho [pp,nn,pn,np, tot]  [(++,+-,-+,--)]
 complex(r64), dimension(:,:,:,:), allocatable, save :: BulkP1 ! (tt,msms',r,ang) DEF:Sum AngFunctDUAL_P1(msms') - AngFunctDUAL_P1(ms'ms) * kappaLR (p, n), pn=function xM xH
 complex(r64), dimension(:,:,:,:), allocatable, save :: BulkP2 ! (tt,msms',r,ang) DEF:Sum AngFunctDUAL_P2 * kappaRL
@@ -104,6 +104,7 @@ integer, dimension(:), allocatable :: HOsh_ant, HOsp_ant
 
 
 !! Related to the hamiltonian and Fields
+real(r64) :: REARRANGEMENT_ENERGY = 0.0d+00
 real(r64), dimension(:),   allocatable :: hamil_DD_H2      ! 2-body part
 real(r64), dimension(:,:), allocatable :: hamil_DD_H2_byT  ! 2-body part (pppp,pnpn,pnnp,nnnn)
 integer(i64) :: hamil_DD_H2dim, hamil_DD_H2dim_all         ! number of 2BME stored
@@ -2435,29 +2436,29 @@ do aa = 1, WBsp_dim / 2 ! (prev = HOsp_dim)
           me_VGRc = matrix_element_pseudoRearrangement(a,b, c,d)
 
           !! test ANTISYMMETRY  ===================
-!me_VGRc1 = matrix_element_pseudoRearrangement(a,b, d,c)
-!me_VGRc2 = matrix_element_pseudoRearrangement(b,a, c,d)
-!me_VGRc3 = matrix_element_pseudoRearrangement(b,a, d,c)
-!
-!tmax = 0
-!do t = 1, 4
-!  if (almost_equal(me_VGRc(t), zero, 1.0d-9)) cycle
-!
-!  if (.NOT. almost_equal(me_VGRc(t), -one * me_VGRc1(t), 1.0d-6)) then
-!    print "(A,I3,2F15.8)"," AntySym-ERR 1 -(ab,dc)t:",t,me_VGRc(t),me_VGRc1(t)
-!    tmax = tmax + 1
-!  end if
-!  if (.NOT. almost_equal(me_VGRc(t), -one * me_VGRc2(t), 1.0d-6)) then
-!    print "(A,I3,2F15.8)"," AntySym-ERR 2 -(ba,cd)t:",t,me_VGRc(t),me_VGRc2(t)
-!    tmax = tmax + 1
-!  end if
-!  if (.NOT. almost_equal(me_VGRc(t), me_VGRc3(t), 1.0d-6)) then
-!    print "(A,I3,2F15.8)"," AntySym-ERR 3 +(ba,dc)t:",t,me_VGRc(t),me_VGRc3(t)
-!    tmax = tmax + 1
-!  end if
-!end do
-!
-!if (tmax .GT. 0) print "(A,I3,A,4I5)", "   [ERROR]s:[",tmax,"] a,b,c,d",a,b,c,d
+me_VGRc1 = matrix_element_pseudoRearrangement(a,b, d,c)
+me_VGRc2 = matrix_element_pseudoRearrangement(b,a, c,d)
+me_VGRc3 = matrix_element_pseudoRearrangement(b,a, d,c)
+
+tmax = 0
+do t = 1, 4
+  if (almost_equal(me_VGRc(t), zero, 1.0d-9)) cycle
+
+  if (.NOT. almost_equal(me_VGRc(t), -one * me_VGRc1(t), 1.0d-6)) then
+    print "(A,I3,2F15.8)"," AntySym-ERR 1 -(ab,dc)t:",t,me_VGRc(t),me_VGRc1(t)
+    tmax = tmax + 1
+  end if
+  if (.NOT. almost_equal(me_VGRc(t), -one * me_VGRc2(t), 1.0d-6)) then
+    print "(A,I3,2F15.8)"," AntySym-ERR 2 -(ba,cd)t:",t,me_VGRc(t),me_VGRc2(t)
+    tmax = tmax + 1
+  end if
+  if (.NOT. almost_equal(me_VGRc(t), me_VGRc3(t), 1.0d-6)) then
+    print "(A,I3,2F15.8)"," AntySym-ERR 3 +(ba,dc)t:",t,me_VGRc(t),me_VGRc3(t)
+    tmax = tmax + 1
+  end if
+end do
+
+if (tmax .GT. 0) print "(A,I3,A,4I5)", "   [ERROR]s:[",tmax,"] a,b,c,d",a,b,c,d
 
           !! ======================================
         endif
@@ -3968,6 +3969,13 @@ call zgemm('n','n',ndim,ndim,ndim,zone,deltaLR,ndim,kappaLR,ndim,zzero,A3,ndim)
 do a=1, ndim
   last_HFB_energy =  last_HFB_energy + (A1(a,a) + 0.5d0 * (A2(a,a) - A3(a,a)))
 end do
+A1 = zzero
+call zgemm('n','n',ndim,ndim,ndim,zone,rearrang_field,ndim,rhoLR,ndim,zzero,&
+           A1,ndim)
+REARRANGEMENT_ENERGY = 0.0d00
+do a = 1, ndim
+  REARRANGEMENT_ENERGY = REARRANGEMENT_ENERGY + dreal(A1(a))
+end do
 endif
 
 if (PRNT_) then
@@ -5437,7 +5445,7 @@ end function matrix_element_pseudoRearrangement_v2
 ! ## NOTE     pnnp = - pnpn(2)  and nppn = - npnp(3)
 !             in this case, a,b,c,d are <= HOsp_dim / 2                       !
 !-----------------------------------------------------------------------------!
-function matrix_element_pseudoRearrangement(a,b, c,d) result (v_dd_val_Real)
+function matrix_element_pseudoRearrangement_v3(a,b, c,d) result (v_dd_val_Real)
 
 integer(i32), intent(in) :: a,b,c,d
 real(r64), dimension(4) :: v_dd_val_Real !! pppp(1), pnpn(2), pnnp(3), nnnn(4)
@@ -5493,6 +5501,117 @@ do i_r = 1, r_dim
     v_dd_value(4) = v_dd_value(4) + (radial * angular * (aux3(2) + aux4))
     ! pn pn
     v_dd_value(2) = v_dd_value(2) + (radial * angular * (aux3(3) + aux4))
+    ! pn np
+    v_dd_value(3) = v_dd_value(3) + 0.0d0
+
+  enddo  ! angular iter_
+enddo    ! radial  iter_
+
+v_dd_val_Real(1) = real(v_dd_value(1), r64) * integral_factor
+v_dd_val_Real(2) = real(v_dd_value(2), r64) * integral_factor
+v_dd_val_Real(3) = real(v_dd_value(3), r64) * integral_factor
+v_dd_val_Real(4) = real(v_dd_value(4), r64) * integral_factor
+
+if (abs(imag(v_dd_value(2))) > 1.0d-9 ) then
+    print "(A,D15.8,A,D20.8)", "[FAIL IMAG] v_prea_DD_abcd is not Real =", &
+          real(v_dd_value(2)), " +j ", imag(v_dd_value(2))
+endif
+
+return
+end function matrix_element_pseudoRearrangement
+
+!-----------------------------------------------------------------------------!
+! function matrix_element_pseudoRearrangement                                 !
+!                                                                             !
+! Computes density dependent two body matrix elements over the density average!
+! The derivation of the matrix element is derived from the Fields derivation  !
+!                       v_dd_val_Real !! pppp(1), pnpn(2), npnp(3), nnnn(4)   !
+! ## NOTE     pnnp = - pnpn(2)  and nppn = - npnp(3)
+!             in this case, a,b,c,d are <= HOsp_dim / 2                       !
+!-----------------------------------------------------------------------------!
+function matrix_element_pseudoRearrangement(a,b, c,d) result (v_dd_val_Real)
+
+integer(i32), intent(in) :: a,b,c,d
+real(r64), dimension(4) :: v_dd_val_Real !! pppp(1), pnpn(2), pnnp(3), nnnn(4)
+
+integer      :: ms, ms2, tt
+complex(r64) :: aux, radial, aux_dir, aux_exch, dens_part, aux4
+complex(r64), dimension(4) :: v_dd_value, term1, term2, aux1, aux2, aux3
+real(r64)    :: angular, integral_factor, const_1, const_4
+integer(i32) :: a_sh, b_sh, c_sh, d_sh, i_r, i_a
+integer      :: HOspO2
+
+HOspO2 = HOsp_dim/2
+
+v_dd_value = zzero
+v_dd_val_Real = zero
+term1 = zzero
+term2 = zzero
+
+if (.NOT.EXPORT_PREA_DD) return
+if ((a.GT.HOspO2).OR.(b.GT.HOspO2).OR.(c.GT.HOspO2).OR.(d.GT.HOspO2)) then
+  print "(A)", " [ERROR] (m.e. Rea ME), a,b,c,d > HO_sp dim /2 !!!"
+  return
+endif
+
+integral_factor = t3_DD_CONST
+!! NOTE :: Remember that radial functions already have the factor 1/b**3
+integral_factor = integral_factor * 0.5d0 * (HO_b**3)
+integral_factor = integral_factor  / ((2.0d0 + alpha_DD)**1.5d0)
+integral_factor = integral_factor * 4 * pi  ! add Lebedev norm factor
+
+const_1 = alpha_DD / 2.0D+00
+
+b_sh = HOsp_sh(b)
+d_sh = HOsp_sh(d)
+
+do i_r = 1, r_dim
+  radial = weight_R(i_r) * exp((alpha_DD + 2.0d0) * (r(i_r) / HO_b)**2)
+  do i_a = 1, angular_dim
+
+    !! term for the hf - direct
+    aux1(1) = dens_pnt(5, i_r, i_a) - x0_DD_FACTOR * dens_pnt(1, i_r. i_a)
+    aux1(4) = dens_pnt(5, i_r, i_a) - x0_DD_FACTOR * dens_pnt(2, i_r. i_a)
+    aux1(2) = (aux1(1) + aux1(4)) / 2.0d+00 !! it is different for pnpn npnp
+    aux1(3) = - x0_DD_FACTOR * dens_pnt(3, i_r, i_a)
+
+    aux4 = AngFunctDUAL_HF(1, b,d, i_a) + AngFunctDUAL_HF(4, b,d, i_a)
+    aux4 = aux4 * radial_2b_sho_memo(b_sh, d_sh, i_r)
+    do tt = 1, 4
+      aux1(tt) = aux1(tt) * aux4
+    end do
+
+    aux2 = zzero
+    aux3 = zzero
+    do ms = 1, 4
+      select case (ms)
+        case (2, 3)
+          ms2 = 3*(3 - ms) + 2*(ms - 2)
+        case default
+          ms2 = ms
+      end select
+      aux4 = AngFunctDUAL_HF(ms2,b,d, i_a) * radial_2b_sho_memo(b_sh,d_sh, i_r)
+      aux3(1) = BulkHF(1, ms2, i_r, i_a) - x0_DD_FACTOR * BulkHF(5, ms,i_r,i_a)
+      aux3(4) = BulkHF(2, ms2, i_r, i_a) - x0_DD_FACTOR * BulkHF(5, ms,i_r,i_a)
+      aux3(2) = (aux3(1) + aux3(2)) / 2.0d0
+      aux3(3) = BulkHF(3, ms2,i_r,i_a)
+
+      do tt = 1, 4
+        aux2(tt) = aux2(t) + aux4 * aux3(tt)
+      enddo
+    enddo
+
+    aux3 = zzero
+
+    !! common term.
+    aux4 = rea_common_RadAng(a, c, i_r, i_a) * dens_alpm1(i_r, i_a) * const_1
+    angular = weight_LEB(i_a) * aux4
+
+    !v_nnnn = v_pppp
+    v_dd_value(1) = v_dd_value(1) + (radial * angular * (aux1(1) - aux2(1)))
+    v_dd_value(4) = v_dd_value(4) + (radial * angular * (aux1(4) - aux2(4)))
+    ! pn pn
+    v_dd_value(2) = v_dd_value(2) + (radial * angular * (aux1(2) - aux2(2)))
     ! pn np
     v_dd_value(3) = v_dd_value(3) + 0.0d0
 
