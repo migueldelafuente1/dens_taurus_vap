@@ -3974,7 +3974,7 @@ call zgemm('n','n',ndim,ndim,ndim,zone,rearrang_field,ndim,rhoLR,ndim,zzero,&
            A1,ndim)
 REARRANGEMENT_ENERGY = 0.0d00
 do a = 1, ndim
-  REARRANGEMENT_ENERGY = REARRANGEMENT_ENERGY + dreal(A1(a))
+  REARRANGEMENT_ENERGY = REARRANGEMENT_ENERGY + dreal(A1(a, a))
 end do
 endif
 
@@ -5570,8 +5570,8 @@ do i_r = 1, r_dim
   do i_a = 1, angular_dim
 
     !! term for the hf - direct
-    aux1(1) = dens_pnt(5, i_r, i_a) - x0_DD_FACTOR * dens_pnt(1, i_r. i_a)
-    aux1(4) = dens_pnt(5, i_r, i_a) - x0_DD_FACTOR * dens_pnt(2, i_r. i_a)
+    aux1(1) = dens_pnt(5, i_r, i_a) - x0_DD_FACTOR * dens_pnt(1, i_r, i_a)
+    aux1(4) = dens_pnt(5, i_r, i_a) - x0_DD_FACTOR * dens_pnt(2, i_r, i_a)
     aux1(2) = (aux1(1) + aux1(4)) / 2.0d+00 !! it is different for pnpn npnp
     aux1(3) = - x0_DD_FACTOR * dens_pnt(3, i_r, i_a)
 
@@ -5597,7 +5597,7 @@ do i_r = 1, r_dim
       aux3(3) = BulkHF(3, ms2,i_r,i_a)
 
       do tt = 1, 4
-        aux2(tt) = aux2(t) + aux4 * aux3(tt)
+        aux2(tt) = aux2(tt) + aux4 * aux3(tt)
       enddo
     enddo
 
