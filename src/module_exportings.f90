@@ -418,7 +418,7 @@ enddo
 
 if (option .EQ. 1) then
   !! ZERO BODY / 1-BODY FILE
-  write(296, fmt="(F12.6)") E_core
+  write(296, fmt="(2F12.6)") REARRANGEMENT_ENERGY , E_core
   do a_sh_vs = 1, VSsh_dim
     write(296, fmt="(2I7,2F12.6)") &
       VSsh_list(a_sh_vs), VSsh_list(a_sh_vs), &
@@ -666,10 +666,10 @@ print "(A,I10)", "* [  ] Printing 2B Mat Elements DD from WF_HFB /dim H2_DD:",&
     hamil_DD_H2dim
 
 !! Export an empty com file
-open(295, file="D1S_vs_scalar.com")
+open (295, file="D1S_vs_scalar.com")
 write(295, fmt="(A)") "Generated for D1S_scalar (2 body com already in .2b)"
 close(295)
-open(295, file="GDD_vs_scalar.com")
+open (295, file="GDD_vs_scalar.com")
 write(295, fmt="(A)") "Generated for GD1S_scalar (2 body com already in .2b)"
 close(295)
 
@@ -3216,6 +3216,7 @@ enddo
 
 close(utw, status='keep')
 
+print *, " >>> REARRANGEMENT ENERGY = ", REARRANGEMENT_ENERGY
 end subroutine export_rearrangement_field
 
 

@@ -280,16 +280,17 @@ rewind(runit)
 close(runit)
 
 !! set alpha more exact 1/3 double precision, and the fraction (is always dimensional)
-if (abs(alpha_DD - (1.0/3.0)) < 1.0D-4) alpha_DD = 0.333333333333333
+if (abs(alpha_DD - (1.0D0/3.0D0)) < 1.0D-5) alpha_DD = 0.333333333333333
+if (abs(x0_DD_FACTOR - 1.0D0) < 1.0D-5) x0_DD_FACTOR = 1.000000000000000
 
 alpha_DD_frac = 0
-if (abs(alpha_DD - (1.0/3.0)) < 1.0D-4) then
+if (abs(alpha_DD - (1.0/3.0)) < 1.0D-5) then
   alpha_DD_frac = (/1, 3/)
-else if ((abs(alpha_DD - (1.0)) < 1.0D-4) .OR. (abs(alpha_DD) < 1.0D-4)) then
+else if ((abs(alpha_DD - (1.0)) < 1.0D-5) .OR. (abs(alpha_DD) < 1.0D-4)) then
   alpha_DD_frac = (/ int(alpha_DD), 1/)
-else if (abs(alpha_DD - (2.0/3.0)) < 1.0D-4) then
+else if (abs(alpha_DD - (2.0/3.0)) < 1.0D-5) then
   alpha_DD_frac = (/2, 3/)
-else if (abs(alpha_DD - (1.0/6.0)) < 1.0D-4) then
+else if (abs(alpha_DD - (1.0/6.0)) < 1.0D-5) then
   alpha_DD_frac = (/1, 6/)
 else
   print '(A,F9.5)', "[WARGNING] Awkward ALPHA constant for DD-EDF: ", alpha_DD
@@ -632,6 +633,7 @@ phi_dim   = Leb_dim
 angular_dim = Leb_dim
 print '(A,i5,a,i5)','Using Gauss-Laguerre/LEBEDEV Integration method. A_dim',&
   angular_dim, "  xR_dim=", angular_dim*r_dim
+print '(A,F15.13,A,F17.13)', ' b and hw in the program =', HO_b, "  ", HO_hw
 allocate(x_Leb(3, Leb_dim))
 allocate(weight_LEB(phi_dim))
 
@@ -784,34 +786,34 @@ do a_sh = 1, HOsh_dim
 
     if (PRINT_GUTS) write(629, fmt="(4I3)", advance='no') na, la, nb, lb
     do i_r = 1, r_dim
-!        radial = two_sho_radial_functions_bench(a_sh, b_sh, r(i_r))
-        radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .TRUE.)
+!     radial = two_sho_radial_functions_bench(a_sh, b_sh, r(i_r))
+      radial = two_sho_radial_functions(a_sh, b_sh, r(i_r), .TRUE.)
 
-        radial_2b_sho_memo(a_sh, b_sh, i_r) = radial
-        radial_2b_sho_memo(b_sh, a_sh, i_r) = radial ! a_sh=b_sh overwrites
+      radial_2b_sho_memo(a_sh, b_sh, i_r) = radial
+      radial_2b_sho_memo(b_sh, a_sh, i_r) = radial ! a_sh=b_sh overwrites
 
-        ! Radial grid for Laguerre
-        !r _lag = b *(x_R / 2+alpha)**0.5
+      ! Radial grid for Laguerre
+      !r _lag = b *(x_R / 2+alpha)**0.5
 
-        !! assert test R_ab = R_ba
-        if (dabs(two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.) - &
-          two_sho_radial_functions(b_sh, a_sh, r(i_r), .FALSE.)) > 1.d-12) then
-          print "(A,3I4,A,2D20.13)","[ASSERT ERROR] R(ab)/=R(ba) for a,b,i_r=",&
-             a_sh,b_sh,i_r," Rab/Rba=", &
-             two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.),&
-             two_sho_radial_functions(b_sh, a_sh, r(i_r), .FALSE.)
+      !! assert test R_ab = R_ba
+      if (dabs(two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.) - &
+        two_sho_radial_functions(b_sh, a_sh, r(i_r), .FALSE.)) > 1.d-12) then
+        print "(A,3I4,A,2D20.13)","[ASSERT ERROR] R(ab)/=R(ba) for a,b,i_r=",&
+           a_sh,b_sh,i_r," Rab/Rba=", &
+           two_sho_radial_functions(a_sh, b_sh, r(i_r), .FALSE.),&
+           two_sho_radial_functions(b_sh, a_sh, r(i_r), .FALSE.)
 
-        endif
-        if (PRINT_GUTS) then
-          write(629,fmt='(3D22.13)',advance='no') r(i_r), radial, weight_R(i_r)
-        endif
+      endif
+      if (PRINT_GUTS) then
+        write(629,fmt='(3D22.13)',advance='no') r(i_r),radial,weight_R(i_r)
+      endif
 
-        if (export_density) then
-          radial = two_sho_radial_functions(a_sh,b_sh, r_export(i_r), .FALSE.)
+      if (export_density) then
+        radial = two_sho_radial_functions(a_sh,b_sh, r_export(i_r), .FALSE.)
 
-          radial_2b_sho_export_memo(a_sh, b_sh, i_r) = radial
-          radial_2b_sho_export_memo(b_sh, a_sh, i_r) = radial
-        end if
+        radial_2b_sho_export_memo(a_sh, b_sh, i_r) = radial
+        radial_2b_sho_export_memo(b_sh, a_sh, i_r) = radial
+      end if
     enddo
     if (PRINT_GUTS) write(629, *) ""
   enddo
@@ -1264,7 +1266,7 @@ b_n   = b + spO2
 
 radial_ab = radial_2b_sho_memo(a_sh, b_sh, i_r) / overlap
 
-roP  = radial_ab * rhoLR  (b  ,a)
+roP  = radial_ab *    (b  ,a)
 roN  = radial_ab * rhoLR  (b_n,a_n)
 ! transposed, always add
 roPt = radial_ab * rhoLR  (a,  b)

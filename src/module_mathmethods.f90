@@ -183,8 +183,8 @@ subroutine GaussLaguerre(x,w,n,alf)
 integer, intent(in) :: n
 real(r64), intent(in) :: alf
 real(r64), intent(out) :: w(n), x(n)
-integer, parameter :: maxit=20
-real(r64), parameter :: eps=1.0d-16
+integer, parameter :: maxit=100
+real(r64), parameter :: eps=1.0d-20
 integer :: i, its, j
 real(r64) :: ai, p1, p2, p3, pp, z, z1
 
@@ -210,11 +210,11 @@ do i = 1, n
     pp = (n*p1 - (n+alf)*p2) / z
     z1 = z
     z = z1 - p1/pp
-    if ( abs(z - z1) <= eps) exit
+    if ( dabs(z - z1) <= eps) exit
   enddo
 
   x(i) = z
-  w(i) = -exp(log_gamma(alf+n) - log_gamma(n+0.0d0)) / (pp*n*p2)
+  w(i) = -dexp(log_gamma(alf+n) - log_gamma(n+0.0d0)) / (pp*n*p2)
 enddo
 
 end subroutine GaussLaguerre

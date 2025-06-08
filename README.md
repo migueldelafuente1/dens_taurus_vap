@@ -1,6 +1,7 @@
 ## Project dens_taurus_vap
 Density dependent HFB mean field code. Main usage and original repository in [project-taurus/taurus_vap](https://github.com/project-taurus/taurus_vap.git). This version extends it with the implementation of density-dependent functional based interactions.
 
+The matrix elements for the Hamiltonian interactions, suited for TAURUS reading format, can be (higly recomended) calculated using the [2B_MatrixElements](https://github.com/migueldelafuente1/2B_MatrixElements.git) suite.
 ## Contents
 
 1. [Features](#Features)
