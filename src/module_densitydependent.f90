@@ -1266,7 +1266,7 @@ b_n   = b + spO2
 
 radial_ab = radial_2b_sho_memo(a_sh, b_sh, i_r) / overlap
 
-roP  = radial_ab *    (b  ,a)
+roP  = radial_ab * rhoLR  (b  ,a)
 roN  = radial_ab * rhoLR  (b_n,a_n)
 ! transposed, always add
 roPt = radial_ab * rhoLR  (a,  b)
