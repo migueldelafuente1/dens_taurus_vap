@@ -19,7 +19,7 @@ use Constants
 use MathMethods
 use Basis
 use Wavefunctions
-use Hamiltonian
+!use Hamiltonian
 use Fields
 use Lebedev
 
@@ -314,8 +314,9 @@ print *, ''
 
 if ((.NOT.exportValSpace).AND.(implement_H2cpd_DD)) then
   if (hamil_read .EQ. 0) then
-    deallocate(hamil_H2cpd_DD) ! It wont be used
-    print "(A)", "  Hamiltonian cpd deallocated  because it will not be used!"
+    !deallocate(hamil_H2cpd_DD) ! It wont be used
+    !print "(A)", "  Hamiltonian cpd deallocated  because it will not be used!"
+    continue
   endif
 else if ((exportValSpace).AND.(.NOT.implement_H2cpd_DD)) then
   print "(2A)", " ERROR, do not export the matrix elements with hamiltonian",&
