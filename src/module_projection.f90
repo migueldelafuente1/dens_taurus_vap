@@ -282,13 +282,9 @@ do nangle = nangle_min, nangle_max
                              conjg(bogo_zV0tilde),dens_rhoLR,dens_kappaLR, &
                              dens_kappaRL,ndim)
     call calculate_expectval_density(rot_over*weip*wein, iopt)
-    if (EVAL_EXPLICIT_FIELDS_DD) then
-	    call calculate_densityDep_hamiltonian
-      call calculate_fields_DD_explicit(field_gammaLR, field_hspLR, &
-                                        field_deltaLR, field_deltaRL, ndim)
-    else
-      call calculate_fields_DD(field_gammaLR, field_hspLR, &
-                               field_deltaLR, field_deltaRL, ndim)
+
+    call calculate_fields_DD(field_gammaLR, field_hspLR, &
+                             field_deltaLR, field_deltaRL, ndim)
     endif
     if ((evalQuasiParticleVSpace).AND.(iopt .EQ. 1)) then
       call test_export_pnpn_mmee_uncoupled(ndim) !! TODO: RM test
