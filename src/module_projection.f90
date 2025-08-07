@@ -285,10 +285,7 @@ do nangle = nangle_min, nangle_max
 
     call calculate_fields_DD(field_gammaLR, field_hspLR, &
                              field_deltaLR, field_deltaRL, ndim)
-    endif
-    if ((evalQuasiParticleVSpace).AND.(iopt .EQ. 1)) then
-      call test_export_pnpn_mmee_uncoupled(ndim) !! TODO: RM test
-    endif
+
 	  call test_printDesityKappaWF
   elseif (USING_FIXED_REARRANGEMENT) then
     continue !field_hspLR = field_hspLR + fixed_rearrang_field
