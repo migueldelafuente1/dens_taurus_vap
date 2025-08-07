@@ -48,8 +48,8 @@ character(len=:), allocatable :: hamil_file, & ! main name
 !!! Matrix elements in coupled scheme: JT or J
 !real(r64), dimension(:,:,:), allocatable :: hamil_H1cpd ! 1-body
 real(r64), dimension(:,:,:,:,:,:), allocatable, private :: hamil_H2cpd ! 2-body
-real(r64), dimension(:,:,:,:,:,:), allocatable :: hamil_H2cpd_DD       ! 2-body for DD exporting module
-logical :: implement_H2cpd_DD = .TRUE.
+!real(r64), dimension(:,:,:,:,:,:), allocatable :: hamil_H2cpd_DD       ! 2-body for DD exporting module
+!logical :: implement_H2cpd_DD = .TRUE.
 
 !!! Matrix elements in m-scheme (HO basis)
 complex(r64) :: hamil_H0                               ! 0-body part
@@ -268,7 +268,7 @@ select case (hamil_type)
     call read_hamiltonian_2body_antoine
 
     !! [DENSITY MOD] ------------
-    implement_H2cpd_DD = .FALSE.
+!    implement_H2cpd_DD = .FALSE.
     !! ---------------------------
 
   case (3:4)
@@ -277,13 +277,13 @@ select case (hamil_type)
     if ( ialloc /= 0 ) stop 'Error during allocation of coupled hamiltonian'
     hamil_H2cpd = zero
     !! [DENSITY MOD] ------------
-    if (implement_H2cpd_DD) then
-      allocate( hamil_H2cpd_DD(0:5,0:HO_2jmax, &
-                             HOsh_dim,HOsh_dim,HOsh_dim,HOsh_dim), &
-              stat=ialloc )
-      if( ialloc /= 0 ) stop 'Error during allocation of coupled hamiltonian_DD'
-      hamil_H2cpd_DD = zero
-    endif
+!    if (implement_H2cpd_DD) then
+!      allocate( hamil_H2cpd_DD(0:5,0:HO_2jmax, &
+!                             HOsh_dim,HOsh_dim,HOsh_dim,HOsh_dim), &
+!              stat=ialloc )
+!      if( ialloc /= 0 ) stop 'Error during allocation of coupled hamiltonian_DD'
+!      hamil_H2cpd_DD = zero
+!    endif
     !! ---------------------------
 
     call read_hamiltonian_2body_Jscheme
@@ -327,24 +327,24 @@ do a = 1, HOsh_dim
               hamil_H2cpd(find_iso(T,7,ht),J,d,c,b,a) = Vtmp * phasab * phascd
 
               !! [DENSITY PART] copy values
-              if ((hamil_type > 2).AND.(implement_H2cpd_DD)) then
-                ! for HamilType=1,2 raise error here since it's not allocated
-                tt = find_iso(T,1,ht)
-                hamil_H2cpd_DD(tt,J,a,b,d,c) = hamil_H2cpd(tt,J,a,b,d,c)
-                tt = find_iso(T,2,ht)
-                hamil_H2cpd_DD(tt,J,b,a,c,d) = hamil_H2cpd(tt,J,b,a,c,d)
-                tt = find_iso(T,3,ht)
-                hamil_H2cpd_DD(tt,J,b,a,d,c) = hamil_H2cpd(tt,J,b,a,d,c)
-                tt = find_iso(T,4,ht)
-                hamil_H2cpd_DD(tt,J,c,d,a,b) = hamil_H2cpd(tt,J,c,d,a,b)
-                tt = find_iso(T,5,ht)
-                hamil_H2cpd_DD(tt,J,c,d,b,a) = hamil_H2cpd(tt,J,c,d,b,a)
-                tt = find_iso(T,6,ht)
-                hamil_H2cpd_DD(tt,J,d,c,a,b) = hamil_H2cpd(tt,J,d,c,a,b)
-                tt = find_iso(T,7,ht)
-                hamil_H2cpd_DD(tt,J,d,c,b,a) = hamil_H2cpd(tt,J,d,c,b,a)
-
-              endif
+!              if ((hamil_type > 2).AND.(implement_H2cpd_DD)) then
+!                ! for HamilType=1,2 raise error here since it's not allocated
+!                tt = find_iso(T,1,ht)
+!                hamil_H2cpd_DD(tt,J,a,b,d,c) = hamil_H2cpd(tt,J,a,b,d,c)
+!                tt = find_iso(T,2,ht)
+!                hamil_H2cpd_DD(tt,J,b,a,c,d) = hamil_H2cpd(tt,J,b,a,c,d)
+!                tt = find_iso(T,3,ht)
+!                hamil_H2cpd_DD(tt,J,b,a,d,c) = hamil_H2cpd(tt,J,b,a,d,c)
+!                tt = find_iso(T,4,ht)
+!                hamil_H2cpd_DD(tt,J,c,d,a,b) = hamil_H2cpd(tt,J,c,d,a,b)
+!                tt = find_iso(T,5,ht)
+!                hamil_H2cpd_DD(tt,J,c,d,b,a) = hamil_H2cpd(tt,J,c,d,b,a)
+!                tt = find_iso(T,6,ht)
+!                hamil_H2cpd_DD(tt,J,d,c,a,b) = hamil_H2cpd(tt,J,d,c,a,b)
+!                tt = find_iso(T,7,ht)
+!                hamil_H2cpd_DD(tt,J,d,c,b,a) = hamil_H2cpd(tt,J,d,c,b,a)
+!
+!              endif
               !! ------------
 			  endif
           enddo
@@ -517,11 +517,11 @@ do
   do j = jmin, jmax
     read(uth2,*) (hamil_H2cpd(T,j,a,b,c,d), T=tmin,tmax)
     !! [DENSITY] copy hamiltonian
-    if (implement_H2cpd_DD) then
-      do T=tmin,tmax
-        hamil_H2cpd_DD(T,j,a,b,c,d) = hamil_H2cpd(T,j,a,b,c,d)
-      enddo
-    endif
+!    if (implement_H2cpd_DD) then
+!      do T=tmin,tmax
+!        hamil_H2cpd_DD(T,j,a,b,c,d) = hamil_H2cpd(T,j,a,b,c,d)
+!      enddo
+!    endif
 
   enddo
 enddo
@@ -562,10 +562,10 @@ do
     hamil_H2cpd(:,j,a,b,c,d) = hamil_H2cpd(:,j,a,b,c,d) + factor * H2com(:)
 
     !! [DENSITY] copy hamiltonian if J-scheme
-    if ((hamil_type < 3).OR.(.NOT.implement_H2cpd_DD)) cycle
-    do T = tmin,tmax
-      hamil_H2cpd_DD(T,j,a,b,c,d) = hamil_H2cpd(T,j,a,b,c,d)
-    enddo
+!    if ((hamil_type < 3).OR.(.NOT.implement_H2cpd_DD)) cycle
+!    do T = tmin,tmax
+!      hamil_H2cpd_DD(T,j,a,b,c,d) = hamil_H2cpd(T,j,a,b,c,d)
+!    enddo
   enddo
 enddo
 

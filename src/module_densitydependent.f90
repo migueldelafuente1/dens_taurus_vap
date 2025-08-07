@@ -89,6 +89,7 @@ complex(r64), dimension(:,:), allocatable     :: fixed_rearrang_field
 
 !!! Arrays related to Differentiated density.
 logical   :: EXPORT_GRAD_DD = .FALSE. ! export the Laplacian-approximation of the Rearrangement
+logical :: implement_H2cpd_DD = .FALSE.
 
 real(r64) :: last_HFB_energy
 
