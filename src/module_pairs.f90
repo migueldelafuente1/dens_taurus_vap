@@ -203,7 +203,7 @@ do a = 1, hdim
   a0 = a - ia      ! limit to read the (ja, alpha')
 
   if (INCLUDE_RHO_TERMS) then
-    aux1B = aux1B + 0.25d+0 * real(rhoLR(a,a) + rhoLR(a+hdim,a+hdim))
+    aux1B = aux1B + 0.5d+0 * real(rhoLR(a,a) + rhoLR(a+hdim,a+hdim))
   endif
 
   do b = 1, hdim
@@ -217,7 +217,7 @@ do a = 1, hdim
     N_ab_J0T1 = 1.0d0
     if (seniorityScheme.eq.1) then
       if (HOsp_sh(a).ne.HOsp_sh(b)) continue
-      N_ab_J0T1 = sqrt(ja + 1.0d0) * 0.5d0  ! squared
+      N_ab_J0T1 = (ja + 1.0d0) * 0.5d0  ! squared
     endif
 
     ! index loop for the density matrices
