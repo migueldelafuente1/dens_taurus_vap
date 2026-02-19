@@ -404,7 +404,7 @@ enddo
 
 prot2 = dreal(prot - tr1 + tr2)
 neut2 = dreal(neut - tr3 + tr4)
-var_pn2 = dreal(prot2 + neut2 - 2 * tr5 + 2 *tr6)
+var_pn2 = dreal(prot2 + neut2 - 2 * tr5 - 2 *tr6)
 
 
 end subroutine calculate_variance_components
