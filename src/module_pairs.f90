@@ -346,10 +346,10 @@ integer, intent(in) :: ndim
 complex(r64), dimension(ndim,ndim), intent(in) :: rhoLR, kappaLR, kappaRL
 real(r64), intent(out) :: prot2, var_pn2, neut2
 integer :: hdim, j, i
-complex(r64) :: tr1, tr2, tr3, tr4, tr5, prot, neut
+complex(r64) :: tr1, tr2, tr3, tr4, tr5, tr6, prot, neut
 complex(r64), dimension(ndim/2,ndim/2) :: rhoLRp, kapLRp, kapRLp, A1, A2, &
                                           rhoLRn, kapLRn, kapRLn, A3, A4, &
-                                          kapLRm, kapRLm, A5
+                                          kapLRm, kapRLm, A5, rhoLRm, A6
 
 hdim = ndim/2
 
@@ -369,6 +369,7 @@ do j = 1, hdim
   do i = 1, hdim
     rhoLRp(i,j) = rhoLR(i,j)
     rhoLRn(i,j) = rhoLR(i+hdim,j+hdim)
+    rhoLRm(i,j) = rhoLR(i,j+hdim)
     kapLRp(i,j) = kappaLR(i,j)
     kapLRn(i,j) = kappaLR(i+hdim,j+hdim)
     kapLRm(i,j) = kappaLR(i,j+hdim)
@@ -382,6 +383,7 @@ call zgemm('n','n',hdim,hdim,hdim,zone,rhoLRp,hdim,rhoLRp,hdim,zzero,A1,hdim)
 call zgemm('t','n',hdim,hdim,hdim,zone,kapRLp,hdim,kapLRp,hdim,zzero,A2,hdim)
 call zgemm('n','n',hdim,hdim,hdim,zone,rhoLRn,hdim,rhoLRn,hdim,zzero,A3,hdim)
 call zgemm('t','n',hdim,hdim,hdim,zone,kapRLn,hdim,kapLRn,hdim,zzero,A4,hdim)
+call zgemm('n','n',hdim,hdim,hdim,zone,rhoLRm,hdim,rhoLRm,hdim,zzero,A6,hdim)
 call zgemm('t','n',hdim,hdim,hdim,zone,kapRLm,hdim,kapLRm,hdim,zzero,A5,hdim)
 
 tr1 = zzero
@@ -389,6 +391,7 @@ tr2 = zzero
 tr3 = zzero
 tr4 = zzero
 tr5 = zzero
+tr6 = zzero
 
 do i = 1, hdim
   tr1 = tr1 + A1(i,i)
@@ -396,11 +399,12 @@ do i = 1, hdim
   tr3 = tr3 + A3(i,i)
   tr4 = tr4 + A4(i,i)
   tr5 = tr5 - A5(i,i)
+  tr6 = tr6 + A6(i,i)
 enddo
 
 prot2 = dreal(prot - tr1 + tr2)
 neut2 = dreal(neut - tr3 + tr4)
-var_pn2 = dreal(prot2 + neut2 - 2 * tr5)
+var_pn2 = dreal(prot2 + neut2 - 2 * tr5 + 2 *tr6)
 
 
 end subroutine calculate_variance_components
