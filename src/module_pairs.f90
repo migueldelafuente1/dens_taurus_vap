@@ -296,11 +296,11 @@ do a = 1, hdim
           endif
 
           if      (M.eq.2) then
-            p2B_T00_J1m1 = p2B_T00_J1m1 + (aux * N_ab_J0T1 * cgj1 * cgj2 * cgt1)
+            p2B_T00_J1p1 = p2B_T00_J1p1 + (aux * N_ab_J0T1 * cgj1 * cgj2 * cgt1)
           else if (M.eq.0) then
             p2B_T00_J10  = p2B_T00_J10  + (aux * N_ab_J0T1 * cgj1 * cgj2 * cgt1)
           else
-            p2B_T00_J1p1 = p2B_T00_J1p1 + (aux * N_ab_J0T1 * cgj1 * cgj2 * cgt1)
+            p2B_T00_J1m1 = p2B_T00_J1m1 + (aux * N_ab_J0T1 * cgj1 * cgj2 * cgt1)
           end if
 
       enddo
