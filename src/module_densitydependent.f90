@@ -1430,9 +1430,9 @@ do ms = 1, 4
   BulkP1_HM(2,ms,i_r,i_a) = BulkP1_HM(2,ms,i_r,i_a) + (B1_part * kaN) !nn
 
   B1_part =    CONST_x0_EXC_HEIS * AngFunctDUAL_P1(ms ,a,b,i_a) &
-            - (CONST_x0_EXC_MAJO * AngFunctDUAL_P1(ms2,a,b,i_a))
+            + (CONST_x0_EXC_MAJO * AngFunctDUAL_P1(ms2,a,b,i_a))
   B2_part =    CONST_x0_EXC_HEIS * AngFunctDUAL_P1(ms2,a,b,i_a) &
-            - (CONST_x0_EXC_MAJO * AngFunctDUAL_P1(ms ,a,b,i_a))
+            + (CONST_x0_EXC_MAJO * AngFunctDUAL_P1(ms ,a,b,i_a))
   BulkP1_HM(3,ms,i_r,i_a)= BulkP1_HM(3,ms,i_r,i_a) + (B1_part*kNP - B2_part*kPN) !pn
   BulkP1_HM(4,ms,i_r,i_a)= BulkP1_HM(4,ms,i_r,i_a) + (B1_part*kPN - B2_part*kNP) !np
 
@@ -1442,9 +1442,9 @@ do ms = 1, 4
   BulkP1_HM(2,ms,i_r,i_a) = BulkP1_HM(2,ms,i_r,i_a) + (B1_part * kaNt) !nn
 
   B1_part =    CONST_x0_EXC_HEIS * AngFunctDUAL_P1(ms ,b,a,i_a) &
-            - (CONST_x0_EXC_MAJO * AngFunctDUAL_P1(ms2,b,a,i_a))
+            + (CONST_x0_EXC_MAJO * AngFunctDUAL_P1(ms2,b,a,i_a))
   B2_part =    CONST_x0_EXC_HEIS * AngFunctDUAL_P1(ms2,b,a,i_a) &
-            - (CONST_x0_EXC_MAJO * AngFunctDUAL_P1(ms ,b,a,i_a))
+            + (CONST_x0_EXC_MAJO * AngFunctDUAL_P1(ms ,b,a,i_a))
   BulkP1_HM(3,ms,i_r,i_a)= BulkP1_HM(3,ms,i_r,i_a) + (B1_part*kNPt-B2_part*kPNt) !pn
   BulkP1_HM(4,ms,i_r,i_a)= BulkP1_HM(4,ms,i_r,i_a) + (B1_part*kPNt-B2_part*kNPt) !np
   endif
@@ -2152,7 +2152,7 @@ integer      ::  ms, ms2
 complex(r64) :: aux_d, aux_e, aux_p, aux_pnp, aux1, aux2, aux3, aux4
 real(r64)    :: X0MpH
 
-X0MpH = CONST_x0_EXC_HEIS + CONST_x0_EXC_MAJO
+X0MpH = CONST_x0_EXC_HEIS - CONST_x0_EXC_MAJO
 
 if (.NOT. has_HEIS_MAJO_TERMS) return
 
@@ -2186,13 +2186,13 @@ do ms = 1, 4
   aux_e = aux_e - (CONST_x0_EXC_HEIS * aux1)
 
   !Pairing rearrangement fields
-  aux1  = BulkP2(1,ms, i_r,i_a) * BulkP1(1,ms, i_r,i_a) !pp
-  aux2  = BulkP2(2,ms, i_r,i_a) * BulkP1(2,ms, i_r,i_a) !nn
+  aux1  = BulkP2(1,ms, i_r,i_a) * BulkP1_HM(1,ms, i_r,i_a) !pp
+  aux2  = BulkP2(2,ms, i_r,i_a) * BulkP1_HM(2,ms, i_r,i_a) !nn
   aux_p = aux_p + (aux1 + aux2)
   !pn np part (remember the H 1Bnp - M*1Bpn - H 1Bpn  + M*1Bpn was done already)
   if (CALCULATE_DD_PN_PA) then
-    aux1   = BulkP2(3,ms, i_r,i_a) * BulkP1(3,ms, i_r,i_a) !pn*pn
-    aux2   = BulkP2(4,ms, i_r,i_a) * BulkP1(4,ms, i_r,i_a) !np*np
+    aux1   = BulkP2(3,ms, i_r,i_a) * BulkP1_HM(3,ms, i_r,i_a) !pn*pn
+    aux2   = BulkP2(4,ms, i_r,i_a) * BulkP1_HM(4,ms, i_r,i_a) !np*np
     aux_pnp = aux_pnp + (aux1 + aux2)
 
     aux1  = BulkHF(4,ms2, i_r,i_a) * BulkHF(3,ms,i_r,i_a) !pn*np
@@ -2306,7 +2306,7 @@ complex(r64) :: sumD_ang
 integer      :: ms, Tac
 real(r64)    :: X0MpH
 
-X0MpH = CONST_x0_EXC_HEIS + CONST_x0_EXC_MAJO
+X0MpH = CONST_x0_EXC_HEIS - CONST_x0_EXC_MAJO
 
 if (.NOT. (has_HEIS_MAJO_TERMS)) return
 
@@ -2318,8 +2318,8 @@ auxHfD(1) = (CONST_x0_EXC_HEIS*dens_pnt(1,i_r,i_ang) - &
 auxHfD(2) = (CONST_x0_EXC_HEIS*dens_pnt(2,i_r,i_ang) - &
              CONST_x0_EXC_MAJO*dens_pnt(5,i_r,i_ang))
 if (CALCULATE_DD_PN_HF) then
-  auxHfD(3) = -CONST_x0_EXC_HEIS * dens_pnt(3,i_r,i_ang)
-  auxHfD(4) = -CONST_x0_EXC_HEIS * dens_pnt(4,i_r,i_ang)
+  auxHfD(3) = CONST_x0_EXC_HEIS * dens_pnt(3,i_r,i_ang)
+  auxHfD(4) = CONST_x0_EXC_HEIS * dens_pnt(4,i_r,i_ang)
   endif
 do Tac = 1, 4
   auxHfD(Tac)   = sumD_ang * auxHfD(Tac)
